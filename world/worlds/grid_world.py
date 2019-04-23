@@ -1,3 +1,7 @@
 
 class GridWorld(object):
-    pass
+    def __init__(self):
+        self.map = {}
+
+    def add_agent(self, agent):
+
