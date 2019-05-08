@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>WS</title>
+</head>
+<body>
+<div>
+    <input id="world_id" type="text">
+    <button id="test_btn">Test</button>
+</div>
+<div>
+    <div><span>Server: </span><span id="server"></span></div>
+    <div><span>Status: </span><span id="status"></span></div>
+    <div><span>MsgCnt: </span><span id="mc"></span></div>
+    <br />
+    <div id="raw"></div>
+</div>
+<script>
+    function TestClicked() {
+        console.log('on test clicked');
+
+        var wid = document.getElementById('world_id').value;
+        var loc = window.location;
+        var srv = 'ws://localhost:3000/world';
+        var uri = srv + '/' + wid;
+
+        var mc = 0;
+
+        var dced = false;
+        var ws = new WebSocket(uri);
+
+        ws.onopen = function () {
+            document.getElementById('server').innerText = uri;
+            document.getElementById('status').innerText = 'connected';
+            console.log('connected');
+        };
+
+        ws.onerror = function (ev) {
+            document.getElementById('status').innerText = 'error';
+            console.log('---error---');
+            console.log(ev);
+
+            var raw = document.getElementById('raw');
+            raw.innerHTML = ev + '<br>';
+        };
+
+        ws.onmessage = function (ev) {
+            mc++;
+            var out = document.getElementById('raw');
+            out.innerHTML = ev.data + '<br>';
+            var r_ = JSON.parse(ev.data);
+            console.log(r_);
+
+            document.getElementById('mc').innerHTML = mc;
+        };
+
+        ws.onclose = function () {
+            document.getElementById('status').innerHTML = 'disconnected';
+            dced = true;
+            console.log('disconnected');
+        };
+
+        setInterval(function () {
+            if (!dced) {
+                ws.send('ping');
+                console.log('ping');
+            }
+        }, 1000);
+    }
+
+    window.onload = function () {
+        console.log('onload');
+        document.getElementById('test_btn').onclick = TestClicked
+    }
+</script>
+</body>
+</html>
