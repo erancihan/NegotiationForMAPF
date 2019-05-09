@@ -5,6 +5,7 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/labstack/echo/v4"
 	"net/http"
+	"strconv"
 	"sync"
 	"time"
 )
@@ -18,6 +19,7 @@ var (
 type (
 	Status	 	struct {
 		PlayerCount int 	`json:"player_count"`
+		Time		int64 	`json:"time"`
 	}
 
 	RdsStatus 	struct {
@@ -147,11 +149,49 @@ func (h *Handler) GetStatus(ctx echo.Context, id string, rds redis.Conn, p *Worl
 
 func (s *Status) SetStatus(ts RdsStatus, p *WorldPool)  {
 	// set data
-
-	// time till starting
-	// loc := time.FixedZone("UTC+3", 3*60*60)
+	s.PlayerCount, _ = strconv.Atoi(ts.PlayerCount)
 
 	// todo fow stuff here?
+	s.Time = time.Now().UnixNano()
+}
+
+func (h *Handler) PlayerRegister(ctx echo.Context, p *WorldPool) error {
+	wid := ctx.Param("world_id")
+	//pid := ctx.Param("player_id")
+
+	rds := h.Pool.Get()
+	defer rds.Close()
+
+	_, err := redis.Int64(rds.Do("HINCRBY", "world:" + wid, "player_count", "1"))
+	if err != nil {
+		ctx.Echo().Logger.Fatal(err)
+
+		return err
+	}
+
+
+	return nil
+}
+
+func (h *Handler) PlayerUnregister(ctx echo.Context, p *WorldPool) error {
+	wid := ctx.Param("world_id")
+	//pid := ctx.Param("player_id")
+
+	rds := h.Pool.Get()
+	defer rds.Close()
+
+	_, err := redis.Int64(rds.Do("HINCRBY", "world:" + wid, "player_count", "-1"))
+	if err != nil {
+		ctx.Echo().Logger.Fatal(err)
+
+		return err
+	}
+
+	return nil
+}
+
+func (h *Handler) PlayerFOW(ctx echo.Context, p *WorldPool) {
+
 }
 
 func readMsgs(client *Client, c echo.Context)  {
@@ -169,7 +209,7 @@ func readMsgs(client *Client, c echo.Context)  {
 }
 
 func (h *Handler) WorldSocket(c echo.Context) error {
-	id := c.Param("worldId")
+	id := c.Param("world_id")
 
 	h.Upgrader.CheckOrigin = func(r *http.Request) bool {
 		return true
@@ -181,7 +221,7 @@ func (h *Handler) WorldSocket(c echo.Context) error {
 
 	world, ok := h.WorldMap.Load(id)
 
-	if !ok {	// create new one
+	if !ok {	// create new one world
 		world = &WorldPool{
 			WorldId: id,
 			SubCount: 1,
@@ -192,7 +232,7 @@ func (h *Handler) WorldSocket(c echo.Context) error {
 
 		h.WorldMap.Store(id, world)
 		go h.UpdateStatus(c, id, world)
-	} else {	// sub to new one
+	} else {	// sub to world with given id
 		world.SubCount = world.SubCount + 1
 	}
 
@@ -202,7 +242,9 @@ func (h *Handler) WorldSocket(c echo.Context) error {
 	}
 
 	h.WorldMap.Register(id, client)
+	h.PlayerRegister(c, world)
 	defer func() {
+		h.PlayerUnregister(c, world)
 		h.WorldMap.Unregister(id, client, world)
 		if world.SubCount <= 0 {
 			h.WorldMap.Delete(id)

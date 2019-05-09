@@ -58,7 +58,7 @@ func main() {
 
 	// routes
 	e.GET("/", h.Home)
-	e.GET("/world/:worldId", h.WorldSocket)
+	e.GET("/world/:world_id", h.WorldSocket)
 	e.File("/test", "res/test.html")
 
 	e.Logger.Fatal(e.Start(":3000"))

@@ -10,13 +10,16 @@
     <button id="test_btn">Test</button>
     <button id="dc_btn">Disconnect</button>
 </div>
-<div>
-    <div><span>Server: </span><span id="server"></span></div>
-    <div><span>Status: </span><span id="status"></span></div>
-    <div><span>MsgCnt: </span><span id="mc"></span></div>
+<pre>
+    <span>Server   : </span><span id="server"></span>
+    <span>Status   : </span><span id="status"></span>
+    <span>msg count: </span><span id="mc"></span>
+    <span>delay    : </span><span id="delay">0.000</span>ms
+    <span>client_t : </span><span id="client_t">x</span>ns
+    <span>server_t : </span><span id="server_t">x</span>ns
     <br />
-    <div id="raw"></div>
-</div>
+    <span id="raw"></span>
+</pre>
 <script>
     var ws;
 
@@ -51,11 +54,17 @@
         ws.onmessage = function (ev) {
             mc++;
             var out = document.getElementById('raw');
-            out.innerHTML = ev.data + '<br>';
-            var r_ = JSON.parse(ev.data);
-            console.log(r_);
+            out.innerHTML = ev.data;
+            var data = JSON.parse(ev.data);
+            // console.log(data);
 
             document.getElementById('mc').innerHTML = mc;
+
+            var now = Date.now();
+            var diff = now - (data.time / 1e6);
+            document.getElementById('delay').innerText = parseFloat(diff).toFixed(3);
+            document.getElementById('client_t').innerText = now * 1e6;
+            document.getElementById('server_t').innerText = data.time;
         };
 
         ws.onclose = function () {
@@ -67,7 +76,7 @@
         setInterval(function () {
             if (!dced) {
                 ws.send('ping');
-                console.log('ping');
+                // console.log('ping');
             }
         }, 1000);
     }
