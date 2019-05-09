@@ -8,6 +8,7 @@
 <div>
     <input id="world_id" type="text">
     <button id="test_btn">Test</button>
+    <button id="dc_btn">Disconnect</button>
 </div>
 <div>
     <div><span>Server: </span><span id="server"></span></div>
@@ -17,7 +18,9 @@
     <div id="raw"></div>
 </div>
 <script>
-    function TestClicked() {
+    var ws;
+
+    function TestStart () {
         console.log('on test clicked');
 
         var wid = document.getElementById('world_id').value;
@@ -28,7 +31,7 @@
         var mc = 0;
 
         var dced = false;
-        var ws = new WebSocket(uri);
+        ws = new WebSocket(uri);
 
         ws.onopen = function () {
             document.getElementById('server').innerText = uri;
@@ -69,9 +72,15 @@
         }, 1000);
     }
 
+    function TestDC () {
+        ws.close();
+    }
+
     window.onload = function () {
         console.log('onload');
-        document.getElementById('test_btn').onclick = TestClicked
+
+        document.getElementById('test_btn').onclick = TestStart;
+        document.getElementById('dc_btn').onclick = TestDC;
     }
 </script>
 </body>
