@@ -58,6 +58,7 @@ func main() {
 
 	// routes
 	e.GET("/", h.Home)
+	e.GET("/uuid", h.UKey)
 	e.GET("/world/:world_id", h.WorldSocket)
 	e.File("/test", "res/test.html")
 
