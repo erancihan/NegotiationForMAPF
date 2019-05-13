@@ -57,12 +57,14 @@ func main() {
 	}
 
 	// routes
-	e.GET("/", h.Home)
+	// e.GET("/", h.Home)
 	e.GET("/uuid", h.UKey)
 	e.GET("/world/:world_id", h.WorldSocket)
+
+	e.File("/", "res/index.html")
 	e.File("/test", "res/test.html")
 
-	e.Logger.Fatal(e.Start(":3000"))
+	e.Logger.Fatal(e.Start(":3001"))
 }
 
 func errorHandler(err error, c echo.Context) {
