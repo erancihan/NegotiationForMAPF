@@ -60,6 +60,8 @@ func main() {
 	e.GET("/", h.Home)
 	e.GET("/uuid", h.UKey)
 	e.GET("/world/:world_id", h.WorldSocket)
+	// e.GET("/authenticate", h.Authenticate)
+	e.GET("/join", h.Join)
 
 	e.File("/test", "res/test.html")
 
