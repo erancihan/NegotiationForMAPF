@@ -11,40 +11,30 @@ import (
 )
 
 var (
-	writeWait	=  2 * time.Second
-	pongWait	= 10 * time.Second
-	pingPeriod 	=  8 * time.Second
+	writeWait  = 2 * time.Second
+	pongWait   = 10 * time.Second
+	pingPeriod = 8 * time.Second
 )
 
 type (
-	Status	 	struct {
-		PlayerCount int 	`json:"player_count"`
-		Time		int64 	`json:"time"`
+	Status struct {
+		PlayerCount int   `json:"player_count"`
+		Time        int64 `json:"time"`
 	}
 
-	RdsStatus 	struct {
-		PlayerCount string 	`redis:"player_count"`
+	RdsStatus struct {
+		PlayerCount string `redis:"player_count"`
 	}
 
-	WorldPool	struct {
-		WorldId 	string
-		SubCount 	int
-		Clients		*ClientMap
-	}
-
-	WorldMap	struct {
+	WorldMap struct {
 		sync.RWMutex
 		m map[string]*WorldPool
 	}
 
-	ClientMap 	struct {
-		sync.RWMutex
-		m map[*Client]bool
-	}
-
-	Client 		struct {
-		conn *websocket.Conn
-		updates chan Status
+	WorldPool struct {
+		WorldId  string
+		SubCount int
+		Clients  *ClientMap
 	}
 )
 
@@ -70,7 +60,7 @@ func (t *WorldMap) Delete(key string) {
 	delete(t.m, key)
 }
 
-func (t *WorldMap) Store(key string, value *WorldPool)  {
+func (t *WorldMap) Store(key string, value *WorldPool) {
 	t.Lock()
 	defer t.Unlock()
 
@@ -110,7 +100,7 @@ func (h *Handler) UpdateStatus(ctx echo.Context, id string, p *WorldPool) {
 	rds := h.Pool.Get()
 	defer rds.Close()
 
-	for t := range  h.Ticker.C {
+	for t := range h.Ticker.C {
 		_ = t
 		s, err := h.GetStatus(ctx, id, rds, p)
 		if err != nil {
@@ -129,9 +119,9 @@ func (h *Handler) UpdateStatus(ctx echo.Context, id string, p *WorldPool) {
 
 func (h *Handler) GetStatus(ctx echo.Context, id string, rds redis.Conn, p *WorldPool) (Status, error) {
 	ts := RdsStatus{}
-	s  := Status{}
+	s := Status{}
 
-	v, err := redis.Values(rds.Do("HGETALL", "world:" + id))
+	v, err := redis.Values(rds.Do("HGETALL", "world:"+id))
 	if err != nil {
 		ctx.Logger().Error(err)
 		return s, err
@@ -147,7 +137,7 @@ func (h *Handler) GetStatus(ctx echo.Context, id string, rds redis.Conn, p *Worl
 	return s, nil
 }
 
-func (s *Status) SetStatus(ts RdsStatus, p *WorldPool)  {
+func (s *Status) SetStatus(ts RdsStatus, p *WorldPool) {
 	// set data
 	s.PlayerCount, _ = strconv.Atoi(ts.PlayerCount)
 
@@ -155,46 +145,7 @@ func (s *Status) SetStatus(ts RdsStatus, p *WorldPool)  {
 	s.Time = time.Now().UnixNano()
 }
 
-func (h *Handler) PlayerRegister(ctx echo.Context, p *WorldPool) error {
-	wid := ctx.Param("world_id")
-	//pid := ctx.Param("player_id")
-
-	rds := h.Pool.Get()
-	defer rds.Close()
-
-	_, err := redis.Int64(rds.Do("HINCRBY", "world:" + wid, "player_count", "1"))
-	if err != nil {
-		ctx.Echo().Logger.Fatal(err)
-
-		return err
-	}
-
-
-	return nil
-}
-
-func (h *Handler) PlayerUnregister(ctx echo.Context, p *WorldPool) error {
-	wid := ctx.Param("world_id")
-	//pid := ctx.Param("player_id")
-
-	rds := h.Pool.Get()
-	defer rds.Close()
-
-	_, err := redis.Int64(rds.Do("HINCRBY", "world:" + wid, "player_count", "-1"))
-	if err != nil {
-		ctx.Echo().Logger.Fatal(err)
-
-		return err
-	}
-
-	return nil
-}
-
-func (h *Handler) PlayerFOW(ctx echo.Context, p *WorldPool) {
-
-}
-
-func readMsgs(client *Client, c echo.Context)  {
+func readMsgs(client *Client, c echo.Context) {
 	client.conn.SetReadDeadline(time.Now().Add(pongWait))
 	client.conn.SetPongHandler(func(string) error {
 		client.conn.SetReadDeadline(time.Now().Add(pongWait))
@@ -222,9 +173,9 @@ func (h *Handler) WorldSocket(c echo.Context) error {
 
 	world, ok := h.WorldMap.Load(id)
 
-	if !ok {	// create new one world
+	if !ok { // create new one world
 		world = &WorldPool{
-			WorldId: id,
+			WorldId:  id,
 			SubCount: 1,
 			Clients: &ClientMap{
 				m: make(map[*Client]bool),
@@ -233,12 +184,12 @@ func (h *Handler) WorldSocket(c echo.Context) error {
 
 		h.WorldMap.Store(id, world)
 		go h.UpdateStatus(c, id, world)
-	} else {	// sub to world with given id
+	} else { // sub to world with given id
 		world.SubCount = world.SubCount + 1
 	}
 
 	client := &Client{
-		conn: ws,
+		conn:    ws,
 		updates: make(chan Status),
 	}
 

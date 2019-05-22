@@ -11,6 +11,9 @@ import "github.com/labstack/echo/v4"
 //   if [world_id agent_id] == nil: return denied
 //   else: join as spectator -> will observe /world/:wid/:pid
 
+type Join struct {
+}
+
 func (h *Handler) Join(ctx echo.Context) error {
 	return nil
 }
