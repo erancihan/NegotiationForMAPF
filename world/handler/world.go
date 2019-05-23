@@ -100,13 +100,13 @@ func readMsgs(client *Client, c echo.Context) {
 }
 
 // todo /world/:wid should not create entry on connection
-func (h *Handler) WorldSocket(c echo.Context) error {
-	id := c.Param("world_id")
+func (h *Handler) WorldSocket(ctx echo.Context) error {
+	id := ctx.Param("world_id")
 
 	h.Upgrader.CheckOrigin = func(r *http.Request) bool {
 		return true
 	}
-	ws, err := h.Upgrader.Upgrade(c.Response(), c.Request(), nil)
+	ws, err := h.Upgrader.Upgrade(ctx.Response(), ctx.Request(), nil)
 	if err != nil {
 		return err
 	}
@@ -123,7 +123,7 @@ func (h *Handler) WorldSocket(c echo.Context) error {
 		}
 
 		h.WorldMap.Store(id, world)
-		go h.UpdateStatus(c, id, world)
+		go h.UpdateStatus(ctx, id, world)
 	} else { // sub to world with given id
 		world.SubCount = world.SubCount + 1
 	}
@@ -134,9 +134,9 @@ func (h *Handler) WorldSocket(c echo.Context) error {
 	}
 
 	h.WorldMap.Register(id, client)
-	h.PlayerRegister(c, world)
+	h.PlayerRegister(ctx, world)
 	defer func() {
-		h.PlayerUnregister(c, world)
+		h.PlayerUnregister(ctx, world)
 		h.WorldMap.Unregister(id, client, world)
 		if world.SubCount <= 0 {
 			h.WorldMap.Delete(id)
@@ -144,7 +144,7 @@ func (h *Handler) WorldSocket(c echo.Context) error {
 	}()
 
 	ping := time.NewTicker(pingPeriod)
-	go readMsgs(client, c)
+	go readMsgs(client, ctx)
 	for {
 		select {
 		case s := <-client.updates:
