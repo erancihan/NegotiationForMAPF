@@ -7,16 +7,22 @@ import org.springframework.context.annotation.ClassPathScanningCandidateComponen
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 
 import java.awt.*;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
+import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Set;
 
 @SpringBootApplication
 public class Runner {
-    private static String PORT = "8080";
+    static String PORT = "8080";
 
     public static void main(String[] args) {
         try {
@@ -53,15 +59,55 @@ public class Runner {
     private static void initClass(Class v) {
         try {
             AgentClient x = (AgentClient) Class.forName(v.getName()).getConstructor().newInstance();
+            x.init();
 
-            if (!x.agentID().isEmpty())
-            {
-                launchBrowser(x.agentID());
-            }
+            assert !x.AGENT_ID.isEmpty();
+            assert !x.START_X.isEmpty();
+            assert !x.START_Y.isEmpty();
+
+            setAgentAtController(x);
+
+            launchBrowser(x.AGENT_ID);
 
             Thread thread = new Thread(x);
             thread.start();
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void setAgentAtController(AgentClient agent) {
+        System.out.println("> passing agent data to backend controller");
+        try {
+            URL url = new URL("http://localhost:" + Runner.PORT + "/set-agent");
+            HttpURLConnection con = (HttpURLConnection) url.openConnection();
+            con.setRequestMethod("POST");
+            con.setRequestProperty("Content-Type", "application/json; utf-8");
+            con.setRequestProperty("Accept", "application/json");
+            con.setDoOutput(true);
+
+            String jsonInputString = "{" +
+                    "\"id\": \"" + agent.AGENT_ID + "\","+
+                    "\"x\": \""  + agent.START_X  + "\","+
+                    "\"y\": \""  + agent.START_Y  + "\" }";
+
+            try (OutputStream outs = con.getOutputStream()) {
+                byte[] inb = jsonInputString.getBytes(StandardCharsets.UTF_8);
+                outs.write(inb, 0, inb.length);
+            }
+
+            try (BufferedReader br = new BufferedReader(new InputStreamReader(con.getInputStream(), StandardCharsets.UTF_8)))
+            {
+                StringBuilder response = new StringBuilder();
+                String responseLine;
+                while ((responseLine = br.readLine()) != null)
+                {
+                    response.append(responseLine);
+                }
+                System.out.println(response.toString());
+            }
+
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }

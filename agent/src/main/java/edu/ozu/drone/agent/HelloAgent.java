@@ -7,12 +7,8 @@ import edu.ozu.drone.DroneAgent;
 public class HelloAgent extends AgentClient {
 
     @Override
-    public String agentID() {
-        return "S006486";
-    }
-
-    @Override
-    public void name() {
-        System.out.println("Hello Agent");
+    public void init() {
+        AGENT_NAME = "Hello Agent";
+        AGENT_ID   = "S006486";
     }
 }
