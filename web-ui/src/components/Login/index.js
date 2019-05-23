@@ -1,8 +1,8 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 
 import 'bootstrap/dist/css/bootstrap.css';
 
-function Login() {
+function Login({ match }) {
   const inputID = useRef(null);
 
   const login = event => {
@@ -17,6 +17,15 @@ function Login() {
     window.sessionStorage.setItem('agent_id', agentID);
     window.location.href = '/worlds';
   };
+
+  useEffect(() => {
+    console.log('login mounted');
+
+    if (match.params.aid) {
+      window.sessionStorage.setItem('agent_id', match.params.aid);
+      window.location.href = '/worlds';
+    }
+  }, [match]);
 
   return (
     <div className="card col-4 border-dark mt-3 mx-auto">

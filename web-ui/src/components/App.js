@@ -10,8 +10,9 @@ function App() {
   return (
     <Router history={history}>
       <div className="container justify-content-center text-center">
-        <Route path="/:agentID?" component={Login} />
-        <Route path="/worlds" component={Worlds} />
+        <Route exact path="/" component={Login} />
+        <Route exact path="/login/:aid" component={Login} />
+        <Route exact path="/worlds" component={Worlds} />
       </div>
     </Router>
   );
