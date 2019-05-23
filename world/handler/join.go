@@ -26,8 +26,8 @@ func (h *Handler) Join(ctx echo.Context) (err error) { // POST
 		return
 	}
 
-	_, err = rds.Do("HSET", "world:" + wid + ":map", "agent:" + agent.Id, agent.X + ":" + agent.Y)
-	_, err = rds.Do("HSET", "world:" + wid + ":map", agent.X + ":" + agent.Y, "agent:" + agent.Id)
+	_, err = rds.Do("HSET", "map:world:" + wid, "agent:" + agent.Id, agent.X + ":" + agent.Y)
+	_, err = rds.Do("HSET", "map:world:" + wid, agent.X + ":" + agent.Y, "agent:" + agent.Id)
 	if err != nil {
 		ctx.Logger().Error(err)
 		return

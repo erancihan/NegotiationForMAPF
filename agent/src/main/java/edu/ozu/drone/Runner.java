@@ -76,6 +76,7 @@ public class Runner {
         }
     }
 
+    @SuppressWarnings("Duplicates")
     private static void setAgentAtController(AgentClient agent) {
         System.out.println("> passing agent data to backend controller");
         try {
@@ -87,11 +88,12 @@ public class Runner {
             con.setDoOutput(true);
 
             String jsonInputString = "{" +
-                    "\"id\": \"" + agent.AGENT_ID + "\","+
-                    "\"x\": \""  + agent.START_X  + "\","+
+                    "\"id\": \"" + agent.AGENT_ID + "\"," +
+                    "\"x\": \""  + agent.START_X  + "\"," +
                     "\"y\": \""  + agent.START_Y  + "\" }";
 
-            try (OutputStream outs = con.getOutputStream()) {
+            try (OutputStream outs = con.getOutputStream())
+            {
                 byte[] inb = jsonInputString.getBytes(StandardCharsets.UTF_8);
                 outs.write(inb, 0, inb.length);
             }
@@ -106,7 +108,6 @@ public class Runner {
                 }
                 System.out.println("> passed: " + response.toString());
             }
-
         } catch (IOException e) {
             e.printStackTrace();
         }

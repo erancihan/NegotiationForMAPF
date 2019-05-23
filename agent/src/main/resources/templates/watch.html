@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Watch</title>
+</head>
+<body>
+<div>
+    <pre id="raw"></pre>
+    <script>
+      let ws;
+
+      let raw = document.getElementById('raw');
+
+      const wid = window.sessionStorage.getItem('world_id');
+      const aid = window.sessionStorage.getItem('agent_id');
+
+      listen = (wid, aid) => {
+        const uri = 'ws://localhost:3001/world/' + wid + '/' + aid;
+
+        let ws = new WebSocket(uri);
+
+        ws.onopen = function () {
+          console.log('connected', uri);
+        };
+
+        ws.onerror = function (ev) {
+          console.log('----error----');
+          console.log(ev);
+        };
+
+        ws.onmessage = function (ev) {
+          raw.innerText = ev.data;
+
+          const jdata = JSON.parse(ev.data);
+        };
+
+        ws.onclose = function () {
+          console.log('disconnected');
+        };
+
+        setInterval(function () {
+          ws.send('ping');
+        }, 1000);
+      };
+
+      window.onload = function () {
+        console.log('windows on load');
+
+        listen(wid, aid);
+      }
+    </script>
+</div>
+</body>
+</html>

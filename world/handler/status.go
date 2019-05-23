@@ -68,7 +68,7 @@ func (h *Handler) GetStatus(ctx echo.Context, rds redis.Conn, p *WorldPool) (Sta
 	status.PlayerCount, _ = strconv.Atoi(rdsStatus.PlayerCount)
 	status.CanMove = rdsStatus.WorldState
 
-	agent, err := redis.String(rds.Do("HGET", "world:" + wid + ":map", "agent:" + aid))
+	agent, err := redis.String(rds.Do("HGET", "map:world:" + wid, "agent:" + aid))
 	if err != nil {
 		ctx.Logger().Error(err)
 		return status, nil

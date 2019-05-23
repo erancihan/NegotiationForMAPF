@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import world_api from '../../api/client';
+import { servlet, world_api } from '../../api/client';
 
 function Worlds() {
   const [worldList, setWorldList] = useState([]);
@@ -14,10 +14,27 @@ function Worlds() {
     getWorldList();
   }, []);
 
-  const join = wid => {
+  const join = async wid => {
     const aid = window.sessionStorage.getItem('agent_id');
+    window.sessionStorage.setItem('world_id', wid);
 
-    console.log('> join', wid, aid);
+    // get agent info from java-end
+    const uri = '/agent/' + aid;
+    await servlet.get(uri).then(response => {
+      window.sessionStorage.setItem('agent_x', response.data.x);
+      window.sessionStorage.setItem('agent_y', response.data.y);
+    });
+
+    const x = window.sessionStorage.getItem('agent_x');
+    const y = window.sessionStorage.getItem('agent_y');
+
+    await world_api.post('/join/' + wid, {
+      agent_id: aid,
+      agent_x: x,
+      agent_y: y
+    }).then( response => {
+      window.location.href = '/watch';
+    });
   };
 
   return (
