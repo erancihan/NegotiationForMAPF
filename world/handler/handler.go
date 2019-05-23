@@ -26,11 +26,16 @@ type (
 		Msg      string  `json:"msg"`
 		*Data    `json:"data"`
 	}
+	Agent struct {
+		Id string `json:"agent_id" form:"agent_id" query:"agent_id"`
+		X  string `json:"agent_x" form:"agent_x" query:"agent_x"`
+		Y  string `json:"agent_y" form:"agent_y" query:"agent_y"`
+	}
 )
 
+// todo register player
 func (h *Handler) PlayerRegister(ctx echo.Context, p *WorldPool) error {
 	wid := ctx.Param("world_id")
-	//pid := ctx.Param("player_id")
 
 	rds := h.Pool.Get()
 	defer rds.Close()
@@ -45,6 +50,7 @@ func (h *Handler) PlayerRegister(ctx echo.Context, p *WorldPool) error {
 	return nil
 }
 
+// todo unregister actions
 func (h *Handler) PlayerUnregister(ctx echo.Context, p *WorldPool) error {
 	wid := ctx.Param("world_id")
 	//pid := ctx.Param("player_id")

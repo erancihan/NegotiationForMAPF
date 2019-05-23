@@ -1,6 +1,9 @@
 package handler
 
-import "github.com/labstack/echo/v4"
+import (
+	"github.com/labstack/echo/v4"
+	"net/http"
+)
 
 //todo
 // if [world_id status] == nil: create and join
@@ -11,9 +14,30 @@ import "github.com/labstack/echo/v4"
 //   if [world_id agent_id] == nil: return denied
 //   else: join as spectator -> will observe /world/:wid/:pid
 
-type Join struct {
+func (h *Handler) Join(ctx echo.Context) (err error) { // POST
+	wid := ctx.Param("world_id")
+
+	rds := h.Pool.Get()
+	defer rds.Close()
+
+	agent := new(Agent)
+	if err = ctx.Bind(agent); err != nil {
+		ctx.Logger().Error(err)
+		return
+	}
+
+	_, err = rds.Do("HSET", "world:" + wid + ":map", "agent:" + agent.Id, agent.X + ":" + agent.Y)
+	_, err = rds.Do("HSET", "world:" + wid + ":map", agent.X + ":" + agent.Y, "agent:" + agent.Id)
+	if err != nil {
+		ctx.Logger().Error(err)
+		return
+	}
+
+	// todo better join response?
+	return ctx.NoContent(http.StatusOK)
 }
 
-func (h *Handler) Join(ctx echo.Context) error {
+// todo handle agent disconnect
+func (h *Handler) Disconnect(ctx echo.Context) (err error) {
 	return nil
 }
