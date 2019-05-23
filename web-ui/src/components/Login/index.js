@@ -15,6 +15,7 @@ function Login() {
     console.log('>', agentID);
 
     window.localStorage.setItem('agent_id', agentID);
+    window.location.href = '/worlds';
   };
 
   return (
