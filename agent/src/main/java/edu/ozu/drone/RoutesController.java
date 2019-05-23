@@ -7,7 +7,20 @@ import org.springframework.web.bind.annotation.GetMapping;
 public class RoutesController {
 
     @GetMapping("/")
-    public String index() {
+    public String index()
+    {
+        return "index";
+    }
+
+    @GetMapping("/login/{aid}")
+    public String loginWithAgentID()
+    {
+        return "index";
+    }
+
+    @GetMapping("/worlds")
+    public String worlds()
+    {
         return "index";
     }
 }
