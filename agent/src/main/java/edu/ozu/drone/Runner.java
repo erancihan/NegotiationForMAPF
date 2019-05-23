@@ -1,6 +1,8 @@
 package edu.ozu.drone;
 
 import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 
@@ -8,10 +10,12 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.HashSet;
 import java.util.Set;
 
+@SpringBootApplication
 public class Runner {
     public static void main(String[] args) {
         try {
             run();
+            SpringApplication.run(Runner.class, args);
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
