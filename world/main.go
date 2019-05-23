@@ -19,7 +19,7 @@ type (
 )
 
 func main() {
-	e := echo.New() 			// echo instance
+	e := echo.New()             // echo instance
 	e.Use(middleware.Recover()) // middleware
 
 	e.HTTPErrorHandler = errorHandler
@@ -31,8 +31,8 @@ func main() {
 
 	// pool setup
 	pool := &redis.Pool{
-		MaxIdle: 10,
-		MaxActive: 55000,
+		MaxIdle:     10,
+		MaxActive:   55000,
 		IdleTimeout: 240 * time.Second,
 		Dial: func() (redis.Conn, error) {
 			conn, err := redis.Dial("tcp", redisServer)
@@ -50,18 +50,17 @@ func main() {
 
 	// handler setup
 	h := &handler.Handler{
-		Pool: 		pool,
-		Ticker: 	*time.NewTicker(500 * time.Millisecond),
-		Upgrader:	&websocket.Upgrader{},
-		WorldMap:	handler.NewWorldMap(),
+		Pool:     pool,
+		Ticker:   *time.NewTicker(500 * time.Millisecond),
+		Upgrader: &websocket.Upgrader{},
+		WorldMap: handler.NewWorldMap(),
 	}
 
 	// routes
 	e.GET("/", h.Home)
 	e.GET("/uuid", h.UKey)
-	e.GET("/world/:world_id", h.WorldSocket)
-	// e.GET("/authenticate", h.Authenticate)
-	e.GET("/join", h.Join)
+	e.GET("/world/:world_id/:agent_id", h.WorldSocket)
+	e.POST("/join/:world_id", h.Join)
 
 	e.File("/test", "res/test.html")
 
@@ -71,12 +70,12 @@ func main() {
 func errorHandler(err error, c echo.Context) {
 	var (
 		code = http.StatusInternalServerError
-		msg	 interface{}
+		msg  interface{}
 	)
 
 	if he, ok := err.(*echo.HTTPError); ok {
 		code = he.Code
-		msg  = he.Message
+		msg = he.Message
 		if he.Internal != nil {
 			err = fmt.Errorf("%v, %v", err, he.Internal)
 		}
