@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"net/http"
 	"time"
 
 	"github.com/gomodule/redigo/redis"
@@ -87,6 +88,25 @@ func (h *Handler) CreateWorld(ctx echo.Context, p *WorldPool) error {
 
 func (h *Handler) PlayerFOW(ctx echo.Context, p *WorldPool) {
 
+}
+
+func (h *Handler) WorldList(ctx echo.Context) (err error) {
+	rds := h.Pool.Get()
+	defer rds.Close()
+
+	worlds, err := redis.Strings(rds.Do("KEYS", "world:*"))
+	if err != nil {
+		ctx.Echo().Logger.Fatal(err)
+		return
+	}
+
+	resp := struct {
+		Worlds []string `json:"worlds"`
+	}{
+		worlds,
+	}
+
+	return ctx.JSON(http.StatusOK, resp)
 }
 
 func Respond(c echo.Context, code int, msg string, data *Data, st time.Time) error {
