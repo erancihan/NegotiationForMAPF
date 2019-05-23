@@ -7,14 +7,21 @@ import (
 	"time"
 )
 
+var (
+	MoveState = [...]string{"halt", "move"}
+)
+
 type (
 	Status struct {
-		PlayerCount int   `json:"player_count"`
-		Time        int64 `json:"time"`
+		PlayerCount int    `json:"player_count"`
+		Time        int64  `json:"time"`
+		CanMove	    int    `json:"can_move"`
+		Position    string `json:"position"`
 	}
 
 	RdsStatus struct {
 		PlayerCount string `redis:"player_count"`
+		WorldState  int    `redis:"world_state"`
 	}
 )
 
@@ -24,7 +31,7 @@ func (h *Handler) UpdateStatus(ctx echo.Context, id string, p *WorldPool) {
 
 	for t := range h.Ticker.C {
 		_ = t
-		s, err := h.GetStatus(ctx, id, rds, p)
+		s, err := h.GetStatus(ctx, rds, p)
 		if err != nil {
 			ctx.Logger().Error(err)
 		}
@@ -39,30 +46,37 @@ func (h *Handler) UpdateStatus(ctx echo.Context, id string, p *WorldPool) {
 	}
 }
 
-func (h *Handler) GetStatus(ctx echo.Context, id string, rds redis.Conn, p *WorldPool) (Status, error) {
-	ts := RdsStatus{}
-	s := Status{}
+func (h *Handler) GetStatus(ctx echo.Context, rds redis.Conn, p *WorldPool) (Status, error) {
+	wid := ctx.Param("world_id")
+	aid := ctx.Param("agent_id")
 
-	v, err := redis.Values(rds.Do("HGETALL", "world:"+id))
+	rdsStatus := RdsStatus{}
+	status := Status{}
+
+	world, err := redis.Values(rds.Do("HGETALL", "world:" + wid))
 	if err != nil {
 		ctx.Logger().Error(err)
-		return s, err
+		return status, err
 	}
 
-	err = redis.ScanStruct(v, &ts)
+	err = redis.ScanStruct(world, &rdsStatus)
 	if err != nil {
 		ctx.Logger().Error(err)
-		return s, err
+		return status, err
 	}
 
-	s.SetStatus(ts, p)
-	return s, nil
-}
+	status.PlayerCount, _ = strconv.Atoi(rdsStatus.PlayerCount)
+	status.CanMove = rdsStatus.WorldState
 
-func (s *Status) SetStatus(ts RdsStatus, p *WorldPool) {
-	// set data
-	s.PlayerCount, _ = strconv.Atoi(ts.PlayerCount)
+	agent, err := redis.String(rds.Do("HGET", "world:" + wid + ":map", "agent:" + aid))
+	if err != nil {
+		ctx.Logger().Error(err)
+		return status, nil
+	}
 
-	// todo fow stuff here?
-	s.Time = time.Now().UnixNano()
+	status.Position = agent
+
+	status.Time = time.Now().UnixNano()
+
+	return status, nil
 }
