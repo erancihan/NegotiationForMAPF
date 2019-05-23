@@ -21,6 +21,14 @@ type (
 func main() {
 	e := echo.New()             // echo instance
 	e.Use(middleware.Recover()) // middleware
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins: []string{"http://localhost:3000"},
+		AllowHeaders: []string{
+			echo.HeaderAccessControlAllowOrigin,
+			echo.HeaderOrigin,
+			echo.HeaderAccept,
+			echo.HeaderContentType},
+	}))
 
 	e.HTTPErrorHandler = errorHandler
 
