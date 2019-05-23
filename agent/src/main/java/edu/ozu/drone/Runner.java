@@ -104,7 +104,7 @@ public class Runner {
                 {
                     response.append(responseLine);
                 }
-                System.out.println(response.toString());
+                System.out.println("> passed: " + response.toString());
             }
 
         } catch (IOException e) {
