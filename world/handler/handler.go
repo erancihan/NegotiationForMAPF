@@ -62,6 +62,23 @@ func (h *Handler) PlayerUnregister(ctx echo.Context, p *WorldPool) error {
 	return nil
 }
 
+func (h *Handler) CreateWorld(ctx echo.Context, p *WorldPool) error {
+	wid := ctx.Param("world_id")
+
+	rds := h.Pool.Get()
+	defer rds.Close()
+
+	_, err := rds.Do("HSET", "world:"+wid, "player_count", "0")
+	_, err = rds.Do("HSET", "world:"+wid, "world_state", "0")
+	if err != nil {
+		ctx.Echo().Logger.Fatal(err)
+
+		return err
+	}
+
+	return nil
+}
+
 func (h *Handler) PlayerFOW(ctx echo.Context, p *WorldPool) {
 
 }

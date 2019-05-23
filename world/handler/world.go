@@ -123,6 +123,8 @@ func (h *Handler) WorldSocket(ctx echo.Context) error {
 		}
 
 		h.WorldMap.Store(id, world)
+		h.CreateWorld(ctx, world)
+
 		go h.UpdateStatus(ctx, id, world)
 	} else { // sub to world with given id
 		world.SubCount = world.SubCount + 1
