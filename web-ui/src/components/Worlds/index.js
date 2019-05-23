@@ -15,7 +15,7 @@ function Worlds() {
   }, []);
 
   const join = wid => {
-    const aid = window.localStorage.getItem('agent_id');
+    const aid = window.sessionStorage.getItem('agent_id');
 
     console.log('> join', wid, aid);
   };
