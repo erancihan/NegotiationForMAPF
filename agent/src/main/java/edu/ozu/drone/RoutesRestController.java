@@ -8,20 +8,20 @@ import java.util.HashMap;
 
 @RestController
 public class RoutesRestController {
-    AgentData agent;
+    HashMap<String, AgentData> agents = new HashMap<>();
 
     @PostMapping("/set-agent")
     @ResponseStatus(HttpStatus.OK)
     public void setAgent(@RequestBody AgentData agent)
     {
-        this.agent = agent;
-        System.out.println("> set-agent " + this.agent.id);
+        agents.put(agent.id, agent);
+        System.out.println("> set-agent " + agent.id);
     }
 
     @GetMapping(value = "/agent/{aid}", produces = "application/json")
     public HashMap<String, String> join(@PathVariable String aid)
     {
-        assert aid.equals(agent.id);
+        AgentData agent = agents.get(aid);
 
         HashMap<String, String> resp = new HashMap<>();
         resp.put("id", agent.id);
