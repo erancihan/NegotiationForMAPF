@@ -4,6 +4,8 @@ import { servlet, world_api } from '../../api/client';
 function Worlds() {
   const [worldList, setWorldList] = useState([]);
 
+  const aid = window.sessionStorage.getItem('agent_id');
+
   useEffect(() => {
     const getWorldList = async () => {
       world_api.get('/worlds').then(response => {
@@ -15,7 +17,6 @@ function Worlds() {
   }, []);
 
   const join = async wid => {
-    const aid = window.sessionStorage.getItem('agent_id');
     window.sessionStorage.setItem('world_id', wid);
 
     // get agent info from java-end
@@ -39,6 +40,9 @@ function Worlds() {
 
   return (
     <div>
+      <div className="row mt-2 justify-content-center">
+        <div>{'id:'} {aid}</div>
+      </div>
       <div className="row mt-2 justify-content-center">
         {worldList.length > 0 ? (
           worldList.map((value, i) => {
