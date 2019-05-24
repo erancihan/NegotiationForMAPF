@@ -101,7 +101,7 @@ func readMsgs(client *Client, c echo.Context) {
 
 // todo /world/:wid should not create entry on connection
 func (h *Handler) WorldSocket(ctx echo.Context) error {
-	id := ctx.Param("world_id")
+	id := ctx.Param("world_id") + ctx.Param("agent_id")
 
 	h.Upgrader.CheckOrigin = func(r *http.Request) bool {
 		return true
