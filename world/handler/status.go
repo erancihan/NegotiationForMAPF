@@ -4,19 +4,23 @@ import (
 	"github.com/gomodule/redigo/redis"
 	"github.com/labstack/echo/v4"
 	"strconv"
+	"strings"
 	"time"
 )
 
 var (
+	Fow = 5
 	MoveState = [...]string{"halt", "move"}
 )
 
 type (
 	Status struct {
+		Id          string `json:"id"`
 		PlayerCount int    `json:"player_count"`
 		Time        int64  `json:"time"`
 		CanMove	    int    `json:"can_move"`
 		Position    string `json:"position"`
+		Fow         [][]string `json:"fow"`
 	}
 
 	RdsStatus struct {
@@ -65,6 +69,7 @@ func (h *Handler) GetStatus(ctx echo.Context, rds redis.Conn, p *WorldPool) (Sta
 		return status, err
 	}
 
+	status.Id = aid
 	status.PlayerCount, _ = strconv.Atoi(rdsStatus.PlayerCount)
 	status.CanMove = rdsStatus.WorldState
 
@@ -73,8 +78,26 @@ func (h *Handler) GetStatus(ctx echo.Context, rds redis.Conn, p *WorldPool) (Sta
 		ctx.Logger().Error(err)
 		return status, nil
 	}
-
 	status.Position = agent
+
+	agentpos := strings.Split(agent, ":")
+	ax, _ := strconv.Atoi(agentpos[0])
+	ay, _ := strconv.Atoi(agentpos[1])
+	// fow
+	var agents [][]string
+	for i := 0; i < Fow; i++ {
+		for j := 0; j < Fow; j++ {
+			ax_s := strconv.Itoa(ax + j - (Fow/2))
+			ay_s := strconv.Itoa(ay + i - (Fow/2))
+
+			at := ax_s + ":" + ay_s
+			agentFow, _ := redis.String(rds.Do("HGET", "map:world:" + wid, at))
+			if len(agentFow) > 0 && ax_s != ay_s {
+				agents = append(agents, []string{agentFow, at})
+			}
+		}
+	}
+	status.Fow = agents
 
 	status.Time = time.Now().UnixNano()
 
