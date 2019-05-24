@@ -9,18 +9,18 @@ import (
 )
 
 var (
-	Fow = 5
+	Fov       = 5
 	MoveState = [...]string{"halt", "move"}
 )
 
 type (
 	Status struct {
-		Id          string `json:"id"`
-		PlayerCount int    `json:"player_count"`
-		Time        int64  `json:"time"`
-		CanMove	    int    `json:"can_move"`
-		Position    string `json:"position"`
-		Fow         [][]string `json:"fow"`
+		Id          string     `json:"id"`
+		PlayerCount int        `json:"player_count"`
+		Time        int64      `json:"time"`
+		CanMove     int        `json:"can_move"`
+		Position    string     `json:"position"`
+		Fov         [][]string `json:"fov"`
 	}
 
 	RdsStatus struct {
@@ -57,7 +57,7 @@ func (h *Handler) GetStatus(ctx echo.Context, rds redis.Conn, p *WorldPool) (Sta
 	rdsStatus := RdsStatus{}
 	status := Status{}
 
-	world, err := redis.Values(rds.Do("HGETALL", "world:" + wid))
+	world, err := redis.Values(rds.Do("HGETALL", "world:"+wid))
 	if err != nil {
 		ctx.Logger().Error(err)
 		return status, err
@@ -73,7 +73,7 @@ func (h *Handler) GetStatus(ctx echo.Context, rds redis.Conn, p *WorldPool) (Sta
 	status.PlayerCount, _ = strconv.Atoi(rdsStatus.PlayerCount)
 	status.CanMove = rdsStatus.WorldState
 
-	agent, err := redis.String(rds.Do("HGET", "map:world:" + wid, "agent:" + aid))
+	agent, err := redis.String(rds.Do("HGET", "map:world:"+wid, "agent:"+aid))
 	if err != nil {
 		ctx.Logger().Error(err)
 		return status, nil
@@ -85,19 +85,19 @@ func (h *Handler) GetStatus(ctx echo.Context, rds redis.Conn, p *WorldPool) (Sta
 	ay, _ := strconv.Atoi(agentpos[1])
 	// fow
 	var agents [][]string
-	for i := 0; i < Fow; i++ {
-		for j := 0; j < Fow; j++ {
-			ax_s := strconv.Itoa(ax + j - (Fow/2))
-			ay_s := strconv.Itoa(ay + i - (Fow/2))
+	for i := 0; i < Fov; i++ {
+		for j := 0; j < Fov; j++ {
+			ax_s := strconv.Itoa(ax + j - (Fov / 2))
+			ay_s := strconv.Itoa(ay + i - (Fov / 2))
 
 			at := ax_s + ":" + ay_s
-			agentFow, _ := redis.String(rds.Do("HGET", "map:world:" + wid, at))
+			agentFow, _ := redis.String(rds.Do("HGET", "map:world:"+wid, at))
 			if len(agentFow) > 0 && ax_s != ay_s {
 				agents = append(agents, []string{agentFow, at})
 			}
 		}
 	}
-	status.Fow = agents
+	status.Fov = agents
 
 	status.Time = time.Now().UnixNano()
 
