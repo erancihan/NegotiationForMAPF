@@ -21,7 +21,6 @@ public class RoutesRestController {
     @PostMapping(value = "/agent")
     public HashMap<String, String> join(@RequestBody AidWid target)
     {
-        System.out.println(":" + target.aid);
         AgentData agent = agents.get(target.aid);
         agent.wid = target.wid;
 
