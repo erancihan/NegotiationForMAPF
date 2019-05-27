@@ -23,6 +23,7 @@ import java.util.Set;
 @SpringBootApplication
 public class Runner {
     static String PORT = "8080";
+    private static Set<AgentClient> agents = new HashSet<>();
 
     public static void main(String[] args) {
         try {
@@ -39,9 +40,9 @@ public class Runner {
     }
 
     private static void init() throws ClassNotFoundException {
-        Set<Class> stuff = getRunTargets();
+        Set<Class> agents = getRunTargets();
 
-        stuff.forEach(Runner::initClass);
+        agents.forEach(Runner::initAgent);
     }
 
     private static Set<Class> getRunTargets() throws ClassNotFoundException {
@@ -58,7 +59,7 @@ public class Runner {
         return classes;
     }
 
-    private static void initClass(Class v) {
+    private static void initAgent(Class v) {
         try {
             AgentClient x = (AgentClient) Class.forName(v.getName()).getConstructor().newInstance();
             x.init();
@@ -68,6 +69,7 @@ public class Runner {
             assert !x.START_Y.isEmpty();
 
             setAgentAtController(x);
+            agents.add(x);
 
             launchBrowser(x.AGENT_ID);
 
