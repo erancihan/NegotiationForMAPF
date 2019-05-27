@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { servlet, world_api } from '../../api/client';
+import '@fortawesome/fontawesome-free/svgs/solid/plus.svg';
 
 function Worlds() {
   const [worldList, setWorldList] = useState([]);
@@ -37,6 +38,12 @@ function Worlds() {
       .then(response => {
         window.location.href = '/watch';
       });
+  };
+
+  const joinNew = async () => {
+    const wid = worldList.length + 1;
+
+    await join(wid);
   };
 
   return (
@@ -78,7 +85,9 @@ function Worlds() {
         )}
       </div>
       <div className="row mt-2 justify-content-center">
-        <div>{'Create new World'}</div>
+        <div className="btn btn-outline-info btn-lg" onClick={joinNew}>
+          <i className="fas fa-plus" /> {'New World'}
+        </div>
       </div>
     </div>
   );
