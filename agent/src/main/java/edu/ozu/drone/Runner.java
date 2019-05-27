@@ -28,6 +28,8 @@ public class Runner {
         try {
             System.setProperty("server.port", PORT);
             System.setProperty("spring.devtools.restart.enabled", "false");
+            System.setProperty("spring.output.ansi.enabled", "ALWAYS");
+
             SpringApplication.run(Runner.class, args);
 
             init();
@@ -133,7 +135,7 @@ public class Runner {
                 if (_os.contains("mac")) {
                     runtime.exec("open " + url);
                 } else if (_os.contains("nix") || _os.contains("nux")) {
-                    runtime.exec("xdg-open" + url);
+                    runtime.exec("xdg-open " + url);
                 } else {
                     System.out.println("> BUMP!! UNHANDLED OS!!");
                 }
