@@ -14,17 +14,20 @@ public class RoutesRestController {
     @ResponseStatus(HttpStatus.OK)
     public void setAgent(@RequestBody AgentData agent)
     {
-        agents.put(agent.id, agent);
-        System.out.println("> set-agent " + agent.id);
+        agents.put(agent.aid, agent);
+        System.out.println("> set-agent " + agent.aid);
     }
 
-    @GetMapping(value = "/agent/{aid}", produces = "application/json")
-    public HashMap<String, String> join(@PathVariable String aid)
+    @PostMapping(value = "/agent")
+    public HashMap<String, String> join(@RequestBody AidWid target)
     {
-        AgentData agent = agents.get(aid);
+        System.out.println(":" + target.aid);
+        AgentData agent = agents.get(target.aid);
+        agent.wid = target.wid;
 
         HashMap<String, String> resp = new HashMap<>();
-        resp.put("id", agent.id);
+        resp.put("wid", agent.wid);
+        resp.put("aid", agent.aid);
         resp.put("x", agent.x);
         resp.put("y", agent.y);
 
@@ -32,15 +35,29 @@ public class RoutesRestController {
     }
 }
 
+class AidWid
+{
+    public String aid;
+    public String wid;
+
+    @ConstructorProperties({"aid", "wid"})
+    AidWid(String aid, String wid)
+    {
+        this.aid = aid;
+        this.wid = wid;
+    }
+}
+
 class AgentData {
-    public String id;
+    public String aid;
+    public String wid;
     public String x;
     public String y;
 
     @ConstructorProperties({"id", "x", "y"})
     AgentData(String id, String x, String y)
     {
-        this.id = id;
+        this.aid = id;
         this.x = x;
         this.y = y;
     }

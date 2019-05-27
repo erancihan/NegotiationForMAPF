@@ -39,5 +39,7 @@ func (h *Handler) Join(ctx echo.Context) (err error) { // POST
 
 // todo handle agent disconnect
 func (h *Handler) Disconnect(ctx echo.Context) (err error) {
+	wid :=
+
 	return nil
 }

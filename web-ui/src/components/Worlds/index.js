@@ -20,8 +20,7 @@ function Worlds() {
     window.sessionStorage.setItem('world_id', wid);
 
     // get agent info from java-end
-    const uri = '/agent/' + aid;
-    await servlet.get(uri).then(response => {
+    await servlet.post('/agent', { aid, wid }).then(response => {
       window.sessionStorage.setItem('agent_x', response.data.x);
       window.sessionStorage.setItem('agent_y', response.data.y);
     });
@@ -29,19 +28,23 @@ function Worlds() {
     const x = window.sessionStorage.getItem('agent_x');
     const y = window.sessionStorage.getItem('agent_y');
 
-    await world_api.post('/join/' + wid, {
-      agent_id: aid,
-      agent_x: x,
-      agent_y: y
-    }).then( response => {
-      window.location.href = '/watch';
-    });
+    await world_api
+      .post('/join/' + wid, {
+        agent_id: aid,
+        agent_x: x,
+        agent_y: y
+      })
+      .then(response => {
+        window.location.href = '/watch';
+      });
   };
 
   return (
     <div>
       <div className="row mt-2 justify-content-center">
-        <div>{'id:'} {aid}</div>
+        <div>
+          {'id:'} {aid}
+        </div>
       </div>
       <div className="row mt-2 justify-content-center">
         {worldList.length > 0 ? (
