@@ -2,6 +2,7 @@ import React, { useState, forwardRef, useImperativeHandle } from 'react';
 
 let Display = function(props, ref) {
   const [data, setData] = useState({
+    fov_size: 0,
     fov: []
   });
 
@@ -11,7 +12,7 @@ let Display = function(props, ref) {
     }
   }));
 
-  return <div className="col">{'placeholder'}</div>;
+  return <div className="col">{}</div>;
 };
 
 Display = forwardRef(Display);

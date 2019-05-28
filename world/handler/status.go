@@ -22,6 +22,7 @@ type (
 		CanMove     int        `json:"can_move"`
 		Position    string     `json:"position"`
 		Fov         [][]string `json:"fov"`
+		FovSize     int        `json:"fov_size"`
 	}
 
 	RdsStatus struct {
@@ -72,6 +73,7 @@ func (h *Handler) GetStatus(ctx echo.Context, rds redis.Conn, p *WorldPool) (Sta
 
 	status.AgentId = aid
 	status.WorldId = wid
+	status.FovSize = Fov
 	status.PlayerCount, _ = strconv.Atoi(rdsStatus.PlayerCount)
 	status.CanMove = rdsStatus.WorldState
 

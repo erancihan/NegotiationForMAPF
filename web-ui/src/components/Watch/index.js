@@ -56,13 +56,13 @@ function Watch() {
   }, []);
 
   return (
-    <div>
+    <div className="mt-3">
       <div className="row">
         <Raw ref={rawEl} />
         <Dpad />
       </div>
       <div className="row">
-        <Display ref={displayEl}/>
+        <Display ref={displayEl} />
       </div>
     </div>
   );
