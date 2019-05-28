@@ -59,11 +59,18 @@ func (h *Handler) PlayerUnregister(ctx echo.Context, p *WorldPool) error {
 	rds := h.Pool.Get()
 	defer rds.Close()
 
-	_, err := redis.Int64(rds.Do("HINCRBY", "world:"+wid, "player_count", "-1"))
+	c, err := redis.Int64(rds.Do("HINCRBY", "world:"+wid, "player_count", "-1"))
 	if err != nil {
 		ctx.Echo().Logger.Fatal(err)
 
 		return err
+	}
+
+	if c <= 0 {
+		_, err := rds.Do("DEL", "world:"+wid, "map:world:"+wid)
+		if err != nil {
+			ctx.Echo().Logger.Fatal(err)
+		}
 	}
 
 	return nil
