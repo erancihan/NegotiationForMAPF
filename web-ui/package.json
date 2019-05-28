@@ -14,8 +14,10 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build && yarn run move-index && yarn run move-public",
+    "build": "react-scripts build && yarn run move",
     "test": "react-scripts test",
+    "move": "yarn run move-clean && yarn run move-index && yarn run move-public",
+    "move-clean": "rm -rf -v ../agent/src/main/resources/public/*",
     "move-index": "mv -v build/index.html ../agent/src/main/resources/templates/index.html",
     "move-public": "mv -v build/* ../agent/src/main/resources/public/",
     "prettier-watch": "onchange '**/*.{js,css}' -- prettier --single-quote --write {{changed}}"
