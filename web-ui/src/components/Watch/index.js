@@ -1,24 +1,22 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Sockette from 'sockette';
 
+import Dpad from './dpad';
+import Raw from './raw';
+import Display from './display';
+
 function Watch() {
+  const rawEl = useRef(null);
+  const displayEl = useRef(null);
+
   const [connected, setConnected] = useState(false);
-  const [data, setData] = useState({
-    agent_id: '',
-    world_id: '',
-    position: '',
-    can_move: '',
-    time: '',
-    fov: [],
-    pc: 0
-  });
 
   const wid = window.sessionStorage.getItem('world_id');
   const aid = window.sessionStorage.getItem('agent_id');
 
   let setSocketData = async msg => {
-    console.log(msg);
-    setData(msg);
+    rawEl.current.pass(msg);
+    displayEl.current.pass(msg);
   };
 
   let connect = () => {
@@ -59,19 +57,13 @@ function Watch() {
 
   return (
     <div>
-      <div>{`World ID: ${data.world_id}`}</div>
-      <div>{`Agent ID: ${data.agent_id}`}</div>
-      <div>{`@ ${data.position}`}</div>
-      <div>{`Player C: ${data.pc}`}</div>
-      <div>{data.time}</div>
-      <div>
-        {data.fov.map((v, i) => (
-          <div key={i}>
-            {v[0]} {v[1]}
-          </div>
-        ))}
+      <div className="row">
+        <Raw ref={rawEl} />
+        <Dpad />
       </div>
-      <div>{data.can_move}</div>
+      <div className="row">
+        <Display ref={displayEl}/>
+      </div>
     </div>
   );
 }

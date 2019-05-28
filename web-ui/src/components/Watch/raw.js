@@ -1,0 +1,51 @@
+import React, { forwardRef, useState, useImperativeHandle } from 'react';
+
+const readableTime = (t) => {
+  const date = new Date(0);
+  date.setUTCMilliseconds(t/1E6);
+
+  return date.toString().substr(0, 33);
+};
+
+let Raw = function (props, ref) {
+  const [data, setData] = useState({
+    agent_id: '',
+    world_id: '',
+    position: '',
+    can_move: '',
+    time: '',
+    fov: [],
+    pc: 0
+  });
+
+  useImperativeHandle(ref, () => ({
+    pass: (d) => { setData(d) }
+  }));
+
+  return (
+    <div className="col-6">
+      <pre className="text-left">
+        <div>{`${readableTime(data.time)}`}</div>
+        <div>{`World ID: ${data.world_id}`}</div>
+        <div>{`Agent ID: ${data.agent_id}`}</div>
+        <div>{`@ ${data.position}`}</div>
+        <div>{`Player C: ${data.pc}`}</div>
+        <div>{`timestamp: ${data.time}`}</div>
+        <div>{`can move: ${data.can_move}`}</div>
+      </pre>
+      <div className="text-left">
+        {data.fov ? data.fov.map((v, i) => (
+          <div key={i}>
+            {v[0]} {v[1]}
+          </div>
+        )) : (
+          <div>{'No Data'}</div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+Raw = forwardRef(Raw);
+
+export default Raw;

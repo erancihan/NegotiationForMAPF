@@ -100,6 +100,7 @@ func (h *Handler) GetStatus(ctx echo.Context, rds redis.Conn, p *WorldPool) (Sta
 		}
 	}
 	status.Fov = agents
+	// todo return empty array, not null
 
 	status.Time = time.Now().UnixNano()
 
