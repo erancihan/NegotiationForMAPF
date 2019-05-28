@@ -23,6 +23,7 @@ type (
 		Position    string     `json:"position"`
 		Fov         [][]string `json:"fov"`
 		FovSize     int        `json:"fov_size"`
+		ExecTime    float64    `json:"exec_time"`
 	}
 
 	RdsStatus struct {
@@ -36,8 +37,7 @@ func (h *Handler) UpdateStatus(ctx echo.Context, id string, p *WorldPool) {
 	defer rds.Close()
 
 	for t := range h.Ticker.C {
-		_ = t
-		s, err := h.GetStatus(ctx, rds, p)
+		s, err := h.GetStatus(ctx, rds, p, t)
 		if err != nil {
 			ctx.Logger().Error(err)
 		}
@@ -52,7 +52,7 @@ func (h *Handler) UpdateStatus(ctx echo.Context, id string, p *WorldPool) {
 	}
 }
 
-func (h *Handler) GetStatus(ctx echo.Context, rds redis.Conn, p *WorldPool) (Status, error) {
+func (h *Handler) GetStatus(ctx echo.Context, rds redis.Conn, p *WorldPool, st time.Time) (Status, error) {
 	wid := ctx.Param("world_id")
 	aid := ctx.Param("agent_id")
 
@@ -105,6 +105,7 @@ func (h *Handler) GetStatus(ctx echo.Context, rds redis.Conn, p *WorldPool) (Sta
 	// todo return empty array, not null
 
 	status.Time = time.Now().UnixNano()
+	status.ExecTime = float64(time.Since(st)) / float64(time.Millisecond)
 
 	return status, nil
 }

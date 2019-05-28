@@ -15,6 +15,7 @@ let Raw = function(props, ref) {
     can_move: '',
     fov_size: 0,
     time: '',
+    exec_time: '',
     fov: [],
     pc: 0
   });
@@ -33,9 +34,10 @@ let Raw = function(props, ref) {
         <div>{`Agent ID: ${data.agent_id}`}</div>
         <div>{`@ ${data.position}`}</div>
         <div>{`Player C: ${data.pc}`}</div>
-        <div>{`timestamp: ${data.time}`}</div>
         <div>{`can move: ${data.can_move}`}</div>
         <div>{`FoV size: ${data.fov_size}`}</div>
+        <div>{`timestamp: ${data.time}`}</div>
+        <div>{`exec time: ${parseFloat(data.exec_time).toFixed(3)} ms`}</div>
       </pre>
       <div className="text-left">
         {data.fov ? (
