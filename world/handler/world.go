@@ -101,13 +101,16 @@ func readMsgs(client *Client, c echo.Context) {
 
 // todo /world/:wid should not create entry on connection
 func (h *Handler) WorldSocket(ctx echo.Context) error {
-	id := ctx.Param("world_id") + ctx.Param("agent_id")
+	wid := ctx.Param("world_id")
+	aid := ctx.Param("agent_id")
+	id := wid + aid
 
 	h.Upgrader.CheckOrigin = func(r *http.Request) bool {
 		return true
 	}
 	ws, err := h.Upgrader.Upgrade(ctx.Response(), ctx.Request(), nil)
 	if err != nil {
+		ctx.Logger().Fatal(err)
 		return err
 	}
 
@@ -123,7 +126,6 @@ func (h *Handler) WorldSocket(ctx echo.Context) error {
 		}
 
 		h.WorldMap.Store(id, world)
-		h.CreateWorld(ctx, world)
 
 		go h.UpdateStatus(ctx, id, world)
 	} else { // sub to world with given id
