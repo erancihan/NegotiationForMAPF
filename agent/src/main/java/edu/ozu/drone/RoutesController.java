@@ -26,6 +26,6 @@ public class RoutesController {
     @GetMapping("/watch")
     public String watch()
     {
-        return "watch";
+        return "index";
     }
 }

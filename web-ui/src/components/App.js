@@ -6,6 +6,7 @@ import '@fortawesome/fontawesome-free/css/all.css';
 import history from '../core/history';
 import Login from './Login';
 import Worlds from "./Worlds";
+import Watch from "./Watch";
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
         <Route exact path="/" component={Login} />
         <Route exact path="/login/:aid" component={Login} />
         <Route exact path="/worlds" component={Worlds} />
+        <Route exact path="/watch" component={Watch}/>
       </div>
     </Router>
   );
