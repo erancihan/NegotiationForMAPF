@@ -76,7 +76,7 @@ func (h *Handler) PlayerUnregister(ctx echo.Context, p *WorldPool) error {
 	return nil
 }
 
-func (h *Handler) CreateWorld(ctx echo.Context, p *WorldPool) error {
+func (h *Handler) CreateWorld(ctx echo.Context) error {
 	wid := ctx.Param("world_id")
 
 	rds := h.Pool.Get()
@@ -91,10 +91,6 @@ func (h *Handler) CreateWorld(ctx echo.Context, p *WorldPool) error {
 	}
 
 	return nil
-}
-
-func (h *Handler) PlayerFOW(ctx echo.Context, p *WorldPool) {
-
 }
 
 func (h *Handler) WorldList(ctx echo.Context) (err error) {
