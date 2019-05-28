@@ -15,8 +15,9 @@ var (
 
 type (
 	Status struct {
-		Id          string     `json:"id"`
-		PlayerCount int        `json:"player_count"`
+		AgentId     string     `json:"agent_id"`
+		WorldId     string     `json:"world_id"`
+		PlayerCount int        `json:"pc"`
 		Time        int64      `json:"time"`
 		CanMove     int        `json:"can_move"`
 		Position    string     `json:"position"`
@@ -69,31 +70,32 @@ func (h *Handler) GetStatus(ctx echo.Context, rds redis.Conn, p *WorldPool) (Sta
 		return status, err
 	}
 
-	status.Id = aid
+	status.AgentId = aid
+	status.WorldId = wid
 	status.PlayerCount, _ = strconv.Atoi(rdsStatus.PlayerCount)
 	status.CanMove = rdsStatus.WorldState
 
-	agent, err := redis.String(rds.Do("HGET", "map:world:"+wid, "agent:"+aid))
+	agentIsAt, err := redis.String(rds.Do("HGET", "map:world:"+wid, "agent:"+aid))
 	if err != nil {
 		ctx.Logger().Error(err)
 		return status, nil
 	}
-	status.Position = agent
+	status.Position = agentIsAt
 
-	agentpos := strings.Split(agent, ":")
+	agentpos := strings.Split(agentIsAt, ":")
 	ax, _ := strconv.Atoi(agentpos[0])
 	ay, _ := strconv.Atoi(agentpos[1])
 	// fow
 	var agents [][]string
 	for i := 0; i < Fov; i++ {
 		for j := 0; j < Fov; j++ {
-			ax_s := strconv.Itoa(ax + j - (Fov / 2))
-			ay_s := strconv.Itoa(ay + i - (Fov / 2))
+			ax_s := ax + (j - Fov/2)
+			ay_s := ay + (i - Fov/2)
 
-			at := ax_s + ":" + ay_s
-			agentFow, _ := redis.String(rds.Do("HGET", "map:world:"+wid, at))
-			if len(agentFow) > 0 && ax_s != ay_s {
-				agents = append(agents, []string{agentFow, at})
+			at := strconv.Itoa(ax_s) + ":" + strconv.Itoa(ay_s)
+			agentInFov, _ := redis.String(rds.Do("HGET", "map:world:"+wid, at))
+			if len(agentInFov) > 0  && !(ax == ax_s && ay == ay_s) {
+				agents = append(agents, []string{agentInFov, at})
 			}
 		}
 	}
