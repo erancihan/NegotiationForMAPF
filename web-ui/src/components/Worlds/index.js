@@ -21,12 +21,10 @@ function Worlds() {
     window.sessionStorage.setItem('world_id', wid);
 
     // get agent info from java-end
-    /*
     await servlet.post('/agent', { aid, wid }).then(response => {
       window.sessionStorage.setItem('agent_x', response.data.x);
       window.sessionStorage.setItem('agent_y', response.data.y);
     });
-*/
 
     const x = window.sessionStorage.getItem('agent_x');
     const y = window.sessionStorage.getItem('agent_y');
