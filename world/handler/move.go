@@ -7,22 +7,30 @@ import (
 	"strings"
 )
 
+type Move struct {
+	Agent
+	WorldID   string `json:"world_id" form:"world_id" query:"world_id"`
+	Direction string `json:"direction" form:"direction" query:"direction"`
+}
+
+// world_id is string here
+// we directly retrieve it in str format from session storage
 func (h *Handler) Move(ctx echo.Context) (err error) {
-	wid := ctx.Param("world_id")
-
-	rds := h.Pool.Get()
-	defer rds.Close()
-
-	agent := new(Agent)
-	if err = ctx.Bind(agent); err != nil {
+	move := new(Move)
+	if err = ctx.Bind(move); err != nil {
 		ctx.Logger().Fatal(err)
 		return ctx.NoContent(http.StatusBadRequest)
 	}
+
+	agent := move.Agent
 	x, err := strconv.Atoi(agent.X)
 	y, err := strconv.Atoi(agent.Y)
-
-	dir := ctx.Param("direction")
+	wid := move.WorldID
+	dir := move.Direction
 	dir = strings.ToUpper(dir)
+
+	rds := h.Pool.Get()
+	defer rds.Close()
 
 	// DEL map:world:{wid} x:y
 	_, err = rds.Do("DEL", "map:world:"+wid, strconv.Itoa(x)+":"+strconv.Itoa(y))
