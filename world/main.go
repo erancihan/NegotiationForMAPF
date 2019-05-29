@@ -69,8 +69,9 @@ func main() {
 	e.GET("/", h.Home)
 	e.GET("/uuid", h.UKey)
 	e.GET("/worlds", h.WorldList)
-	e.GET("/world/create", h.CreateWorld)
 	e.GET("/world/:world_id/:agent_id", h.WorldSocket)
+	e.POST("/world/create", h.CreateWorld)
+	e.POST("/move", h.Move)
 	e.POST("/join/:world_id", h.Join)
 
 	e.File("/test", "res/test.html")
