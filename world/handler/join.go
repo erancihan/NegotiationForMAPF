@@ -3,6 +3,7 @@ package handler
 import (
 	"github.com/labstack/echo/v4"
 	"net/http"
+	"strconv"
 )
 
 //todo
@@ -14,17 +15,22 @@ import (
 //   if [world_id agent_id] == nil: return denied
 //   else: join as spectator -> will observe /world/:wid/:pid
 
+type Join struct {
+	Agent
+	WorldID int   `json:"world_id" form:"world_id" query:"world_id"`
+}
+
 func (h *Handler) Join(ctx echo.Context) (err error) { // POST
-	wid := ctx.Param("world_id")
+	j := new(Join)
+	if err = ctx.Bind(j); err != nil {
+		ctx.Logger().Fatal(err)
+		return
+	}
+	wid := strconv.Itoa(j.WorldID)
+	agent := j.Agent
 
 	rds := h.Pool.Get()
 	defer rds.Close()
-
-	agent := new(Agent)
-	if err = ctx.Bind(agent); err != nil {
-		ctx.Logger().Error(err)
-		return
-	}
 
 	_, err = rds.Do("HSET", "map:world:"+wid, "agent:"+agent.Id, agent.X+":"+agent.Y)
 	_, err = rds.Do("HSET", "map:world:"+wid, agent.X+":"+agent.Y, "agent:"+agent.Id)

@@ -72,7 +72,7 @@ func main() {
 	e.GET("/world/:world_id/:agent_id", h.WorldSocket)
 	e.POST("/world/create", h.CreateWorld)
 	e.POST("/move", h.Move)
-	e.POST("/join/:world_id", h.Join)
+	e.POST("/join", h.Join)
 
 	e.File("/test", "res/test.html")
 

@@ -35,7 +35,8 @@ function Worlds() {
     const y = window.sessionStorage.getItem('agent_y');
 
     await world_api
-      .post('/join/' + wid, {
+      .post('/join', {
+        world_id: wid,
         agent_id: aid,
         agent_x: x,
         agent_y: y
