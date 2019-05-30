@@ -32,8 +32,6 @@ let Display = function(props, ref) {
 
     let fov = data.fov;
     if (fov && fov.length > 0) {
-      fov.push([data.agent_id, data.position]);
-
       fov.map(value => {
         const xy = value[1].split(':');
         const x = xy[0];
@@ -56,15 +54,18 @@ let Display = function(props, ref) {
           {grid &&
             grid.map((col, i) => (
               <tr key={i}>
-                {col.map((v, j) => (
-                  <td key={`${i}:${j}`}>
-                    {v && (
-                      <OverlayTrigger placement="bottom" overlay={overlay(v)}>
-                        <i className="fas fa-circle" />
-                      </OverlayTrigger>
-                    )}
-                  </td>
-                ))}
+                {col.map((v, j) => {
+                  v = v.split(':')[1];
+                  return (
+                    <td key={`${i}:${j}`}>
+                      {v && (
+                        <OverlayTrigger placement="bottom" overlay={overlay(v)}>
+                          <i className="fas fa-circle" />
+                        </OverlayTrigger>
+                      )}
+                    </td>
+                  );
+                })}
               </tr>
             ))}
         </tbody>

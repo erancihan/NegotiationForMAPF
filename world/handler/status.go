@@ -85,8 +85,10 @@ func (h *Handler) GetStatus(ctx echo.Context, rds redis.Conn, p *WorldPool, st t
 	agentpos := strings.Split(agentIsAt, ":")
 	ax, _ := strconv.Atoi(agentpos[0])
 	ay, _ := strconv.Atoi(agentpos[1])
+
 	// fow
 	var agents [][]string
+	agents = append(agents, []string{"agent:"+aid, agentIsAt})
 	for i := 0; i < Fov; i++ {
 		for j := 0; j < Fov; j++ {
 			ax_s := ax + (j - Fov/2)
