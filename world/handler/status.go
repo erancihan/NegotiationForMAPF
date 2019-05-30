@@ -39,7 +39,8 @@ func (h *Handler) UpdateStatus(ctx echo.Context, id string, p *WorldPool) {
 	for t := range h.Ticker.C {
 		s, err := h.GetStatus(ctx, rds, p, t)
 		if err != nil {
-			ctx.Logger().Error(err)
+			ctx.Logger().Fatal(err)
+			return
 		}
 
 		if p.SubCount > 0 {
@@ -61,13 +62,11 @@ func (h *Handler) GetStatus(ctx echo.Context, rds redis.Conn, p *WorldPool, st t
 
 	world, err := redis.Values(rds.Do("HGETALL", "world:"+wid))
 	if err != nil {
-		ctx.Logger().Error(err)
 		return status, err
 	}
 
 	err = redis.ScanStruct(world, &rdsStatus)
 	if err != nil {
-		ctx.Logger().Error(err)
 		return status, err
 	}
 
@@ -79,7 +78,6 @@ func (h *Handler) GetStatus(ctx echo.Context, rds redis.Conn, p *WorldPool, st t
 
 	agentIsAt, err := redis.String(rds.Do("HGET", "map:world:"+wid, "agent:"+aid))
 	if err != nil {
-		ctx.Logger().Error(err)
 		return status, nil
 	}
 	status.Position = agentIsAt
