@@ -26,8 +26,6 @@ function Dpad() {
         direction
       })
       .then(response => {
-        console.log(response);
-
         window.sessionStorage.setItem('agent_x', response.data.agent_x);
         window.sessionStorage.setItem('agent_y', response.data.agent_y);
       })
