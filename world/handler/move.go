@@ -48,19 +48,19 @@ func (h *Handler) Move(ctx echo.Context) (err error) {
 
 	switch dir {
 	case "N":
-		if x-1 >= 0 {
-			x = x - 1
-		}
-	case "S":
-		// process world size limit
-		x = x + 1
-	case "W":
 		if y-1 >= 0 {
 			y = y - 1
 		}
-	case "E":
+	case "S":
 		// process world size limit
 		y = y + 1
+	case "W":
+		if x-1 >= 0 {
+			x = x - 1
+		}
+	case "E":
+		// process world size limit
+		x = x + 1
 	default:
 	}
 
