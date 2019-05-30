@@ -41,7 +41,7 @@ func (h *Handler) Move(ctx echo.Context) (err error) {
 	}
 
 	// DEL map:world:{wid} x:y
-	_, err = rds.Do("DEL", "map:world:"+wid, strconv.Itoa(x)+":"+strconv.Itoa(y))
+	_, err = rds.Do("HDEL", "map:world:"+wid, agent.X+":"+agent.Y)
 	if err != nil {
 		ctx.Logger().Fatal(err)
 	}
