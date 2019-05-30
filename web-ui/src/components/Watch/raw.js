@@ -21,9 +21,7 @@ let Raw = function(props, ref) {
   });
 
   useImperativeHandle(ref, () => ({
-    pass: d => {
-      setData(d);
-    }
+    pass: d => setData(d)
   }));
 
   return (
