@@ -47,9 +47,15 @@ function Worlds() {
   };
 
   const joinNew = async () => {
-    const wid = worldList.length + 1;
+    const wid = (worldList.length + 1).toString();
 
-    await join(wid);
+    await world_api
+      .post('/world/create', {
+        world_id: wid
+      })
+      .then(response => {
+        join(response.data.world_id);
+      });
   };
 
   return (

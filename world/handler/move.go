@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"github.com/gomodule/redigo/redis"
 	"github.com/labstack/echo/v4"
 	"net/http"
 	"strconv"
@@ -13,8 +14,6 @@ type Move struct {
 	Direction string `json:"direction" form:"direction" query:"direction"`
 }
 
-// world_id is string here
-// we directly retrieve it in str format from session storage
 func (h *Handler) Move(ctx echo.Context) (err error) {
 	move := new(Move)
 	if err = ctx.Bind(move); err != nil {
@@ -32,11 +31,19 @@ func (h *Handler) Move(ctx echo.Context) (err error) {
 	rds := h.Pool.Get()
 	defer rds.Close()
 
+	// check if move state
+	worldState, err := redis.Int(rds.Do("HGET", "world:"+wid, "world_state"))
+	if err != nil {
+		ctx.Logger().Fatal(err)
+	}
+	if worldState == 0 {
+		return ctx.NoContent(http.StatusForbidden)
+	}
+
 	// DEL map:world:{wid} x:y
 	_, err = rds.Do("DEL", "map:world:"+wid, strconv.Itoa(x)+":"+strconv.Itoa(y))
 	if err != nil {
 		ctx.Logger().Fatal(err)
-		return ctx.NoContent(http.StatusInternalServerError)
 	}
 
 	switch dir {
@@ -57,16 +64,24 @@ func (h *Handler) Move(ctx echo.Context) (err error) {
 	default:
 	}
 
+	xs := strconv.Itoa(x)
+	ys := strconv.Itoa(y)
+
+	// check if x:y is occupied
+	dest, _ := redis.String(rds.Do("HGET", "map:world:"+wid, xs+":"+ys))
+	if len(dest) > 0 {
+		return ctx.NoContent(http.StatusForbidden)
+	}
+
 	// update data
-	agent.X = strconv.Itoa(x)
-	agent.Y = strconv.Itoa(y)
+	agent.X = xs
+	agent.Y = ys
 
 	// update REDIS
 	_, err = rds.Do("HSET", "map:world:"+wid, "agent:"+agent.Id, agent.X+":"+agent.Y)
 	_, err = rds.Do("HSET", "map:world:"+wid, agent.X+":"+agent.Y, "agent:"+agent.Id)
 	if err != nil {
 		ctx.Logger().Fatal(err)
-		return ctx.NoContent(http.StatusInternalServerError)
 	}
 
 	return ctx.JSON(http.StatusOK, agent)

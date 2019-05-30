@@ -32,6 +32,10 @@ type (
 		X  string `json:"agent_x" form:"agent_x" query:"agent_x"`
 		Y  string `json:"agent_y" form:"agent_y" query:"agent_y"`
 	}
+
+	World struct {
+		 WorldId string `json:"world_id" form:"world_id" query:"agent_id"`
+	}
 )
 
 // todo register player
@@ -76,21 +80,36 @@ func (h *Handler) PlayerUnregister(ctx echo.Context, p *WorldPool) error {
 	return nil
 }
 
-func (h *Handler) CreateWorld(ctx echo.Context) error {
-	wid := ctx.Param("world_id")
+func (h *Handler) CreateWorld(ctx echo.Context) (err error) {
+	world := new(World)
+	if err = ctx.Bind(world); err != nil {
+		ctx.Logger().Fatal(err)
+	}
+
+	wid := world.WorldId
 
 	rds := h.Pool.Get()
 	defer rds.Close()
 
-	_, err := rds.Do("HSET", "world:"+wid, "player_count", "0")
+	// todo check if wid exists!!!
+
+	_, err = rds.Do("HSET", "world:"+wid, "player_count", "0")
 	_, err = rds.Do("HSET", "world:"+wid, "world_state", "0")
 	if err != nil {
-		ctx.Echo().Logger.Fatal(err)
-
-		return err
+		ctx.Logger().Fatal(err)
 	}
 
-	return nil
+	resp := struct {
+		WorldId     string `json:"world_id"`
+		PlayerCount string `json:"player_count"`
+		WorldState  string `json:"world_state"`
+	}{
+		wid,
+		"0",
+		"0",
+	}
+
+	return ctx.JSON(http.StatusOK, resp)
 }
 
 func (h *Handler) WorldList(ctx echo.Context) (err error) {

@@ -30,6 +30,9 @@ function Dpad() {
 
         window.sessionStorage.setItem('agent_x', response.data.agent_x);
         window.sessionStorage.setItem('agent_y', response.data.agent_y);
+      })
+      .catch(response => {
+        console.log(response);
       });
   };
 

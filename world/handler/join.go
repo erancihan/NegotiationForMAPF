@@ -3,7 +3,6 @@ package handler
 import (
 	"github.com/labstack/echo/v4"
 	"net/http"
-	"strconv"
 )
 
 //todo
@@ -17,7 +16,7 @@ import (
 
 type Join struct {
 	Agent
-	WorldID int   `json:"world_id" form:"world_id" query:"world_id"`
+	WorldID string   `json:"world_id" form:"world_id" query:"world_id"`
 }
 
 func (h *Handler) Join(ctx echo.Context) (err error) { // POST
@@ -26,7 +25,7 @@ func (h *Handler) Join(ctx echo.Context) (err error) { // POST
 		ctx.Logger().Fatal(err)
 		return
 	}
-	wid := strconv.Itoa(j.WorldID)
+	wid := j.WorldID
 	agent := j.Agent
 
 	rds := h.Pool.Get()
