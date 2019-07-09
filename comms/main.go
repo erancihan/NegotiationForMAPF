@@ -3,6 +3,7 @@ package main
 import (
 	"comms/handler"
 	"errors"
+	"github.com/gorilla/websocket"
 	"os"
 	"time"
 
@@ -12,8 +13,16 @@ import (
 )
 
 func main() {
-	e := echo.New()
-	e.Use(middleware.Recover())
+	e := echo.New()             // echo instance
+	e.Use(middleware.Recover()) // middleware
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins: []string{"http://localhost:3000", "http://localhost:8080"},
+		AllowHeaders: []string{
+			echo.HeaderAccessControlAllowOrigin,
+			echo.HeaderOrigin,
+			echo.HeaderAccept,
+			echo.HeaderContentType},
+	}))
 
 	e.HTTPErrorHandler = errorHandler
 
@@ -44,6 +53,9 @@ func main() {
 	// handler setup
 	h := &handler.Handler{
 		Pool: pool,
+		Ticker:   *time.NewTicker(250 * time.Millisecond),
+		Upgrader: &websocket.Upgrader{},
+		AgentsMap: handler.AgentsMap(),
 	}
 
 	// routes
