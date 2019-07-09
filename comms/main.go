@@ -55,7 +55,7 @@ func main() {
 		Pool: pool,
 		Ticker:   *time.NewTicker(250 * time.Millisecond),
 		Upgrader: &websocket.Upgrader{},
-		AgentsMap: handler.AgentsMap(),
+		AgentConnectionsMap: handler.NewAgentConnectionsMap(),
 	}
 
 	// routes
