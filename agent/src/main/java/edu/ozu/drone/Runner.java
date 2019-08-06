@@ -22,7 +22,7 @@ import java.util.Set;
 
 @SpringBootApplication
 public class Runner {
-    static String PORT = "8080";
+    private static String PORT = "8080";
     private static Set<AgentClient> agents = new HashSet<>();
 
     public static void main(String[] args) {
