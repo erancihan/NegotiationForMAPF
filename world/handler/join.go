@@ -17,6 +17,7 @@ import (
 type Join struct {
 	Agent
 	WorldID string   `json:"world_id" form:"world_id" query:"world_id"`
+	Broadcast string `json:"broadcast" form:"broadcast" query:"broadcast"`
 }
 
 func (h *Handler) Join(ctx echo.Context) (err error) { // POST
@@ -31,14 +32,20 @@ func (h *Handler) Join(ctx echo.Context) (err error) { // POST
 	rds := h.Pool.Get()
 	defer rds.Close()
 
+	// init REDIS position
 	_, err = rds.Do("HSET", "map:world:"+wid, "agent:"+agent.Id, agent.X+":"+agent.Y)
 	_, err = rds.Do("HSET", "map:world:"+wid, agent.X+":"+agent.Y, "agent:"+agent.Id)
 	if err != nil {
-		ctx.Logger().Error(err)
-		return
+		ctx.Logger().Fatal(err)
 	}
 
-	// todo better join response?
+	// init REDIS broadcast
+	_, err = rds.Do("HSET", "path:world:"+wid, "agent:"+agent.Id, j.Broadcast)
+	if err != nil {
+		ctx.Logger().Fatal(err)
+	}
+
+	// todo better joined to world response?
 	return ctx.NoContent(http.StatusOK)
 }
 

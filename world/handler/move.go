@@ -12,6 +12,7 @@ type Move struct {
 	Agent
 	WorldID   string `json:"world_id" form:"world_id" query:"world_id"`
 	Direction string `json:"direction" form:"direction" query:"direction"`
+	Broadcast string `json:"broadcast" form:"broadcast" query:"broadcast"`
 }
 
 func (h *Handler) Move(ctx echo.Context) (err error) {
@@ -77,9 +78,15 @@ func (h *Handler) Move(ctx echo.Context) (err error) {
 	agent.X = xs
 	agent.Y = ys
 
-	// update REDIS
+	// update REDIS position
 	_, err = rds.Do("HSET", "map:world:"+wid, "agent:"+agent.Id, agent.X+":"+agent.Y)
 	_, err = rds.Do("HSET", "map:world:"+wid, agent.X+":"+agent.Y, "agent:"+agent.Id)
+	if err != nil {
+		ctx.Logger().Fatal(err)
+	}
+
+	// update REDIS move
+	_, err = rds.Do("HSET", "path:world:"+wid, "agent:"+agent.Id, move.Broadcast)
 	if err != nil {
 		ctx.Logger().Fatal(err)
 	}
