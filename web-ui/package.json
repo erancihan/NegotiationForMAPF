@@ -3,15 +3,15 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "axios": "^0.18.0",
-    "bootstrap": "^4.3.1",
-    "history": "^4.9.0",
+    "axios": "0.19.0",
+    "bootstrap": "4.3.1",
+    "history": "4.9.0",
     "react": "16.8.6",
-    "react-bootstrap": "^1.0.0-beta.8",
+    "react-bootstrap": "1.0.0-beta.10",
     "react-dom": "16.8.6",
     "react-router-dom": "5.0.0",
     "react-scripts": "3.0.1",
-    "sockette": "^2.0.5"
+    "sockette": "2.0.6"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -39,9 +39,9 @@
     ]
   },
   "devDependencies": {
-    "@fortawesome/fontawesome-free": "^5.8.2",
-    "concurrently": "^4.1.0",
-    "onchange": "^5.2.0",
-    "prettier": "^1.17.1"
+    "@fortawesome/fontawesome-free": "5.10.1",
+    "concurrently": "4.1.1",
+    "onchange": "6.0.0",
+    "prettier": "1.18.2"
   }
 }
