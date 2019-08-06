@@ -65,14 +65,25 @@ func main() {
 		WorldMap: handler.NewWorldMap(),
 	}
 
+	// negotiation session handler
+	n := &handler.NegotiationHandler{
+		Pool:	pool,
+		Ticker: *time.NewTicker(250 * time.Millisecond),
+		Upgrader: &websocket.Upgrader{},
+		SessionMap: handler.NewSessionMap(),
+	}
+
 	// routes
 	e.GET("/", h.Home)
 	e.GET("/uuid", h.UKey)
 	e.GET("/worlds", h.WorldList)
-	e.GET("/world/:world_id/:agent_id", h.WorldSocket)
 	e.POST("/world/create", h.CreateWorld)
 	e.POST("/move", h.Move)
 	e.POST("/join", h.Join)
+
+	// sockets
+	e.GET("/world/:world_id/:agent_id", h.WorldSocket)
+	e.GET("/session/:session_id", n.SessionSocket)
 
 	e.File("/test", "res/test.html")
 
