@@ -84,7 +84,7 @@ public class Runner {
     private static void setAgentAtController(AgentClient agent) {
         System.out.println("> passing agent data to backend controller");
         try {
-            URL url = new URL("http://localhost:" + Runner.PORT + "/set-agent");
+            URL url = new URL("http://localhost:" + PORT + "/set-agent");
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("POST");
             con.setRequestProperty("Content-Type", "application/json; utf-8");
