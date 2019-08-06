@@ -103,7 +103,7 @@ func readMsgs(client *Client, c echo.Context) {
 func (h *Handler) WorldSocket(ctx echo.Context) error {
 	wid := ctx.Param("world_id")
 	aid := ctx.Param("agent_id")
-	id := wid + aid
+	id := wid + ":" + aid
 
 	h.Upgrader.CheckOrigin = func(r *http.Request) bool {
 		return true
