@@ -5,8 +5,8 @@ public class AgentClient extends Runner implements Runnable {
 
     protected String AGENT_NAME = "";
     protected String AGENT_ID   = "";
-    protected String START_X    = "";
-    protected String START_Y    = "";
+    protected Point START;
+    protected Point DEST;
 
     public AgentClient() { }
 

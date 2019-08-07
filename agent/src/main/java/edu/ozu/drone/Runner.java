@@ -65,8 +65,7 @@ public class Runner {
             x.init();
 
             assert !x.AGENT_ID.isEmpty();
-            assert !x.START_X.isEmpty();
-            assert !x.START_Y.isEmpty();
+            assert x.START != null;
 
             setAgentAtController(x);
             agents.add(x);
@@ -93,8 +92,8 @@ public class Runner {
 
             String jsonInputString = "{" +
                     "\"id\": \"" + agent.AGENT_ID + "\"," +
-                    "\"x\": \""  + agent.START_X  + "\"," +
-                    "\"y\": \""  + agent.START_Y  + "\" }";
+                    "\"x\": \""  + agent.START.x  + "\"," +
+                    "\"y\": \""  + agent.START.y  + "\" }";
 
             try (OutputStream outs = con.getOutputStream())
             {
