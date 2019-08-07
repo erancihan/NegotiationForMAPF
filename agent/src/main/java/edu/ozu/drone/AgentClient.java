@@ -19,7 +19,12 @@ public class AgentClient extends Runner implements Runnable {
 
     public void init() { }
 
-    private void join() {
+    /**
+     * The function that will be invoked by WebUI when player selects to join a world
+     *
+     * @param worldId id of the world the agent will join to
+     * */
+    void join(String worldId) {
         // todo
         // get path [0, 2]
 
@@ -29,6 +34,11 @@ public class AgentClient extends Runner implements Runnable {
         // @response: watch()
     }
 
+    /**
+     * The function that be invoked at the end of each session
+     * (world_state == 2)
+     *
+     * */
     private void move() {
         // post localhost:3001/move payload:{world_id, agent_id, agent_x, agent_y, direction}
         // direction -> {N, W, E, S}
@@ -36,6 +46,17 @@ public class AgentClient extends Runner implements Runnable {
         // response should match with next path point in line
     }
 
+    /**
+     * The function that is invoked after agent joins a world. Allows agent
+     * to observe the state of the environment.
+     *
+     * Essentially handles invocations of other functions depending on the
+     * {world_state}:
+     * 0 -> collision check
+     * 1 -> negotiation step
+     * 2 -> move step
+     *
+     * */
     private void watch() {
         // ws://localhost:3001/world/{world_id}/{agent_id}
 
