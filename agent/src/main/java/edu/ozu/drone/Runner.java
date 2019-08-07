@@ -17,13 +17,14 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
 @SpringBootApplication
 public class Runner {
     private static String PORT = "8080";
-    private static Set<AgentClient> agents = new HashSet<>();
+    private static HashMap<String, AgentClient> agents = new HashMap<>();
 
     public static void main(String[] args) {
         try {
@@ -144,5 +145,9 @@ public class Runner {
         } catch (IOException | URISyntaxException e) {
             e.printStackTrace();
         }
+    }
+
+    static void joinAgent(String agentId, String worldId) {
+        agents.get(agentId).join(worldId);
     }
 }

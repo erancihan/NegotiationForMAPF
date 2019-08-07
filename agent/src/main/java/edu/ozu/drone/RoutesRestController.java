@@ -18,8 +18,8 @@ public class RoutesRestController {
         System.out.println("> set-agent " + agent.aid);
     }
 
-    @PostMapping(value = "/agent")
-    public HashMap<String, String> join(@RequestBody AidWid target)
+    @PostMapping("/agent")
+    public HashMap<String, String> getAgent(@RequestBody AidWid target)
     {
         AgentData agent = agents.get(target.aid);
         agent.wid = target.wid;
@@ -30,6 +30,15 @@ public class RoutesRestController {
         resp.put("x", agent.x);
         resp.put("y", agent.y);
 
+        return resp;
+    }
+
+    @GetMapping("/join")
+    public HashMap<String, String> joinWorld(@RequestBody AidWid target)
+    {
+        Runner.joinAgent(target.aid, target.wid);
+
+        HashMap<String, String> resp = new HashMap<>();
         return resp;
     }
 }
