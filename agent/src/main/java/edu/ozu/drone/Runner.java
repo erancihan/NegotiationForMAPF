@@ -62,17 +62,17 @@ public class Runner {
     private static void initAgent(Class v) {
         try {
             AgentClient x = (AgentClient) Class.forName(v.getName()).getConstructor().newInstance();
-            x.init();
+            x.__init();
 
             assert !x.AGENT_ID.isEmpty();
             assert x.START != null;
 
             setAgentAtController(x);
-            agents.add(x);
+            agents.put(x.AGENT_ID, x);
 
             launchBrowser(x.AGENT_ID);
 
-            Thread thread = new Thread(x);
+            Thread thread = new Thread(x::run);
             thread.start();
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException | ClassNotFoundException e) {
             e.printStackTrace();

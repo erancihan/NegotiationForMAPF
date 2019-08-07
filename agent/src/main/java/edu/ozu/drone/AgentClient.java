@@ -2,7 +2,7 @@ package edu.ozu.drone;
 
 import java.util.*;
 
-public class AgentClient extends Runner implements Runnable {
+public class AgentClient extends Runner {
     private String WS_URL = "ws://";
 
     protected String AGENT_NAME = "";
@@ -10,14 +10,21 @@ public class AgentClient extends Runner implements Runnable {
     protected Point START;
     protected Point DEST;
 
+    private List<String> path;
+
     public AgentClient() { }
 
-    @Override
-    public void run() {
-        System.out.println(AGENT_NAME);
+    public void init() { }
+
+    void __init() {
+        init();
     }
 
-    public void init() { }
+    void run() {
+        System.out.println(AGENT_NAME);
+
+        path = calculatePath();
+    }
 
     /**
      * The function that will be invoked by WebUI when player selects to join a world
@@ -70,9 +77,9 @@ public class AgentClient extends Runner implements Runnable {
         return false;
     }
 
-    public void pathToDest() {
-        // run A*
-        List<String> path = AStar(START, DEST);
+
+    public List<String> calculatePath() {
+        return AStar(START, DEST);
     }
 
     private List<String> AStar(Point start, Point goal) {
