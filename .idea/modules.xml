@@ -3,7 +3,6 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/agent/agent.iml" filepath="$PROJECT_DIR$/agent/agent.iml" />
-      <module fileurl="file://$PROJECT_DIR$/comms/comms.iml" filepath="$PROJECT_DIR$/comms/comms.iml" />
       <module fileurl="file://$PROJECT_DIR$/web-ui/web-ui.iml" filepath="$PROJECT_DIR$/web-ui/web-ui.iml" />
       <module fileurl="file://$PROJECT_DIR$/world/world.iml" filepath="$PROJECT_DIR$/world/world.iml" />
     </modules>
