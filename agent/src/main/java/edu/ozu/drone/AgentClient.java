@@ -82,6 +82,7 @@ public class AgentClient extends Runner {
         return AStar(START, DEST);
     }
 
+    //<editor-fold desc="A-Star implementation">
     private List<String> AStar(Point start, Point goal) {
         int T = 0;
         double inf = Double.MAX_VALUE;
@@ -196,4 +197,5 @@ public class AgentClient extends Runner {
             return String.format("%s:%.2f", point.key, dist);
         }
     }
+    //</editor-fold>
 }
