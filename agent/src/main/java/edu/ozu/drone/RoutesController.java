@@ -3,6 +3,9 @@ package edu.ozu.drone;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 
+/**
+ * Controller for handling web ui paths
+ * */
 @Controller
 public class RoutesController {
     @GetMapping("/")
