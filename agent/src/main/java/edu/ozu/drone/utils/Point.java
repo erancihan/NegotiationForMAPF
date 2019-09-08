@@ -1,4 +1,4 @@
-package edu.ozu.drone;
+package edu.ozu.drone.utils;
 
 public class Point {
     public int x, y;

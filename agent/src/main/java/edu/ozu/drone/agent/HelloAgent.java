@@ -2,7 +2,7 @@ package edu.ozu.drone.agent;
 
 import edu.ozu.drone.AgentClient;
 import edu.ozu.drone.DroneAgent;
-import edu.ozu.drone.Point;
+import edu.ozu.drone.utils.Point;
 
 @DroneAgent
 public class HelloAgent extends AgentClient {
