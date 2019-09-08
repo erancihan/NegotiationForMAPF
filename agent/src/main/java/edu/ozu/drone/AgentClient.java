@@ -2,10 +2,24 @@ package edu.ozu.drone;
 
 import edu.ozu.drone.utils.Point;
 
+import java.awt.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.List;
 
 public class AgentClient extends Runner {
+    private String PORT = "";
     private String WS_URL = "ws://";
+
+    protected Boolean IS_HEADLESS = false;
 
     protected String AGENT_NAME = "";
     protected String AGENT_ID   = "";
@@ -18,7 +32,8 @@ public class AgentClient extends Runner {
 
     public void init() { }
 
-    void __init() {
+    void __init(String port) {
+        this.PORT = port;
         init();
     }
 
@@ -197,6 +212,78 @@ public class AgentClient extends Runner {
         @Override
         public String toString() {
             return String.format("%s:%.2f", point.key, dist);
+        }
+    }
+    //</editor-fold>
+
+    //<editor-fold desc="runner functions">
+    @SuppressWarnings("Duplicates")
+    void __setAgentAtController() {
+        assert !PORT.isEmpty();
+        assert !AGENT_ID.isEmpty();
+        assert START != null;
+
+        System.out.println("> passing agent data to backend controller");
+        try {
+            URL url = new URL("http://localhost:" + PORT + "/set-agent");
+            HttpURLConnection con = (HttpURLConnection) url.openConnection();
+            con.setRequestMethod("POST");
+            con.setRequestProperty("Content-Type", "application/json; utf-8");
+            con.setRequestProperty("Accept", "application/json");
+            con.setDoOutput(true);
+
+            String jsonInputString = "{" +
+                    "\"id\": \"" + AGENT_ID + "\"," +
+                    "\"x\": \""  + START.x  + "\"," +
+                    "\"y\": \""  + START.y  + "\" }";
+
+            try (OutputStream outs = con.getOutputStream())
+            {
+                byte[] inb = jsonInputString.getBytes(StandardCharsets.UTF_8);
+                outs.write(inb, 0, inb.length);
+            }
+
+            try (BufferedReader br = new BufferedReader(new InputStreamReader(con.getInputStream(), StandardCharsets.UTF_8)))
+            {
+                StringBuilder response = new StringBuilder();
+                String responseLine;
+                while ((responseLine = br.readLine()) != null)
+                {
+                    response.append(responseLine);
+                }
+                System.out.println("> passed: " + response.toString());
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    void __launchBrowser() {
+        if (IS_HEADLESS) { return; } // don't launch browser
+
+        assert !AGENT_ID.isEmpty();
+
+        String _os = System.getProperty("os.name").toLowerCase();
+        String url = "http://localhost:" + PORT + "/login/" + AGENT_ID;
+
+        System.out.println("> host os: " + _os);
+        System.out.println("> routing: " + url);
+
+        try {
+            if (Desktop.isDesktopSupported()) {
+                Desktop.getDesktop().browse(new URI(url));
+            } else {
+                Runtime runtime = Runtime.getRuntime();
+                if (_os.contains("mac")) {
+                    runtime.exec("open " + url);
+                } else if (_os.contains("nix") || _os.contains("nux")) {
+                    runtime.exec("xdg-open " + url);
+                } else {
+                    System.out.println("> BUMP!! UNHANDLED OS!!");
+                }
+            }
+        } catch (IOException | URISyntaxException e) {
+            e.printStackTrace();
         }
     }
     //</editor-fold>
