@@ -28,17 +28,17 @@ public class AgentClient extends Runner {
 
     private List<String> path;
 
-    public AgentClient() { }
-
-    public void init() { }
-
-    void __init(String port) {
-        this.PORT = port;
+    public AgentClient() {
         init();
     }
 
+    public void init() { }
+
     void run() {
         System.out.println(AGENT_NAME);
+
+        __setAgentAtController();
+        __launchBrowser();
 
         path = calculatePath();
     }
@@ -90,10 +90,11 @@ public class AgentClient extends Runner {
         // ping server
     }
 
+    void setPort(String port) { PORT = port; }
+
     private boolean hasCollisions() {
         return false;
     }
-
 
     public List<String> calculatePath() {
         return AStar(START, DEST);
@@ -251,7 +252,7 @@ public class AgentClient extends Runner {
                 {
                     response.append(responseLine);
                 }
-                System.out.println("> passed: " + response.toString());
+                System.out.println("> __setAgentAtController response: " + response.toString());
             }
         } catch (IOException e) {
             e.printStackTrace();

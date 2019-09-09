@@ -52,15 +52,12 @@ public class Runner {
 
     private static void initAgent(Class v) {
         try {
-            AgentClient x = (AgentClient) Class.forName(v.getName()).getConstructor().newInstance();
-            x.__init(PORT);
-            x.__setAgentAtController();
+            AgentClient agent = (AgentClient) Class.forName(v.getName()).getConstructor().newInstance();
+            agent.setPort(PORT);
 
-            agents.put(x.AGENT_ID, x);
+            agents.put(agent.AGENT_ID, agent);
 
-            x.__launchBrowser();
-
-            Thread thread = new Thread(x::run);
+            Thread thread = new Thread(agent::run);
             thread.start();
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException | ClassNotFoundException e) {
             e.printStackTrace();
