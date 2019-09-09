@@ -128,7 +128,7 @@ public class WorldsPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_join_btnActionPerformed
 
     private void refresh_btnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refresh_btnActionPerformed
-        fetchData();
+        getWorldList();
     }//GEN-LAST:event_refresh_btnActionPerformed
 
     private void new_world_btnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_new_world_btnActionPerformed
@@ -163,7 +163,7 @@ public class WorldsPanel extends javax.swing.JPanel {
     }
 
     void onComponentsWillMount() {
-        fetchData();
+        getWorldList();
     }
     
     private void onComponentsDidMount() {
@@ -173,7 +173,7 @@ public class WorldsPanel extends javax.swing.JPanel {
         }
     }
 
-    private void fetchData() {
+    private void getWorldList() {
         // fetch worlds list
         try {
             URL url = new URL("http://" + this.server + "/worlds");
