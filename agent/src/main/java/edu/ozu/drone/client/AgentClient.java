@@ -17,7 +17,7 @@ import java.util.*;
 import java.util.List;
 
 public class AgentClient extends Runner {
-    private String PORT = "";
+    private String PORT = "3001";
     private String WS_URL = "ws://";
 
     protected Boolean IS_HEADLESS = false;
@@ -87,8 +87,6 @@ public class AgentClient extends Runner {
 
         // ping server
     }
-
-    void setPort(String port) { PORT = port; }
 
     private boolean hasCollisions() {
         return false;
@@ -319,4 +317,6 @@ public class AgentClient extends Runner {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(() -> new AgentUI(this).setVisible(true));
     }
+
+    public String getServer() { return "localhost:" + PORT; }
 }

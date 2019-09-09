@@ -10,15 +10,10 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class Runner {
-    private static String PORT = "8080";
     private static HashMap<String, AgentClient> agents = new HashMap<>();
 
     public static void main(String[] args) {
         try {
-            System.setProperty("server.port", PORT);
-            System.setProperty("spring.devtools.restart.enabled", "false");
-            System.setProperty("spring.output.ansi.enabled", "ALWAYS");
-
             init();
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
@@ -49,7 +44,6 @@ public class Runner {
         // todo exiting one thread closes other threads too
         try {
             AgentClient agent = (AgentClient) Class.forName(v.getName()).getConstructor().newInstance();
-            agent.setPort(PORT);
 
             agents.put(agent.AGENT_ID, agent);
 
