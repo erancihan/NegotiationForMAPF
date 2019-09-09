@@ -229,14 +229,14 @@ public class WorldsPanel extends javax.swing.JPanel {
                     response.append(il);
                 }
                 System.out.println("> create world response: " + response.toString());
-                // refresh list
-                getWorldList();
             }
+            // refresh list
+            getWorldList();
+
+            // todo success
         } catch (IOException e) {
             e.printStackTrace();
         }
-        // todo on success
-        // join to that world
     }
 
     void setAgentName(String agent_name) {
