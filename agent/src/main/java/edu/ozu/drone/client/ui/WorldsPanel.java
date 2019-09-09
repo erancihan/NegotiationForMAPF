@@ -12,8 +12,10 @@ import javax.swing.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 
 /**
  *
@@ -44,11 +46,11 @@ public class WorldsPanel extends javax.swing.JPanel {
         java.awt.GridBagConstraints gridBagConstraints;
 
         javax.swing.JPanel jPanel2 = new javax.swing.JPanel();
-        jButton1 = new javax.swing.JButton();
+        new_world_btn = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         worlds_list = new javax.swing.JList<>();
         javax.swing.JPanel jPanel1 = new javax.swing.JPanel();
-        refresh_btn = new javax.swing.JButton();
+        javax.swing.JButton refresh_btn = new javax.swing.JButton();
         join_btn = new javax.swing.JButton();
 
         java.awt.FlowLayout flowLayout1 = new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0);
@@ -58,8 +60,13 @@ public class WorldsPanel extends javax.swing.JPanel {
         jPanel2.setMinimumSize(new java.awt.Dimension(79, 40));
         jPanel2.setPreferredSize(new java.awt.Dimension(400, 40));
 
-        jButton1.setText("CREATE NEW WORLD");
-        jPanel2.add(jButton1);
+        new_world_btn.setText("CREATE NEW WORLD");
+        new_world_btn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                new_world_btnActionPerformed(evt);
+            }
+        });
+        jPanel2.add(new_world_btn);
 
         add(jPanel2);
 
@@ -124,6 +131,10 @@ public class WorldsPanel extends javax.swing.JPanel {
         fetchData();
     }//GEN-LAST:event_refresh_btnActionPerformed
 
+    private void new_world_btnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_new_world_btnActionPerformed
+        postWorldCreate();
+    }//GEN-LAST:event_new_world_btnActionPerformed
+
     private void worlds_listValueChanged(javax.swing.event.ListSelectionEvent event) {//GEN-FIRST:event_worlds_listValueChanged
         if (!event.getValueIsAdjusting())
         {
@@ -141,10 +152,9 @@ public class WorldsPanel extends javax.swing.JPanel {
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JButton join_btn;
-    private javax.swing.JButton refresh_btn;
+    private javax.swing.JButton new_world_btn;
     private javax.swing.JList<String> worlds_list;
     // End of variables declaration//GEN-END:variables
 
@@ -187,6 +197,45 @@ public class WorldsPanel extends javax.swing.JPanel {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private void postWorldCreate() {
+        String wid = String.valueOf(System.currentTimeMillis());
+        System.out.println(wid);
+        try {
+            URL url = new URL("http://" + this.server + "/world/create");
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Content-Type", "application/json; utf-8");
+            conn.setRequestProperty("Accept", "application/json");
+            conn.setDoOutput(true);
+
+            String post_data = "{\"world_id\": \""+ wid + "\"}";
+
+            // write to output stream
+            try (OutputStream stream = conn.getOutputStream())
+            {
+                byte[] bytes = post_data.getBytes(StandardCharsets.UTF_8);
+                stream.write(bytes, 0, bytes.length);
+            }
+
+            // response
+            try (BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8)))
+            {
+                String il;
+                StringBuilder response = new StringBuilder();
+                while ((il = in.readLine()) != null)
+                {
+                    response.append(il);
+                }
+                System.out.println("> create world response: " + response.toString());
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        // todo on success
+        // join to that world
     }
 
     void setAgentName(String agent_name) {
