@@ -13,11 +13,11 @@ import edu.ozu.drone.client.AgentClient;
  */
 public class AgentUI extends javax.swing.JFrame {
 
-    AgentClient client;
+    private AgentClient client;
 
     /**
      * Creates new form AgentUI
-     * @param client
+     * @param client : reference to AgentClient class that invoked UI
      */
     public AgentUI(AgentClient client) {
         this.client = client;
@@ -38,10 +38,10 @@ public class AgentUI extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        agent_info = new javax.swing.JPanel();
+        javax.swing.JPanel agent_info = new javax.swing.JPanel();
         agent_name = new javax.swing.JLabel();
-        jPanel1 = new javax.swing.JPanel();
-        worldsPanel1 = new edu.ozu.drone.client.ui.WorldsPanel();
+        javax.swing.JPanel worlds_info_container = new javax.swing.JPanel();
+        worlds_list = new edu.ozu.drone.client.ui.WorldsPanel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         addWindowListener(new java.awt.event.WindowAdapter() {
@@ -57,11 +57,11 @@ public class AgentUI extends javax.swing.JFrame {
 
         getContentPane().add(agent_info, java.awt.BorderLayout.PAGE_START);
 
-        jPanel1.setPreferredSize(new java.awt.Dimension(400, 300));
-        jPanel1.setLayout(new java.awt.CardLayout());
-        jPanel1.add(worldsPanel1, "card2");
+        worlds_info_container.setPreferredSize(new java.awt.Dimension(400, 300));
+        worlds_info_container.setLayout(new java.awt.CardLayout());
+        worlds_info_container.add(worlds_list, "card2");
 
-        getContentPane().add(jPanel1, java.awt.BorderLayout.CENTER);
+        getContentPane().add(worlds_info_container, java.awt.BorderLayout.CENTER);
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -113,10 +113,8 @@ public class AgentUI extends javax.swing.JFrame {
 //</editor-fold>
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JPanel agent_info;
     private javax.swing.JLabel agent_name;
-    private javax.swing.JPanel jPanel1;
-    private edu.ozu.drone.client.ui.WorldsPanel worldsPanel1;
+    private edu.ozu.drone.client.ui.WorldsPanel worlds_list;
     // End of variables declaration//GEN-END:variables
 
     private void onComponentDidMount() {
