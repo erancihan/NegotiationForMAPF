@@ -22,7 +22,7 @@ public class AgentClient extends Runner {
 
     protected Boolean IS_HEADLESS = false;
 
-    protected String AGENT_NAME = "";
+    public String AGENT_NAME = "";
     protected String AGENT_ID   = "";
     protected Point START;
     protected Point DEST;
@@ -317,8 +317,6 @@ public class AgentClient extends Runner {
         //</editor-fold>
 
         /* Create and display the form */
-        AgentUI ui = new AgentUI(this);
-        ui.setVisible(true);
-//        java.awt.EventQueue.invokeLater(() -> new AgentUI().setVisible(true));
+        java.awt.EventQueue.invokeLater(() -> new AgentUI(this).setVisible(true));
     }
 }

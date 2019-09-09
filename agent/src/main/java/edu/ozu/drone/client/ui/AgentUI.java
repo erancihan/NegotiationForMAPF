@@ -25,6 +25,8 @@ public class AgentUI extends javax.swing.JFrame {
         System.out.println(this.client.getClass().getName());
 
         initComponents();
+        
+        onComponentDidMount();
     }
 
     /**
@@ -36,7 +38,10 @@ public class AgentUI extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        worldsPanel = new edu.ozu.drone.client.ui.WorldsPanel();
+        agent_info = new javax.swing.JPanel();
+        agent_name = new javax.swing.JLabel();
+        jPanel1 = new javax.swing.JPanel();
+        worldsPanel1 = new edu.ozu.drone.client.ui.WorldsPanel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         addWindowListener(new java.awt.event.WindowAdapter() {
@@ -44,8 +49,19 @@ public class AgentUI extends javax.swing.JFrame {
                 onWindowClosed(evt);
             }
         });
-        getContentPane().setLayout(new java.awt.CardLayout());
-        getContentPane().add(worldsPanel, "card2");
+
+        agent_info.setMinimumSize(new java.awt.Dimension(100, 100));
+
+        agent_name.setText("agent-name");
+        agent_info.add(agent_name);
+
+        getContentPane().add(agent_info, java.awt.BorderLayout.PAGE_START);
+
+        jPanel1.setPreferredSize(new java.awt.Dimension(400, 300));
+        jPanel1.setLayout(new java.awt.CardLayout());
+        jPanel1.add(worldsPanel1, "card2");
+
+        getContentPane().add(jPanel1, java.awt.BorderLayout.CENTER);
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -97,6 +113,13 @@ public class AgentUI extends javax.swing.JFrame {
 //</editor-fold>
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private edu.ozu.drone.client.ui.WorldsPanel worldsPanel;
+    private javax.swing.JPanel agent_info;
+    private javax.swing.JLabel agent_name;
+    private javax.swing.JPanel jPanel1;
+    private edu.ozu.drone.client.ui.WorldsPanel worldsPanel1;
     // End of variables declaration//GEN-END:variables
+
+    private void onComponentDidMount() {
+        agent_name.setText(client.AGENT_NAME);
+    }
 }
