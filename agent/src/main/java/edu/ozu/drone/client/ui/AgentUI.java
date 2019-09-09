@@ -51,6 +51,7 @@ public class AgentUI extends javax.swing.JFrame {
         });
 
         agent_info.setMinimumSize(new java.awt.Dimension(100, 100));
+        agent_info.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
 
         agent_name.setText("agent-name");
         agent_info.add(agent_name);
