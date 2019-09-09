@@ -46,6 +46,7 @@ public class Runner {
     }
 
     private static void initAgent(Class v) {
+        // todo exiting one thread closes other threads too
         try {
             AgentClient agent = (AgentClient) Class.forName(v.getName()).getConstructor().newInstance();
             agent.setPort(PORT);

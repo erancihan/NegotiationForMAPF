@@ -1,5 +1,6 @@
 package edu.ozu.drone.client;
 
+import edu.ozu.drone.client.ui.AgentUI;
 import edu.ozu.drone.utils.Point;
 
 import java.awt.*;
@@ -35,10 +36,7 @@ public class AgentClient extends Runner {
     public void init() { }
 
     void run() {
-        System.out.println(AGENT_NAME);
-
-        __setAgentAtController();
-        __launchBrowser();
+        __launchUI();
 
         path = calculatePath();
     }
@@ -100,7 +98,7 @@ public class AgentClient extends Runner {
         return AStar(START, DEST);
     }
 
-    //<editor-fold desc="A-Star implementation">
+    //<editor-fold defaultstate="collapsed" desc="A-Star implementation">
     private List<String> AStar(Point start, Point goal) {
         int T = 0;
         double inf = Double.MAX_VALUE;
@@ -196,6 +194,10 @@ public class AgentClient extends Runner {
         return path;
     }
 
+    public void exit() {
+        System.exit(0);
+    }
+
     private class AStarNode implements Comparable<AStarNode> {
         Point point;
         private double dist;
@@ -217,7 +219,7 @@ public class AgentClient extends Runner {
     }
     //</editor-fold>
 
-    //<editor-fold desc="runner web functions">
+    //<editor-fold defaultstate="collapsed" desc="runner web functions">
     @SuppressWarnings("Duplicates")
     void __setAgentAtController() {
         assert !PORT.isEmpty();
@@ -288,4 +290,35 @@ public class AgentClient extends Runner {
         }
     }
     //</editor-fold>
+
+    @SuppressWarnings("Duplicates")
+    private void __launchUI()
+    {
+        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
+        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
+         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html
+         */
+        try {
+            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    break;
+                }
+            }
+        } catch (ClassNotFoundException ex) {
+            java.util.logging.Logger.getLogger(AgentUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (InstantiationException ex) {
+            java.util.logging.Logger.getLogger(AgentUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            java.util.logging.Logger.getLogger(AgentUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+            java.util.logging.Logger.getLogger(AgentUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        }
+        //</editor-fold>
+
+        /* Create and display the form */
+        AgentUI ui = new AgentUI(this);
+        ui.setVisible(true);
+//        java.awt.EventQueue.invokeLater(() -> new AgentUI().setVisible(true));
+    }
 }
