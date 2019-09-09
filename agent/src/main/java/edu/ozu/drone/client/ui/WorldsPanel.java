@@ -201,7 +201,6 @@ public class WorldsPanel extends javax.swing.JPanel {
 
     private void postWorldCreate() {
         String wid = String.valueOf(System.currentTimeMillis());
-        System.out.println(wid);
         try {
             URL url = new URL("http://" + this.server + "/world/create");
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -230,6 +229,8 @@ public class WorldsPanel extends javax.swing.JPanel {
                     response.append(il);
                 }
                 System.out.println("> create world response: " + response.toString());
+                // refresh list
+                getWorldList();
             }
         } catch (IOException e) {
             e.printStackTrace();
