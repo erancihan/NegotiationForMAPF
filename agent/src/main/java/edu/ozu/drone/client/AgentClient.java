@@ -1,4 +1,4 @@
-package edu.ozu.drone;
+package edu.ozu.drone.client;
 
 import edu.ozu.drone.utils.Point;
 

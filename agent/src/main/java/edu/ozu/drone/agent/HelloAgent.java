@@ -1,7 +1,7 @@
 package edu.ozu.drone.agent;
 
-import edu.ozu.drone.AgentClient;
-import edu.ozu.drone.DroneAgent;
+import edu.ozu.drone.client.AgentClient;
+import edu.ozu.drone.client.DroneAgent;
 import edu.ozu.drone.utils.Point;
 
 @DroneAgent

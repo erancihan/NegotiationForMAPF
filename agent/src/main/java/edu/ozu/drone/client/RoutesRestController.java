@@ -1,4 +1,4 @@
-package edu.ozu.drone;
+package edu.ozu.drone.client;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -56,7 +56,8 @@ class AidWid
     }
 }
 
-class AgentData {
+class AgentData
+{
     public String aid;
     public String wid;
     public String x;

@@ -1,4 +1,4 @@
-package edu.ozu.drone;
+package edu.ozu.drone.client;
 
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.boot.SpringApplication;
