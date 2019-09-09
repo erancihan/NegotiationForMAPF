@@ -1,8 +1,6 @@
 package edu.ozu.drone.client;
 
 import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 
@@ -11,7 +9,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
-@SpringBootApplication
 public class Runner {
     private static String PORT = "8080";
     private static HashMap<String, AgentClient> agents = new HashMap<>();
@@ -21,8 +18,6 @@ public class Runner {
             System.setProperty("server.port", PORT);
             System.setProperty("spring.devtools.restart.enabled", "false");
             System.setProperty("spring.output.ansi.enabled", "ALWAYS");
-
-            SpringApplication.run(Runner.class, args);
 
             init();
         } catch (ClassNotFoundException e) {
