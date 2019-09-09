@@ -5,17 +5,32 @@
  */
 package edu.ozu.drone.client.ui;
 
+import com.google.gson.Gson;
+import edu.ozu.drone.utils.WorldsListJSON;
+
+import javax.swing.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+
 /**
  *
  * @author freedrone
  */
 public class WorldsPanel extends javax.swing.JPanel {
 
+    private String server;
+    private String world_id = "";
+    private String agent_name = "";
+
     /**
      * Creates new form WorldsPanel
      */
     public WorldsPanel() {
         initComponents();
+        onComponentsDidMount();
     }
 
     /**
@@ -26,13 +41,15 @@ public class WorldsPanel extends javax.swing.JPanel {
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
+        java.awt.GridBagConstraints gridBagConstraints;
 
-        jPanel2 = new javax.swing.JPanel();
+        javax.swing.JPanel jPanel2 = new javax.swing.JPanel();
         jButton1 = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
-        jList1 = new javax.swing.JList<>();
-        jPanel1 = new javax.swing.JPanel();
-        jButton2 = new javax.swing.JButton();
+        worlds_list = new javax.swing.JList<>();
+        javax.swing.JPanel jPanel1 = new javax.swing.JPanel();
+        refresh_btn = new javax.swing.JButton();
+        join_btn = new javax.swing.JButton();
 
         java.awt.FlowLayout flowLayout1 = new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0);
         flowLayout1.setAlignOnBaseline(true);
@@ -41,39 +58,138 @@ public class WorldsPanel extends javax.swing.JPanel {
         jPanel2.setMinimumSize(new java.awt.Dimension(79, 40));
         jPanel2.setPreferredSize(new java.awt.Dimension(400, 40));
 
-        jButton1.setText("jButton1");
+        jButton1.setText("CREATE NEW WORLD");
         jPanel2.add(jButton1);
 
         add(jPanel2);
 
         jScrollPane1.setPreferredSize(new java.awt.Dimension(400, 220));
 
-        jList1.setModel(new javax.swing.AbstractListModel<String>() {
+        worlds_list.setModel(new javax.swing.AbstractListModel<String>() {
             String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
             public int getSize() { return strings.length; }
             public String getElementAt(int i) { return strings[i]; }
         });
-        jList1.setLayoutOrientation(javax.swing.JList.HORIZONTAL_WRAP);
-        jScrollPane1.setViewportView(jList1);
+        worlds_list.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        worlds_list.setLayoutOrientation(javax.swing.JList.HORIZONTAL_WRAP);
+        worlds_list.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
+            public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
+                worlds_listValueChanged(evt);
+            }
+        });
+        jScrollPane1.setViewportView(worlds_list);
 
         add(jScrollPane1);
 
         jPanel1.setMinimumSize(new java.awt.Dimension(79, 40));
         jPanel1.setPreferredSize(new java.awt.Dimension(400, 40));
+        java.awt.GridBagLayout jPanel1Layout = new java.awt.GridBagLayout();
+        jPanel1Layout.columnWidths = new int[] {0, 30, 0};
+        jPanel1Layout.rowHeights = new int[] {0};
+        jPanel1.setLayout(jPanel1Layout);
 
-        jButton2.setText("jButton2");
-        jPanel1.add(jButton2);
+        refresh_btn.setText("REFRESH");
+        refresh_btn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        refresh_btn.setPreferredSize(new java.awt.Dimension(100, 31));
+        refresh_btn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                refresh_btnActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        jPanel1.add(refresh_btn, gridBagConstraints);
+
+        join_btn.setText("JOIN");
+        join_btn.setPreferredSize(new java.awt.Dimension(100, 31));
+        join_btn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                join_btnActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 0;
+        jPanel1.add(join_btn, gridBagConstraints);
 
         add(jPanel1);
     }// </editor-fold>//GEN-END:initComponents
 
+    private void join_btnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_join_btnActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_join_btnActionPerformed
+
+    private void refresh_btnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refresh_btnActionPerformed
+        fetchData();
+    }//GEN-LAST:event_refresh_btnActionPerformed
+
+    private void worlds_listValueChanged(javax.swing.event.ListSelectionEvent event) {//GEN-FIRST:event_worlds_listValueChanged
+        if (!event.getValueIsAdjusting())
+        {
+            ListSelectionModel lsm = ((javax.swing.JList) event.getSource()).getSelectionModel();
+            if (lsm.isSelectionEmpty())
+            {
+                world_id = "";
+                join_btn.setEnabled(false);
+            } else {
+                world_id =  worlds_list.getSelectedValue();
+                join_btn.setEnabled(true);
+            }
+        }
+    }//GEN-LAST:event_worlds_listValueChanged
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JList<String> jList1;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JButton join_btn;
+    private javax.swing.JButton refresh_btn;
+    private javax.swing.JList<String> worlds_list;
     // End of variables declaration//GEN-END:variables
+
+    void setServer(String server) {
+        this.server = server;
+    }
+
+    void onComponentsWillMount() {
+        fetchData();
+    }
+    
+    private void onComponentsDidMount() {
+        if (world_id.isEmpty())
+        {
+            join_btn.setEnabled(false);
+        }
+    }
+
+    private void fetchData() {
+        // fetch worlds list
+        try {
+            URL url = new URL("http://" + this.server + "/worlds");
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+
+            conn.setRequestMethod("GET");
+
+            BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+
+            String il;
+            StringBuffer response = new StringBuffer();
+            while ((il = in.readLine()) != null)
+            {
+                response.append(il);
+            }
+
+            Gson gson = new Gson();
+            WorldsListJSON wl = gson.fromJson(String.valueOf(response), WorldsListJSON.class);
+            worlds_list.setListData(wl.getWorlds());
+//            System.out.println("worlds:" + Arrays.toString(wl.getWorlds()));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    void setAgentName(String agent_name) {
+        this.agent_name = agent_name;
+    }
 }

@@ -7,6 +7,8 @@ package edu.ozu.drone.client.ui;
 
 import edu.ozu.drone.client.AgentClient;
 
+import java.awt.*;
+
 /**
  *
  * @author freedrone
@@ -25,8 +27,7 @@ public class AgentUI extends javax.swing.JFrame {
         System.out.println(this.client.getClass().getName());
 
         initComponents();
-        
-        onComponentDidMount();
+        onComponentsDidMount();
     }
 
     /**
@@ -40,7 +41,7 @@ public class AgentUI extends javax.swing.JFrame {
 
         javax.swing.JPanel agent_info = new javax.swing.JPanel();
         agent_name = new javax.swing.JLabel();
-        javax.swing.JPanel worlds_info_container = new javax.swing.JPanel();
+        worlds_info_container = new javax.swing.JPanel();
         worlds_list = new edu.ozu.drone.client.ui.WorldsPanel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
@@ -60,7 +61,7 @@ public class AgentUI extends javax.swing.JFrame {
 
         worlds_info_container.setPreferredSize(new java.awt.Dimension(400, 300));
         worlds_info_container.setLayout(new java.awt.CardLayout());
-        worlds_info_container.add(worlds_list, "card2");
+        worlds_info_container.add(worlds_list, "worlds_list");
 
         getContentPane().add(worlds_info_container, java.awt.BorderLayout.CENTER);
 
@@ -115,10 +116,17 @@ public class AgentUI extends javax.swing.JFrame {
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel agent_name;
+    private javax.swing.JPanel worlds_info_container;
     private edu.ozu.drone.client.ui.WorldsPanel worlds_list;
     // End of variables declaration//GEN-END:variables
 
-    private void onComponentDidMount() {
+    private void onComponentsDidMount() {
         agent_name.setText(client.AGENT_NAME);
+
+        CardLayout cl = (CardLayout) worlds_info_container.getLayout();
+        cl.show(worlds_info_container, "worlds_list");
+        worlds_list.setServer(client.getServer());
+        worlds_list.setAgentName(client.AGENT_NAME);
+        worlds_list.onComponentsWillMount();
     }
 }
