@@ -95,19 +95,20 @@ public class AgentUI extends javax.swing.JFrame {
     }//GEN-LAST:event_onWindowClosed
 
     private void worlds_listComponentShown(java.awt.event.ComponentEvent event) {//GEN-FIRST:event_worlds_listComponentShown
-        System.out.println("> " + this.client.getClass().getName() + " world_list shown");
+//        System.out.println("> " + this.client.getClass().getName() + " world_list shown");
     }//GEN-LAST:event_worlds_listComponentShown
 
     private void worlds_listComponentHidden(java.awt.event.ComponentEvent event) {//GEN-FIRST:event_worlds_listComponentHidden
-        System.out.println("> " + this.client.getClass().getName() + " world_list hidden");
+//        System.out.println("> " + this.client.getClass().getName() + " world_list hidden");
     }//GEN-LAST:event_worlds_listComponentHidden
 
     private void world_watchComponentShown(java.awt.event.ComponentEvent event) {//GEN-FIRST:event_world_watchComponentShown
-        System.out.println("> " + this.client.getClass().getName() + " world_watch shown");
+//        System.out.println("> " + this.client.getClass().getName() + " world_watch shown");
     }//GEN-LAST:event_world_watchComponentShown
 
     private void world_watchComponentHidden(java.awt.event.ComponentEvent event) {//GEN-FIRST:event_world_watchComponentHidden
-        System.out.println("> " + this.client.getClass().getName() + " world_watch hidden");
+//        System.out.println("> " + this.client.getClass().getName() + " world_watch hidden");
+        world_watch.unmounted();
     }//GEN-LAST:event_world_watchComponentHidden
 
 //<editor-fold defaultstate="collapsed" desc="ignore main">

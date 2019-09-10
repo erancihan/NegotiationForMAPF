@@ -73,4 +73,8 @@ public class WorldWatch extends javax.swing.JPanel {
 //        jButton1.setEnabled(true);
 //        jButton1.setVisible(true);
     }
+
+    public void unmounted() {
+        System.out.println("unmounted world_watch");
+    }
 }
