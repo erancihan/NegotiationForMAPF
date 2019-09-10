@@ -24,7 +24,7 @@ public class AgentUI extends javax.swing.JFrame {
     public AgentUI(AgentClient client) {
         this.client = client;
 
-        System.out.println(this.client.getClass().getName());
+        System.out.println("> " + this.client.getClass().getName());
 
         initComponents();
         onComponentsDidMount();
@@ -73,18 +73,15 @@ public class AgentUI extends javax.swing.JFrame {
         });
         worlds_info_container.add(worlds_list, "worlds_list");
 
-        javax.swing.GroupLayout world_watchLayout = new javax.swing.GroupLayout(world_watch);
-        world_watch.setLayout(world_watchLayout);
-        world_watchLayout.setHorizontalGroup(
-            world_watchLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 400, Short.MAX_VALUE)
-        );
-        world_watchLayout.setVerticalGroup(
-            world_watchLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 305, Short.MAX_VALUE)
-        );
-
-        worlds_info_container.add(world_watch, "watch");
+        world_watch.addComponentListener(new java.awt.event.ComponentAdapter() {
+            public void componentHidden(java.awt.event.ComponentEvent evt) {
+                world_watchComponentHidden(evt);
+            }
+            public void componentShown(java.awt.event.ComponentEvent evt) {
+                world_watchComponentShown(evt);
+            }
+        });
+        worlds_info_container.add(world_watch, "world_watch");
 
         getContentPane().add(worlds_info_container, java.awt.BorderLayout.CENTER);
 
@@ -92,11 +89,26 @@ public class AgentUI extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void onWindowClosed(java.awt.event.WindowEvent event) {//GEN-FIRST:event_onWindowClosed
-        // TODO add your handling code here:
-        System.out.println("exiting " + client.getClass().getName());
+        System.out.println("> " + this.client.getClass().getName() + " window closed");
 
-        client.exit();
+        this.client.exit();
     }//GEN-LAST:event_onWindowClosed
+
+    private void worlds_listComponentShown(java.awt.event.ComponentEvent event) {//GEN-FIRST:event_worlds_listComponentShown
+        System.out.println("> " + this.client.getClass().getName() + " world_list shown");
+    }//GEN-LAST:event_worlds_listComponentShown
+
+    private void worlds_listComponentHidden(java.awt.event.ComponentEvent event) {//GEN-FIRST:event_worlds_listComponentHidden
+        System.out.println("> " + this.client.getClass().getName() + " world_list hidden");
+    }//GEN-LAST:event_worlds_listComponentHidden
+
+    private void world_watchComponentShown(java.awt.event.ComponentEvent event) {//GEN-FIRST:event_world_watchComponentShown
+        System.out.println("> " + this.client.getClass().getName() + " world_watch shown");
+    }//GEN-LAST:event_world_watchComponentShown
+
+    private void world_watchComponentHidden(java.awt.event.ComponentEvent event) {//GEN-FIRST:event_world_watchComponentHidden
+        System.out.println("> " + this.client.getClass().getName() + " world_watch hidden");
+    }//GEN-LAST:event_world_watchComponentHidden
 
 //<editor-fold defaultstate="collapsed" desc="ignore main">
 //    /**
