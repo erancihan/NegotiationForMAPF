@@ -162,6 +162,18 @@ public class WorldsPanel extends javax.swing.JPanel {
         add(jPanel1);
     }// </editor-fold>//GEN-END:initComponents
 
+    void setAgentName(String agent_name) {
+        this.agent_name = agent_name;
+    }
+
+    void setServer(String server) {
+        this.server = server;
+    }
+
+    void setParent(AgentUI ui) {
+        this.parent = ui;
+    }
+
     private void join_btnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_join_btnActionPerformed
         if (!world_id.isEmpty())
         {
@@ -198,7 +210,6 @@ public class WorldsPanel extends javax.swing.JPanel {
         join_confirm.dispose();
     }//GEN-LAST:event_join_confirm_btnActionPerformed
 
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JButton join_btn;
@@ -208,10 +219,6 @@ public class WorldsPanel extends javax.swing.JPanel {
     private javax.swing.JButton new_world_btn;
     private javax.swing.JList<String> worlds_list;
     // End of variables declaration//GEN-END:variables
-
-    void setServer(String server) {
-        this.server = server;
-    }
 
     void onComponentsWillMount() {
         getWorldList();
@@ -294,17 +301,9 @@ public class WorldsPanel extends javax.swing.JPanel {
         }
     }
 
-    void setAgentName(String agent_name) {
-        this.agent_name = agent_name;
-    }
-
     private void join() {
         join_confirm.setVisible(true);
         join_confirm.setTitle(agent_name);
         join_confirm_text.setText("Joining to \n<" + world_id + ">");
-    }
-
-    void setParent(AgentUI ui) {
-        this.parent = ui;
     }
 }
