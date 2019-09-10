@@ -143,7 +143,7 @@ public class AgentUI extends javax.swing.JFrame {
         worlds_list.setServer(client.getServer());
         worlds_list.setAgentName(client.AGENT_NAME);
         worlds_list.setParent(this);
-        worlds_list.onComponentsWillMount();
+        worlds_list.loadList();
     }
 
     public void join(String world_id) {

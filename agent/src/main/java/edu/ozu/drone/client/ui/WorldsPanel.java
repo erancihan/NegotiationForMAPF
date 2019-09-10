@@ -220,10 +220,6 @@ public class WorldsPanel extends javax.swing.JPanel {
     private javax.swing.JList<String> worlds_list;
     // End of variables declaration//GEN-END:variables
 
-    void onComponentsWillMount() {
-        getWorldList();
-    }
-    
     private void onComponentsDidMount() {
         if (world_id.isEmpty())
         {
@@ -305,5 +301,9 @@ public class WorldsPanel extends javax.swing.JPanel {
         join_confirm.setVisible(true);
         join_confirm.setTitle(agent_name);
         join_confirm_text.setText("Joining to \n<" + world_id + ">");
+    }
+
+    void loadList() {
+        getWorldList();
     }
 }
