@@ -43,6 +43,7 @@ public class AgentUI extends javax.swing.JFrame {
         agent_name = new javax.swing.JLabel();
         worlds_info_container = new javax.swing.JPanel();
         worlds_list = new edu.ozu.drone.client.ui.WorldsPanel();
+        world_watch = new edu.ozu.drone.client.ui.WorldWatch();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         addWindowListener(new java.awt.event.WindowAdapter() {
@@ -62,6 +63,19 @@ public class AgentUI extends javax.swing.JFrame {
         worlds_info_container.setPreferredSize(new java.awt.Dimension(400, 300));
         worlds_info_container.setLayout(new java.awt.CardLayout());
         worlds_info_container.add(worlds_list, "worlds_list");
+
+        javax.swing.GroupLayout world_watchLayout = new javax.swing.GroupLayout(world_watch);
+        world_watch.setLayout(world_watchLayout);
+        world_watchLayout.setHorizontalGroup(
+            world_watchLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 400, Short.MAX_VALUE)
+        );
+        world_watchLayout.setVerticalGroup(
+            world_watchLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 305, Short.MAX_VALUE)
+        );
+
+        worlds_info_container.add(world_watch, "watch");
 
         getContentPane().add(worlds_info_container, java.awt.BorderLayout.CENTER);
 
@@ -116,6 +130,7 @@ public class AgentUI extends javax.swing.JFrame {
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel agent_name;
+    private edu.ozu.drone.client.ui.WorldWatch world_watch;
     private javax.swing.JPanel worlds_info_container;
     private edu.ozu.drone.client.ui.WorldsPanel worlds_list;
     // End of variables declaration//GEN-END:variables
