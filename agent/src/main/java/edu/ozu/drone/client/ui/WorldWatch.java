@@ -11,11 +11,16 @@ package edu.ozu.drone.client.ui;
  */
 public class WorldWatch extends javax.swing.JPanel {
 
+    private String agent_name;
+    private String server;
+    private AgentUI parent;
+
     /**
      * Creates new form WorldWatch
      */
     public WorldWatch() {
         initComponents();
+        onComponentsDidMount();
     }
 
     /**
@@ -27,19 +32,45 @@ public class WorldWatch extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 400, Short.MAX_VALUE)
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 300, Short.MAX_VALUE)
-        );
+        jButton1 = new javax.swing.JButton();
+
+        setBackground(new java.awt.Color(254, 254, 254));
+        setToolTipText("");
+        setPreferredSize(new java.awt.Dimension(400, 300));
+        setLayout(new java.awt.GridBagLayout());
+
+        jButton1.setForeground(new java.awt.Color(255, 98, 0));
+        jButton1.setText("asdfasdf");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+        add(jButton1, new java.awt.GridBagConstraints());
     }// </editor-fold>//GEN-END:initComponents
 
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        parent.back();
+    }//GEN-LAST:event_jButton1ActionPerformed
+
+    void setAgentName(String name) {
+        this.agent_name = name;
+    }
+
+    void setServer(String server) {
+        this.server = server;
+    }
+
+    void setParent(AgentUI ui) {
+        this.parent = ui;
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton jButton1;
     // End of variables declaration//GEN-END:variables
+
+    private void onComponentsDidMount() {
+//        jButton1.setEnabled(true);
+//        jButton1.setVisible(true);
+    }
 }
