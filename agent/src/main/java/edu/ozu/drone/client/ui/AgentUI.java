@@ -175,4 +175,9 @@ public class AgentUI extends javax.swing.JFrame {
         world_watch.setServer(client.getServer());
         world_watch.setParent(this);
     }
+
+    void back() {
+        CardLayout cl = (CardLayout) worlds_info_container.getLayout();
+        cl.show(worlds_info_container, "worlds_list");
+    }
 }
