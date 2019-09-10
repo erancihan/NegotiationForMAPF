@@ -127,6 +127,11 @@ public class AgentUI extends javax.swing.JFrame {
         cl.show(worlds_info_container, "worlds_list");
         worlds_list.setServer(client.getServer());
         worlds_list.setAgentName(client.AGENT_NAME);
+        worlds_list.setParent(this);
         worlds_list.onComponentsWillMount();
+    }
+
+    public void join(String world_id) {
+        // todo switch to watch ui
     }
 }

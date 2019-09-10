@@ -27,6 +27,7 @@ public class WorldsPanel extends javax.swing.JPanel {
     private String server;
     private String world_id = "";
     private String agent_name = "";
+    private AgentUI parent;
 
     /**
      * Creates new form WorldsPanel
@@ -46,6 +47,10 @@ public class WorldsPanel extends javax.swing.JPanel {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
+        join_confirm = new javax.swing.JDialog();
+        javax.swing.JPanel join_confirm_container = new javax.swing.JPanel();
+        join_confirm_text = new javax.swing.JLabel();
+        join_confirm_btn = new javax.swing.JButton();
         javax.swing.JPanel jPanel2 = new javax.swing.JPanel();
         new_world_btn = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
@@ -53,6 +58,39 @@ public class WorldsPanel extends javax.swing.JPanel {
         javax.swing.JPanel jPanel1 = new javax.swing.JPanel();
         javax.swing.JButton refresh_btn = new javax.swing.JButton();
         join_btn = new javax.swing.JButton();
+
+        join_confirm.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        join_confirm.setAlwaysOnTop(true);
+        join_confirm.setResizable(false);
+        join_confirm.setSize(new java.awt.Dimension(300, 150));
+        join_confirm.getContentPane().setLayout(new java.awt.FlowLayout());
+
+        join_confirm_container.setPreferredSize(new java.awt.Dimension(240, 100));
+        java.awt.GridBagLayout jPanel3Layout = new java.awt.GridBagLayout();
+        jPanel3Layout.columnWidths = new int[] {0, 35, 0, 35, 0};
+        jPanel3Layout.rowHeights = new int[] {0, 15, 0};
+        join_confirm_container.setLayout(jPanel3Layout);
+
+        join_confirm_text.setText("Joining");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 0;
+        join_confirm_container.add(join_confirm_text, gridBagConstraints);
+
+        join_confirm_btn.setText("OK");
+        join_confirm_btn.setMaximumSize(new java.awt.Dimension(100, 50));
+        join_confirm_btn.setPreferredSize(new java.awt.Dimension(100, 35));
+        join_confirm_btn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                join_confirm_btnActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 2;
+        join_confirm_container.add(join_confirm_btn, gridBagConstraints);
+
+        join_confirm.getContentPane().add(join_confirm_container);
 
         java.awt.FlowLayout flowLayout1 = new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0);
         flowLayout1.setAlignOnBaseline(true);
@@ -125,7 +163,10 @@ public class WorldsPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void join_btnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_join_btnActionPerformed
-        // TODO add your handling code here:
+        if (!world_id.isEmpty())
+        {
+            join();
+        }
     }//GEN-LAST:event_join_btnActionPerformed
 
     private void refresh_btnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refresh_btnActionPerformed
@@ -151,10 +192,19 @@ public class WorldsPanel extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_worlds_listValueChanged
 
+    private void join_confirm_btnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_join_confirm_btnActionPerformed
+        join_confirm.setVisible(false);
+        parent.join(world_id);
+        join_confirm.dispose();
+    }//GEN-LAST:event_join_confirm_btnActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JButton join_btn;
+    private javax.swing.JDialog join_confirm;
+    private javax.swing.JButton join_confirm_btn;
+    private javax.swing.JLabel join_confirm_text;
     private javax.swing.JButton new_world_btn;
     private javax.swing.JList<String> worlds_list;
     // End of variables declaration//GEN-END:variables
@@ -234,7 +284,11 @@ public class WorldsPanel extends javax.swing.JPanel {
             // todo success
             Gson gson = new Gson();
             JSONWorldCreate wc = gson.fromJson(String.valueOf(response), JSONWorldCreate.class);
+            this.world_id = wc.getWorld_id();
+
             System.out.println("> create world response: " + wc);
+
+            join();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -242,5 +296,15 @@ public class WorldsPanel extends javax.swing.JPanel {
 
     void setAgentName(String agent_name) {
         this.agent_name = agent_name;
+    }
+
+    private void join() {
+        join_confirm.setVisible(true);
+        join_confirm.setTitle(agent_name);
+        join_confirm_text.setText("Joining to \n<" + world_id + ">");
+    }
+
+    void setParent(AgentUI ui) {
+        this.parent = ui;
     }
 }
