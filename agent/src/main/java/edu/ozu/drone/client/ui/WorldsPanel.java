@@ -6,6 +6,7 @@
 package edu.ozu.drone.client.ui;
 
 import com.google.gson.Gson;
+import edu.ozu.drone.utils.JSONWorldCreate;
 import edu.ozu.drone.utils.JSONWorldsList;
 
 import javax.swing.*;
@@ -220,20 +221,20 @@ public class WorldsPanel extends javax.swing.JPanel {
             }
 
             // response
-            try (BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8)))
+            BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8));
+            String il;
+            StringBuilder response = new StringBuilder();
+            while ((il = in.readLine()) != null)
             {
-                String il;
-                StringBuilder response = new StringBuilder();
-                while ((il = in.readLine()) != null)
-                {
-                    response.append(il);
-                }
-                System.out.println("> create world response: " + response.toString());
+                response.append(il);
             }
             // refresh list
             getWorldList();
 
             // todo success
+            Gson gson = new Gson();
+            JSONWorldCreate wc = gson.fromJson(String.valueOf(response), JSONWorldCreate.class);
+            System.out.println("> create world response: " + wc);
         } catch (IOException e) {
             e.printStackTrace();
         }
