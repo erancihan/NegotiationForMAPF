@@ -14,6 +14,7 @@ public class WorldWatch extends javax.swing.JPanel {
     private String agent_name;
     private String server;
     private AgentUI parent;
+    private String world_id;
 
     /**
      * Creates new form WorldWatch
@@ -63,6 +64,10 @@ public class WorldWatch extends javax.swing.JPanel {
 
     void setParent(AgentUI ui) {
         this.parent = ui;
+    }
+    
+    void setWorldID(String world_id) {
+        this.world_id = world_id;
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

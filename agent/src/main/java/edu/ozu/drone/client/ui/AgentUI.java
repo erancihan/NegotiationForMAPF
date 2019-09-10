@@ -173,8 +173,9 @@ public class AgentUI extends javax.swing.JFrame {
         CardLayout cl = (CardLayout) worlds_info_container.getLayout();
         cl.show(worlds_info_container, "world_watch");
         world_watch.setAgentName(client.AGENT_NAME);
-        world_watch.setServer(client.getServer());
         world_watch.setParent(this);
+        world_watch.setServer(client.getServer());
+        world_watch.setWorldID(world_id);
     }
 
     void back() {
