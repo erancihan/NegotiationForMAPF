@@ -62,6 +62,15 @@ public class AgentUI extends javax.swing.JFrame {
 
         worlds_info_container.setPreferredSize(new java.awt.Dimension(400, 300));
         worlds_info_container.setLayout(new java.awt.CardLayout());
+
+        worlds_list.addComponentListener(new java.awt.event.ComponentAdapter() {
+            public void componentHidden(java.awt.event.ComponentEvent evt) {
+                worlds_listComponentHidden(evt);
+            }
+            public void componentShown(java.awt.event.ComponentEvent evt) {
+                worlds_listComponentShown(evt);
+            }
+        });
         worlds_info_container.add(worlds_list, "worlds_list");
 
         javax.swing.GroupLayout world_watchLayout = new javax.swing.GroupLayout(world_watch);
@@ -147,6 +156,11 @@ public class AgentUI extends javax.swing.JFrame {
     }
 
     public void join(String world_id) {
-        // todo switch to watch ui
+        // switch to watch ui
+        CardLayout cl = (CardLayout) worlds_info_container.getLayout();
+        cl.show(worlds_info_container, "world_watch");
+        world_watch.setAgentName(client.AGENT_NAME);
+        world_watch.setServer(client.getServer());
+        world_watch.setParent(this);
     }
 }
