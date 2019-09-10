@@ -6,7 +6,7 @@
 package edu.ozu.drone.client.ui;
 
 import com.google.gson.Gson;
-import edu.ozu.drone.utils.WorldsListJSON;
+import edu.ozu.drone.utils.JSONWorldsList;
 
 import javax.swing.*;
 import java.io.BufferedReader;
@@ -191,7 +191,7 @@ public class WorldsPanel extends javax.swing.JPanel {
             }
 
             Gson gson = new Gson();
-            WorldsListJSON wl = gson.fromJson(String.valueOf(response), WorldsListJSON.class);
+            JSONWorldsList wl = gson.fromJson(String.valueOf(response), JSONWorldsList.class);
             worlds_list.setListData(wl.getWorlds());
 //            System.out.println("worlds:" + Arrays.toString(wl.getWorlds()));
         } catch (IOException e) {

@@ -1,6 +1,6 @@
 package edu.ozu.drone.utils;
 
-public class WorldsListJSON {
+public class JSONWorldsList {
     private String[] worlds;
 
     public String[] getWorlds() { return worlds; }
