@@ -51,7 +51,7 @@ public class WorldWatch extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        parent.back();
+        parent.loadWorldsList();
     }//GEN-LAST:event_jButton1ActionPerformed
 
     void setAgentName(String name) {

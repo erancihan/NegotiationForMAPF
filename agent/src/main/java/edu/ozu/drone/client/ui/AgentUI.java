@@ -160,12 +160,7 @@ public class AgentUI extends javax.swing.JFrame {
     private void onComponentsDidMount() {
         agent_name.setText(client.AGENT_NAME);
 
-        CardLayout cl = (CardLayout) worlds_info_container.getLayout();
-        cl.show(worlds_info_container, "worlds_list");
-        worlds_list.setAgentName(client.AGENT_NAME);
-        worlds_list.setParent(this);
-        worlds_list.setServer(client.getServer());
-        worlds_list.loadList();
+        loadWorldsList();
     }
 
     public void join(String world_id) {
@@ -178,8 +173,12 @@ public class AgentUI extends javax.swing.JFrame {
         world_watch.setWorldID(world_id);
     }
 
-    void back() {
+    public void loadWorldsList() {
         CardLayout cl = (CardLayout) worlds_info_container.getLayout();
         cl.show(worlds_info_container, "worlds_list");
+        worlds_list.setAgentName(client.AGENT_NAME);
+        worlds_list.setParent(this);
+        worlds_list.setServer(client.getServer());
+        worlds_list.loadList();
     }
 }
