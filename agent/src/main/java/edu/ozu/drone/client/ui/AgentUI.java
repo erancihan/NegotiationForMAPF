@@ -62,23 +62,11 @@ public class AgentUI extends javax.swing.JFrame {
 
         worlds_info_container.setPreferredSize(new java.awt.Dimension(400, 300));
         worlds_info_container.setLayout(new java.awt.CardLayout());
-
-        worlds_list.addComponentListener(new java.awt.event.ComponentAdapter() {
-            public void componentHidden(java.awt.event.ComponentEvent evt) {
-                worlds_listComponentHidden(evt);
-            }
-            public void componentShown(java.awt.event.ComponentEvent evt) {
-                worlds_listComponentShown(evt);
-            }
-        });
         worlds_info_container.add(worlds_list, "worlds_list");
 
         world_watch.addComponentListener(new java.awt.event.ComponentAdapter() {
             public void componentHidden(java.awt.event.ComponentEvent evt) {
                 world_watchComponentHidden(evt);
-            }
-            public void componentShown(java.awt.event.ComponentEvent evt) {
-                world_watchComponentShown(evt);
             }
         });
         worlds_info_container.add(world_watch, "world_watch");
@@ -93,18 +81,6 @@ public class AgentUI extends javax.swing.JFrame {
 
         this.client.exit();
     }//GEN-LAST:event_onWindowClosed
-
-    private void worlds_listComponentShown(java.awt.event.ComponentEvent event) {//GEN-FIRST:event_worlds_listComponentShown
-//        System.out.println("> " + this.client.getClass().getName() + " world_list shown");
-    }//GEN-LAST:event_worlds_listComponentShown
-
-    private void worlds_listComponentHidden(java.awt.event.ComponentEvent event) {//GEN-FIRST:event_worlds_listComponentHidden
-//        System.out.println("> " + this.client.getClass().getName() + " world_list hidden");
-    }//GEN-LAST:event_worlds_listComponentHidden
-
-    private void world_watchComponentShown(java.awt.event.ComponentEvent event) {//GEN-FIRST:event_world_watchComponentShown
-//        System.out.println("> " + this.client.getClass().getName() + " world_watch shown");
-    }//GEN-LAST:event_world_watchComponentShown
 
     private void world_watchComponentHidden(java.awt.event.ComponentEvent event) {//GEN-FIRST:event_world_watchComponentHidden
 //        System.out.println("> " + this.client.getClass().getName() + " world_watch hidden");
