@@ -9,6 +9,7 @@ import edu.ozu.drone.client.AgentHandler;
 import edu.ozu.drone.utils.JSONWorldWatch;
 
 import java.awt.*;
+import java.util.Arrays;
 
 /**
  *
@@ -38,7 +39,7 @@ public class WorldWatch extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        canvas = new java.awt.Canvas();
+        canvas = new edu.ozu.drone.client.ui.WorldCanvas();
 
         setBackground(new java.awt.Color(254, 254, 254));
         setToolTipText("");
@@ -50,16 +51,16 @@ public class WorldWatch extends javax.swing.JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(canvas, javax.swing.GroupLayout.DEFAULT_SIZE, 380, Short.MAX_VALUE)
+                .addComponent(canvas, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(canvas, javax.swing.GroupLayout.DEFAULT_SIZE, 280, Short.MAX_VALUE)
+                .addComponent(canvas, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -85,7 +86,7 @@ public class WorldWatch extends javax.swing.JPanel {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private java.awt.Canvas canvas;
+    private edu.ozu.drone.client.ui.WorldCanvas canvas;
     // End of variables declaration//GEN-END:variables
 
     public void mount()
@@ -104,7 +105,10 @@ public class WorldWatch extends javax.swing.JPanel {
 
     public void draw(JSONWorldWatch watch)
     {
-        System.out.println(">:"+watch);
-        canvas.setBackground(new java.awt.Color(195, 224, 254));
+//        System.out.println(">:"+watch);
+        canvas.setBackground(new Color(195, 224, 254));
+
+        String[][] fov = watch.fov;
+        System.out.println(Arrays.deepToString(fov));
     }
 }
