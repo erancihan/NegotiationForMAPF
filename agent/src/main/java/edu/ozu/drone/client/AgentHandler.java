@@ -146,7 +146,6 @@ public class AgentHandler {
 
     public void setWatchUIRef(WorldWatch worldWatch) { this.watchUIRef = worldWatch; }
 
-    public void exit() {
-        System.exit(0);
-    }
+    // todo handle better later
+    public void exit() { System.exit(0); }
 }
