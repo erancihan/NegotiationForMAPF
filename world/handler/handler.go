@@ -71,7 +71,7 @@ func (h *Handler) PlayerUnregister(ctx echo.Context, p *WorldPool) error {
 	}
 
 	if c <= 0 {
-		_, err := rds.Do("DEL", "world:"+wid, "map:world:"+wid)
+		_, err := rds.Do("DEL", "world:"+wid, "map:world:"+wid, "path:world:"+wid)
 		if err != nil {
 			ctx.Echo().Logger.Fatal(err)
 		}
