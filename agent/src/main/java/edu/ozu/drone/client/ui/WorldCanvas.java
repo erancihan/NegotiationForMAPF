@@ -6,6 +6,7 @@
 package edu.ozu.drone.client.ui;
 
 import edu.ozu.drone.utils.JSONWorldWatch;
+import edu.ozu.drone.utils.Point;
 
 import java.awt.*;
 
@@ -15,6 +16,7 @@ import java.awt.*;
  */
 public class WorldCanvas extends Canvas {
     private JSONWorldWatch data;
+    private Point xy_own;
 
     @Override
     public void paint(Graphics graphics) {
@@ -22,9 +24,10 @@ public class WorldCanvas extends Canvas {
         System.out.println(">:" + data);
     }
 
-    void setData(JSONWorldWatch data)
+    void setData(JSONWorldWatch data, Point agent_position)
     {
         this.data = data;
+        this.xy_own = agent_position;
         this.repaint();
     }
 }

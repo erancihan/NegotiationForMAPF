@@ -23,7 +23,7 @@ public class AgentHandler {
     private AgentClient clientRef;
     private AgentClientWebsocketListener websocket;
     private Gson gson;
-    private Point AGENT_POS;
+    private Point AGENT_POSITION;
     private WorldWatch watchUIRef;
 
     public String AGENT_NAME;
@@ -34,7 +34,7 @@ public class AgentHandler {
         AGENT_NAME = client.AGENT_NAME;
 
         Assert.notNull(client.START, "«START cannot be null»");
-        AGENT_POS = client.START;
+        AGENT_POSITION = client.START;
 
         gson = new Gson();
     }
@@ -120,7 +120,7 @@ public class AgentHandler {
             // add handler
             websocket.setMessageHandler(message -> {
                 JSONWorldWatch watch = gson.fromJson(message, JSONWorldWatch.class);
-                watchUIRef.draw(watch);
+                watchUIRef.draw(watch, AGENT_POSITION);
             });
 
             // send message

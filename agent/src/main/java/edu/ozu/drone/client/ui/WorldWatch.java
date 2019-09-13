@@ -7,6 +7,7 @@ package edu.ozu.drone.client.ui;
 
 import edu.ozu.drone.client.AgentHandler;
 import edu.ozu.drone.utils.JSONWorldWatch;
+import edu.ozu.drone.utils.Point;
 
 import java.awt.*;
 import java.util.Arrays;
@@ -103,9 +104,9 @@ public class WorldWatch extends javax.swing.JPanel {
             client.leave();
     }
 
-    public void draw(JSONWorldWatch data)
+    public void draw(JSONWorldWatch data, Point agent_position)
     {
         canvas.setBackground(new Color(195, 224, 254));
-        canvas.setData(data);
+        canvas.setData(data, agent_position);
     }
 }
