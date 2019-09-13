@@ -1,6 +1,8 @@
 package edu.ozu.drone.client;
 
+import com.google.gson.Gson;
 import edu.ozu.drone.client.ui.WorldWatch;
+import edu.ozu.drone.utils.JSONWorldWatch;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -19,6 +21,7 @@ public class AgentHandler {
     private AgentClient clientRef;
     private AgentClientWebsocketListener websocket;
     private WorldWatch watchRef;
+    private Gson gson;
 
     public String AGENT_NAME;
 
@@ -26,6 +29,8 @@ public class AgentHandler {
     {
         clientRef = client;
         AGENT_NAME = client.AGENT_NAME;
+
+        gson = new Gson();
     }
 
     /**
@@ -108,8 +113,8 @@ public class AgentHandler {
 
             // add handler
             websocket.setMessageHandler(message -> {
-                //todo
-                System.out.println(">:"+message);
+                JSONWorldWatch watch = gson.fromJson(message, JSONWorldWatch.class);
+                System.out.println(">:"+watch);
             });
 
             // send message
