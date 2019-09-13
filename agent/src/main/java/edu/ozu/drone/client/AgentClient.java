@@ -3,6 +3,7 @@ package edu.ozu.drone.client;
 import edu.ozu.drone.client.ui.AgentUI;
 import edu.ozu.drone.utils.Point;
 
+import javax.swing.*;
 import java.awt.*;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -15,10 +16,12 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class AgentClient extends Runner {
     private String PORT = "3001";
-    private String WS_URL = "ws://";
+    private String WORLD_ID = "";
 
     protected Boolean IS_HEADLESS = false;
 
@@ -45,10 +48,15 @@ public class AgentClient extends Runner {
     /**
      * The function that will be invoked by WebUI when player selects to join a world
      *
-     * @param worldId id of the world the agent will join to
+     * @param world_id id of the world the agent will join to
      * */
-    public void join(String worldId) {
-        System.out.println(worldId);
+    public void join(String world_id) {
+        System.out.println("> " + this + " join " + world_id);
+
+        WORLD_ID = world_id;
+
+        __postJOIN();
+        __watch();
         // todo
         // get path [0, 2]
 
@@ -299,25 +307,91 @@ public class AgentClient extends Runner {
          * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html
          */
         try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+            for (UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
                 if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    UIManager.setLookAndFeel(info.getClassName());
                     break;
                 }
             }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(AgentUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(AgentUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(AgentUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(AgentUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
+            Logger.getLogger(AgentUI.class.getName()).log(Level.SEVERE, null, ex);
         }
         //</editor-fold>
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(() -> new AgentUI(this).setVisible(true));
+    }
+
+    //<editor-fold defaultstate="collapsed" desc="post join">
+    @SuppressWarnings("Duplicates")
+    private void __postJOIN()
+    {
+        try
+        {
+            URL url = new URL("http://" + this.getServer() + "/join");
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Content-Type", "application/json; utf-8");
+            conn.setRequestProperty("Accept", "application/json");
+            conn.setDoOutput(true);
+
+            String post_data =
+                    "{" +
+                    "\"world_id\":\""+WORLD_ID+"\","+
+                    "\"agent_id\":\""+AGENT_ID+"\","+
+                    "\"agent_x\":\""+START.x+"\","+
+                    "\"agent_y\":\""+START.y+"\""+
+                    "}";
+
+            // write to output stream
+            try (OutputStream stream = conn.getOutputStream())
+            {
+                byte[] bytes = post_data.getBytes(StandardCharsets.UTF_8);
+                stream.write(bytes, 0, bytes.length);
+            }
+
+            // read response
+            BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8));
+            String line;
+            StringBuilder response = new StringBuilder();
+            while ((line = reader.readLine()) != null)
+            {
+                response.append(line);
+            }
+
+            // ! response should be empty
+            System.out.println("> " + this + " __postJOIN:" + response);
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+    }
+    //</editor-fold>
+
+    private void __watch()
+    {
+        assert watchRef != null;
+
+        try {
+            // open websocket
+            String ws = "ws://"+this.getServer()+"/world/"+WORLD_ID+"/"+AGENT_ID;
+            AgentClientWebsocketListener listener = new AgentClientWebsocketListener(new URI(ws));
+
+            // add handler
+            listener.setMessageHandler(message -> {
+                //todo
+                System.out.println(">:"+message);
+            });
+
+            // send message
+            listener.sendMessage("ping");
+        }
+        catch (URISyntaxException e)
+        {
+            e.printStackTrace();
+        }
     }
 
     public String getServer() { return "localhost:" + PORT; }
