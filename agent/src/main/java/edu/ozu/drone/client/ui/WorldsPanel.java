@@ -291,7 +291,7 @@ public class WorldsPanel extends javax.swing.JPanel {
             // todo success
             Gson gson = new Gson();
             JSONWorldCreate wc = gson.fromJson(String.valueOf(response), JSONWorldCreate.class);
-            this.world_id = wc.getWorld_id();
+            this.world_id = "world:" + wc.getWorld_id();
 
             System.out.println("> create world response: " + wc);
 
