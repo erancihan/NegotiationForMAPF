@@ -6,6 +6,7 @@
 package edu.ozu.drone.client.ui;
 
 import edu.ozu.drone.client.AgentClient;
+import edu.ozu.drone.client.AgentHandler;
 
 import java.awt.*;
 
@@ -15,13 +16,13 @@ import java.awt.*;
  */
 public class AgentUI extends javax.swing.JFrame {
 
-    private AgentClient client;
+    private AgentHandler client;
 
     /**
      * Creates new form AgentUI
      * @param client : reference to AgentClient class that invoked UI
      */
-    public AgentUI(AgentClient client) {
+    public AgentUI(AgentHandler client) {
         this.client = client;
 
         System.out.println("> " + this.client + " AgentUI");

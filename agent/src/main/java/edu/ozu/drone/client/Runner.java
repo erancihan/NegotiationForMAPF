@@ -53,10 +53,4 @@ public class Runner {
             e.printStackTrace();
         }
     }
-
-
-
-    static void joinAgent(String agentId, String worldId) {
-        agents.get(agentId).join(worldId);
-    }
 }

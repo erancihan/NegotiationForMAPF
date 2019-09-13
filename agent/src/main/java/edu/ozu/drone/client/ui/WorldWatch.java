@@ -5,7 +5,7 @@
  */
 package edu.ozu.drone.client.ui;
 
-import edu.ozu.drone.client.AgentClient;
+import edu.ozu.drone.client.AgentHandler;
 
 /**
  *
@@ -14,7 +14,7 @@ import edu.ozu.drone.client.AgentClient;
 public class WorldWatch extends javax.swing.JPanel {
 
     private String agent_name;
-    private AgentClient client;
+    private AgentHandler client;
     private String server;
     private AgentUI parent;
     private String world_id;
@@ -60,7 +60,7 @@ public class WorldWatch extends javax.swing.JPanel {
         this.agent_name = name;
     }
 
-    void setClient(AgentClient client) {
+    void setClient(AgentHandler client) {
         this.client = client;
     }
 

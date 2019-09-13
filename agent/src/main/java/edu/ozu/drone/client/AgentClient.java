@@ -21,9 +21,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class AgentClient extends Runner {
-    private String PORT = "3001";
-    private String WORLD_ID = "";
-    private AgentClientWebsocketListener websocket;
+    private AgentHandler handler;
 
     protected Boolean IS_HEADLESS = false;
 
@@ -33,9 +31,9 @@ public class AgentClient extends Runner {
     protected Point DEST;
 
     private List<String> path;
-    private WorldWatch watchRef;
 
     public AgentClient() {
+        handler = new AgentHandler(this);
         init();
     }
 
@@ -46,43 +44,6 @@ public class AgentClient extends Runner {
         __launchUI();
 
         path = calculatePath();
-    }
-
-    /**
-     * The function that will be invoked by WebUI when player selects to join a world
-     *
-     * @param world_id id of the world the agent will join to
-     * */
-    public void join(String world_id) {
-        System.out.println("> " + this + " join " + world_id);
-
-        WORLD_ID = world_id.split(":")[1];
-
-        __postJOIN();
-        __watch();
-        // todo
-        // get path [0, 2]
-
-        // join
-        // post localhost:3001/join payload:{world_id, agent_id, agent_x, agent_y}
-
-        // @response: watch()
-    }
-
-    /**
-     * Function to be called when world watch disconnects
-     * */
-    public void leave()
-    {
-        try
-        {
-            if (websocket != null)
-                websocket.close();
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace();
-        }
     }
 
     /**
@@ -221,10 +182,6 @@ public class AgentClient extends Runner {
         return path;
     }
 
-    public void exit() {
-        System.exit(0);
-    }
-
     private class AStarNode implements Comparable<AStarNode> {
         Point point;
         private double dist;
@@ -242,78 +199,6 @@ public class AgentClient extends Runner {
         @Override
         public String toString() {
             return String.format("%s:%.2f", point.key, dist);
-        }
-    }
-    //</editor-fold>
-
-    //<editor-fold defaultstate="collapsed" desc="runner web functions">
-    @SuppressWarnings("Duplicates")
-    void __setAgentAtController() {
-        assert !PORT.isEmpty();
-        assert !AGENT_ID.isEmpty();
-        assert START != null;
-
-        System.out.println("> passing agent data to backend controller");
-        try {
-            URL url = new URL("http://localhost:" + PORT + "/set-agent");
-            HttpURLConnection con = (HttpURLConnection) url.openConnection();
-            con.setRequestMethod("POST");
-            con.setRequestProperty("Content-Type", "application/json; utf-8");
-            con.setRequestProperty("Accept", "application/json");
-            con.setDoOutput(true);
-
-            String jsonInputString = "{" +
-                    "\"id\": \"" + AGENT_ID + "\"," +
-                    "\"x\": \""  + START.x  + "\"," +
-                    "\"y\": \""  + START.y  + "\" }";
-
-            try (OutputStream outs = con.getOutputStream())
-            {
-                byte[] inb = jsonInputString.getBytes(StandardCharsets.UTF_8);
-                outs.write(inb, 0, inb.length);
-            }
-
-            try (BufferedReader br = new BufferedReader(new InputStreamReader(con.getInputStream(), StandardCharsets.UTF_8)))
-            {
-                StringBuilder response = new StringBuilder();
-                String responseLine;
-                while ((responseLine = br.readLine()) != null)
-                {
-                    response.append(responseLine);
-                }
-                System.out.println("> __setAgentAtController response: " + response.toString());
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    void __launchBrowser() {
-        if (IS_HEADLESS) { return; } // don't launch browser
-
-        assert !AGENT_ID.isEmpty();
-
-        String _os = System.getProperty("os.name").toLowerCase();
-        String url = "http://localhost:" + PORT + "/login/" + AGENT_ID;
-
-        System.out.println("> host os: " + _os);
-        System.out.println("> routing: " + url);
-
-        try {
-            if (Desktop.isDesktopSupported()) {
-                Desktop.getDesktop().browse(new URI(url));
-            } else {
-                Runtime runtime = Runtime.getRuntime();
-                if (_os.contains("mac")) {
-                    runtime.exec("open " + url);
-                } else if (_os.contains("nix") || _os.contains("nux")) {
-                    runtime.exec("xdg-open " + url);
-                } else {
-                    System.out.println("> BUMP!! UNHANDLED OS!!");
-                }
-            }
-        } catch (IOException | URISyntaxException e) {
-            e.printStackTrace();
         }
     }
     //</editor-fold>
@@ -338,82 +223,6 @@ public class AgentClient extends Runner {
         //</editor-fold>
 
         /* Create and display the form */
-        java.awt.EventQueue.invokeLater(() -> new AgentUI(this).setVisible(true));
+        java.awt.EventQueue.invokeLater(() -> new AgentUI(this.handler).setVisible(true));
     }
-
-    //<editor-fold defaultstate="collapsed" desc="post join">
-    @SuppressWarnings("Duplicates")
-    private void __postJOIN()
-    {
-        try
-        {
-            URL url = new URL("http://" + this.getServer() + "/join");
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-
-            conn.setRequestMethod("POST");
-            conn.setRequestProperty("Content-Type", "application/json; utf-8");
-            conn.setRequestProperty("Accept", "application/json");
-            conn.setDoOutput(true);
-
-            String post_data =
-                    "{" +
-                    "\"world_id\":\""+WORLD_ID+"\","+
-                    "\"agent_id\":\""+AGENT_ID+"\","+
-                    "\"agent_x\":\""+START.x+"\","+
-                    "\"agent_y\":\""+START.y+"\""+
-                    "}";
-
-            // write to output stream
-            try (OutputStream stream = conn.getOutputStream())
-            {
-                byte[] bytes = post_data.getBytes(StandardCharsets.UTF_8);
-                stream.write(bytes, 0, bytes.length);
-            }
-
-            // read response
-            BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8));
-            String line;
-            StringBuilder response = new StringBuilder();
-            while ((line = reader.readLine()) != null)
-            {
-                response.append(line);
-            }
-
-            // ! response should be empty
-            System.out.println("> " + this + " __postJOIN:" + response);
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace();
-        }
-    }
-    //</editor-fold>
-
-    private void __watch()
-    {
-        assert watchRef != null;
-
-        try {
-            // open websocket
-            String ws = "ws://"+this.getServer()+"/world/"+WORLD_ID+"/"+AGENT_ID;
-            websocket = new AgentClientWebsocketListener(new URI(ws));
-
-            // add handler
-            websocket.setMessageHandler(message -> {
-                //todo
-                System.out.println(">:"+message);
-            });
-
-            // send message
-            websocket.sendMessage("ping");
-        }
-        catch (URISyntaxException e)
-        {
-            e.printStackTrace();
-        }
-    }
-
-    public String getServer() { return "localhost:" + PORT; }
-
-    public void setWatchRef(WorldWatch worldWatch) { this.watchRef = worldWatch; }
 }
