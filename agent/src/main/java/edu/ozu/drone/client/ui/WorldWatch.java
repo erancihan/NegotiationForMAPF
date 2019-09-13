@@ -5,6 +5,8 @@
  */
 package edu.ozu.drone.client.ui;
 
+import edu.ozu.drone.client.AgentClient;
+
 /**
  *
  * @author freedrone
@@ -12,6 +14,7 @@ package edu.ozu.drone.client.ui;
 public class WorldWatch extends javax.swing.JPanel {
 
     private String agent_name;
+    private AgentClient client;
     private String server;
     private AgentUI parent;
     private String world_id;
@@ -21,7 +24,6 @@ public class WorldWatch extends javax.swing.JPanel {
      */
     public WorldWatch() {
         initComponents();
-        onComponentsDidMount();
     }
 
     /**
@@ -58,6 +60,10 @@ public class WorldWatch extends javax.swing.JPanel {
         this.agent_name = name;
     }
 
+    void setClient(AgentClient client) {
+        this.client = client;
+    }
+
     void setServer(String server) {
         this.server = server;
     }
@@ -74,12 +80,12 @@ public class WorldWatch extends javax.swing.JPanel {
     private javax.swing.JButton jButton1;
     // End of variables declaration//GEN-END:variables
 
-    private void onComponentsDidMount() {
-//        jButton1.setEnabled(true);
-//        jButton1.setVisible(true);
+    public void mount() {
+        System.out.println("> " + client + " WorldWatch mount");
+        client.join(server);
     }
 
-    public void unmounted() {
-        System.out.println("unmounted world_watch");
+    public void unmount() {
+        System.out.println("> " + client + " WorldWatch unmount");
     }
 }

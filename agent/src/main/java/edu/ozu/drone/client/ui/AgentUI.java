@@ -24,7 +24,7 @@ public class AgentUI extends javax.swing.JFrame {
     public AgentUI(AgentClient client) {
         this.client = client;
 
-        System.out.println("> " + this.client.getClass().getName());
+        System.out.println("> " + this.client + " AgentUI");
 
         initComponents();
         onComponentsDidMount();
@@ -77,14 +77,14 @@ public class AgentUI extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void onWindowClosed(java.awt.event.WindowEvent event) {//GEN-FIRST:event_onWindowClosed
-        System.out.println("> " + this.client.getClass().getName() + " window closed");
+        System.out.println("> " + this.client + " window closed");
 
         this.client.exit();
     }//GEN-LAST:event_onWindowClosed
 
     private void world_watchComponentHidden(java.awt.event.ComponentEvent event) {//GEN-FIRST:event_world_watchComponentHidden
 //        System.out.println("> " + this.client.getClass().getName() + " world_watch hidden");
-        world_watch.unmounted();
+        world_watch.unmount();
     }//GEN-LAST:event_world_watchComponentHidden
 
 //<editor-fold defaultstate="collapsed" desc="ignore main">
@@ -144,9 +144,11 @@ public class AgentUI extends javax.swing.JFrame {
         CardLayout cl = (CardLayout) worlds_info_container.getLayout();
         cl.show(worlds_info_container, "world_watch");
         world_watch.setAgentName(client.AGENT_NAME);
+        world_watch.setClient(client);
         world_watch.setParent(this);
         world_watch.setServer(client.getServer());
         world_watch.setWorldID(world_id);
+        world_watch.mount();
     }
 
     public void loadWorldsList() {
