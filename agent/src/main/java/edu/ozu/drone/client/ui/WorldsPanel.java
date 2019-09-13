@@ -253,6 +253,7 @@ public class WorldsPanel extends javax.swing.JPanel {
         }
     }
 
+    @SuppressWarnings("Duplicates")
     private void postWorldCreate() {
         String wid = String.valueOf(System.currentTimeMillis());
         try {
