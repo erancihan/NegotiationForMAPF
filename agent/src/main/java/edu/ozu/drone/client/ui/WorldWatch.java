@@ -103,12 +103,9 @@ public class WorldWatch extends javax.swing.JPanel {
             client.leave();
     }
 
-    public void draw(JSONWorldWatch watch)
+    public void draw(JSONWorldWatch data)
     {
-//        System.out.println(">:"+watch);
         canvas.setBackground(new Color(195, 224, 254));
-
-        String[][] fov = watch.fov;
-        System.out.println(Arrays.deepToString(fov));
+        canvas.setData(data);
     }
 }

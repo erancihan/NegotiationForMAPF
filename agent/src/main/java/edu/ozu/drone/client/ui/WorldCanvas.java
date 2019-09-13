@@ -5,12 +5,26 @@
  */
 package edu.ozu.drone.client.ui;
 
-import java.awt.Canvas;
+import edu.ozu.drone.utils.JSONWorldWatch;
+
+import java.awt.*;
 
 /**
  *
  * @author freedrone
  */
 public class WorldCanvas extends Canvas {
-    
+    private JSONWorldWatch data;
+
+    @Override
+    public void paint(Graphics graphics) {
+        super.paint(graphics);
+        System.out.println(">:" + data);
+    }
+
+    void setData(JSONWorldWatch data)
+    {
+        this.data = data;
+        this.repaint();
+    }
 }
