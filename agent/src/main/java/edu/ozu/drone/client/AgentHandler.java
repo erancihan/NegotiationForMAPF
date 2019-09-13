@@ -110,7 +110,7 @@ public class AgentHandler {
 
     private void __watch()
     {
-        assert watchUIRef != null;
+        Assert.notNull(watchUIRef, "Watch UI Reference cannot be null");
 
         try {
             // open websocket
