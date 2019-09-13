@@ -15,7 +15,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
 public class AgentHandler {
-    private String PORT = "3001";
+    private String SERVER = "localhost:3001";
     private String WORLD_ID = "";
 
     private AgentClient clientRef;
@@ -61,7 +61,7 @@ public class AgentHandler {
     {
         try
         {
-            URL url = new URL("http://" + this.getServer() + "/join");
+            URL url = new URL("http://" + SERVER + "/join");
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 
             conn.setRequestMethod("POST");
@@ -108,7 +108,7 @@ public class AgentHandler {
 
         try {
             // open websocket
-            String ws = "ws://"+this.getServer()+"/world/"+WORLD_ID+"/"+clientRef.AGENT_ID;
+            String ws = "ws://" + SERVER + "/world/" + WORLD_ID + "/" + clientRef.AGENT_ID;
             websocket = new AgentClientWebsocketListener(new URI(ws));
 
             // add handler
@@ -142,7 +142,7 @@ public class AgentHandler {
         }
     }
 
-    public String getServer() { return "localhost:" + PORT; }
+    public String getServer() { return SERVER; }
 
     public void setWatchUIRef(WorldWatch worldWatch) { this.watchUIRef = worldWatch; }
 
