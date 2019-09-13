@@ -1,6 +1,7 @@
 package edu.ozu.drone.client;
 
 import edu.ozu.drone.client.ui.AgentUI;
+import edu.ozu.drone.client.ui.WorldWatch;
 import edu.ozu.drone.utils.Point;
 
 import javax.swing.*;
@@ -31,6 +32,7 @@ public class AgentClient extends Runner {
     protected Point DEST;
 
     private List<String> path;
+    private WorldWatch watchRef;
 
     public AgentClient() {
         init();
@@ -395,4 +397,6 @@ public class AgentClient extends Runner {
     }
 
     public String getServer() { return "localhost:" + PORT; }
+
+    public void setWatchRef(WorldWatch worldWatch) { this.watchRef = worldWatch; }
 }
