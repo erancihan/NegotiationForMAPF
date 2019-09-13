@@ -227,6 +227,7 @@ public class WorldsPanel extends javax.swing.JPanel {
         }
     }
 
+    //<editor-fold defaultstate="collapsed" desc="get world list">
     private void getWorldList() {
         // fetch worlds list
         try {
@@ -252,7 +253,9 @@ public class WorldsPanel extends javax.swing.JPanel {
             e.printStackTrace();
         }
     }
+    //</editor-fold>
 
+    //<editor-fold defaultstate="collapsed" desc="post world create">
     @SuppressWarnings("Duplicates")
     private void postWorldCreate() {
         String wid = String.valueOf(System.currentTimeMillis());
@@ -297,6 +300,7 @@ public class WorldsPanel extends javax.swing.JPanel {
             e.printStackTrace();
         }
     }
+    //</editor-fold>
 
     private void join() {
         join_confirm.setVisible(true);
