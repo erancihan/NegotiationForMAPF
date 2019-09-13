@@ -1,6 +1,7 @@
 package edu.ozu.drone.client;
 
 import javax.websocket.*;
+import java.io.IOException;
 import java.net.URI;
 
 @ClientEndpoint
@@ -39,6 +40,11 @@ public class AgentClientWebsocketListener {
     {
         if (handler != null)
             this.handler.handle(message);
+    }
+
+    public void close() throws IOException
+    {
+        session.close();
     }
 
     public void setMessageHandler(MessageHandler handler)

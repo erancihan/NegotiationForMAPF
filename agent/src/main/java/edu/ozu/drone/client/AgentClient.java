@@ -23,6 +23,7 @@ import java.util.logging.Logger;
 public class AgentClient extends Runner {
     private String PORT = "3001";
     private String WORLD_ID = "";
+    private AgentClientWebsocketListener websocket;
 
     protected Boolean IS_HEADLESS = false;
 
@@ -66,6 +67,22 @@ public class AgentClient extends Runner {
         // post localhost:3001/join payload:{world_id, agent_id, agent_x, agent_y}
 
         // @response: watch()
+    }
+
+    /**
+     * Function to be called when world watch disconnects
+     * */
+    public void leave()
+    {
+        try
+        {
+            if (websocket != null)
+                websocket.close();
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -379,16 +396,16 @@ public class AgentClient extends Runner {
         try {
             // open websocket
             String ws = "ws://"+this.getServer()+"/world/"+WORLD_ID+"/"+AGENT_ID;
-            AgentClientWebsocketListener listener = new AgentClientWebsocketListener(new URI(ws));
+            websocket = new AgentClientWebsocketListener(new URI(ws));
 
             // add handler
-            listener.setMessageHandler(message -> {
+            websocket.setMessageHandler(message -> {
                 //todo
                 System.out.println(">:"+message);
             });
 
             // send message
-            listener.sendMessage("ping");
+            websocket.sendMessage("ping");
         }
         catch (URISyntaxException e)
         {
