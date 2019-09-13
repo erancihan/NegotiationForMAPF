@@ -55,7 +55,7 @@ public class AgentClient extends Runner {
     public void join(String world_id) {
         System.out.println("> " + this + " join " + world_id);
 
-        WORLD_ID = world_id;
+        WORLD_ID = world_id.split(":")[1];
 
         __postJOIN();
         __watch();

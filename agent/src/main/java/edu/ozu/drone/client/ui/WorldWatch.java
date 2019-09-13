@@ -83,10 +83,12 @@ public class WorldWatch extends javax.swing.JPanel {
     public void mount() {
         System.out.println("> " + client + " WorldWatch mount");
         client.setWatchRef(this);
-        client.join(server);
+        client.join(world_id);
     }
 
     public void unmount() {
         System.out.println("> " + client + " WorldWatch unmount");
+        if (client != null)
+            client.leave();
     }
 }
