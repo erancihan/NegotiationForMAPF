@@ -33,8 +33,8 @@ public class AgentClient extends Runner {
     private List<String> path;
 
     public AgentClient() {
-        handler = new AgentHandler(this);
         init();
+        handler = new AgentHandler(this);
     }
 
     public void init() { }

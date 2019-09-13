@@ -3,6 +3,8 @@ package edu.ozu.drone.client;
 import com.google.gson.Gson;
 import edu.ozu.drone.client.ui.WorldWatch;
 import edu.ozu.drone.utils.JSONWorldWatch;
+import edu.ozu.drone.utils.Point;
+import org.springframework.util.Assert;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -20,8 +22,9 @@ public class AgentHandler {
 
     private AgentClient clientRef;
     private AgentClientWebsocketListener websocket;
-    private WorldWatch watchUIRef;
     private Gson gson;
+    private Point AGENT_POS;
+    private WorldWatch watchUIRef;
 
     public String AGENT_NAME;
 
@@ -29,6 +32,9 @@ public class AgentHandler {
     {
         clientRef = client;
         AGENT_NAME = client.AGENT_NAME;
+
+        Assert.notNull(client.START, "«START cannot be null»");
+        AGENT_POS = client.START;
 
         gson = new Gson();
     }
