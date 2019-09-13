@@ -36,6 +36,7 @@ public class AgentClient extends Runner {
     public void init() { }
 
     void run() {
+        System.out.println("> " + this);
         __launchUI();
 
         path = calculatePath();
@@ -46,7 +47,8 @@ public class AgentClient extends Runner {
      *
      * @param worldId id of the world the agent will join to
      * */
-    void join(String worldId) {
+    public void join(String worldId) {
+        System.out.println(worldId);
         // todo
         // get path [0, 2]
 
