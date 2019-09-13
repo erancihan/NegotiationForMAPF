@@ -20,7 +20,7 @@ public class AgentHandler {
 
     private AgentClient clientRef;
     private AgentClientWebsocketListener websocket;
-    private WorldWatch watchRef;
+    private WorldWatch watchUIRef;
     private Gson gson;
 
     public String AGENT_NAME;
@@ -104,7 +104,7 @@ public class AgentHandler {
 
     private void __watch()
     {
-        assert watchRef != null;
+        assert watchUIRef != null;
 
         try {
             // open websocket
@@ -114,7 +114,7 @@ public class AgentHandler {
             // add handler
             websocket.setMessageHandler(message -> {
                 JSONWorldWatch watch = gson.fromJson(message, JSONWorldWatch.class);
-                System.out.println(">:"+watch);
+                watchUIRef.draw(watch);
             });
 
             // send message
@@ -144,7 +144,7 @@ public class AgentHandler {
 
     public String getServer() { return "localhost:" + PORT; }
 
-    public void setWatchRef(WorldWatch worldWatch) { this.watchRef = worldWatch; }
+    public void setWatchUIRef(WorldWatch worldWatch) { this.watchUIRef = worldWatch; }
 
     public void exit() {
         System.exit(0);

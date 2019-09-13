@@ -6,6 +6,7 @@
 package edu.ozu.drone.client.ui;
 
 import edu.ozu.drone.client.AgentHandler;
+import edu.ozu.drone.utils.JSONWorldWatch;
 
 /**
  *
@@ -82,7 +83,7 @@ public class WorldWatch extends javax.swing.JPanel {
 
     public void mount() {
         System.out.println("> " + client + " WorldWatch mount");
-        client.setWatchRef(this);
+        client.setWatchUIRef(this);
         client.join(world_id);
     }
 
@@ -90,5 +91,9 @@ public class WorldWatch extends javax.swing.JPanel {
         System.out.println("> " + client + " WorldWatch unmount");
         if (client != null)
             client.leave();
+    }
+
+    public void draw(JSONWorldWatch watch) {
+        System.out.println(">:"+watch);
     }
 }
