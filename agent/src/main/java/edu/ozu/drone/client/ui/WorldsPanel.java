@@ -230,7 +230,8 @@ public class WorldsPanel extends javax.swing.JPanel {
     //<editor-fold defaultstate="collapsed" desc="get world list">
     private void getWorldList() {
         // fetch worlds list
-        try {
+        try
+        {
             URL url = new URL("http://" + this.server + "/worlds");
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 
@@ -249,8 +250,17 @@ public class WorldsPanel extends javax.swing.JPanel {
             JSONWorldsList wl = gson.fromJson(String.valueOf(response), JSONWorldsList.class);
             worlds_list.setListData(wl.getWorlds());
 //            System.out.println("worlds:" + Arrays.toString(wl.getWorlds()));
-        } catch (IOException e) {
-            e.printStackTrace();
+        }
+        catch (IOException error)
+        {
+            if (error.getClass().getName().equals("java.net.ConnectException"))
+            {
+                System.err.println("«check server status»");;
+            }
+            else
+            {
+                error.printStackTrace();
+            }
         }
     }
     //</editor-fold>
@@ -259,7 +269,8 @@ public class WorldsPanel extends javax.swing.JPanel {
     @SuppressWarnings("Duplicates")
     private void postWorldCreate() {
         String wid = String.valueOf(System.currentTimeMillis());
-        try {
+        try
+        {
             URL url = new URL("http://" + this.server + "/world/create");
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 
@@ -296,8 +307,17 @@ public class WorldsPanel extends javax.swing.JPanel {
             System.out.println("> create world response: " + wc);
 
             join();
-        } catch (IOException e) {
-            e.printStackTrace();
+        }
+        catch (IOException error)
+        {
+            if (error.getClass().getName().equals("java.net.ConnectException"))
+            {
+                System.err.println("«check server status»");;
+            }
+            else
+            {
+                error.printStackTrace();
+            }
         }
     }
     //</editor-fold>
