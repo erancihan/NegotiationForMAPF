@@ -51,6 +51,7 @@ public class WorldWatch extends javax.swing.JPanel {
         setLayout(new java.awt.GridBagLayout());
 
         canvas_container.setMinimumSize(new java.awt.Dimension(300, 300));
+        canvas_container.setPreferredSize(new java.awt.Dimension(300, 300));
         canvas_container.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0));
 
         canvas.setPreferredSize(new java.awt.Dimension(300, 300));
