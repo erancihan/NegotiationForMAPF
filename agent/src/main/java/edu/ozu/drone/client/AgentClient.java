@@ -1,29 +1,16 @@
 package edu.ozu.drone.client;
 
 import edu.ozu.drone.client.ui.AgentUI;
-import edu.ozu.drone.client.ui.WorldWatch;
 import edu.ozu.drone.utils.Point;
 
 import javax.swing.*;
-import java.awt.*;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class AgentClient extends Runner {
     private AgentHandler handler;
-
-    protected Boolean IS_HEADLESS = false;
+    private boolean hasUI;
 
     public String AGENT_NAME = "";
     protected String AGENT_ID   = "";
@@ -32,16 +19,25 @@ public class AgentClient extends Runner {
 
     private List<String> path;
 
-    public AgentClient() {
+    public AgentClient(boolean ui) {
+        hasUI = ui;
         init();
         handler = new AgentHandler(this);
+    }
+
+    public AgentClient()
+    {
+        this(true);
     }
 
     public void init() { }
 
     void run() {
         System.out.println("> " + this);
-        __launchUI();
+        if (hasUI)
+        {
+            __launchUI();
+        }
 
         path = calculatePath();
     }
