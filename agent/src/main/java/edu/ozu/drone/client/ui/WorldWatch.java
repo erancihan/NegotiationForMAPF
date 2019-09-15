@@ -42,7 +42,7 @@ public class WorldWatch extends javax.swing.JPanel {
 
         javax.swing.JPanel canvas_container = new javax.swing.JPanel();
         canvas = new edu.ozu.drone.client.ui.WorldCanvas();
-        jPanel2 = new javax.swing.JPanel();
+        javax.swing.JPanel controls = new javax.swing.JPanel();
 
         setBackground(new java.awt.Color(254, 254, 254));
         setToolTipText("");
@@ -59,21 +59,10 @@ public class WorldWatch extends javax.swing.JPanel {
 
         add(canvas_container, new java.awt.GridBagConstraints());
 
-        jPanel2.setBackground(new java.awt.Color(249, 51, 51));
-        jPanel2.setPreferredSize(new java.awt.Dimension(300, 300));
-
-        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 300, Short.MAX_VALUE)
-        );
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 300, Short.MAX_VALUE)
-        );
-
-        add(jPanel2, new java.awt.GridBagConstraints());
+        controls.setBackground(new java.awt.Color(164, 221, 252));
+        controls.setPreferredSize(new java.awt.Dimension(300, 300));
+        controls.setLayout(new java.awt.GridBagLayout());
+        add(controls, new java.awt.GridBagConstraints());
     }// </editor-fold>//GEN-END:initComponents
 
     void setAgentName(String name) {
@@ -98,7 +87,6 @@ public class WorldWatch extends javax.swing.JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private edu.ozu.drone.client.ui.WorldCanvas canvas;
-    private javax.swing.JPanel jPanel2;
     // End of variables declaration//GEN-END:variables
 
     public void mount()
