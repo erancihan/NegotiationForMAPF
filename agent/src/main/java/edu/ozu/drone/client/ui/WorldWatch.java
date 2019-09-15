@@ -54,11 +54,6 @@ public class WorldWatch extends javax.swing.JPanel {
         canvas_container.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0));
 
         canvas.setPreferredSize(new java.awt.Dimension(300, 300));
-        canvas.addComponentListener(new java.awt.event.ComponentAdapter() {
-            public void componentResized(java.awt.event.ComponentEvent evt) {
-                canvasComponentResized(evt);
-            }
-        });
         canvas_container.add(canvas);
 
         add(canvas_container, new java.awt.GridBagConstraints());
@@ -79,10 +74,6 @@ public class WorldWatch extends javax.swing.JPanel {
 
         add(jPanel2, new java.awt.GridBagConstraints());
     }// </editor-fold>//GEN-END:initComponents
-
-    private void canvasComponentResized(java.awt.event.ComponentEvent event) {//GEN-FIRST:event_canvasComponentResized
-        System.out.println("> " + event.getComponent().getWidth() + ":" + event.getComponent().getHeight() + " resized");
-    }//GEN-LAST:event_canvasComponentResized
 
     void setAgentName(String name) {
         this.agent_name = name;
