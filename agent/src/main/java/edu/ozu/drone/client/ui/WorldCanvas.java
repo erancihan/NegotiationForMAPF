@@ -66,9 +66,8 @@ public class WorldCanvas extends Canvas {
                 {
                     int cx = xy_own.x - fov_center + x;
                     int cy = xy_own.y - fov_center + y;
-                    if (cx >= 0 && cy >= 0) {
-                        continue;
-                    }
+
+                    if (cx >= 0 && cy >= 0) { continue; }
 
                     graphics.setColor(new java.awt.Color(56, 56, 56));
                     graphics.fillRect((offset + (x * r) + 1), (offset + (y * r) + 1), (r - 1), (r - 1));
