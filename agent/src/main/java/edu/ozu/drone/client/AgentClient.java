@@ -32,6 +32,11 @@ public class AgentClient extends Runner {
 
     public void init() { }
 
+    void setHeadless(boolean b)
+    {
+        hasUI = !b;
+    }
+
     void run() {
         System.out.println("> " + this);
         if (hasUI)
