@@ -40,31 +40,49 @@ public class WorldWatch extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        javax.swing.JPanel canvas_container = new javax.swing.JPanel();
         canvas = new edu.ozu.drone.client.ui.WorldCanvas();
+        jPanel2 = new javax.swing.JPanel();
 
         setBackground(new java.awt.Color(254, 254, 254));
         setToolTipText("");
+        setMinimumSize(new java.awt.Dimension(400, 300));
         setPreferredSize(new java.awt.Dimension(400, 300));
+        setLayout(new java.awt.GridBagLayout());
 
-        canvas.setPreferredSize(new java.awt.Dimension(400, 300));
+        canvas_container.setMinimumSize(new java.awt.Dimension(300, 300));
+        canvas_container.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0));
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(canvas, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
+        canvas.setPreferredSize(new java.awt.Dimension(300, 300));
+        canvas.addComponentListener(new java.awt.event.ComponentAdapter() {
+            public void componentResized(java.awt.event.ComponentEvent evt) {
+                canvasComponentResized(evt);
+            }
+        });
+        canvas_container.add(canvas);
+
+        add(canvas_container, new java.awt.GridBagConstraints());
+
+        jPanel2.setBackground(new java.awt.Color(249, 51, 51));
+        jPanel2.setPreferredSize(new java.awt.Dimension(100, 300));
+
+        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 100, Short.MAX_VALUE)
         );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(canvas, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 300, Short.MAX_VALUE)
         );
+
+        add(jPanel2, new java.awt.GridBagConstraints());
     }// </editor-fold>//GEN-END:initComponents
+
+    private void canvasComponentResized(java.awt.event.ComponentEvent event) {//GEN-FIRST:event_canvasComponentResized
+        System.out.println("> " + event.getComponent().getWidth() + ":" + event.getComponent().getHeight() + " resized");
+    }//GEN-LAST:event_canvasComponentResized
 
     void setAgentName(String name) {
         this.agent_name = name;
@@ -88,6 +106,7 @@ public class WorldWatch extends javax.swing.JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private edu.ozu.drone.client.ui.WorldCanvas canvas;
+    private javax.swing.JPanel jPanel2;
     // End of variables declaration//GEN-END:variables
 
     public void mount()

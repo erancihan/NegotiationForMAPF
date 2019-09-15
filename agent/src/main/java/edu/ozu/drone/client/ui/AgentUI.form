@@ -75,6 +75,11 @@
           </Constraints>
         </Component>
         <Component class="edu.ozu.drone.client.ui.WorldWatch" name="world_watch">
+          <Properties>
+            <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+              <Dimension value="[400, 300]"/>
+            </Property>
+          </Properties>
           <Events>
             <EventHandler event="componentHidden" listener="java.awt.event.ComponentListener" parameters="java.awt.event.ComponentEvent" handler="world_watchComponentHidden"/>
           </Events>

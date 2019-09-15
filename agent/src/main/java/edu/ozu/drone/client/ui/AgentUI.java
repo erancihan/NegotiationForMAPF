@@ -65,6 +65,7 @@ public class AgentUI extends javax.swing.JFrame {
         worlds_info_container.setLayout(new java.awt.CardLayout());
         worlds_info_container.add(worlds_list, "worlds_list");
 
+        world_watch.setMinimumSize(new java.awt.Dimension(400, 300));
         world_watch.addComponentListener(new java.awt.event.ComponentAdapter() {
             public void componentHidden(java.awt.event.ComponentEvent evt) {
                 world_watchComponentHidden(evt);
