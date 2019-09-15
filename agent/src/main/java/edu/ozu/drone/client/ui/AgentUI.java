@@ -47,6 +47,11 @@ public class AgentUI extends javax.swing.JFrame {
         world_watch = new edu.ozu.drone.client.ui.WorldWatch();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        addComponentListener(new java.awt.event.ComponentAdapter() {
+            public void componentResized(java.awt.event.ComponentEvent evt) {
+                formComponentResized(evt);
+            }
+        });
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosed(java.awt.event.WindowEvent evt) {
                 onWindowClosed(evt);
@@ -54,6 +59,7 @@ public class AgentUI extends javax.swing.JFrame {
         });
 
         agent_info.setMinimumSize(new java.awt.Dimension(100, 100));
+        agent_info.setPreferredSize(new java.awt.Dimension(89, 30));
         agent_info.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
 
         agent_name.setText("agent-name");
@@ -65,7 +71,6 @@ public class AgentUI extends javax.swing.JFrame {
         worlds_info_container.setLayout(new java.awt.CardLayout());
         worlds_info_container.add(worlds_list, "worlds_list");
 
-        world_watch.setMinimumSize(new java.awt.Dimension(400, 300));
         world_watch.addComponentListener(new java.awt.event.ComponentAdapter() {
             public void componentHidden(java.awt.event.ComponentEvent evt) {
                 world_watchComponentHidden(evt);
@@ -88,6 +93,10 @@ public class AgentUI extends javax.swing.JFrame {
 //        System.out.println("> " + this.client.getClass().getName() + " world_watch hidden");
         world_watch.unmount();
     }//GEN-LAST:event_world_watchComponentHidden
+
+    private void formComponentResized(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_formComponentResized
+        System.out.println(">::(w" + evt.getComponent().getWidth() + ",h" + evt.getComponent().getHeight() + ")");
+    }//GEN-LAST:event_formComponentResized
 
 //<editor-fold defaultstate="collapsed" desc="ignore main">
 //    /**
@@ -135,13 +144,15 @@ public class AgentUI extends javax.swing.JFrame {
     private edu.ozu.drone.client.ui.WorldsPanel worlds_list;
     // End of variables declaration//GEN-END:variables
 
-    private void onComponentsDidMount() {
+    private void onComponentsDidMount()
+    {
         agent_name.setText(client.AGENT_NAME);
 
         loadWorldsList();
     }
 
-    public void join(String world_id) {
+    public void join(String world_id)
+    {
         // switch to watch ui
         CardLayout cl = (CardLayout) worlds_info_container.getLayout();
         cl.show(worlds_info_container, "world_watch");
@@ -151,14 +162,19 @@ public class AgentUI extends javax.swing.JFrame {
         world_watch.setServer(client.getServer());
         world_watch.setWorldID(world_id);
         world_watch.mount();
+
+        this.setSize(600, 367);
     }
 
-    public void loadWorldsList() {
+    public void loadWorldsList()
+    {
         CardLayout cl = (CardLayout) worlds_info_container.getLayout();
         cl.show(worlds_info_container, "worlds_list");
         worlds_list.setAgentName(client.AGENT_NAME);
         worlds_list.setParent(this);
         worlds_list.setServer(client.getServer());
         worlds_list.loadList();
+
+        this.setSize(400, 367);
     }
 }

@@ -46,8 +46,8 @@ public class WorldWatch extends javax.swing.JPanel {
 
         setBackground(new java.awt.Color(254, 254, 254));
         setToolTipText("");
-        setMinimumSize(new java.awt.Dimension(400, 300));
-        setPreferredSize(new java.awt.Dimension(400, 300));
+        setMinimumSize(new java.awt.Dimension(600, 300));
+        setPreferredSize(new java.awt.Dimension(600, 300));
         setLayout(new java.awt.GridBagLayout());
 
         canvas_container.setMinimumSize(new java.awt.Dimension(300, 300));
@@ -60,13 +60,13 @@ public class WorldWatch extends javax.swing.JPanel {
         add(canvas_container, new java.awt.GridBagConstraints());
 
         jPanel2.setBackground(new java.awt.Color(249, 51, 51));
-        jPanel2.setPreferredSize(new java.awt.Dimension(100, 300));
+        jPanel2.setPreferredSize(new java.awt.Dimension(300, 300));
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 100, Short.MAX_VALUE)
+            .addGap(0, 300, Short.MAX_VALUE)
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
