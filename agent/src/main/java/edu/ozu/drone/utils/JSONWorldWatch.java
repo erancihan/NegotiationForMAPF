@@ -22,7 +22,7 @@ public class JSONWorldWatch {
                 "\"time\":"+time+"," +
                 "\"can_move\":"+can_move+"," +
                 "\"position\":"+position+"," +
-                "\"fov\":"+fov+"," +
+                "\"fov\":"+ java.util.Arrays.deepToString(fov)+"," +
                 "\"fov_size\":"+fov_size+"," +
                 "\"exec_time\":"+exec_time + "}";
     }
