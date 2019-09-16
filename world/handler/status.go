@@ -19,7 +19,7 @@ type (
 		WorldId     string     `json:"world_id"`
 		PlayerCount int        `json:"pc"`
 		Time        int64      `json:"time"`
-		CanMove     int        `json:"can_move"`
+		WorldState  int        `json:"world_state"`
 		Position    string     `json:"position"`
 		Fov         [][]string `json:"fov"`
 		FovSize     int        `json:"fov_size"`
@@ -74,7 +74,7 @@ func (h *Handler) GetStatus(ctx echo.Context, rds redis.Conn, p *WorldPool, st t
 	status.WorldId = wid
 	status.FovSize = Fov
 	status.PlayerCount, _ = strconv.Atoi(rdsStatus.PlayerCount)
-	status.CanMove = rdsStatus.WorldState
+	status.WorldState = rdsStatus.WorldState
 
 	agentIsAt, err := redis.String(rds.Do("HGET", "map:world:"+wid, "agent:"+aid))
 	if err != nil {

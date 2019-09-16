@@ -7,7 +7,7 @@ public class JSONWorldWatch {
     public String world_id;
     @SerializedName("pc") public int player_count;
     @SerializedName("time") public long time;
-    public int can_move;
+    public int world_state;
     public String position;
     public String[][] fov;
     public int fov_size;
@@ -20,7 +20,7 @@ public class JSONWorldWatch {
                 "\"world_id\":"+world_id+"," +
                 "\"pc\":"+player_count+"," +
                 "\"time\":"+time+"," +
-                "\"can_move\":"+can_move+"," +
+                "\"world_state\":"+world_state+"," +
                 "\"position\":"+position+"," +
                 "\"fov\":"+ java.util.Arrays.deepToString(fov)+"," +
                 "\"fov_size\":"+fov_size+"," +
