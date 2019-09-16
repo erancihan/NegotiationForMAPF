@@ -38,13 +38,14 @@ public class AgentClient extends Runner {
     }
 
     void run() {
-        System.out.println("> " + this);
+        System.out.println("> " + this + " calculating path");
+        path = calculatePath();
+
         if (hasUI)
         {
+            System.out.println("> " + this + "display ui");
             __launchUI();
         }
-
-        path = calculatePath();
     }
 
     /**
@@ -85,6 +86,24 @@ public class AgentClient extends Runner {
 
     public List<String> calculatePath() {
         return AStar(START, DEST);
+    }
+
+    String getBroadcast(int time)
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append("[");
+        for (int i = time; (i < path.size()) && (i < time + 3); i++)
+        {
+            sb.append(path.get(i));
+            if ((i+1 < path.size()) && (i+1 < time + 3)) sb.append(",");
+        }
+        sb.append("]");
+        return String.valueOf(sb);
+    }
+
+    String getBroadcast()
+    {
+        return getBroadcast(0);
     }
 
     //<editor-fold defaultstate="collapsed" desc="A-Star implementation">

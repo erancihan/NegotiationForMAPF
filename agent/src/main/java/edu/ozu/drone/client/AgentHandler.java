@@ -79,7 +79,8 @@ public class AgentHandler {
                     "\"world_id\":\""+WORLD_ID+"\","+
                     "\"agent_id\":\""+clientRef.AGENT_ID+"\","+
                     "\"agent_x\":\""+clientRef.START.x+"\","+
-                    "\"agent_y\":\""+clientRef.START.y+"\""+
+                    "\"agent_y\":\""+clientRef.START.y+"\","+
+                    "\"broadcast\":\""+clientRef.getBroadcast()+"\""+
                     "}";
 
             // write to output stream
