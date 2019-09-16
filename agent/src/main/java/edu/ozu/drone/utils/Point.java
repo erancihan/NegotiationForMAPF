@@ -14,4 +14,12 @@ public class Point {
     public double ManhattanDistTo(Point to) {
         return Math.abs(x - to.x) + Math.abs(y - to.y);
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o instanceof Point)
+            return (x == ((Point) o).x) && (y == ((Point) o).y);
+        else
+            return false;
+    }
 }
