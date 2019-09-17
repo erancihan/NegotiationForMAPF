@@ -102,7 +102,7 @@ func (t *SessionMap) Delete(key string) {
 	delete(t.m, key)
 }
 
-func (n *NegotiationHandler) SessionSocket(ctx echo.Context) error {
+func (n *NegotiationHandler) Socket(ctx echo.Context) error {
 	sid := ctx.Param("session_id")
 	// todo creation of sessions should be regulated
 
@@ -186,4 +186,16 @@ func readSessionMessages(ctx echo.Context, client *SessionClient) {
 
 func (n *NegotiationHandler) UpdateStatus(ctx echo.Context, pool *SessionPool) {
 	// todo
+}
+
+func (n *NegotiationHandler) Sessions(ctx echo.Context) (err error) { // GET
+	return ctx.NoContent(http.StatusOK)
+}
+
+func (n *NegotiationHandler) Notify(ctx echo.Context) (err error) { // POST
+	return ctx.NoContent(http.StatusOK)
+}
+
+func (n *NegotiationHandler) Bid(ctx echo.Context) (err error) { // POST
+	return ctx.NoContent(http.StatusOK)
 }

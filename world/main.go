@@ -77,13 +77,18 @@ func main() {
 	e.GET("/", h.Home)
 	e.GET("/uuid", h.UKey)
 	e.GET("/worlds", h.WorldList)
+	e.GET("/world/:world_id/:agent_id", h.Socket)
+	//e.GET("/world/:key", h.Socket)
 	e.POST("/world/create", h.CreateWorld)
 	e.POST("/move", h.Move)
 	e.POST("/join", h.Join)
 
-	// sockets
-	e.GET("/world/:world_id/:agent_id", h.WorldSocket)
-	e.GET("/session/:session_id", n.SessionSocket)
+	// negotiation routes
+	e.GET("/negotiation/sessions", n.Sessions)
+	e.GET("/negotiation/session/:session_id/:agent_id", n.Socket)
+	//e.GET("/negotiation/session/:key", n.Socket)
+	e.POST("/negotiation/notify", n.Notify)
+	e.POST("/negotiation/bid", n.Bid)
 
 	e.File("/test", "res/test.html")
 

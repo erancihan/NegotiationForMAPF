@@ -100,7 +100,7 @@ func readMsgs(client *Client, c echo.Context) {
 }
 
 // todo /world/:wid should not create entry on connection
-func (h *Handler) WorldSocket(ctx echo.Context) error {
+func (h *Handler) Socket(ctx echo.Context) error {
 	wid := ctx.Param("world_id")
 	aid := ctx.Param("agent_id")
 	id := wid + ":" + aid
