@@ -149,7 +149,7 @@ public class AgentHandler {
                 break;
             case 1:
                 // collision check
-                if (checkCollision(watch.fov))
+                if (hasCollision(watch.fov))
                 { // negotiation notification
                     notifyNegotiation();
                 }
@@ -166,9 +166,19 @@ public class AgentHandler {
         }
     }
 
-    private boolean checkCollision(String[][] fov)
+    private boolean hasCollision(String[][] fov)
     {
-        // todo
+        for (String[] item: fov)
+        {
+            if (item[2].equals("-")) { continue; }
+
+            String[] next = item[2].replaceAll("[\\[\\]]", "").split(",");
+            for (int i = 0; i < next.length; i++)
+            {
+                String a = clientRef.path.get(clientRef.time + i);
+                if (a.equals(next[i])) { return true; }
+            }
+        }
         return false;
     }
 
