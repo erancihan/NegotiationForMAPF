@@ -12,7 +12,7 @@ public class HelloAgent extends AgentClient {
         AGENT_NAME = "Hello Agent";
         AGENT_ID   = "S006486";
 
-        START = new Point(0, 0);
-        DEST = new Point(4, 4);
+        START = new Point(0, 1);
+        DEST = new Point(3, 1);
     }
 }
