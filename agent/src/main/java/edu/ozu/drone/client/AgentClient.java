@@ -12,12 +12,14 @@ public class AgentClient extends Runner {
     private AgentHandler handler;
     private boolean hasUI;
 
-    public String AGENT_NAME = "";
+    protected String AGENT_NAME = "";
     protected String AGENT_ID   = "";
     protected Point START;
     protected Point DEST;
 
-    private List<String> path;
+    Point POS;
+    List<String> path;
+    int time = 0;
 
     public AgentClient(boolean ui) {
         hasUI = ui;
@@ -39,7 +41,7 @@ public class AgentClient extends Runner {
 
     void run() {
         System.out.println("> " + this + " calculating path");
-        path = calculatePath();
+        path = calculatePath(START, DEST);
 
         if (hasUI)
         {
@@ -48,47 +50,12 @@ public class AgentClient extends Runner {
         }
     }
 
-    /**
-     * The function that be invoked at the end of each session
-     * (world_state == 2)
-     *
-     * */
-    private void move() {
-        // post localhost:3001/move payload:{world_id, agent_id, agent_x, agent_y, direction}
-        // direction -> {N, W, E, S}
-
-        // response should match with next path point in line
-    }
-
-    /**
-     * The function that is invoked after agent joins a world. Allows agent
-     * to observe the state of the environment.
-     *
-     * Essentially handles invocations of other functions depending on the
-     * {world_state}:
-     * 0 -> collision check
-     * 1 -> negotiation step
-     * 2 -> move step
-     *
-     * */
-    private void watch() {
-        // ws://localhost:3001/world/{world_id}/{agent_id}
-
-        // collision check @ every incoming message
-        hasCollisions();
-
-        // ping server
-    }
-
-    private boolean hasCollisions() {
-        return false;
-    }
-
-    public List<String> calculatePath() {
+    public List<String> calculatePath(Point START, Point DEST)
+    {
         return AStar(START, DEST);
     }
 
-    String getBroadcast(int time)
+    String getBroadcast()
     {
         StringBuilder sb = new StringBuilder();
         sb.append("[");
@@ -99,11 +66,6 @@ public class AgentClient extends Runner {
         }
         sb.append("]");
         return String.valueOf(sb);
-    }
-
-    String getBroadcast()
-    {
-        return getBroadcast(0);
     }
 
     //<editor-fold defaultstate="collapsed" desc="A-Star implementation">
