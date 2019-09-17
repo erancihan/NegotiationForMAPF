@@ -39,7 +39,13 @@ public class AgentClient extends Runner {
         hasUI = !b;
     }
 
-    void run() {
+    public List<String> calculatePath(Point START, Point DEST)
+    {
+        return AStar(START, DEST);
+    }
+
+    void run()
+    {
         System.out.println("> " + this + " calculating path");
         path = calculatePath(START, DEST);
 
@@ -48,11 +54,6 @@ public class AgentClient extends Runner {
             System.out.println("> " + this + "display ui");
             __launchUI();
         }
-    }
-
-    public List<String> calculatePath(Point START, Point DEST)
-    {
-        return AStar(START, DEST);
     }
 
     String getBroadcast()
