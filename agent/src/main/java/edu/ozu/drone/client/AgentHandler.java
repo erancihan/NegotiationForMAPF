@@ -52,13 +52,6 @@ public class AgentHandler {
 
         __postJOIN();
         __watch();
-        // todo
-        // get path [0, 2]
-
-        // join
-        // post localhost:3001/join payload:{world_id, agent_id, agent_x, agent_y}
-
-        // @response: watch()
     }
 
     //<editor-fold defaultstate="collapsed" desc="post join">
