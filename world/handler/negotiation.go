@@ -188,7 +188,7 @@ func (n *NegotiationHandler) UpdateStatus(ctx echo.Context, pool *SessionPool) {
 	// todo
 }
 
-func (n *NegotiationHandler) Sessions(ctx echo.Context) (err error) { // GET
+func (n *NegotiationHandler) Sessions(ctx echo.Context) (err error) { // POST
 	return ctx.NoContent(http.StatusOK)
 }
 
