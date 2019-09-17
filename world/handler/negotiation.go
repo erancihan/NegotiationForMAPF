@@ -188,14 +188,17 @@ func (n *NegotiationHandler) UpdateStatus(ctx echo.Context, pool *SessionPool) {
 	// todo
 }
 
-func (n *NegotiationHandler) Sessions(ctx echo.Context) (err error) { // POST
+//@POST
+func (n *NegotiationHandler) Sessions(ctx echo.Context) (err error) {
 	return ctx.NoContent(http.StatusOK)
 }
 
-func (n *NegotiationHandler) Notify(ctx echo.Context) (err error) { // POST
+//@POST
+func (n *NegotiationHandler) Notify(ctx echo.Context) (err error) {
 	return ctx.NoContent(http.StatusOK)
 }
 
-func (n *NegotiationHandler) Bid(ctx echo.Context) (err error) { // POST
+//@POST
+func (n *NegotiationHandler) Bid(ctx echo.Context) (err error) {
 	return ctx.NoContent(http.StatusOK)
 }
