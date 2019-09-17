@@ -197,17 +197,45 @@ public class AgentHandler {
 
     private void move()
     {
-         String[] pos_now = clientRef.path.get(clientRef.time).split("-");
+         String[] curr = clientRef.path.get(clientRef.time).split("-");
          if (clientRef.time < clientRef.path.size())
          {
-             String[] pos_next = clientRef.path.get(clientRef.time + 1).split("-");
+             String[] next = clientRef.path.get(clientRef.time + 1).split("-");
 
-             // todo calculate direction
-             // todo calculate broadcast
+             String direction = direction(curr, next);
+             Assert.isTrue((direction.length() > 0), "«DIRECTION cannot be empty»");
 
-             __postMOVE("", "");
+             String broadcast = clientRef.getBroadcast();
+
+             __postMOVE(direction, broadcast);
              clientRef.time = clientRef.time + 1;
          }
+    }
+
+    private String direction(String[] curr, String[] next) {
+        int c_x = Integer.parseInt(curr[0]);
+        int c_y = Integer.parseInt(curr[1]);
+
+        int n_x = Integer.parseInt(next[0]);
+        int n_y = Integer.parseInt(next[1]);
+
+        if (n_x == c_x)
+        {
+            if (n_y - c_y < 0)
+                return "N";
+            if (n_y - c_y > 0)
+                return "S";
+        }
+
+        if (n_y == c_y)
+        {
+            if (n_x - c_x < 0)
+                return "W";
+            if (n_x - c_x > 0)
+                return "E";
+        }
+
+        return "";
     }
 
     //<editor-fold defaultstate="collapsed" desc="post move">
