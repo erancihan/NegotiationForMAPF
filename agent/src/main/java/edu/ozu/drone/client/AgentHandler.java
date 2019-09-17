@@ -21,7 +21,7 @@ public class AgentHandler {
     private String WORLD_ID = "";
 
     private AgentClient clientRef;
-    private AgentClientWebsocketListener websocket;
+    private WorldWatchWS websocket;
     private Gson gson;
     private Point AGENT_POSITION;
     private WorldWatch watchUIRef;
@@ -109,7 +109,7 @@ public class AgentHandler {
         try {
             // open websocket
             String ws = "ws://" + SERVER + "/world/" + WORLD_ID + "/" + clientRef.AGENT_ID;
-            websocket = new AgentClientWebsocketListener(new URI(ws));
+            websocket = new WorldWatchWS(new URI(ws));
 
             // add handler
             websocket.setMessageHandler(message -> {

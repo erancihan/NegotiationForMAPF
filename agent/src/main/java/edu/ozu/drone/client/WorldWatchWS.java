@@ -5,12 +5,12 @@ import java.io.IOException;
 import java.net.URI;
 
 @ClientEndpoint
-public class AgentClientWebsocketListener {
+public class WorldWatchWS {
 
     Session session = null;
-    private AgentClientWebsocketListener.MessageHandler handler;
+    private WorldWatchWS.MessageHandler handler;
 
-    public AgentClientWebsocketListener(URI endpoint)
+    public WorldWatchWS(URI endpoint)
     {
         try
         {
