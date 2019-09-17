@@ -6,8 +6,7 @@ import java.net.URI;
 
 @ClientEndpoint
 public class WorldWatchWS {
-
-    Session session = null;
+    private Session session = null;
     private WorldWatchWS.MessageHandler handler;
 
     public WorldWatchWS(URI endpoint)
