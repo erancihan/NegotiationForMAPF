@@ -189,11 +189,24 @@ public class AgentHandler {
 
     private void negotiate()
     {
-        // todo get next paths
-        // todo update path
-        // todo recalculate
-        clientRef.calculatePath(new Point(1,1), new Point(1, 1));
+        // todo check if negotiating
+        // if (negotiating):
+            // join negotiation session WS
+            // on close
+            // todo get next paths
+            // todo update path
+            // todo recalculate
+        // else:
+            // done
+
+//        clientRef.calculatePath(new Point(1,1), new Point(1, 1));
     }
+
+    private void negotiating()
+    {}
+
+    private void negotiated()
+    {}
 
     private void move()
     {
