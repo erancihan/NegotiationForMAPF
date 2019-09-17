@@ -168,6 +168,7 @@ public class AgentHandler {
 
     private boolean checkCollision(String[][] fov)
     {
+        // todo
         return false;
     }
 
