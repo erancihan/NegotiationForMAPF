@@ -58,12 +58,14 @@ public class AgentClient extends Runner {
 
     String getBroadcast()
     {
+        int broadcast_size = 3;
+
         StringBuilder sb = new StringBuilder();
         sb.append("[");
-        for (int i = time; (i < path.size()) && (i < time + 3); i++)
+        for (int i = time; (i < path.size()) && (i < time + broadcast_size); i++)
         {
             sb.append(path.get(i));
-            if ((i+1 < path.size()) && (i+1 < time + 3)) sb.append(",");
+            if ((i+1 < path.size()) && (i+1 < time + broadcast_size)) sb.append(",");
         }
         sb.append("]");
         return String.valueOf(sb);
