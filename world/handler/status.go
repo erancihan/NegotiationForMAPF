@@ -76,7 +76,7 @@ func (h *Handler) GetStatus(ctx echo.Context, rds redis.Conn, p *WorldPool, st t
 	status.PlayerCount, _ = strconv.Atoi(rdsStatus.PlayerCount)
 	status.WorldState = rdsStatus.WorldState
 
-	agentIsAt, err := redis.String(rds.Do("HGET", "map:world:"+wid, "agent:"+aid))
+	agentIsAt, err := redis.String(rds.Do("HGET", "world:"+wid+":map", "agent:"+aid))
 	if err != nil {
 		return status, nil
 	}
@@ -95,7 +95,7 @@ func (h *Handler) GetStatus(ctx echo.Context, rds redis.Conn, p *WorldPool, st t
 			ayS := ay + (i - Fov/2)
 
 			at := strconv.Itoa(axS) + ":" + strconv.Itoa(ayS)
-			agentInFov, _ := redis.String(rds.Do("HGET", "map:world:"+wid, at))
+			agentInFov, _ := redis.String(rds.Do("HGET", "world:"+wid+":map", at))
 			if len(agentInFov) > 0  && !(ax == axS && ay == ayS) {
 				path, err := redis.String(rds.Do("HGET", "path:world:"+wid, agentInFov))
 				if err != nil { path = "-" }
