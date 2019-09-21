@@ -1,4 +1,4 @@
-package handler
+package negotiation_handler
 
 import (
 	"github.com/gomodule/redigo/redis"
