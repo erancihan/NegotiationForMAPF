@@ -243,21 +243,66 @@ public class AgentHandler {
 
     private void negotiate()
     {
-        // todo check if negotiating
-        // if (negotiating):
+        String sessions = sessions();
+        if (sessions.length() > 0)
+        { // negotiating
             // join negotiation session WS
             // on close
             // todo get next paths
             // todo update path
             // todo recalculate
+        }
         // else:
             // done
 
 //        clientRef.calculatePath(new Point(1,1), new Point(1, 1));
     }
 
-    private void negotiating()
-    {}
+    //<editor-fold defaultstate="collapsed" desc="post sessions">
+    @SuppressWarnings("Duplicates")
+    private String sessions()
+    {
+        String post_data = "{" +
+                "\"world_id\":\""+WORLD_ID+"\""+
+                "\"agent_id\":\""+clientRef.AGENT_ID+"\""+
+                "}";
+
+        try
+        {
+            URL url = new URL("http://"+SERVER+"/negotiation/notify");
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Content-Type", "application/json; utf-8");
+            conn.setRequestProperty("Accept", "application/json");
+            conn.setDoOutput(true);
+
+            // write to output stream
+            try (OutputStream stream = conn.getOutputStream())
+            {
+                byte[] bytes = post_data.getBytes(StandardCharsets.UTF_8);
+                stream.write(bytes, 0, bytes.length);
+            }
+
+            // read response
+            BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8));
+            String line;
+            StringBuilder response = new StringBuilder();
+            while ((line = reader.readLine()) != null)
+            {
+                response.append(line);
+            }
+
+            return String.valueOf(response);
+        }
+        catch (IOException ex)
+        {
+            ex.printStackTrace();
+        }
+
+        return "";
+    }
+    //</editor-fold>
 
     private void negotiated()
     {}
