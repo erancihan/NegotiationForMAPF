@@ -193,7 +193,28 @@ func (n *NegotiationHandler) UpdateStatus(ctx echo.Context, pool *SessionPool) {
 
 //@POST
 func (n *NegotiationHandler) Sessions(ctx echo.Context) (err error) {
-	return ctx.NoContent(http.StatusOK)
+	r := new(struct{
+		WorldID string `json:"world_id" form:"world_id" query:"world_id"`
+		AgentID	string `json:"agent_id" form:"agent_id" query:"agent_id"`
+	})
+
+	rds := n.Pool.Get()
+	defer rds.Close()
+
+	if err = ctx.Bind(r); err != nil {
+		ctx.Logger().Fatal(err)
+		return ctx.NoContent(http.StatusBadRequest)
+	}
+
+	sessions, err := redis.String(rds.Do("HGET", "world:"+r.WorldID+":notify", "agent:"+r.AgentID))
+
+	response := struct {
+		Sessions string `json:"sessions"`
+	}{
+		Sessions: sessions,
+	}
+
+	return ctx.JSON(http.StatusOK, response)
 }
 
 //@POST
