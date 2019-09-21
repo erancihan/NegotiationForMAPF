@@ -140,7 +140,7 @@ func (h *Handler) Socket(ctx echo.Context) error {
 	h.WorldMap.Register(id, client)
 	h.PlayerRegister(ctx, world)
 	defer func() {
-		h.PlayerUnregister(ctx, world)
+		_ = h.PlayerUnregister(ctx, world)
 		h.WorldMap.Unregister(id, client, world)
 		if world.SubCount <= 0 {
 			h.WorldMap.Delete(id)
