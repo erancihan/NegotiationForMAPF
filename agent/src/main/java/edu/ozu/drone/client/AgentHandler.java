@@ -184,6 +184,7 @@ public class AgentHandler {
         return false;
     }
 
+    //<editor-fold defaultstate="collapsed" desc="notify negotiation">
     private void notifyNegotiation(String[][] fov)
     { // notify negotiation
         List<String> agents = new ArrayList<>();
@@ -239,6 +240,7 @@ public class AgentHandler {
             err.printStackTrace();
         }
     }
+    //</editor-fold>
     //</editor-fold>
 
     private void negotiate()
