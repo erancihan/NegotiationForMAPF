@@ -75,6 +75,7 @@ func (h *Handler) PlayerUnregister(ctx echo.Context, p *WorldPool) error {
 			"DEL",
 			"world:"+wid,
 			"world:"+wid+":map",
+			"world:"+wid+":notify",
 			"world:"+wid+":path",
 			"world:"+wid+":session_keys",
 		)
