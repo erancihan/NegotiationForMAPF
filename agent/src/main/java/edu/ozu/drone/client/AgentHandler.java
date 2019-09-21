@@ -15,6 +15,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 
 public class AgentHandler {
     private String SERVER = "localhost:3001";
@@ -151,7 +153,7 @@ public class AgentHandler {
                 // collision check
                 if (hasCollision(watch.fov))
                 { // negotiation notification
-                    notifyNegotiation();
+                    notifyNegotiation(watch.fov);
                 }
                 break;
             case 2: // negotiation time out
@@ -182,9 +184,59 @@ public class AgentHandler {
         return false;
     }
 
-    private void notifyNegotiation()
+    private void notifyNegotiation(String[][] fov)
+    { // notify negotiation
+        List<String> agents = new ArrayList<>();
+        for (String[] item: fov)
+        {
+            agents.add(item[0]);
+        }
+
+        __postNotify(String.valueOf(agents));
+    }
+
+    @SuppressWarnings("Duplicates")
+    private void __postNotify(String agents)
     {
-        // todo notify negotiation
+        String post_data = "{" +
+                "\"world_id\":\""+WORLD_ID+"\""+
+                "\"agent_id\":\""+clientRef.AGENT_ID+"\""+
+                "\"agents\":\""+agents+"\""+
+                "}";
+
+        try
+        {
+            URL url = new URL("http://" + SERVER + "/negotiation/notify");
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Content-Type", "application/json; utf-8");
+            conn.setRequestProperty("Accept", "application/json");
+            conn.setDoOutput(true);
+
+            // write to output stream
+            try (OutputStream stream = conn.getOutputStream())
+            {
+                byte[] bytes = post_data.getBytes(StandardCharsets.UTF_8);
+                stream.write(bytes, 0, bytes.length);
+            }
+
+            // read response
+            BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8));
+            String line;
+            StringBuilder response = new StringBuilder();
+            while ((line = reader.readLine()) != null)
+            {
+                response.append(line);
+            }
+
+            // ! response should be empty
+            System.out.println("> " + this + " __postNotify:" + response);
+        }
+        catch (IOException err)
+        {
+            err.printStackTrace();
+        }
     }
 
     private void negotiate()
