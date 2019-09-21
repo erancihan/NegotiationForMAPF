@@ -97,7 +97,7 @@ func (h *Handler) GetStatus(ctx echo.Context, rds redis.Conn, p *WorldPool, st t
 			at := strconv.Itoa(axS) + ":" + strconv.Itoa(ayS)
 			agentInFov, _ := redis.String(rds.Do("HGET", "world:"+wid+":map", at))
 			if len(agentInFov) > 0  && !(ax == axS && ay == ayS) {
-				path, err := redis.String(rds.Do("HGET", "path:world:"+wid, agentInFov))
+				path, err := redis.String(rds.Do("HGET", "world:"+wid+":path", agentInFov))
 				if err != nil { path = "-" }
 
 				agents = append(agents, []string{agentInFov, at, path})

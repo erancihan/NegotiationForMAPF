@@ -40,7 +40,7 @@ func (h *Handler) Join(ctx echo.Context) (err error) { // POST
 	}
 
 	// init REDIS broadcast
-	_, err = rds.Do("HSET", "path:world:"+wid, "agent:"+agent.Id, j.Broadcast)
+	_, err = rds.Do("HSET", "world:"+wid+":path", "agent:"+agent.Id, j.Broadcast)
 	if err != nil {
 		ctx.Logger().Fatal(err)
 	}

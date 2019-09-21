@@ -86,7 +86,7 @@ func (h *Handler) Move(ctx echo.Context) (err error) {
 	}
 
 	// update REDIS move
-	_, err = rds.Do("HSET", "path:world:"+wid, "agent:"+agent.Id, move.Broadcast)
+	_, err = rds.Do("HSET", "world:"+wid+":path", "agent:"+agent.Id, move.Broadcast)
 	if err != nil {
 		ctx.Logger().Fatal(err)
 	}
