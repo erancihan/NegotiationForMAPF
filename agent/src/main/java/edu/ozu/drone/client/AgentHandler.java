@@ -195,6 +195,7 @@ public class AgentHandler {
         __postNotify(String.valueOf(agents));
     }
 
+    //<editor-fold defaultstate="collapsed" desc="post notify">
     @SuppressWarnings("Duplicates")
     private void __postNotify(String agents)
     {
@@ -238,6 +239,7 @@ public class AgentHandler {
             err.printStackTrace();
         }
     }
+    //</editor-fold>
 
     private void negotiate()
     {
