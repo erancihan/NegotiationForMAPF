@@ -22,6 +22,7 @@ func (n *NegotiationHandler) Sessions(ctx echo.Context) (err error) {
 	}
 
 	sessions, err := redis.String(rds.Do("HGET", "world:"+r.WorldID+":notify", "agent:"+r.AgentID))
+	if err != nil { sessions = "" }
 
 	response := struct {
 		Sessions string `json:"sessions"`
