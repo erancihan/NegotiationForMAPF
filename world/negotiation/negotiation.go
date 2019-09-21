@@ -198,7 +198,7 @@ func (n *NegotiationHandler) Sessions(ctx echo.Context) (err error) {
 
 //@POST
 func (n *NegotiationHandler) Notify(ctx echo.Context) (err error) {
-	notify := new(struct{
+	r := new(struct{
 		WorldID string `json:"world_id" form:"world_id" query:"world_id"`
 		AgentID	string `json:"agent_id" form:"agent_id" query:"agent_id"`
 		Agents  []string `json:"agents" form:"agents" query:"agents"`
@@ -207,13 +207,13 @@ func (n *NegotiationHandler) Notify(ctx echo.Context) (err error) {
 	rds := n.Pool.Get()
 	defer rds.Close()
 
-	if err = ctx.Bind(notify); err != nil {
+	if err = ctx.Bind(r); err != nil {
 		ctx.Logger().Fatal(err)
 		return ctx.NoContent(http.StatusBadRequest)
 	}
 
-	for _, agentID := range notify.Agents {
-		_, err = rds.Do("HSET", "world:"+notify.WorldID+":notify", agentID, "")
+	for _, agent := range r.Agents {
+		_, err = rds.Do("HSET", "world:"+r.WorldID+":notify", agent, "")
 	}
 
 	return ctx.NoContent(http.StatusOK)
