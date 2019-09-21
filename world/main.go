@@ -7,6 +7,7 @@ import (
 	"os"
 	"time"
 	"world/handler"
+	"world/negotiation"
 
 	"github.com/gomodule/redigo/redis"
 	"github.com/gorilla/websocket"
@@ -66,11 +67,11 @@ func main() {
 	}
 
 	// negotiation session handler
-	n := &handler.NegotiationHandler{
-		Pool:	pool,
-		Ticker: *time.NewTicker(250 * time.Millisecond),
-		Upgrader: &websocket.Upgrader{},
-		SessionMap: handler.NewSessionMap(),
+	n := &negotiation.NegotiationHandler{
+		Pool:       pool,
+		Ticker:     *time.NewTicker(250 * time.Millisecond),
+		Upgrader:   &websocket.Upgrader{},
+		SessionMap: negotiation.NewSessionMap(),
 	}
 
 	// routes
