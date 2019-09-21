@@ -103,8 +103,9 @@ func (t *SessionMap) Delete(key string) {
 }
 
 func (n *NegotiationHandler) Socket(ctx echo.Context) error {
+	wid := ctx.Param("world_id")
 	sid := ctx.Param("session_id")
-	// todo creation of sessions should be regulated
+	_ = ctx.Param("agent_id")
 
 	n.Upgrader.CheckOrigin = func(r *http.Request) bool {
 		return true
@@ -142,8 +143,10 @@ func (n *NegotiationHandler) Socket(ctx echo.Context) error {
 	// session register
 	defer func() {
 		// session unregister
+		_ = n.AgentUnregister(ctx)
 		n.SessionMap.Unregister(sid, client, sess)
 		if sess.SubCount <= 0 {
+			_ = n.Delete(wid)
 			n.SessionMap.Delete(sid)
 		}
 	}()
@@ -195,10 +198,47 @@ func (n *NegotiationHandler) Sessions(ctx echo.Context) (err error) {
 
 //@POST
 func (n *NegotiationHandler) Notify(ctx echo.Context) (err error) {
+	notify := new(struct{
+		WorldID string `json:"world_id" form:"world_id" query:"world_id"`
+		AgentID	string `json:"agent_id" form:"agent_id" query:"agent_id"`
+		Agents  []string `json:"agents" form:"agents" query:"agents"`
+	})
+
+	rds := n.Pool.Get()
+	defer rds.Close()
+
+	if err = ctx.Bind(notify); err != nil {
+		ctx.Logger().Fatal(err)
+		return ctx.NoContent(http.StatusBadRequest)
+	}
+
+	for _, agentID := range notify.Agents {
+		_, err = rds.Do("HSET", "world:"+notify.WorldID+":notify", agentID, "")
+	}
+
 	return ctx.NoContent(http.StatusOK)
 }
 
 //@POST
 func (n *NegotiationHandler) Bid(ctx echo.Context) (err error) {
 	return ctx.NoContent(http.StatusOK)
+}
+
+func (n *NegotiationHandler) Delete(wid string) (err error) {
+	rds := n.Pool.Get()
+	defer rds.Close()
+
+	return
+}
+
+func (n *NegotiationHandler) AgentUnregister(ctx echo.Context) (err error) {
+	wid := ctx.Param("world_id")
+	aid := ctx.Param("agent_id")
+
+	rds := n.Pool.Get()
+	defer rds.Close()
+
+	_, err = rds.Do("HDEL", "world:"+wid+":notify", "agent:"+aid)
+
+	return
 }
