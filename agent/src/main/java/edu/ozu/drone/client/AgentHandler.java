@@ -30,6 +30,8 @@ public class AgentHandler {
 
     public String AGENT_NAME;
 
+    private boolean collision_checked;
+
     AgentHandler(AgentClient client)
     {
         clientRef = client;
@@ -148,19 +150,22 @@ public class AgentHandler {
         switch (watch.world_state)
         {
             case 0: // join
+                collision_checked = false;
                 break;
             case 1:
                 // collision check
-                if (hasCollision(watch.fov))
+                if (!collision_checked && hasCollision(watch.fov))
                 { // negotiation notification
                     notifyNegotiation(watch.fov);
                 }
+                collision_checked = true;
                 break;
             case 2: // negotiation time out
                 negotiate();
                 break;
             case 3: // move and update broadcast
                 move();
+                collision_checked = false;
                 break;
             default:
                 System.err.println("«unhandled world state:" + watch.world_state + "»");
@@ -190,7 +195,7 @@ public class AgentHandler {
         List<String> agents = new ArrayList<>();
         for (String[] item: fov)
         {
-            agents.add(item[0]);
+            agents.add("\"" + item[0] + "\"");
         }
 
         __postNotify(String.valueOf(agents));
@@ -201,9 +206,9 @@ public class AgentHandler {
     private void __postNotify(String agents)
     {
         String post_data = "{" +
-                "\"world_id\":\""+WORLD_ID+"\""+
-                "\"agent_id\":\""+clientRef.AGENT_ID+"\""+
-                "\"agents\":\""+agents+"\""+
+                "\"world_id\":\""+WORLD_ID+"\","+
+                "\"agent_id\":\""+clientRef.AGENT_ID+"\","+
+                "\"agents\":"+agents+""+
                 "}";
 
         try
@@ -248,6 +253,35 @@ public class AgentHandler {
         String sessions = sessions();
         if (sessions.length() > 0)
         { // negotiating
+            try
+            {
+                //!!! sessions contain only one session id for now
+                String session_id = sessions.split(",")[0];
+                String ws = "ws://"+SERVER+"/negotiation/session/"+WORLD_ID+"/"+session_id+"/"+clientRef.AGENT_ID;
+                NegotiationWS websocket = new NegotiationWS(new URI(ws));
+
+                // add handler
+                websocket.setHandler(message -> {
+                    // todo
+
+                    //<editor-fold defaultstate="collapsed" desc="on negotiation done">
+                    try
+                    {
+                        websocket.close();
+                    }
+                    catch (IOException e)
+                    {
+                        e.printStackTrace();
+                    }
+                    //</editor-fold>
+                });
+
+
+            }
+            catch (URISyntaxException e)
+            {
+                e.printStackTrace();
+            }
             // join negotiation session WS
             // on close
             // todo get next paths
