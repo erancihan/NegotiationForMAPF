@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-//@POST
+//@POST returns session list for given world and agent
 func (n *Handler) Sessions(ctx echo.Context) (err error) {
 	r := new(struct{
 		WorldID string `json:"world_id" form:"world_id" query:"world_id"`
