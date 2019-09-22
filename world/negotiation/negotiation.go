@@ -16,12 +16,9 @@ var (
 )
 
 type (
-	SessionStatus 		struct {
-
-	}
 	SessionClient struct {
 		conn *websocket.Conn
-		updates chan SessionStatus
+		updates chan Status
 	}
 	SessionClientMap struct {
 		sync.RWMutex
@@ -135,7 +132,7 @@ func (n *Handler) Socket(ctx echo.Context) error {
 
 	client := &SessionClient{
 		conn: ws,
-		updates: make(chan SessionStatus),
+		updates: make(chan Status),
 	}
 
 	n.SessionMap.Register(sid, client)
