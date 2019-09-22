@@ -257,7 +257,7 @@ public class AgentHandler {
             {
                 //!!! sessions contain only one session id for now
                 String session_id = sessions.split(",")[0];
-                String ws = "ws://"+SERVER+"/negotiation/session/"+WORLD_ID+"/"+session_id+"/"+clientRef.AGENT_ID;
+                String ws = "ws://"+SERVER+"/negotiation/session/"+session_id+"/"+clientRef.AGENT_ID;
                 NegotiationWS websocket = new NegotiationWS(new URI(ws));
 
                 // add handler
