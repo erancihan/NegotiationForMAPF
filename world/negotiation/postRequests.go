@@ -11,7 +11,7 @@ import (
 )
 
 //@POST
-func (n *NegotiationHandler) Sessions(ctx echo.Context) (err error) {
+func (n *Handler) Sessions(ctx echo.Context) (err error) {
 	r := new(struct{
 		WorldID string `json:"world_id" form:"world_id" query:"world_id"`
 		AgentID	string `json:"agent_id" form:"agent_id" query:"agent_id"`
@@ -38,7 +38,7 @@ func (n *NegotiationHandler) Sessions(ctx echo.Context) (err error) {
 }
 
 //@POST
-func (n *NegotiationHandler) Notify(ctx echo.Context) (err error) {
+func (n *Handler) Notify(ctx echo.Context) (err error) {
 	r := new(struct{
 		WorldID string `json:"world_id" form:"world_id" query:"world_id"`
 		AgentID	string `json:"agent_id" form:"agent_id" query:"agent_id"`
@@ -81,6 +81,6 @@ func (n *NegotiationHandler) Notify(ctx echo.Context) (err error) {
 }
 
 //@POST
-func (n *NegotiationHandler) Bid(ctx echo.Context) (err error) {
+func (n *Handler) Bid(ctx echo.Context) (err error) {
 	return ctx.NoContent(http.StatusOK)
 }

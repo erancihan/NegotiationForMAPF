@@ -36,7 +36,7 @@ type (
 		sync.RWMutex
 		m map[string]*SessionPool
 	}
-	NegotiationHandler 	struct {
+	Handler struct {
 		Pool	 	*redis.Pool
 		Upgrader 	*websocket.Upgrader
 		Ticker   	time.Ticker
@@ -102,7 +102,7 @@ func (t *SessionMap) Delete(key string) {
 	delete(t.m, key)
 }
 
-func (n *NegotiationHandler) Socket(ctx echo.Context) error {
+func (n *Handler) Socket(ctx echo.Context) error {
 	sid := ctx.Param("session_id")
 	_ = ctx.Param("agent_id")
 
@@ -182,11 +182,7 @@ func readSessionMessages(ctx echo.Context, client *SessionClient) {
 	}
 }
 
-func (n *NegotiationHandler) UpdateStatus(ctx echo.Context, pool *SessionPool) {
-	// todo
-}
-
-func (n *NegotiationHandler) AgentUnregister(ctx echo.Context) (err error) {
+func (n *Handler) AgentUnregister(ctx echo.Context) (err error) {
 	wid := ctx.Param("world_id")
 	aid := ctx.Param("agent_id")
 

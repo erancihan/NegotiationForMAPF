@@ -67,7 +67,7 @@ func main() {
 	}
 
 	// negotiation session handler
-	n := &negotiation.NegotiationHandler{
+	n := &negotiation.Handler{
 		Pool:       pool,
 		Ticker:     *time.NewTicker(250 * time.Millisecond),
 		Upgrader:   &websocket.Upgrader{},
