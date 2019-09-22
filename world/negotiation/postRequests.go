@@ -1,6 +1,7 @@
 package negotiation
 
 import (
+	"fmt"
 	"github.com/gomodule/redigo/redis"
 	"github.com/labstack/echo/v4"
 	"math/rand"
@@ -101,10 +102,26 @@ func (n *Handler) Bid(ctx echo.Context) (err error) {
 	turn, err := redis.String(rds.Do("HGET", "negotiation:"+r.SessionID, "turn"))
 	if turn == "agent:"+r.AgentID {
 		// register and/or update bid
-		_, _ = rds.Do("HSET", "negotiation:"+r.SessionID, "bid:"+r.AgentID, r.Bid)
-	}
+		_, err = rds.Do("HSET", "negotiation:"+r.SessionID, "bid:"+r.AgentID, r.Bid)
+		if err != nil { ctx.Logger().Fatal() }
 
-	// todo update turn
+		order, err := redis.String(rds.Do("HGET", "negotiation:"+r.SessionID, "bid_order"))
+		fmt.Println("debug:order", order)
+		if err != nil { ctx.Logger().Fatal() }
+
+		// update turn
+		i := strings.Index(order, "agent:"+r.AgentID)
+		agentList := order[i:]
+		agents := strings.Split(agentList, ",")
+
+		nextAgent := ""
+		if len(agents) > 1 {
+			nextAgent = string(agentList[1])
+		}
+
+		_, err = rds.Do("HSET", "negotiation:"+r.SessionID, "turn", nextAgent)
+		if err != nil { ctx.Logger().Fatal() }
+	}
 
 	return ctx.NoContent(http.StatusOK)
 }
