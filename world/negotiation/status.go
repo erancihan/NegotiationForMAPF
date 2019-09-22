@@ -15,5 +15,22 @@ type Status struct {
 }
 
 func (n *Handler) UpdateStatus(ctx echo.Context, pool *SessionPool) {
-	// todo
+	rds := n.Pool.Get()
+	defer rds.Close()
+
+	for t := range n.Ticker.C {
+		s, err := n.GetStatus(ctx, rds, pool, t)
+		if err != nil {
+			ctx.Logger().Fatal(err)
+			return
+		}
+
+		if pool.SubCount > 0 {
+			for client := range pool.SessClients.m {
+				client.updates <- s
+			}
+		} else {
+			return
+		}
+	}
 }
