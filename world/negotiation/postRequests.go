@@ -3,6 +3,7 @@ package negotiation
 import (
 	"github.com/gomodule/redigo/redis"
 	"github.com/labstack/echo/v4"
+	"math/rand"
 	"net/http"
 	"sort"
 	"strconv"
@@ -56,6 +57,10 @@ func (n *Handler) Notify(ctx echo.Context) (err error) {
 	sort.Strings(r.Agents) // sort
 	agentIDs := strings.Join(r.Agents, ",") // join
 
+	// shuffle agent order
+	rand.Seed(time.Now().UnixNano())
+	rand.Shuffle(len(r.Agents), func(i, j int) { r.Agents[i], r.Agents[j] = r.Agents[j], r.Agents[i] })
+
 	// check if key exists
 	sessionID, err := redis.String(rds.Do("HGET", "world:"+r.WorldID+":session_keys", agentIDs))
 	if err != nil {
@@ -71,8 +76,10 @@ func (n *Handler) Notify(ctx echo.Context) (err error) {
 			_, err = rds.Do("HSET", "negotiation:"+sessionID, "bid:"+agent, "")
 		}
 
-		_, err = rds.Do("HSET", "negotiation:"+sessionID, "bid_order", "") // todo
-		_, err = rds.Do("HSET", "negotiation:"+sessionID, "turn", "") // todo
+		// initial order in which agents will bid
+		_, err = rds.Do("HSET", "negotiation:"+sessionID, "bid_order", r.Agents)
+		// indicates which agent's turn is it to bid
+		_, err = rds.Do("HSET", "negotiation:"+sessionID, "turn", r.Agents[0])
 
 		if err != nil { ctx.Logger().Fatal() }
 	}
