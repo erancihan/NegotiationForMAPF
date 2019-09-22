@@ -2,6 +2,7 @@ package edu.ozu.drone.client;
 
 import com.google.gson.Gson;
 import edu.ozu.drone.client.ui.WorldWatch;
+import edu.ozu.drone.utils.JSONNegotiationSession;
 import edu.ozu.drone.utils.JSONSessionsList;
 import edu.ozu.drone.utils.JSONWorldWatch;
 import edu.ozu.drone.utils.Point;
@@ -17,6 +18,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class AgentHandler {
@@ -263,22 +265,23 @@ public class AgentHandler {
 
                 // add handler
                 websocket.setHandler(message -> {
+                    JSONNegotiationSession session = gson.fromJson(message, JSONNegotiationSession.class);
                     // todo
 
-                    /*
-                    //<editor-fold defaultstate="collapsed" desc="on negotiation done">
-                    try
+                    if (session.state.equals("done"))
                     {
-                        websocket.close();
+                        //<editor-fold defaultstate="collapsed" desc="on negotiation done">
+                        try
+                        {
+                            websocket.close();
+                        }
+                        catch (IOException e)
+                        {
+                            e.printStackTrace();
+                        }
+                        //</editor-fold>
                     }
-                    catch (IOException e)
-                    {
-                        e.printStackTrace();
-                    }
-                    //</editor-fold>
-                    */
                 });
-
 
             }
             catch (URISyntaxException e)
