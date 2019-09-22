@@ -154,17 +154,14 @@ func (n *NegotiationHandler) Socket(ctx echo.Context) error {
 	for {
 		select {
 		case s := <-client.updates:
-			ws.SetWriteDeadline(time.Now().Add(SessionWriteWait))
+			_ = ws.SetWriteDeadline(time.Now().Add(SessionWriteWait))
 			err = ws.WriteJSON(s)
-			if err != nil {
-				return nil
-			}
+			if err != nil { return nil }
 
 		case <-ping.C:
-			ws.SetWriteDeadline(time.Now().Add(SessionWriteWait))
-			if err := ws.WriteMessage(websocket.PingMessage, []byte{}); err != nil {
-				return nil
-			}
+			_ = ws.SetWriteDeadline(time.Now().Add(SessionWriteWait))
+			err = ws.WriteMessage(websocket.PingMessage, []byte{})
+			if err != nil { return nil }
 		}
 	}
 	return nil
