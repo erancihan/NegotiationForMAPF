@@ -145,7 +145,6 @@ func (n *NegotiationHandler) Socket(ctx echo.Context) error {
 		_ = n.AgentUnregister(ctx)
 		n.SessionMap.Unregister(sid, client, sess)
 		if sess.SubCount <= 0 {
-			_ = n.Delete(wid)
 			n.SessionMap.Delete(sid)
 		}
 	}()
@@ -188,13 +187,6 @@ func readSessionMessages(ctx echo.Context, client *SessionClient) {
 
 func (n *NegotiationHandler) UpdateStatus(ctx echo.Context, pool *SessionPool) {
 	// todo
-}
-
-func (n *NegotiationHandler) Delete(wid string) (err error) {
-	rds := n.Pool.Get()
-	defer rds.Close()
-
-	return
 }
 
 func (n *NegotiationHandler) AgentUnregister(ctx echo.Context) (err error) {
