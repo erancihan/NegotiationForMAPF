@@ -89,5 +89,22 @@ func (n *Handler) Notify(ctx echo.Context) (err error) {
 
 //@POST
 func (n *Handler) Bid(ctx echo.Context) (err error) {
+	r := new(struct{
+		AgentID		string `json:"agent_id" form:"agent_id" query:"agent_id"`
+		SessionID 	string `json:"session_id" form:"session_id" query:"session_id"`
+		Bid 		string `json:"bid" form:"bid" query:"bid"`
+	})
+
+	rds := n.Pool.Get()
+	defer rds.Close()
+
+	turn, err := redis.String(rds.Do("HGET", "negotiation:"+r.SessionID, "turn"))
+	if turn == "agent:"+r.AgentID {
+		// register and/or update bid
+		_, _ = rds.Do("HSET", "negotiation:"+r.SessionID, "bid:"+r.AgentID, r.Bid)
+	}
+
+	// todo update turn
+
 	return ctx.NoContent(http.StatusOK)
 }
