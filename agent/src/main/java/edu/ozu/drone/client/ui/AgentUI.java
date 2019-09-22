@@ -95,7 +95,7 @@ public class AgentUI extends javax.swing.JFrame {
     }//GEN-LAST:event_world_watchComponentHidden
 
     private void formComponentResized(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_formComponentResized
-        System.out.println(">::(w" + evt.getComponent().getWidth() + ",h" + evt.getComponent().getHeight() + ")");
+//        System.out.println(">::(w" + evt.getComponent().getWidth() + ",h" + evt.getComponent().getHeight() + ")");
     }//GEN-LAST:event_formComponentResized
 
 //<editor-fold defaultstate="collapsed" desc="ignore main">
