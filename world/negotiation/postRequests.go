@@ -71,8 +71,8 @@ func (n *Handler) Notify(ctx echo.Context) (err error) {
 			_, err = rds.Do("HSET", "negotiation:"+sessionID, "bid:"+agent, "")
 		}
 
-		_, err = rds.Do("HSET", "negotiation:"+sessionID, "bid_order", "")
-		_, err = rds.Do("HSET", "negotiation:"+sessionID, "turn", "0")
+		_, err = rds.Do("HSET", "negotiation:"+sessionID, "bid_order", "") // todo
+		_, err = rds.Do("HSET", "negotiation:"+sessionID, "turn", "") // todo
 
 		if err != nil { ctx.Logger().Fatal() }
 	}
