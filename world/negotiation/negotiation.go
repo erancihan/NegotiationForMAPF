@@ -103,7 +103,6 @@ func (t *SessionMap) Delete(key string) {
 }
 
 func (n *NegotiationHandler) Socket(ctx echo.Context) error {
-	wid := ctx.Param("world_id")
 	sid := ctx.Param("session_id")
 	_ = ctx.Param("agent_id")
 
