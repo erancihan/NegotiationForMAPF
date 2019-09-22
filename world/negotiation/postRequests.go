@@ -62,14 +62,19 @@ func (n *NegotiationHandler) Notify(ctx echo.Context) (err error) {
 		sessionID = strconv.FormatInt(time.Now().UnixNano(), 10)
 
 		_, err = rds.Do("HSET", "world:"+r.WorldID+":session_keys", agentIDs, sessionID)
-		if err != nil { ctx.Logger().Fatal() }
 		_, err = rds.Do("HSET", "world:"+r.WorldID+":session_keys", sessionID, agentIDs)
-		if err != nil { ctx.Logger().Fatal() }
+		_, err = rds.Do("HSET", "negotiation:"+sessionID, "agent_count", len(r.Agents))
 
 		for _, agent := range r.Agents {
 			// world:{world_id}:notify agent:{agent_id} {session_id}
 			_, err = rds.Do("HSET", "world:"+r.WorldID+":notify", agent, sessionID)
+			_, err = rds.Do("HSET", "negotiation:"+sessionID, "bid:"+agent, "")
 		}
+
+		_, err = rds.Do("HSET", "negotiation:"+sessionID, "bid_order", "")
+		_, err = rds.Do("HSET", "negotiation:"+sessionID, "turn", "0")
+
+		if err != nil { ctx.Logger().Fatal() }
 	}
 
 	return ctx.NoContent(http.StatusOK)
