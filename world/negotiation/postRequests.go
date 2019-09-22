@@ -116,6 +116,7 @@ func (n *Handler) Bid(ctx echo.Context) (err error) {
 
 		if state == "bid" {
 			// update turn
+			// todo work with arrays???
 			order, err := redis.String(rds.Do("HGET", "negotiation:"+r.SessionID, "bid_order"))
 			fmt.Println("debug:order", order)
 			if err != nil { ctx.Logger().Fatal(err) }
