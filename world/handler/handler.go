@@ -126,7 +126,7 @@ func (h *Handler) WorldList(ctx echo.Context) (err error) {
 	iter := 0
 	var worlds []string
 	for {
-		arr, err := redis.Values(rds.Do("SCAN","0", "MATCH", "world:*:"))
+		arr, err := redis.Values(rds.Do("SCAN", iter, "MATCH", "world:*:"))
 		if err != nil {ctx.Echo().Logger.Fatal(err) }
 
 		iter, _ = redis.Int(arr[0], nil)
