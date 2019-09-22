@@ -26,7 +26,7 @@ func (n *Handler) UpdateStatus(ctx echo.Context, pool *SessionPool) {
 		}
 
 		if pool.SubCount > 0 {
-			for client := range pool.SessClients.m {
+			for client := range pool.Clients.m {
 				client.updates <- s
 			}
 		} else {

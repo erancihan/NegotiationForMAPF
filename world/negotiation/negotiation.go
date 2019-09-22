@@ -25,9 +25,9 @@ type (
 		m map[*SessionClient]bool
 	}
 	SessionPool 		struct {
-		SessionId	string
-		SubCount	int
-		SessClients *SessionClientMap
+		SessionId string
+		SubCount  int
+		Clients   *SessionClientMap
 	}
 	SessionMap 			struct {
 		sync.RWMutex
@@ -66,21 +66,21 @@ func (t *SessionMap) Store(key string, pool *SessionPool) {
 func (t *SessionMap) Register(key string, client *SessionClient) {
 	t.Lock()
 	if t.m[key] != nil {
-		t.m[key].SessClients.Lock()
-		defer t.m[key].SessClients.Unlock()
+		t.m[key].Clients.Lock()
+		defer t.m[key].Clients.Unlock()
 	}
 	defer t.Unlock()
 
 	if t.m[key] != nil {
-		t.m[key].SessClients.m[client] = true
+		t.m[key].Clients.m[client] = true
 	}
 }
 
 func (t *SessionMap) Unregister(key string, client *SessionClient, pool *SessionPool) {
 	t.Lock()
 	if t.m[key] != nil {
-		t.m[key].SessClients.Lock()
-		defer t.m[key].SessClients.Unlock()
+		t.m[key].Clients.Lock()
+		defer t.m[key].Clients.Unlock()
 	}
 	defer t.Unlock()
 
@@ -88,7 +88,7 @@ func (t *SessionMap) Unregister(key string, client *SessionClient, pool *Session
 	client.conn.Close()
 
 	if t.m[key] != nil {
-		delete(t.m[key].SessClients.m, client)
+		delete(t.m[key].Clients.m, client)
 	}
 }
 
@@ -118,7 +118,7 @@ func (n *Handler) Socket(ctx echo.Context) error {
 		sess = &SessionPool{
 			SessionId: sid,
 			SubCount:  1,
-			SessClients: &SessionClientMap{
+			Clients: &SessionClientMap{
 				m: make(map[*SessionClient]bool),
 			},
 		}
