@@ -33,7 +33,7 @@ func (h *Handler) Move(ctx echo.Context) (err error) {
 	defer rds.Close()
 
 	// check if move state
-	worldState, err := redis.Int(rds.Do("HGET", "world:"+wid, "world_state"))
+	worldState, err := redis.Int(rds.Do("HGET", "world:"+wid+":", "world_state"))
 	if err != nil {
 		ctx.Logger().Fatal(err)
 	}

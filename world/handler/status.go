@@ -60,7 +60,7 @@ func (h *Handler) GetStatus(ctx echo.Context, rds redis.Conn, p *WorldPool, st t
 	rdsStatus := RdsStatus{}
 	status := Status{}
 
-	world, err := redis.Values(rds.Do("HGETALL", "world:"+wid))
+	world, err := redis.Values(rds.Do("HGETALL", "world:"+wid+":"))
 	if err != nil {
 		return status, err
 	}

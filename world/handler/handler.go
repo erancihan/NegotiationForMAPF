@@ -45,7 +45,7 @@ func (h *Handler) PlayerRegister(ctx echo.Context, p *WorldPool) error {
 	rds := h.Pool.Get()
 	defer rds.Close()
 
-	_, err := redis.Int64(rds.Do("HINCRBY", "world:"+wid, "player_count", "1"))
+	_, err := redis.Int64(rds.Do("HINCRBY", "world:"+wid+":", "player_count", "1"))
 	if err != nil {
 		ctx.Echo().Logger.Fatal(err)
 
@@ -63,7 +63,7 @@ func (h *Handler) PlayerUnregister(ctx echo.Context, p *WorldPool) error {
 	rds := h.Pool.Get()
 	defer rds.Close()
 
-	c, err := redis.Int64(rds.Do("HINCRBY", "world:"+wid, "player_count", "-1"))
+	c, err := redis.Int64(rds.Do("HINCRBY", "world:"+wid+":", "player_count", "-1"))
 	if err != nil {
 		ctx.Echo().Logger.Fatal(err)
 
@@ -73,7 +73,7 @@ func (h *Handler) PlayerUnregister(ctx echo.Context, p *WorldPool) error {
 	if c <= 0 {
 		_, err := rds.Do(
 			"DEL",
-			"world:"+wid,
+			"world:"+wid+":",
 			"world:"+wid+":map",
 			"world:"+wid+":notify",
 			"world:"+wid+":path",
@@ -100,8 +100,8 @@ func (h *Handler) CreateWorld(ctx echo.Context) (err error) {
 
 	// todo check if wid exists!!!
 
-	_, err = rds.Do("HSET", "world:"+wid, "player_count", "0")
-	_, err = rds.Do("HSET", "world:"+wid, "world_state", "0")
+	_, err = rds.Do("HSET", "world:"+wid+":", "player_count", "0")
+	_, err = rds.Do("HSET", "world:"+wid+":", "world_state", "0")
 	if err != nil {
 		ctx.Logger().Fatal(err)
 	}
