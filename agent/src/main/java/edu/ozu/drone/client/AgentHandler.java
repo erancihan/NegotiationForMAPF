@@ -2,6 +2,7 @@ package edu.ozu.drone.client;
 
 import com.google.gson.Gson;
 import edu.ozu.drone.client.ui.WorldWatch;
+import edu.ozu.drone.utils.JSONSessionsList;
 import edu.ozu.drone.utils.JSONWorldWatch;
 import edu.ozu.drone.utils.Point;
 import org.springframework.util.Assert;
@@ -160,7 +161,7 @@ public class AgentHandler {
                 }
                 collision_checked = true;
                 break;
-            case 2: // negotiation time out
+            case 2: // negotiation state
                 negotiate();
                 break;
             case 3: // move and update broadcast
@@ -250,20 +251,21 @@ public class AgentHandler {
 
     private void negotiate()
     {
-        String sessions = sessions();
-        if (sessions.length() > 0)
+        String[] sessions = sessions(); // retrieve sessions list
+        if (sessions.length > 0)
         { // negotiating
             try
             {
                 //!!! sessions contain only one session id for now
-                String session_id = sessions.split(",")[0];
-                String ws = "ws://"+SERVER+"/negotiation/session/"+session_id+"/"+clientRef.AGENT_ID;
+                String session_id = sessions[0];
+                String ws = "ws://"+SERVER+"/negotiation/session/"+session_id;
                 NegotiationWS websocket = new NegotiationWS(new URI(ws));
 
                 // add handler
                 websocket.setHandler(message -> {
                     // todo
 
+                    /*
                     //<editor-fold defaultstate="collapsed" desc="on negotiation done">
                     try
                     {
@@ -274,6 +276,7 @@ public class AgentHandler {
                         e.printStackTrace();
                     }
                     //</editor-fold>
+                    */
                 });
 
 
@@ -296,16 +299,16 @@ public class AgentHandler {
 
     //<editor-fold defaultstate="collapsed" desc="post sessions">
     @SuppressWarnings("Duplicates")
-    private String sessions()
+    private String[] sessions()
     {
         String post_data = "{" +
-                "\"world_id\":\""+WORLD_ID+"\""+
+                "\"world_id\":\""+WORLD_ID+"\","+
                 "\"agent_id\":\""+clientRef.AGENT_ID+"\""+
                 "}";
 
         try
         {
-            URL url = new URL("http://"+SERVER+"/negotiation/notify");
+            URL url = new URL("http://"+SERVER+"/negotiation/sessions");
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 
             conn.setRequestMethod("POST");
@@ -329,14 +332,16 @@ public class AgentHandler {
                 response.append(line);
             }
 
-            return String.valueOf(response);
+            JSONSessionsList sessions = gson.fromJson(String.valueOf(response), JSONSessionsList.class);
+
+            return sessions.getSessions();
         }
         catch (IOException ex)
         {
             ex.printStackTrace();
         }
 
-        return "";
+        return new String[]{};
     }
     //</editor-fold>
 

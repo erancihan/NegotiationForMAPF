@@ -27,11 +27,13 @@ func (n *Handler) Sessions(ctx echo.Context) (err error) {
 		return ctx.NoContent(http.StatusBadRequest)
 	}
 
-	sessions, err := redis.String(rds.Do("HGET", "world:"+r.WorldID+":notify", "agent:"+r.AgentID))
-	if err != nil { sessions = "" }
+	sessionList, err := redis.String(rds.Do("HGET", "world:"+r.WorldID+":notify", "agent:"+r.AgentID))
+	if err != nil { sessionList = "" }
+
+	sessions := strings.Split(sessionList, ",")
 
 	response := struct {
-		Sessions string `json:"sessions"`
+		Sessions []string `json:"sessions"`
 	}{
 		Sessions: sessions,
 	}
