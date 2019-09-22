@@ -136,6 +136,10 @@ func (h *Handler) WorldList(ctx echo.Context) (err error) {
 		if iter == 0 { break }
 	}
 
+	if len(worlds) == 0 {
+		worlds = []string{}
+	}
+
 	resp := struct {
 		Worlds []string `json:"worlds"`
 	}{
