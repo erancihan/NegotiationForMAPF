@@ -69,6 +69,7 @@ func (n *Handler) Notify(ctx echo.Context) (err error) {
 
 		_, err = rds.Do("HSET", "world:"+r.WorldID+":session_keys", agentIDs, sessionID)
 		_, err = rds.Do("HSET", "world:"+r.WorldID+":session_keys", sessionID, agentIDs)
+		_, err = rds.Do("HSET", "negotiation:"+sessionID, "agents", agentIDs)
 		_, err = rds.Do("HSET", "negotiation:"+sessionID, "agent_count", len(r.Agents))
 
 		for _, agent := range r.Agents {
