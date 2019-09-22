@@ -297,7 +297,10 @@ public class AgentHandler {
 //        clientRef.calculatePath(new Point(1,1), new Point(1, 1));
     }
 
-    //<editor-fold defaultstate="collapsed" desc="post sessions">
+    //<editor-fold defaultstate="collapsed" desc="retrieve list of negotiation session IDs of agent">
+    /**
+     * Retrieves list of negotiation session IDs that agent will attend
+     * */
     @SuppressWarnings("Duplicates")
     private String[] sessions()
     {
