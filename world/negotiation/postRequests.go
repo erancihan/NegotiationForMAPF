@@ -82,7 +82,7 @@ func (n *Handler) Notify(ctx echo.Context) (err error) {
 		_, err = rds.Do("HSET", "negotiation:"+sessionID, "bid_order", r.Agents)
 		// indicates which agent's turn is it to bid
 		_, err = rds.Do("HSET", "negotiation:"+sessionID, "turn", r.Agents[0])
-		// indicates state of of negotiation => negotiation:<session_id> state <{join|bid|done}>
+		// indicates state of negotiation => negotiation:<session_id> state <{join|bid|done}>
 		_, err = rds.Do("HSET", "negotiation:"+sessionID, "state", "join")
 
 		if err != nil { ctx.Logger().Fatal() }
