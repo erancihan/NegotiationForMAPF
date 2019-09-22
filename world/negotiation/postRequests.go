@@ -85,7 +85,7 @@ func (n *Handler) Notify(ctx echo.Context) (err error) {
 		// indicates state of negotiation => negotiation:<session_id> state <{join|bid|done}>
 		_, err = rds.Do("HSET", "negotiation:"+sessionID, "state", "join")
 
-		if err != nil { ctx.Logger().Fatal() }
+		if err != nil { ctx.Logger().Fatal(err) }
 	}
 
 	return ctx.NoContent(http.StatusOK)
@@ -106,17 +106,17 @@ func (n *Handler) Bid(ctx echo.Context) (err error) {
 	if turn == "agent:"+r.AgentID {
 		// register and/or update bid
 		_, err = rds.Do("HSET", "negotiation:"+r.SessionID, "bid:"+r.AgentID, r.Bid)
-		if err != nil { ctx.Logger().Fatal() }
+		if err != nil { ctx.Logger().Fatal(err) }
 
 		// retrieve state
 		state, err := redis.String(rds.Do("HGET", "negotiation:"+r.SessionID, "state"))
-		if err != nil { ctx.Logger().Fatal() }
+		if err != nil { ctx.Logger().Fatal(err) }
 
 		if state == "bid" {
 			// update turn
 			order, err := redis.String(rds.Do("HGET", "negotiation:"+r.SessionID, "bid_order"))
 			fmt.Println("debug:order", order)
-			if err != nil { ctx.Logger().Fatal() }
+			if err != nil { ctx.Logger().Fatal(err) }
 
 			i := strings.Index(order, "agent:"+r.AgentID)
 			agentList := order[i:]
@@ -128,7 +128,7 @@ func (n *Handler) Bid(ctx echo.Context) (err error) {
 			}
 
 			_, err = rds.Do("HSET", "negotiation:"+r.SessionID, "turn", nextAgent)
-			if err != nil { ctx.Logger().Fatal() }
+			if err != nil { ctx.Logger().Fatal(err) }
 		}
 	}
 

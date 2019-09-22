@@ -109,7 +109,7 @@ func (n *Handler) Socket(ctx echo.Context) error {
 
 	ws, err := n.Upgrader.Upgrade(ctx.Response(), ctx.Request(), nil)
 	if err != nil {
-		ctx.Logger().Fatal()
+		ctx.Logger().Fatal(err)
 	}
 
 	sess, ok := n.SessionMap.Load(sid)

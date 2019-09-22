@@ -1,6 +1,10 @@
 package negotiation
 
-import "github.com/labstack/echo/v4"
+import (
+	"github.com/gomodule/redigo/redis"
+	"github.com/labstack/echo/v4"
+	"time"
+)
 
 type Status struct {
 	AgentCount 	int 	`json:"agent_count"`
