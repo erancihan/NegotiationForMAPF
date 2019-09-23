@@ -101,7 +101,6 @@ func (t *SessionMap) Delete(key string) {
 
 func (n *Handler) Socket(ctx echo.Context) error {
 	sid := ctx.Param("session_id")
-	_ = ctx.Param("agent_id")
 
 	n.Upgrader.CheckOrigin = func(r *http.Request) bool {
 		return true
@@ -142,6 +141,7 @@ func (n *Handler) Socket(ctx echo.Context) error {
 		_ = n.AgentUnregister(ctx)
 		n.SessionMap.Unregister(sid, client, sess)
 		if sess.SubCount <= 0 {
+			n.Delete(ctx, sid)
 			n.SessionMap.Delete(sid)
 		}
 	}()
@@ -180,13 +180,19 @@ func readSessionMessages(ctx echo.Context, client *SessionClient) {
 }
 
 func (n *Handler) AgentUnregister(ctx echo.Context) (err error) {
-	wid := ctx.Param("world_id")
-	aid := ctx.Param("agent_id")
-
 	rds := n.Pool.Get()
 	defer rds.Close()
 
-	_, err = rds.Do("HDEL", "world:"+wid+":notify", "agent:"+aid)
+	// todo remove session_id from world:<world_id>:notify agent:<agent_id>
+	//_, err = rds.Do("HDEL", "world:"+wid+":notify", "agent:"+aid)
 
 	return
+}
+
+func (n *Handler) Delete(ctx echo.Context, sessionID string)  {
+	rds := n.Pool.Get()
+	defer rds.Close()
+
+	_, err := rds.Do("DEL", "negotiation:"+sessionID)
+	if err != nil { ctx.Logger().Error(err) }
 }
