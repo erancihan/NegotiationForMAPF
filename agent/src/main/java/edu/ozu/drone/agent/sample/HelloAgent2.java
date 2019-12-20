@@ -1,4 +1,4 @@
-package edu.ozu.drone.agent;
+package edu.ozu.drone.agent.sample;
 
 import edu.ozu.drone.client.AgentClient;
 import edu.ozu.drone.client.DroneAgent;
