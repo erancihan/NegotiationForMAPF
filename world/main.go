@@ -85,8 +85,8 @@ func main() {
 	e.POST("/join", h.Join)
 
 	// negotiation routes
-	e.GET("/negotiation/session/:session_id", n.Socket)
-	//e.GET("/negotiation/session/:key", n.Socket)
+	e.GET("/negotiation/:session_id", n.Socket)
+ 	//e.GET("/negotiation/session/:key", n.Socket)
 	e.POST("/negotiation/sessions", n.Sessions)
 	e.POST("/negotiation/notify", n.Notify)
 	e.POST("/negotiation/bid", n.Bid)
