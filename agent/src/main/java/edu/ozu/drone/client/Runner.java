@@ -1,5 +1,6 @@
 package edu.ozu.drone.client;
 
+/*
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
@@ -8,10 +9,12 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
+ */
 
 public class Runner {
-    private static HashMap<String, AgentClient> agents = new HashMap<>();
+//    private static HashMap<String, AgentClient> agents = new HashMap<>();
 
+/*
     public static void main(String[] args) {
         try {
             init();
@@ -41,7 +44,6 @@ public class Runner {
     }
 
     private static void initAgent(Class v) {
-        // todo exiting one thread closes other threads too
         try {
             AgentClient agent = (AgentClient) Class.forName(v.getName()).getConstructor().newInstance();
 
@@ -53,4 +55,5 @@ public class Runner {
             e.printStackTrace();
         }
     }
+ */
 }
