@@ -33,14 +33,14 @@ func (h *Handler) Join(ctx echo.Context) (err error) { // POST
 	defer rds.Close()
 
 	// init REDIS position
-	_, err = rds.Do("HSET", "map:world:"+wid, "agent:"+agent.Id, agent.X+":"+agent.Y)
-	_, err = rds.Do("HSET", "map:world:"+wid, agent.X+":"+agent.Y, "agent:"+agent.Id)
+	_, err = rds.Do("HSET", "world:"+wid+":map", "agent:"+agent.Id, agent.X+":"+agent.Y)
+	_, err = rds.Do("HSET", "world:"+wid+":map", agent.X+":"+agent.Y, "agent:"+agent.Id)
 	if err != nil {
 		ctx.Logger().Fatal(err)
 	}
 
 	// init REDIS broadcast
-	_, err = rds.Do("HSET", "path:world:"+wid, "agent:"+agent.Id, j.Broadcast)
+	_, err = rds.Do("HSET", "world:"+wid+":path", "agent:"+agent.Id, j.Broadcast)
 	if err != nil {
 		ctx.Logger().Fatal(err)
 	}

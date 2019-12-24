@@ -100,7 +100,7 @@ func readMsgs(client *Client, c echo.Context) {
 }
 
 // todo /world/:wid should not create entry on connection
-func (h *Handler) WorldSocket(ctx echo.Context) error {
+func (h *Handler) Socket(ctx echo.Context) error {
 	wid := ctx.Param("world_id")
 	aid := ctx.Param("agent_id")
 	id := wid + ":" + aid
@@ -140,7 +140,7 @@ func (h *Handler) WorldSocket(ctx echo.Context) error {
 	h.WorldMap.Register(id, client)
 	h.PlayerRegister(ctx, world)
 	defer func() {
-		h.PlayerUnregister(ctx, world)
+		_ = h.PlayerUnregister(ctx, world)
 		h.WorldMap.Unregister(id, client, world)
 		if world.SubCount <= 0 {
 			h.WorldMap.Delete(id)

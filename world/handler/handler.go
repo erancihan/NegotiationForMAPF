@@ -45,7 +45,7 @@ func (h *Handler) PlayerRegister(ctx echo.Context, p *WorldPool) error {
 	rds := h.Pool.Get()
 	defer rds.Close()
 
-	_, err := redis.Int64(rds.Do("HINCRBY", "world:"+wid, "player_count", "1"))
+	_, err := redis.Int64(rds.Do("HINCRBY", "world:"+wid+":", "player_count", "1"))
 	if err != nil {
 		ctx.Echo().Logger.Fatal(err)
 
@@ -63,7 +63,7 @@ func (h *Handler) PlayerUnregister(ctx echo.Context, p *WorldPool) error {
 	rds := h.Pool.Get()
 	defer rds.Close()
 
-	c, err := redis.Int64(rds.Do("HINCRBY", "world:"+wid, "player_count", "-1"))
+	c, err := redis.Int64(rds.Do("HINCRBY", "world:"+wid+":", "player_count", "-1"))
 	if err != nil {
 		ctx.Echo().Logger.Fatal(err)
 
@@ -71,7 +71,14 @@ func (h *Handler) PlayerUnregister(ctx echo.Context, p *WorldPool) error {
 	}
 
 	if c <= 0 {
-		_, err := rds.Do("DEL", "world:"+wid, "map:world:"+wid)
+		_, err := rds.Do(
+			"DEL",
+			"world:"+wid+":",
+			"world:"+wid+":map",
+			"world:"+wid+":notify",
+			"world:"+wid+":path",
+			"world:"+wid+":session_keys",
+		)
 		if err != nil {
 			ctx.Echo().Logger.Fatal(err)
 		}
@@ -93,8 +100,8 @@ func (h *Handler) CreateWorld(ctx echo.Context) (err error) {
 
 	// todo check if wid exists!!!
 
-	_, err = rds.Do("HSET", "world:"+wid, "player_count", "0")
-	_, err = rds.Do("HSET", "world:"+wid, "world_state", "0")
+	_, err = rds.Do("HSET", "world:"+wid+":", "player_count", "0")
+	_, err = rds.Do("HSET", "world:"+wid+":", "world_state", "0")
 	if err != nil {
 		ctx.Logger().Fatal(err)
 	}
@@ -116,10 +123,21 @@ func (h *Handler) WorldList(ctx echo.Context) (err error) {
 	rds := h.Pool.Get()
 	defer rds.Close()
 
-	worlds, err := redis.Strings(rds.Do("KEYS", "world:*"))
-	if err != nil {
-		ctx.Echo().Logger.Fatal(err)
-		return
+	iter := 0
+	var worlds []string
+	for {
+		arr, err := redis.Values(rds.Do("SCAN", iter, "MATCH", "world:*:"))
+		if err != nil {ctx.Echo().Logger.Fatal(err) }
+
+		iter, _ = redis.Int(arr[0], nil)
+		world, _ := redis.Strings(arr[1], nil)
+		worlds = append(worlds, world...)
+
+		if iter == 0 { break }
+	}
+
+	if len(worlds) == 0 {
+		worlds = []string{}
 	}
 
 	resp := struct {

@@ -7,6 +7,7 @@ import (
 	"os"
 	"time"
 	"world/handler"
+	"world/negotiation"
 
 	"github.com/gomodule/redigo/redis"
 	"github.com/gorilla/websocket"
@@ -66,24 +67,29 @@ func main() {
 	}
 
 	// negotiation session handler
-	n := &handler.NegotiationHandler{
-		Pool:	pool,
-		Ticker: *time.NewTicker(250 * time.Millisecond),
-		Upgrader: &websocket.Upgrader{},
-		SessionMap: handler.NewSessionMap(),
+	n := &negotiation.Handler{
+		Pool:       pool,
+		Ticker:     *time.NewTicker(250 * time.Millisecond),
+		Upgrader:   &websocket.Upgrader{},
+		SessionMap: negotiation.NewSessionMap(),
 	}
 
 	// routes
 	e.GET("/", h.Home)
 	e.GET("/uuid", h.UKey)
 	e.GET("/worlds", h.WorldList)
+	e.GET("/world/:world_id/:agent_id", h.Socket)
+	//e.GET("/world/:key", h.Socket)
 	e.POST("/world/create", h.CreateWorld)
 	e.POST("/move", h.Move)
 	e.POST("/join", h.Join)
 
-	// sockets
-	e.GET("/world/:world_id/:agent_id", h.WorldSocket)
-	e.GET("/session/:session_id", n.SessionSocket)
+	// negotiation routes
+	e.GET("/negotiation/:session_id", n.Socket)
+ 	//e.GET("/negotiation/session/:key", n.Socket)
+	e.POST("/negotiation/sessions", n.Sessions)
+	e.POST("/negotiation/notify", n.Notify)
+	e.POST("/negotiation/bid", n.Bid)
 
 	e.File("/test", "res/test.html")
 

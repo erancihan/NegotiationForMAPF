@@ -1,2 +1,2 @@
 Manifest-Version: 1.0
-Main-Class: edu.ozu.drone.Runner
+Main-Class: edu.ozu.drone.client.Runner

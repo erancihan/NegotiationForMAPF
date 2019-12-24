@@ -19,7 +19,7 @@ type (
 		WorldId     string     `json:"world_id"`
 		PlayerCount int        `json:"pc"`
 		Time        int64      `json:"time"`
-		CanMove     int        `json:"can_move"`
+		WorldState  int        `json:"world_state"`
 		Position    string     `json:"position"`
 		Fov         [][]string `json:"fov"`
 		FovSize     int        `json:"fov_size"`
@@ -60,7 +60,7 @@ func (h *Handler) GetStatus(ctx echo.Context, rds redis.Conn, p *WorldPool, st t
 	rdsStatus := RdsStatus{}
 	status := Status{}
 
-	world, err := redis.Values(rds.Do("HGETALL", "world:"+wid))
+	world, err := redis.Values(rds.Do("HGETALL", "world:"+wid+":"))
 	if err != nil {
 		return status, err
 	}
@@ -74,9 +74,9 @@ func (h *Handler) GetStatus(ctx echo.Context, rds redis.Conn, p *WorldPool, st t
 	status.WorldId = wid
 	status.FovSize = Fov
 	status.PlayerCount, _ = strconv.Atoi(rdsStatus.PlayerCount)
-	status.CanMove = rdsStatus.WorldState
+	status.WorldState = rdsStatus.WorldState
 
-	agentIsAt, err := redis.String(rds.Do("HGET", "map:world:"+wid, "agent:"+aid))
+	agentIsAt, err := redis.String(rds.Do("HGET", "world:"+wid+":map", "agent:"+aid))
 	if err != nil {
 		return status, nil
 	}
@@ -88,21 +88,19 @@ func (h *Handler) GetStatus(ctx echo.Context, rds redis.Conn, p *WorldPool, st t
 
 	// fow
 	var agents [][]string
-	agents = append(agents, []string{"agent:"+aid, agentIsAt})
+	agents = append(agents, []string{"agent:"+aid, agentIsAt, "-"})
 	for i := 0; i < Fov; i++ {
 		for j := 0; j < Fov; j++ {
 			axS := ax + (j - Fov/2)
 			ayS := ay + (i - Fov/2)
 
 			at := strconv.Itoa(axS) + ":" + strconv.Itoa(ayS)
-			agentIdInFov, _ := redis.String(rds.Do("HGET", "map:world:"+wid, at))
-			if len(agentIdInFov) > 0  && !(ax == axS && ay == ayS) {
-				path, err := redis.String(rds.Do("HGET", "path:world:"+wid, "agent:"+agentIdInFov))
-				if err != nil {
-					return status, nil
-				}
+			agentInFov, _ := redis.String(rds.Do("HGET", "world:"+wid+":map", at))
+			if len(agentInFov) > 0  && !(ax == axS && ay == ayS) {
+				path, err := redis.String(rds.Do("HGET", "world:"+wid+":path", agentInFov))
+				if err != nil { path = "-" }
 
-				agents = append(agents, []string{agentIdInFov, at, path})
+				agents = append(agents, []string{agentInFov, at, path})
 			}
 		}
 	}

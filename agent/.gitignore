@@ -66,6 +66,15 @@ fabric.properties
 .idea/caches/build_file_checksums.ser
 
 target/
+build/
 src/main/resources/public
 !src/main/resources/public/.public-resources
 src/main/resources/templates/index.html
+
+**/nbproject/private/
+**/nbproject/Makefile-*.mk
+**/nbproject/Package-*.bash
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/

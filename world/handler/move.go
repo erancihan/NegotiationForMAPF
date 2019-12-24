@@ -33,7 +33,7 @@ func (h *Handler) Move(ctx echo.Context) (err error) {
 	defer rds.Close()
 
 	// check if move state
-	worldState, err := redis.Int(rds.Do("HGET", "world:"+wid, "world_state"))
+	worldState, err := redis.Int(rds.Do("HGET", "world:"+wid+":", "world_state"))
 	if err != nil {
 		ctx.Logger().Fatal(err)
 	}
@@ -41,8 +41,8 @@ func (h *Handler) Move(ctx echo.Context) (err error) {
 		return ctx.NoContent(http.StatusForbidden)
 	}
 
-	// DEL map:world:{wid} x:y
-	_, err = rds.Do("HDEL", "map:world:"+wid, agent.X+":"+agent.Y)
+	// DEL world:{wid}:map x:y
+	_, err = rds.Do("HDEL", "world:"+wid+":map", agent.X+":"+agent.Y)
 	if err != nil {
 		ctx.Logger().Fatal(err)
 	}
@@ -69,7 +69,7 @@ func (h *Handler) Move(ctx echo.Context) (err error) {
 	ys := strconv.Itoa(y)
 
 	// check if x:y is occupied
-	dest, _ := redis.String(rds.Do("HGET", "map:world:"+wid, xs+":"+ys))
+	dest, _ := redis.String(rds.Do("HGET", "world:"+wid+":map", xs+":"+ys))
 	if len(dest) > 0 {
 		return ctx.NoContent(http.StatusForbidden)
 	}
@@ -79,14 +79,14 @@ func (h *Handler) Move(ctx echo.Context) (err error) {
 	agent.Y = ys
 
 	// update REDIS position
-	_, err = rds.Do("HSET", "map:world:"+wid, "agent:"+agent.Id, agent.X+":"+agent.Y)
-	_, err = rds.Do("HSET", "map:world:"+wid, agent.X+":"+agent.Y, "agent:"+agent.Id)
+	_, err = rds.Do("HSET", "world:"+wid+":map", "agent:"+agent.Id, agent.X+":"+agent.Y)
+	_, err = rds.Do("HSET", "world:"+wid+":map", agent.X+":"+agent.Y, "agent:"+agent.Id)
 	if err != nil {
 		ctx.Logger().Fatal(err)
 	}
 
 	// update REDIS move
-	_, err = rds.Do("HSET", "path:world:"+wid, "agent:"+agent.Id, move.Broadcast)
+	_, err = rds.Do("HSET", "world:"+wid+":path", "agent:"+agent.Id, move.Broadcast)
 	if err != nil {
 		ctx.Logger().Fatal(err)
 	}
