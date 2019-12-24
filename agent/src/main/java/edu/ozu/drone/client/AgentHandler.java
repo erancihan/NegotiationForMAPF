@@ -1,6 +1,7 @@
 package edu.ozu.drone.client;
 
 import com.google.gson.Gson;
+import edu.ozu.drone.agent.Agent;
 import edu.ozu.drone.client.ui.WorldWatch;
 import edu.ozu.drone.utils.JSONNegotiationSession;
 import edu.ozu.drone.utils.JSONSessionsList;
@@ -25,7 +26,7 @@ public class AgentHandler {
     private String SERVER = "localhost:3001";
     private String WORLD_ID = "";
 
-    private AgentClient clientRef;
+    private Agent clientRef;
     private WorldWatchWS websocket;
     private Gson gson;
     private Point AGENT_POSITION;
@@ -35,7 +36,7 @@ public class AgentHandler {
 
     private boolean collision_checked;
 
-    AgentHandler(AgentClient client)
+    AgentHandler(Agent client)
     {
         clientRef = client;
         AGENT_NAME = client.AGENT_NAME;

@@ -1,11 +1,12 @@
 package edu.ozu.drone.agent.sample;
 
-import edu.ozu.drone.client.AgentClient;
+import edu.ozu.drone.agent.Agent;
 import edu.ozu.drone.client.DroneAgent;
+import edu.ozu.drone.utils.Action;
 import edu.ozu.drone.utils.Point;
 
 @DroneAgent
-public class HelloAgent2 extends AgentClient {
+public class HelloAgent2 extends Agent {
 
     @Override
     public void init() {
@@ -14,5 +15,15 @@ public class HelloAgent2 extends AgentClient {
 
         START = new Point(1, 0);
         DEST = new Point(1, 3);
+    }
+
+    @Override
+    public Action onMakeAction() {
+        return null;
+    }
+
+    @Override
+    public void onReceiveAction() {
+
     }
 }
