@@ -5,7 +5,6 @@
  */
 package edu.ozu.drone.client.ui;
 
-import edu.ozu.drone.client.AgentClient;
 import edu.ozu.drone.client.AgentHandler;
 import org.springframework.util.Assert;
 
