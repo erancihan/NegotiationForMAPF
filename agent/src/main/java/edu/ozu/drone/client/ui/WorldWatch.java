@@ -17,6 +17,7 @@ import java.util.Arrays;
  * @author freedrone
  */
 public class WorldWatch extends javax.swing.JPanel {
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(WorldWatch.class);
 
     private String agent_name;
     private AgentHandler client;
@@ -80,7 +81,7 @@ public class WorldWatch extends javax.swing.JPanel {
     void setParent(AgentUI ui) {
         this.parent = ui;
     }
-    
+
     void setWorldID(String world_id) {
         this.world_id = world_id;
     }
@@ -91,14 +92,14 @@ public class WorldWatch extends javax.swing.JPanel {
 
     public void mount()
     {
-        System.out.println("> " + client + " WorldWatch mount");
+        logger.info("mount");
         client.setWatchUIRef(this);
         client.join(world_id);
     }
 
     public void unmount()
     {
-        System.out.println("> " + client + " WorldWatch unmount");
+        logger.info("unmount");
         if (client != null)
             client.leave();
     }

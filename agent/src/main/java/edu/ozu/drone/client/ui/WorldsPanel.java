@@ -23,6 +23,7 @@ import java.nio.charset.StandardCharsets;
  * @author freedrone
  */
 public class WorldsPanel extends javax.swing.JPanel {
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(WorldsPanel.class);
 
     private String server;
     private String world_id = "";
@@ -255,7 +256,7 @@ public class WorldsPanel extends javax.swing.JPanel {
         {
             if (error.getClass().getName().equals("java.net.ConnectException"))
             {
-                System.err.println("«check server status»");;
+                logger.error("«check server status»");;
             }
             else
             {
@@ -304,7 +305,7 @@ public class WorldsPanel extends javax.swing.JPanel {
             JSONWorldCreate wc = gson.fromJson(String.valueOf(response), JSONWorldCreate.class);
             this.world_id = "world:" + wc.getWorld_id();
 
-            System.out.println("> create world response: " + wc);
+            logger.info("create world response: " + wc);
 
             join();
         }
@@ -312,7 +313,7 @@ public class WorldsPanel extends javax.swing.JPanel {
         {
             if (error.getClass().getName().equals("java.net.ConnectException"))
             {
-                System.err.println("«check server status»");;
+                logger.error("«check server status»");;
             }
             else
             {

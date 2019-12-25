@@ -10,6 +10,8 @@ public class HelloAgent extends Agent
     @Override
     public void init()
     {
+        logger.info("loading hello agent");
+
         AGENT_NAME = "Hello Agent";
         AGENT_ID   = "S006486";
 

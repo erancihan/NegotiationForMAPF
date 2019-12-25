@@ -7,6 +7,8 @@ import edu.ozu.drone.utils.Point;
 import java.util.List;
 
 public abstract class Agent {
+    public static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(Agent.class);
+
     public String AGENT_NAME, AGENT_ID;
     public Point START, DEST;
 
@@ -22,7 +24,7 @@ public abstract class Agent {
 
     public void run()
     {
-        System.out.println("> " + this + " calculating path");
+        logger.info("calculating path");
         path = calculatePath();
     }
 

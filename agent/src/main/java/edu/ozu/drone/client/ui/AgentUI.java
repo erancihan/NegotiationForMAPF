@@ -16,6 +16,7 @@ import java.awt.*;
  * @author freedrone
  */
 public class AgentUI extends javax.swing.JFrame {
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(AgentUI.class);
 
     private AgentHandler client;
 
@@ -27,7 +28,7 @@ public class AgentUI extends javax.swing.JFrame {
         Assert.notNull(client, "@AgentUI.constructor: AgentHandler cannot be null");
         this.client = client;
 
-        System.out.println("> " + this.client + " AgentUI");
+        logger.info("init");
 
         initComponents();
         onComponentsDidMount();
@@ -86,7 +87,7 @@ public class AgentUI extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void onWindowClosed(java.awt.event.WindowEvent event) {//GEN-FIRST:event_onWindowClosed
-        System.out.println("> " + this.client + " window closed");
+        logger.info("window closed");
 
         this.client.exit();
     }//GEN-LAST:event_onWindowClosed
