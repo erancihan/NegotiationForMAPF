@@ -19,7 +19,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class AgentHandler {
@@ -256,7 +255,7 @@ public class AgentHandler {
 
     private void negotiate()
     {
-        String[] sessions = sessions(); // retrieve sessions list
+        String[] sessions = getNegotiationSessions(); // retrieve sessions list
         if (sessions.length > 0)
         { // negotiating
             try
@@ -268,6 +267,15 @@ public class AgentHandler {
 
                 // add handler
                 websocket.setHandler(message -> {
+                    /**
+                     * Message format:
+                     *  agent_count:
+                     *  bid_order: [agent_0, agent_1, ..., agent_i] | list of agent IDs.
+                     *  bids:
+                     *  state:
+                     *  turn: "agent_id"                            | ID of agent who's turn it is to bid
+                     * */
+                    System.out.println(message);
                     JSONNegotiationSession session = gson.fromJson(message, JSONNegotiationSession.class);
                     // todo
 
@@ -308,7 +316,7 @@ public class AgentHandler {
      * Retrieves list of negotiation session IDs that agent will attend
      * */
     @SuppressWarnings("Duplicates")
-    private String[] sessions()
+    private String[] getNegotiationSessions()
     {
         String post_data = "{" +
                 "\"world_id\":\""+WORLD_ID+"\","+
@@ -374,7 +382,8 @@ public class AgentHandler {
          }
     }
 
-    private String direction(String[] curr, String[] next) {
+    private String direction(String[] curr, String[] next)
+    {
         int c_x = Integer.parseInt(curr[0]);
         int c_y = Integer.parseInt(curr[1]);
 
