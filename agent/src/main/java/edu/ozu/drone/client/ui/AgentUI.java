@@ -7,7 +7,9 @@ package edu.ozu.drone.client.ui;
 
 import edu.ozu.drone.client.AgentClient;
 import edu.ozu.drone.client.AgentHandler;
+import org.springframework.util.Assert;
 
+import javax.swing.*;
 import java.awt.*;
 
 /**
@@ -23,6 +25,7 @@ public class AgentUI extends javax.swing.JFrame {
      * @param client : reference to AgentClient class that invoked UI
      */
     public AgentUI(AgentHandler client) {
+        Assert.notNull(client, "@AgentUI.constructor: AgentHandler cannot be null");
         this.client = client;
 
         System.out.println("> " + this.client + " AgentUI");
@@ -99,16 +102,15 @@ public class AgentUI extends javax.swing.JFrame {
     }//GEN-LAST:event_formComponentResized
 
 //<editor-fold defaultstate="collapsed" desc="ignore main">
-//    /**
-//     * @param args the command line arguments
-//     */
-//    public static void main(String args[]) {
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String[] args) {
         /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
         /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
          * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html
          */
-/*
         try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
                 if ("Nimbus".equals(info.getName())) {
@@ -116,25 +118,14 @@ public class AgentUI extends javax.swing.JFrame {
                     break;
                 }
             }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(AgentUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(AgentUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(AgentUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
             java.util.logging.Logger.getLogger(AgentUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
- */
         //</editor-fold>
 
         /* Create and display the form */
-//        java.awt.EventQueue.invokeLater(new Runnable() {
-//            public void run() {
-//                new AgentUI().setVisible(true);
-//            }
-//        });
-//    }
+        java.awt.EventQueue.invokeLater(() -> new AgentUI(null).setVisible(true));
+    }
 //</editor-fold>
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
