@@ -23,6 +23,8 @@ import java.util.Arrays;
 import java.util.List;
 
 public class AgentHandler {
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(AgentHandler.class);
+
     private String SERVER = "localhost:3001";
     private String WORLD_ID = "";
 
@@ -54,7 +56,7 @@ public class AgentHandler {
      * */
     public void join(String world_id)
     {
-        System.out.println("> " + this + " join " + world_id);
+        logger.info("joining " + world_id);
 
         WORLD_ID = world_id.split(":")[1];
 
@@ -101,7 +103,7 @@ public class AgentHandler {
             }
 
             // ! response should be empty
-            System.out.println("> " + this + " __postJOIN:" + response);
+            logger.info("__postJOIN:" + response);
         }
         catch (IOException e)
         {
@@ -172,7 +174,7 @@ public class AgentHandler {
                 collision_checked = false;
                 break;
             default:
-                System.err.println("«unhandled world state:" + watch.world_state + "»");
+                logger.error("«unhandled world state:" + watch.world_state + "»");
                 break;
         }
     }
@@ -242,7 +244,7 @@ public class AgentHandler {
             }
 
             // ! response should be empty
-            System.out.println("> " + this + " __postNotify:" + response);
+            logger.info("__postNotify:" + response);
         }
         catch (IOException err)
         {
@@ -440,7 +442,7 @@ public class AgentHandler {
             }
 
             // ! response should be empty
-            System.out.println("> " + this + " __postMOVE:" + response);
+            logger.info("__postMOVE:" + response);
         }
         catch (IOException err)
         {
