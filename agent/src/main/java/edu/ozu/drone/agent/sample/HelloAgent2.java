@@ -1,11 +1,9 @@
 package edu.ozu.drone.agent.sample;
 
 import edu.ozu.drone.agent.Agent;
-import edu.ozu.drone.client.DroneAgent;
 import edu.ozu.drone.utils.Action;
 import edu.ozu.drone.utils.Point;
 
-@DroneAgent
 public class HelloAgent2 extends Agent {
 
     @Override
