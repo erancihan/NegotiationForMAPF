@@ -198,9 +198,9 @@ public class AgentHandler {
     private void notifyNegotiation(String[][] fov)
     { // notify negotiation
         List<String> agents = new ArrayList<>();
-        for (String[] item: fov)
+        for (String[] agent: fov)
         {
-            agents.add("\"" + item[0] + "\"");
+            agents.add("\"" + agent[0] + "\""); // add agent IDs
         }
 
         __postNotify(String.valueOf(agents));
@@ -269,15 +269,30 @@ public class AgentHandler {
                 websocket.setHandler(message -> {
                     /**
                      * Message format:
-                     *  agent_count:
+                     *  agent_count: <integer>                      | number of agents
                      *  bid_order: [agent_0, agent_1, ..., agent_i] | list of agent IDs.
                      *  bids:
-                     *  state:
-                     *  turn: "agent_id"                            | ID of agent who's turn it is to bid
+                     *  state: {join|bid|done}                      | state of the negotiation session
+                     *  turn:  "agent_id"                           | ID of agent who's turn it is to bid
                      * */
                     System.out.println(message);
                     JSONNegotiationSession session = gson.fromJson(message, JSONNegotiationSession.class);
                     // todo
+                    switch (session.state)
+                    {
+                        case "join":
+                            logger.info("joining to negotiation session");
+                            break;
+                        case "bid":
+                            logger.info("bidding stage");
+                            break;
+                        case "done":
+                            logger.info("negotiation session is done");
+                            break;
+                        default:
+                            logger.error("unexpected state, contact DEVs");
+                            System.exit(1);
+                    }
 
                     if (session.state.equals("done"))
                     {
@@ -293,7 +308,6 @@ public class AgentHandler {
                         //</editor-fold>
                     }
                 });
-
             }
             catch (URISyntaxException e)
             {
