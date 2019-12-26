@@ -2,7 +2,6 @@ package edu.ozu.drone.client;
 
 import com.google.gson.Gson;
 import edu.ozu.drone.agent.Agent;
-import edu.ozu.drone.client.ui.WorldWatch;
 import edu.ozu.drone.utils.*;
 import org.springframework.util.Assert;
 
@@ -17,6 +16,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public class AgentHandler {
@@ -27,7 +27,6 @@ public class AgentHandler {
     private WorldWatchWS websocket;
     private Gson gson;
     private Point AGENT_POSITION;
-    private WorldWatch watchUIRef;
     private boolean collision_checked;
 
     AgentHandler(Agent client) {
@@ -52,13 +51,13 @@ public class AgentHandler {
      *
      * @param world_id id of the world the agent will join to
      */
-    public void join(String world_id) {
+    public void join(String world_id, BiConsumer<JSONWorldWatch, Point> draw) {
         logger.info("joining " + world_id);
 
         WORLD_ID = world_id.split(":")[1];
 
         __postJOIN();
-        __watch();
+        __watch(draw);
     }
 
     //<editor-fold defaultstate="collapsed" desc="post join">
@@ -103,8 +102,9 @@ public class AgentHandler {
     }
     //</editor-fold>
 
-    private void __watch() {
-        Assert.notNull(watchUIRef, "Watch UI Reference cannot be null");
+    //<editor-fold defaultstate="collapsed" desc="watch">
+    private void __watch(BiConsumer<JSONWorldWatch, Point> draw) {
+        Assert.notNull(draw, "Draw function cannot be null");
 
         try {
             // open websocket
@@ -115,7 +115,7 @@ public class AgentHandler {
             websocket.setMessageHandler(message -> {
                 JSONWorldWatch watch = gson.fromJson(message, JSONWorldWatch.class);
 
-                watchUIRef.draw(watch, AGENT_POSITION);
+                draw.accept(watch, AGENT_POSITION);
                 handleState(watch);
             });
 
@@ -125,6 +125,7 @@ public class AgentHandler {
             e.printStackTrace();
         }
     }
+    //</editor-fold>
 
     /**
      * The function that is invoked after agent joins a world. Allows agent
@@ -436,14 +437,6 @@ public class AgentHandler {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    public String getServer() {
-        return SERVER;
-    }
-
-    public void setWatchUIRef(WorldWatch worldWatch) {
-        this.watchUIRef = worldWatch;
     }
 
     // todo handle better later

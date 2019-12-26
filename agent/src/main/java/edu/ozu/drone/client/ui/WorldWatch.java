@@ -19,10 +19,7 @@ import java.util.Arrays;
 public class WorldWatch extends javax.swing.JPanel {
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(WorldWatch.class);
 
-    private String agent_name;
     private AgentHandler client;
-    private String server;
-    private AgentUI parent;
     private String world_id;
 
     /**
@@ -66,20 +63,8 @@ public class WorldWatch extends javax.swing.JPanel {
         add(controls, new java.awt.GridBagConstraints());
     }// </editor-fold>//GEN-END:initComponents
 
-    void setAgentName(String name) {
-        this.agent_name = name;
-    }
-
     void setClient(AgentHandler client) {
         this.client = client;
-    }
-
-    void setServer(String server) {
-        this.server = server;
-    }
-
-    void setParent(AgentUI ui) {
-        this.parent = ui;
     }
 
     void setWorldID(String world_id) {
@@ -93,8 +78,7 @@ public class WorldWatch extends javax.swing.JPanel {
     public void mount()
     {
         logger.info("mount");
-        client.setWatchUIRef(this);
-        client.join(world_id);
+        client.join(world_id, this::draw);
     }
 
     public void unmount()
