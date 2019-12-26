@@ -3,23 +3,20 @@ package edu.ozu.drone.client;
 import com.google.gson.Gson;
 import edu.ozu.drone.agent.Agent;
 import edu.ozu.drone.client.ui.WorldWatch;
-import edu.ozu.drone.utils.JSONNegotiationSession;
-import edu.ozu.drone.utils.JSONSessionsList;
-import edu.ozu.drone.utils.JSONWorldWatch;
-import edu.ozu.drone.utils.Point;
+import edu.ozu.drone.utils.*;
 import org.springframework.util.Assert;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
+import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 public class AgentHandler {
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(AgentHandler.class);
@@ -490,4 +487,80 @@ public class AgentHandler {
 
     // todo handle better later
     public void exit() { System.exit(0); }
+
+    //<editor-fold defaultstate="collapsed" desc="get world list">
+    @SuppressWarnings("Duplicates")
+    public void getWorldList(Consumer<String[]> callback) {
+        try {
+            URL url = new URL("http://" + SERVER + "/worlds");
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+
+            conn.setRequestMethod("GET");
+
+            BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+
+            String il;
+            StringBuffer response = new StringBuffer();
+            while ((il = in.readLine()) != null) {
+                response.append(il);
+            }
+
+            Gson gson = new Gson();
+            edu.ozu.drone.utils.JSONWorldsList wl = gson.fromJson(String.valueOf(response), edu.ozu.drone.utils.JSONWorldsList.class);
+
+            callback.accept(wl.getWorlds());
+        } catch (IOException error) {
+            if (error.getClass().getName().equals("java.net.ConnectException")) {
+                logger.error("«check server status»");
+            } else {
+                error.printStackTrace();
+            }
+        }
+    }
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="post world create">
+    @SuppressWarnings("Duplicates")
+    public void createWorld(Consumer<JSONWorldCreate> callback) {
+        try {
+            String wid = String.valueOf(System.currentTimeMillis());
+            URL url = new URL("http://" + SERVER + "/world/create");
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Content-Type", "application/json; utf-8");
+            conn.setRequestProperty("Accept", "application/json");
+            conn.setDoOutput(true);
+
+            String post_data = "{\"world_id\": \""+ wid + "\"}";
+
+            // write to output stream
+            try (OutputStream stream = conn.getOutputStream()) {
+                byte[] bytes = post_data.getBytes(StandardCharsets.UTF_8);
+                stream.write(bytes, 0, bytes.length);
+            }
+
+            // response
+            BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8));
+            String il;
+            StringBuilder response = new StringBuilder();
+            while ((il = in.readLine()) != null) {
+                response.append(il);
+            }
+
+            // todo success
+            Gson gson = new Gson();
+            JSONWorldCreate wc = gson.fromJson(String.valueOf(response), JSONWorldCreate.class);
+
+            logger.info("create world response: " + wc);
+            callback.accept(wc);
+        } catch (IOException error) {
+            if (error.getClass().getName().equals("java.net.ConnectException")) {
+                logger.error("«check server status»");;
+            } else {
+                error.printStackTrace();
+            }
+        }
+    }
+    //</editor-fold>
 }

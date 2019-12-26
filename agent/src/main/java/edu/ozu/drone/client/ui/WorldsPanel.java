@@ -5,30 +5,18 @@
  */
 package edu.ozu.drone.client.ui;
 
-import com.google.gson.Gson;
-import edu.ozu.drone.utils.JSONWorldCreate;
-import edu.ozu.drone.utils.JSONWorldsList;
+import edu.ozu.drone.client.AgentHandler;
 
 import javax.swing.*;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
 
 /**
  *
  * @author freedrone
  */
 public class WorldsPanel extends javax.swing.JPanel {
-    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(WorldsPanel.class);
-
-    private String server;
     private String world_id = "";
-    private String agent_name = "";
     private AgentUI parent;
+    private AgentHandler client;
 
     /**
      * Creates new form WorldsPanel
@@ -163,17 +151,9 @@ public class WorldsPanel extends javax.swing.JPanel {
         add(jPanel1);
     }// </editor-fold>//GEN-END:initComponents
 
-    void setAgentName(String agent_name) {
-        this.agent_name = agent_name;
-    }
+    void setParent(AgentUI ui) { this.parent = ui; }
 
-    void setServer(String server) {
-        this.server = server;
-    }
-
-    void setParent(AgentUI ui) {
-        this.parent = ui;
-    }
+    void setClientRef(AgentHandler client) { this.client = client; }
 
     private void join_btnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_join_btnActionPerformed
         if (!world_id.isEmpty())
@@ -228,108 +208,24 @@ public class WorldsPanel extends javax.swing.JPanel {
         }
     }
 
-    //<editor-fold defaultstate="collapsed" desc="get world list">
     private void getWorldList() {
         // fetch worlds list
-        try
-        {
-            URL url = new URL("http://" + this.server + "/worlds");
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-
-            conn.setRequestMethod("GET");
-
-            BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-
-            String il;
-            StringBuffer response = new StringBuffer();
-            while ((il = in.readLine()) != null)
-            {
-                response.append(il);
-            }
-
-            Gson gson = new Gson();
-            JSONWorldsList wl = gson.fromJson(String.valueOf(response), JSONWorldsList.class);
-            worlds_list.setListData(wl.getWorlds());
-//            System.out.println("worlds:" + Arrays.toString(wl.getWorlds()));
-        }
-        catch (IOException error)
-        {
-            if (error.getClass().getName().equals("java.net.ConnectException"))
-            {
-                logger.error("«check server status»");;
-            }
-            else
-            {
-                error.printStackTrace();
-            }
-        }
+        client.getWorldList(response -> worlds_list.setListData(response));
     }
-    //</editor-fold>
 
-    //<editor-fold defaultstate="collapsed" desc="post world create">
-    @SuppressWarnings("Duplicates")
     private void postWorldCreate() {
-        String wid = String.valueOf(System.currentTimeMillis());
-        try
-        {
-            URL url = new URL("http://" + this.server + "/world/create");
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-
-            conn.setRequestMethod("POST");
-            conn.setRequestProperty("Content-Type", "application/json; utf-8");
-            conn.setRequestProperty("Accept", "application/json");
-            conn.setDoOutput(true);
-
-            String post_data = "{\"world_id\": \""+ wid + "\"}";
-
-            // write to output stream
-            try (OutputStream stream = conn.getOutputStream())
-            {
-                byte[] bytes = post_data.getBytes(StandardCharsets.UTF_8);
-                stream.write(bytes, 0, bytes.length);
-            }
-
-            // response
-            BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8));
-            String il;
-            StringBuilder response = new StringBuilder();
-            while ((il = in.readLine()) != null)
-            {
-                response.append(il);
-            }
-            // refresh list
+        client.createWorld(response -> {
             getWorldList();
-
-            // todo success
-            Gson gson = new Gson();
-            JSONWorldCreate wc = gson.fromJson(String.valueOf(response), JSONWorldCreate.class);
-            this.world_id = "world:" + wc.getWorld_id();
-
-            logger.info("create world response: " + wc);
-
+            this.world_id = "world:" + response.getWorld_id();
             join();
-        }
-        catch (IOException error)
-        {
-            if (error.getClass().getName().equals("java.net.ConnectException"))
-            {
-                logger.error("«check server status»");;
-            }
-            else
-            {
-                error.printStackTrace();
-            }
-        }
+        });
     }
-    //</editor-fold>
 
     private void join() {
         join_confirm.setVisible(true);
-        join_confirm.setTitle(agent_name);
+        join_confirm.setTitle(client.AGENT_NAME);
         join_confirm_text.setText("Joining to \n<" + world_id + ">");
     }
 
-    void loadList() {
-        getWorldList();
-    }
+    void loadList() { getWorldList(); }
 }
