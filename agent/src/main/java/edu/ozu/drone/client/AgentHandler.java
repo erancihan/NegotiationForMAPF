@@ -287,24 +287,14 @@ public class AgentHandler {
                             break;
                         case "done":
                             logger.info("negotiation session is done");
+                            //<editor-fold defaultstate="collapsed" desc="close socket when negotiation done">
+                            try { websocket.close(); }
+                            catch (IOException e) { e.printStackTrace(); }
+                            //</editor-fold>
                             break;
                         default:
                             logger.error("unexpected state, contact DEVs");
                             System.exit(1);
-                    }
-
-                    if (session.state.equals("done"))
-                    {
-                        //<editor-fold defaultstate="collapsed" desc="on negotiation done">
-                        try
-                        {
-                            websocket.close();
-                        }
-                        catch (IOException e)
-                        {
-                            e.printStackTrace();
-                        }
-                        //</editor-fold>
                     }
                 });
             }
