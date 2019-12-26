@@ -2,11 +2,11 @@
 <configuration>
 <!--    <property name="LOGS" value="./logs" />-->
     <appender name="Console" class="ch.qos.logback.core.ConsoleAppender">
-        <layout class="ch.qos.logback.classic.PatternLayout">
-            <Pattern>
-                %black(%d{YYYY-MM-DD HH:mm:ss.SSS}) %highlight(%-5level) [%cyan(%t)] %yellow(%C{1.}): %msg%n%throwable
-            </Pattern>
-        </layout>
+        <encoder>
+            <pattern>
+                %black(%d{YYYY-MM-DD HH:mm:ss.SSS}) %highlight(%-5level) [%cyan(%-16t)] %yellow(%-37C{1.}) %-32blue(%class{0}.java:%line): %msg%n%throwable
+            </pattern>
+        </encoder>
     </appender>
 <!--    <appender name="RollingFile" class="ch.qos.logback.core.rolling.RollingFileAppender">-->
 <!--        <file>${LOGS}/spring-boot-logger.log</file>-->
