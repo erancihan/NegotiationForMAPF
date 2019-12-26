@@ -137,7 +137,7 @@ public class AgentUI extends javax.swing.JFrame {
 
     private void onComponentsDidMount()
     {
-        agent_name.setText(client.AGENT_NAME);
+        agent_name.setText(client.getAgentName());
 
         loadWorldsList();
     }
@@ -147,7 +147,7 @@ public class AgentUI extends javax.swing.JFrame {
         // switch to watch ui
         CardLayout cl = (CardLayout) worlds_info_container.getLayout();
         cl.show(worlds_info_container, "world_watch");
-        world_watch.setAgentName(client.AGENT_NAME);
+        world_watch.setAgentName(client.getAgentName());
         world_watch.setClient(client);
         world_watch.setParent(this);
         world_watch.setServer(client.getServer());
