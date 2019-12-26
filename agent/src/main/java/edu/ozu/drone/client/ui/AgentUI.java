@@ -25,7 +25,7 @@ public class AgentUI extends javax.swing.JFrame {
      * @param client : reference to AgentClient class that invoked UI
      */
     public AgentUI(AgentHandler client) {
-        Assert.notNull(client, "@AgentUI.constructor: AgentHandler cannot be null");
+        Assert.notNull(client, "AgentHandler cannot be null");
         this.client = client;
 
         logger.info("init");
