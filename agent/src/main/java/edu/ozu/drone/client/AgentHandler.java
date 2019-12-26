@@ -24,7 +24,7 @@ import java.util.List;
 public class AgentHandler {
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(AgentHandler.class);
 
-    private String SERVER = "localhost:3001";
+    private String SERVER = "";
     private String WORLD_ID = "";
 
     private Agent clientRef;
@@ -39,10 +39,13 @@ public class AgentHandler {
 
     AgentHandler(Agent client)
     {
-        clientRef = client;
-        AGENT_NAME = client.AGENT_NAME;
-
         Assert.notNull(client.START, "«START cannot be null»");
+        Assert.notNull(client.SERVER, "«SERVER cannot be null»");
+
+        clientRef = client;
+
+        AGENT_NAME = client.AGENT_NAME;
+        SERVER = client.SERVER;
         AGENT_POSITION = client.START;
 
         gson = new Gson();
