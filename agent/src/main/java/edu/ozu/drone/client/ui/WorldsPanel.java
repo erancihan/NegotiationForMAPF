@@ -223,7 +223,7 @@ public class WorldsPanel extends javax.swing.JPanel {
 
     private void join() {
         join_confirm.setVisible(true);
-        join_confirm.setTitle(client.AGENT_NAME);
+        join_confirm.setTitle(client.getAgentName());
         join_confirm_text.setText("Joining to \n<" + world_id + ">");
     }
 
