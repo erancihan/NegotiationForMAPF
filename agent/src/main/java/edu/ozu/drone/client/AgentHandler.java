@@ -265,16 +265,15 @@ public class AgentHandler {
                 String ws = "ws://"+SERVER+"/negotiation/"+session_id;
                 NegotiationWS websocket = new NegotiationWS(new URI(ws));
 
-                // add handler
+                /* add handler
+                 * Message format:
+                 *  agent_count: <integer>                      | number of agents
+                 *  bid_order: [agent_0, agent_1, ..., agent_i] | list of agent IDs.
+                 *  bids     : [bid_agent_0, ..., bid_agent_i]  | list of bids of agents with IDs given
+                 *  state    : {join|bid|done}                  | state of the negotiation session
+                 *  turn     : "agent_id"                       | ID of agent who's turn it is to bid
+                 * */
                 websocket.setHandler(message -> {
-                    /**
-                     * Message format:
-                     *  agent_count: <integer>                      | number of agents
-                     *  bid_order: [agent_0, agent_1, ..., agent_i] | list of agent IDs.
-                     *  bids:
-                     *  state: {join|bid|done}                      | state of the negotiation session
-                     *  turn:  "agent_id"                           | ID of agent who's turn it is to bid
-                     * */
                     System.out.println(message);
                     JSONNegotiationSession session = gson.fromJson(message, JSONNegotiationSession.class);
                     // todo
