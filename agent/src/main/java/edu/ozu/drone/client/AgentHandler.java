@@ -319,9 +319,9 @@ public class AgentHandler {
             // todo update path
             // todo recalculate
         }
-        // else:
-            // done
-
+//         else:
+//             done
+//
 //        clientRef.calculatePath(new Point(1,1), new Point(1, 1));
     }
 
