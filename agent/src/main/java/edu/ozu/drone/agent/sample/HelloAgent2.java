@@ -21,7 +21,7 @@ public class HelloAgent2 extends Agent {
     }
 
     @Override
-    public void onReceiveAction() {
+    public void onReceiveState(edu.ozu.drone.utils.State state) {
 
     }
 }

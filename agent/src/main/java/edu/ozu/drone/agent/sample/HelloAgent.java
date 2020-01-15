@@ -26,9 +26,9 @@ public class HelloAgent extends Agent
     }
 
     @Override
-    public void onReceiveAction()
+    public void onReceiveState(edu.ozu.drone.utils.State state)
     {
-        // receive action
+        // receive state of negotiation sequence
     }
 
     public static void main(String[] args)

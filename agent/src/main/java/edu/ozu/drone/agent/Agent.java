@@ -21,7 +21,7 @@ public abstract class Agent {
 
     public abstract void init();
     public abstract Action onMakeAction();
-    public abstract void onReceiveAction();
+    public abstract void onReceiveState(edu.ozu.drone.utils.State state);
 
     public void run()
     {
