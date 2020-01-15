@@ -247,18 +247,20 @@ public class AgentHandler {
                  *  agent_count: <integer>                      | number of agents
                  *  bid_order: [agent_0, agent_1, ..., agent_i] | list of agent IDs.
                  *  bids     : [bid_agent_0, ..., bid_agent_i]  | list of bids of agents with IDs given
-                 *  state    : {join|bid|done}                  | state of the negotiation session
+                 *  state    : {join|run|done}                  | state of the negotiation session
                  *  turn     : "agent_id"                       | ID of agent who's turn it is to bid
                  * */
                 websocket.setHandler(message -> {
                     System.out.println(message);
                     JSONNegotiationSession session = gson.fromJson(message, JSONNegotiationSession.class);
+                    // todo pass session data to agent -> onReceiveState
+
                     // todo
                     switch (session.state) {
                         case "join":
                             logger.info("joining to negotiation session");
                             break;
-                        case "bid":
+                        case "run":
                             logger.info("bidding stage");
                             break;
                         case "done":
