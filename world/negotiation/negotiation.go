@@ -1,6 +1,7 @@
 package negotiation
 
 import (
+	"fmt"
 	"github.com/gomodule/redigo/redis"
 	"github.com/gorilla/websocket"
 	"github.com/labstack/echo/v4"
@@ -172,10 +173,13 @@ func readSessionMessages(ctx echo.Context, client *SessionClient) {
 	})
 
 	for {
-		_, _, err := client.conn.ReadMessage()
+		_, msg, err := client.conn.ReadMessage()
 		if err != nil {
 			return
 		}
+
+		// TODO get message from socket
+		fmt.Printf("> %s\n", msg)
 	}
 }
 
