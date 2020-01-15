@@ -252,11 +252,12 @@ public class AgentHandler {
                  * */
                 websocket.setHandler(message -> {
                     System.out.println(message);
-                    JSONNegotiationSession session = gson.fromJson(message, JSONNegotiationSession.class);
+                    JSONNegotiationSession jsonData = gson.fromJson(message, JSONNegotiationSession.class);
+                    State stateData = new State(jsonData);
                     // todo pass session data to agent -> onReceiveState
 
                     // todo
-                    switch (session.state) {
+                    switch (jsonData.state) {
                         case "join":
                             logger.info("joining to negotiation session");
                             break;
