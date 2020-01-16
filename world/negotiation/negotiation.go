@@ -179,6 +179,10 @@ func readSessionMessages(ctx echo.Context, client *SessionClient) {
 		}
 
 		// TODO get message from socket
+		// TODO parse message from socket for agent ID
+		// TODO check if agent can join
+		// TODO mark agent joined
+		// TODO iff all joined, update negotiation state to : {run}
 		fmt.Printf("> %s\n", msg)
 	}
 }

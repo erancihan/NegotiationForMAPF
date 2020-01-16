@@ -27,11 +27,13 @@ public class AgentHandler {
     private WorldWatchWS websocket;
     private Gson gson;
     private Point AGENT_POSITION;
+    private String current_state = "";
     private boolean collision_checked;
 
     AgentHandler(Agent client) {
         Assert.notNull(client.START, "«START cannot be null»");
         Assert.notNull(client.SERVER, "«SERVER cannot be null»");
+        Assert.notNull(client.AGENT_ID, "«AGENT_ID cannot be null»");
 
         clientRef = client;
 
@@ -253,16 +255,23 @@ public class AgentHandler {
                 websocket.setHandler(message -> {
                     System.out.println(message);
                     JSONNegotiationSession jsonData = gson.fromJson(message, JSONNegotiationSession.class);
-                    State stateData = new State(jsonData);
-                    // todo pass session data to agent -> onReceiveState
-
-                    // todo
+                    // pass session data to agent -> onReceiveState
+                    clientRef.onReceiveState(new State(jsonData));
+                    // TODO handle state actions
                     switch (jsonData.state) {
                         case "join":
-                            logger.info("joining to negotiation session");
+                            if (!current_state.equals("join"))
+                            { // check state change
+                                current_state = jsonData.state;
+                                logger.info("joining to negotiation session");
+                            }
                             break;
                         case "run":
-                            logger.info("bidding stage");
+                            if (!current_state.equals("run"))
+                            { // check state change
+                                current_state = jsonData.state;
+                                logger.info("bidding stage");
+                            }
                             break;
                         case "done":
                             logger.info("negotiation session is done");
@@ -283,6 +292,7 @@ public class AgentHandler {
                 e.printStackTrace();
             }
             // join negotiation session WS
+            websocket.sendMessage("join:agent:"+clientRef.AGENT_ID); // TODO send join message to socket
             // on close
             // todo get next paths
             // todo update path
