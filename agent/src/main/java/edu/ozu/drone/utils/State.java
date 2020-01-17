@@ -1,7 +1,20 @@
 package edu.ozu.drone.utils;
 
 public class State {
-    public State(JSONNegotiationSession fromJson) {
+    int time_tick;
+    String[][] bids;
+    String turn;
 
+    public State(JSONNegotiationSession json)
+    {
+        this(json, 0);
+    }
+
+    public State(JSONNegotiationSession json, int time_tick)
+    {
+        this.time_tick = time_tick;
+
+        bids = json.bids;
+        turn = json.turn;
     }
 }
