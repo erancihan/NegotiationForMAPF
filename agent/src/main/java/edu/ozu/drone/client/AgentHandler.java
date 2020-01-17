@@ -254,23 +254,28 @@ public class AgentHandler {
                  * */
                 websocket.setHandler(message -> {
                     System.out.println(message);
-                    JSONNegotiationSession jsonData = gson.fromJson(message, JSONNegotiationSession.class);
+
+                    JSONNegotiationSession json = gson.fromJson(message, JSONNegotiationSession.class);
                     // pass session data to agent -> onReceiveState
-                    clientRef.onReceiveState(new State(jsonData));
-                    // TODO handle state actions
-                    switch (jsonData.state) {
+                    clientRef.onReceiveState(new State(json));
+                    switch (json.state) {
                         case "join":
                             if (!current_state.equals("join"))
                             { // check state change
-                                current_state = jsonData.state;
+                                current_state = json.state;
                                 logger.info("joining to negotiation session");
                             }
                             break;
                         case "run":
                             if (!current_state.equals("run"))
                             { // check state change
-                                current_state = jsonData.state;
+                                current_state = json.state;
                                 logger.info("bidding stage");
+                            }
+                            if (json.turn.equals(clientRef.AGENT_ID))
+                            { // own turn to bid
+                                edu.ozu.drone.utils.Action action = clientRef.onMakeAction();
+                                // TODO make bid
                             }
                             break;
                         case "done":
