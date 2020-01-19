@@ -39,10 +39,8 @@ public class WorldsPanel extends javax.swing.JPanel {
         join_confirm = new javax.swing.JDialog();
         javax.swing.JPanel join_confirm_container = new javax.swing.JPanel();
         join_confirm_text = new javax.swing.JLabel();
-        join_confirm_btn = new javax.swing.JButton();
-        javax.swing.JPanel jPanel2 = new javax.swing.JPanel();
-        new_world_btn = new javax.swing.JButton();
-        jScrollPane1 = new javax.swing.JScrollPane();
+        javax.swing.JButton join_confirm_btn = new javax.swing.JButton();
+        javax.swing.JScrollPane jScrollPane1 = new javax.swing.JScrollPane();
         worlds_list = new javax.swing.JList<>();
         javax.swing.JPanel jPanel1 = new javax.swing.JPanel();
         javax.swing.JButton refresh_btn = new javax.swing.JButton();
@@ -81,27 +79,14 @@ public class WorldsPanel extends javax.swing.JPanel {
 
         join_confirm.getContentPane().add(join_confirm_container);
 
-        java.awt.FlowLayout flowLayout1 = new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0);
+        java.awt.FlowLayout flowLayout1 = new java.awt.FlowLayout(1, 0, 0);
         flowLayout1.setAlignOnBaseline(true);
         setLayout(flowLayout1);
-
-        jPanel2.setMinimumSize(new java.awt.Dimension(79, 40));
-        jPanel2.setPreferredSize(new java.awt.Dimension(400, 40));
-
-        new_world_btn.setText("CREATE NEW WORLD");
-        new_world_btn.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                new_world_btnActionPerformed(evt);
-            }
-        });
-        jPanel2.add(new_world_btn);
-
-        add(jPanel2);
 
         jScrollPane1.setPreferredSize(new java.awt.Dimension(400, 220));
 
         worlds_list.setModel(new javax.swing.AbstractListModel<String>() {
-            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
+            String[] strings = { "No servers found" };
             public int getSize() { return strings.length; }
             public String getElementAt(int i) { return strings[i]; }
         });
@@ -166,10 +151,6 @@ public class WorldsPanel extends javax.swing.JPanel {
         getWorldList();
     }//GEN-LAST:event_refresh_btnActionPerformed
 
-    private void new_world_btnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_new_world_btnActionPerformed
-        postWorldCreate();
-    }//GEN-LAST:event_new_world_btnActionPerformed
-
     private void worlds_listValueChanged(javax.swing.event.ListSelectionEvent event) {//GEN-FIRST:event_worlds_listValueChanged
         if (!event.getValueIsAdjusting())
         {
@@ -192,12 +173,9 @@ public class WorldsPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_join_confirm_btnActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JButton join_btn;
     private javax.swing.JDialog join_confirm;
-    private javax.swing.JButton join_confirm_btn;
     private javax.swing.JLabel join_confirm_text;
-    private javax.swing.JButton new_world_btn;
     private javax.swing.JList<String> worlds_list;
     // End of variables declaration//GEN-END:variables
 
