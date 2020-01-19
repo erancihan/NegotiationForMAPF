@@ -6,7 +6,7 @@
 
     <groupId>edu.ozu</groupId>
     <artifactId>drone-negotiator</artifactId>
-    <version>1.0.0</version>
+    <version>0.0.1</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -50,6 +50,14 @@
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-netbeans-modules-java-project</artifactId>
             <version>RELEASE110</version>
+        </dependency>
+        <!-- world handler Redis connection -->
+        <dependency>
+            <groupId>redis.clients</groupId>
+            <artifactId>jedis</artifactId>
+            <version>3.2.0</version>
+            <type>jar</type>
+            <scope>compile</scope>
         </dependency>
         <!-- Logging -->
         <dependency>
