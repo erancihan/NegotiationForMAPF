@@ -20,6 +20,7 @@ public class WorldHandler extends javax.swing.JFrame {
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(WorldHandler.class);
 
     private final String REDIS_HOST = "localhost";
+    private String WID;
     private RedisListener redisListener;
     private redis.clients.jedis.Jedis jedis;
     private boolean isJedisOK = true;
@@ -248,24 +249,36 @@ public class WorldHandler extends javax.swing.JFrame {
         jedis_delete_world();
     }//GEN-LAST:event_formWindowClosing
 
-    private void broadcast_state_btnActionPerformed(java.awt.event.ActionEvent evt)
-    {//GEN-FIRST:event_broadcast_state_btnActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_broadcast_state_btnActionPerformed
-
     private void join_state_btnActionPerformed(java.awt.event.ActionEvent evt)
     {//GEN-FIRST:event_join_state_btnActionPerformed
-        // TODO add your handling code here:
+        if (isJedisOK)
+        {
+            jedis.hset(WID, "world_state", "0");
+        }
     }//GEN-LAST:event_join_state_btnActionPerformed
+
+    private void broadcast_state_btnActionPerformed(java.awt.event.ActionEvent evt)
+    {//GEN-FIRST:event_broadcast_state_btnActionPerformed
+        if (isJedisOK)
+        {
+            jedis.hset(WID, "world_state", "1");
+        }
+    }//GEN-LAST:event_broadcast_state_btnActionPerformed
 
     private void negotatiate_state_btnActionPerformed(java.awt.event.ActionEvent evt)
     {//GEN-FIRST:event_negotatiate_state_btnActionPerformed
-        // TODO add your handling code here:
+        if (isJedisOK)
+        {
+            jedis.hset(WID, "world_state", "2");
+        }
     }//GEN-LAST:event_negotatiate_state_btnActionPerformed
 
     private void move_state_btnActionPerformed(java.awt.event.ActionEvent evt)
     {//GEN-FIRST:event_move_state_btnActionPerformed
-        // TODO add your handling code here:
+        if (isJedisOK)
+        {
+            jedis.hset(WID, "world_state", "3");
+        }
     }//GEN-LAST:event_move_state_btnActionPerformed
 
     private void cycle_states_toggle_btnActionPerformed(java.awt.event.ActionEvent evt)
@@ -323,26 +336,26 @@ public class WorldHandler extends javax.swing.JFrame {
     {
         if (!isJedisOK) { return; }
 
-        String wid = "wid:" + world_id.getText() + ":";
-        if (jedis.exists(wid))
+        WID = "wid:" + world_id.getText() + ":";
+        if (jedis.exists(WID))
         {
             logger.error("«World already exists!»");
             return;
         }
-        logger.info("Creating " + wid + " ...");
+        logger.info("Creating " + WID + " ...");
 
-        jedis.hset(wid, "player_count", "0");
-        jedis.hset(wid, "world_state", "0");
+        jedis.hset(WID, "player_count", "0");
+        jedis.hset(WID, "world_state", "0");
 
         // subscribe(listen) to changes in world key
         redisListener = new RedisListener(
             REDIS_HOST,
-            wid,
+            WID,
             (channel, message) -> {
                 // update canvas
                 logger.info("redis>" + channel + "»" + message + "");
 
-                Map<String, String> data = jedis.hgetAll(wid);
+                Map<String, String> data = jedis.hgetAll(WID);
 
                 text_view.setText(
                     data
@@ -359,10 +372,9 @@ public class WorldHandler extends javax.swing.JFrame {
     {
         if (!isJedisOK) { return; }
 
-        String wid = "wid:" + world_id.getText() + ":";
-        logger.info("Deleting " + wid + " ...");
+        logger.info("Deleting " + WID + " ...");
 
         redisListener.close();
-        jedis.del(wid, wid+"map", wid+"notify", wid+"path", wid+"session_keys");
+        jedis.del(WID, WID+"map", WID+"notify", WID+"path", WID+"session_keys");
     }
 }
