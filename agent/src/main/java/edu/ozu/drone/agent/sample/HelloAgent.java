@@ -16,7 +16,7 @@ public class HelloAgent extends Agent
         AGENT_ID   = "S006486";
 
         START = new Point(0, 1);
-        DEST = new Point(3, 1);
+        DEST = new Point(5, 1);
     }
 
     @Override
