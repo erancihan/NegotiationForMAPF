@@ -44,8 +44,14 @@ public class AgentHandler {
         gson = new Gson();
     }
 
-    public String getAgentName() {
+    public String getAgentName()
+    {
         return AGENT_NAME;
+    }
+
+    public String getID()
+    {
+        return clientRef.AGENT_ID;
     }
 
     /**
