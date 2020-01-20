@@ -45,6 +45,30 @@ public class WorldCanvas extends Canvas {
             else
                 graphics.setColor(Color.BLUE);
             graphics.fillOval((offset + (ox*r) + 5), (offset + (oy*r) + 5), (r - 10), (r - 10));
+
+            // draw path
+            if (path.length == 1)
+            {// own path, replace path data
+                path = own_path;
+            }
+
+            for (int i = 0; i + 1 < path.length; i++)
+            {// draw path
+                String[] from = path[i  ].split("-");
+                String[] dest = path[i+1].split("-");
+
+                int f_x = (Integer.parseInt(from[0]) - xy_own.x) + fov_center;
+                int f_y = (Integer.parseInt(from[1]) - xy_own.y) + fov_center;
+                int d_x = (Integer.parseInt(dest[0]) - xy_own.x) + fov_center;
+                int d_y = (Integer.parseInt(dest[1]) - xy_own.y) + fov_center;
+
+                graphics.drawLine(
+                        offset + (f_x * r) + r/2,
+                        offset + (f_y * r) + r/2,
+                        offset + (d_x * r) + r/2,
+                        offset + (d_y * r) + r/2
+                );
+            }
         }
 
         for (int i = 0; i <= data.fov_size; i++)
