@@ -113,7 +113,7 @@ public class WorldWatch extends javax.swing.JPanel {
                 "World_ID: " + data.world_id + "\n" +
                 "Location: " + data.position + "\n" +
                 "State   : " + Globals.WORLD_STATES.get(data.world_state) + "\n" +
-                "Field of View\n" +
+                "Field of View" +
                 Arrays.stream(data.fov)
                         .map(key -> key[0].endsWith(client.getID()) ? "" : Utils.toString(key, " "))
                         .collect(Collectors.joining("\n"))
