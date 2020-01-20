@@ -26,7 +26,6 @@ public class AgentHandler {
     private Agent clientRef;
     private WorldWatchWS websocket;
     private Gson gson;
-    private Point AGENT_POSITION;
     private String current_state = "";
     private boolean collision_checked;
 
@@ -39,7 +38,6 @@ public class AgentHandler {
 
         AGENT_NAME = client.AGENT_NAME;
         SERVER = client.SERVER;
-        AGENT_POSITION = client.START;
 
         gson = new Gson();
     }

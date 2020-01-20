@@ -1,7 +1,5 @@
 package edu.ozu.drone.utils;
 
-import com.sun.corba.se.impl.interceptors.PICurrent;
-
 public class Point {
     public int x, y;
     public String key;

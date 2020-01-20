@@ -8,7 +8,6 @@ package edu.ozu.drone.client.ui;
 import edu.ozu.drone.client.AgentHandler;
 import edu.ozu.drone.utils.Globals;
 import edu.ozu.drone.utils.JSONWorldWatch;
-import edu.ozu.drone.utils.Point;
 
 import java.awt.*;
 import java.util.Arrays;
