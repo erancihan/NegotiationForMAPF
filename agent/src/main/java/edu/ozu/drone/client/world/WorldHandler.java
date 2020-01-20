@@ -48,8 +48,18 @@ public class WorldHandler extends javax.swing.JFrame {
         javax.swing.JButton create_btn = new javax.swing.JButton();
         javax.swing.JLabel jLabel1 = new javax.swing.JLabel();
         javax.swing.JPanel controller = new javax.swing.JPanel();
+        javax.swing.JPanel text_view_container = new javax.swing.JPanel();
         javax.swing.JScrollPane jScrollPane2 = new javax.swing.JScrollPane();
         text_view = new javax.swing.JTextPane();
+        javax.swing.JPanel controls_container = new javax.swing.JPanel();
+        javax.swing.JToggleButton cycle_states_toggle_btn = new javax.swing.JToggleButton();
+        javax.swing.JLabel jLabel3 = new javax.swing.JLabel();
+        cycle_delay = new javax.swing.JTextField();
+        javax.swing.JButton join_state_btn = new javax.swing.JButton();
+        javax.swing.JButton broadcast_state_btn = new javax.swing.JButton();
+        javax.swing.JButton negotatiate_state_btn = new javax.swing.JButton();
+        javax.swing.JButton move_state_btn = new javax.swing.JButton();
+        javax.swing.JLabel jLabel4 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         addWindowListener(new java.awt.event.WindowAdapter() {
@@ -103,20 +113,111 @@ public class WorldHandler extends javax.swing.JFrame {
 
         controller.setLayout(new java.awt.GridBagLayout());
 
+        text_view_container.setPreferredSize(new java.awt.Dimension(250, 300));
+        text_view_container.setLayout(new java.awt.GridLayout(1, 0));
+
+        jScrollPane2.setViewportBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
+
         text_view.setEditable(false);
         jScrollPane2.setViewportView(text_view);
+
+        text_view_container.add(jScrollPane2);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.ipadx = 227;
-        gridBagConstraints.ipady = 277;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 150);
-        controller.add(jScrollPane2, gridBagConstraints);
+        controller.add(text_view_container, gridBagConstraints);
+
+        controls_container.setPreferredSize(new java.awt.Dimension(150, 300));
+        controls_container.setLayout(new java.awt.GridBagLayout());
+
+        cycle_states_toggle_btn.setText("Cycle States");
+        cycle_states_toggle_btn.setPreferredSize(new java.awt.Dimension(120, 31));
+        cycle_states_toggle_btn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cycle_states_toggle_btnActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.insets = new java.awt.Insets(14, 0, 0, 0);
+        controls_container.add(cycle_states_toggle_btn, gridBagConstraints);
+
+        jLabel3.setText("Cycle Delay (ms)");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
+        controls_container.add(jLabel3, gridBagConstraints);
+
+        cycle_delay.setHorizontalAlignment(javax.swing.JTextField.CENTER);
+        cycle_delay.setText("100");
+        cycle_delay.setMinimumSize(new java.awt.Dimension(100, 37));
+        cycle_delay.setPreferredSize(new java.awt.Dimension(120, 37));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 7;
+        controls_container.add(cycle_delay, gridBagConstraints);
+
+        join_state_btn.setText("JOIN");
+        join_state_btn.setPreferredSize(new java.awt.Dimension(120, 31));
+        join_state_btn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                join_state_btnActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        controls_container.add(join_state_btn, gridBagConstraints);
+
+        broadcast_state_btn.setText("BROADCAST");
+        broadcast_state_btn.setPreferredSize(new java.awt.Dimension(120, 31));
+        broadcast_state_btn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                broadcast_state_btnActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        controls_container.add(broadcast_state_btn, gridBagConstraints);
+
+        negotatiate_state_btn.setText("NEGOTIATE");
+        negotatiate_state_btn.setPreferredSize(new java.awt.Dimension(120, 31));
+        negotatiate_state_btn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                negotatiate_state_btnActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        controls_container.add(negotatiate_state_btn, gridBagConstraints);
+
+        move_state_btn.setText("MOVE");
+        move_state_btn.setPreferredSize(new java.awt.Dimension(120, 31));
+        move_state_btn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                move_state_btnActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        controls_container.add(move_state_btn, gridBagConstraints);
+
+        jLabel4.setText("States");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        controls_container.add(jLabel4, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        controller.add(controls_container, gridBagConstraints);
 
         cards_container.add(controller, "controller");
 
@@ -147,6 +248,31 @@ public class WorldHandler extends javax.swing.JFrame {
         jedis_delete_world();
     }//GEN-LAST:event_formWindowClosing
 
+    private void broadcast_state_btnActionPerformed(java.awt.event.ActionEvent evt)
+    {//GEN-FIRST:event_broadcast_state_btnActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_broadcast_state_btnActionPerformed
+
+    private void join_state_btnActionPerformed(java.awt.event.ActionEvent evt)
+    {//GEN-FIRST:event_join_state_btnActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_join_state_btnActionPerformed
+
+    private void negotatiate_state_btnActionPerformed(java.awt.event.ActionEvent evt)
+    {//GEN-FIRST:event_negotatiate_state_btnActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_negotatiate_state_btnActionPerformed
+
+    private void move_state_btnActionPerformed(java.awt.event.ActionEvent evt)
+    {//GEN-FIRST:event_move_state_btnActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_move_state_btnActionPerformed
+
+    private void cycle_states_toggle_btnActionPerformed(java.awt.event.ActionEvent evt)
+    {//GEN-FIRST:event_cycle_states_toggle_btnActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_cycle_states_toggle_btnActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -174,6 +300,7 @@ public class WorldHandler extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel cards_container;
+    private javax.swing.JTextField cycle_delay;
     private javax.swing.JTextPane text_view;
     private javax.swing.JTextField world_id;
     // End of variables declaration//GEN-END:variables
