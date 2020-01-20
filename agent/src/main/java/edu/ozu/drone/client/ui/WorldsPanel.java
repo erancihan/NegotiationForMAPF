@@ -140,18 +140,21 @@ public class WorldsPanel extends javax.swing.JPanel {
 
     void setClientRef(AgentHandler client) { this.client = client; }
 
-    private void join_btnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_join_btnActionPerformed
+    private void join_btnActionPerformed(java.awt.event.ActionEvent evt)
+    {//GEN-FIRST:event_join_btnActionPerformed
         if (!world_id.isEmpty())
         {
             join();
         }
     }//GEN-LAST:event_join_btnActionPerformed
 
-    private void refresh_btnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refresh_btnActionPerformed
+    private void refresh_btnActionPerformed(java.awt.event.ActionEvent evt)
+    {//GEN-FIRST:event_refresh_btnActionPerformed
         getWorldList();
     }//GEN-LAST:event_refresh_btnActionPerformed
 
-    private void worlds_listValueChanged(javax.swing.event.ListSelectionEvent event) {//GEN-FIRST:event_worlds_listValueChanged
+    private void worlds_listValueChanged(javax.swing.event.ListSelectionEvent event)
+    {//GEN-FIRST:event_worlds_listValueChanged
         if (!event.getValueIsAdjusting())
         {
             ListSelectionModel lsm = ((javax.swing.JList) event.getSource()).getSelectionModel();
@@ -160,13 +163,14 @@ public class WorldsPanel extends javax.swing.JPanel {
                 world_id = "";
                 join_btn.setEnabled(false);
             } else {
-                world_id =  worlds_list.getSelectedValue();
+                world_id = worlds_list.getSelectedValue();
                 join_btn.setEnabled(true);
             }
         }
     }//GEN-LAST:event_worlds_listValueChanged
 
-    private void join_confirm_btnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_join_confirm_btnActionPerformed
+    private void join_confirm_btnActionPerformed(java.awt.event.ActionEvent evt)
+    {//GEN-FIRST:event_join_confirm_btnActionPerformed
         join_confirm.setVisible(false);
         parent.join(world_id);
         join_confirm.dispose();
@@ -179,27 +183,21 @@ public class WorldsPanel extends javax.swing.JPanel {
     private javax.swing.JList<String> worlds_list;
     // End of variables declaration//GEN-END:variables
 
-    private void onComponentsDidMount() {
+    private void onComponentsDidMount()
+    {
         if (world_id.isEmpty())
         {
             join_btn.setEnabled(false);
         }
     }
 
-    private void getWorldList() {
-        // fetch worlds list
+    private void getWorldList()
+    {// fetch worlds list
         client.getWorldList(response -> worlds_list.setListData(response));
     }
 
-    private void postWorldCreate() {
-        client.createWorld(response -> {
-            getWorldList();
-            this.world_id = "world:" + response.getWorld_id();
-            join();
-        });
-    }
-
-    private void join() {
+    private void join()
+    {
         join_confirm.setVisible(true);
         join_confirm.setTitle(client.getAgentName());
         join_confirm_text.setText("Joining to \n<" + world_id + ">");
