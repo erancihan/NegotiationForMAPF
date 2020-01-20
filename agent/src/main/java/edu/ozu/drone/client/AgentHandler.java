@@ -492,49 +492,4 @@ public class AgentHandler {
         }
     }
     //</editor-fold>
-
-    //<editor-fold defaultstate="collapsed" desc="post world create">
-    @SuppressWarnings("Duplicates")
-    public void createWorld(Consumer<JSONWorldCreate> callback) {
-        try {
-            String wid = String.valueOf(System.currentTimeMillis());
-            URL url = new URL("http://" + SERVER + "/world/create");
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-
-            conn.setRequestMethod("POST");
-            conn.setRequestProperty("Content-Type", "application/json; utf-8");
-            conn.setRequestProperty("Accept", "application/json");
-            conn.setDoOutput(true);
-
-            String post_data = "{\"world_id\": \"" + wid + "\"}";
-
-            // write to output stream
-            try (OutputStream stream = conn.getOutputStream()) {
-                byte[] bytes = post_data.getBytes(StandardCharsets.UTF_8);
-                stream.write(bytes, 0, bytes.length);
-            }
-
-            // response
-            BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8));
-            String il;
-            StringBuilder response = new StringBuilder();
-            while ((il = in.readLine()) != null) {
-                response.append(il);
-            }
-
-            // todo success
-            Gson gson = new Gson();
-            JSONWorldCreate wc = gson.fromJson(String.valueOf(response), JSONWorldCreate.class);
-
-            logger.info("create world response: " + wc);
-            callback.accept(wc);
-        } catch (IOException error) {
-            if (error.getClass().getName().equals("java.net.ConnectException")) {
-                logger.error("«check server status»");
-            } else {
-                error.printStackTrace();
-            }
-        }
-    }
-    //</editor-fold>
 }
