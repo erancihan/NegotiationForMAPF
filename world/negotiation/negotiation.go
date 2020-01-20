@@ -102,6 +102,9 @@ func (t *SessionMap) Delete(key string) {
 
 func (n *Handler) Socket(ctx echo.Context) error {
 	sid := ctx.Param("session_id")
+	//aid := ctx.Param("agent_id")
+
+	// TODO verify agent id
 
 	n.Upgrader.CheckOrigin = func(r *http.Request) bool {
 		return true
@@ -178,10 +181,8 @@ func readSessionMessages(ctx echo.Context, client *SessionClient) {
 			return
 		}
 
-		// TODO get message from socket
-		// TODO parse message from socket for agent ID
-		// TODO check if agent can join
-		// TODO mark agent joined
+		// TODO get ready message
+		// TODO register ready message
 		// TODO iff all joined, update negotiation state to : {run}
 		fmt.Printf("> %s\n", msg)
 	}
