@@ -6,6 +6,8 @@ import java.util.Map;
 
 public class Globals
 {
+    public static final int BROADCAST_SIZE = 3;
+
     public enum WorldState {
         JOIN("JOIN"),
         BROADCAST("BROADCAST"),
