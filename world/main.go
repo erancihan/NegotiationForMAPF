@@ -80,7 +80,7 @@ func main() {
 	e.GET("/worlds", h.WorldList)
 	e.GET("/world/:world_id/:agent_id", h.Socket)
 	//e.GET("/world/:key", h.Socket)
-	e.POST("/world/create", h.CreateWorld)
+	//e.POST("/world/create", h.CreateWorld)
 	e.POST("/move", h.Move)
 	e.POST("/join", h.Join)
 

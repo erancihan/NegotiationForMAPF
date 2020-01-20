@@ -70,23 +70,24 @@ func (h *Handler) PlayerUnregister(ctx echo.Context, p *WorldPool) error {
 		return err
 	}
 
-	if c <= 0 {
-		_, err := rds.Do(
-			"DEL",
-			"world:"+wid+":",
-			"world:"+wid+":map",
-			"world:"+wid+":notify",
-			"world:"+wid+":path",
-			"world:"+wid+":session_keys",
-		)
-		if err != nil {
-			ctx.Echo().Logger.Fatal(err)
-		}
+	if c <= 0 { // TODO clean up will happen on world controller close!
+		//_, err := rds.Do(
+		//	"DEL",
+		//	"world:"+wid+":",
+		//	"world:"+wid+":map",
+		//	"world:"+wid+":notify",
+		//	"world:"+wid+":path",
+		//	"world:"+wid+":session_keys",
+		//)
+		//if err != nil {
+		//	ctx.Echo().Logger.Fatal(err)
+		//}
 	}
 
 	return nil
 }
 
+/*
 func (h *Handler) CreateWorld(ctx echo.Context) (err error) {
 	world := new(World)
 	if err = ctx.Bind(world); err != nil {
@@ -118,6 +119,7 @@ func (h *Handler) CreateWorld(ctx echo.Context) (err error) {
 
 	return ctx.JSON(http.StatusOK, resp)
 }
+*/
 
 func (h *Handler) WorldList(ctx echo.Context) (err error) {
 	rds := h.Pool.Get()
