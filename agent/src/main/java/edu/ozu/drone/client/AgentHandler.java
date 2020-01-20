@@ -21,7 +21,7 @@ import java.util.function.Consumer;
 
 public class AgentHandler {
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(AgentHandler.class);
-    private String AGENT_NAME, SERVER;
+    private String AGENT_NAME;
     private String WORLD_ID = "";
     private Agent clientRef;
     private WorldWatchWS websocket;
@@ -31,13 +31,11 @@ public class AgentHandler {
 
     AgentHandler(Agent client) {
         Assert.notNull(client.START, "«START cannot be null»");
-        Assert.notNull(client.SERVER, "«SERVER cannot be null»");
         Assert.notNull(client.AGENT_ID, "«AGENT_ID cannot be null»");
 
         clientRef = client;
 
         AGENT_NAME = client.AGENT_NAME;
-        SERVER = client.SERVER;
 
         gson = new Gson();
     }
@@ -70,7 +68,7 @@ public class AgentHandler {
     @SuppressWarnings("Duplicates")
     private void __postJOIN() {
         try {
-            URL url = new URL("http://" + SERVER + "/join");
+            URL url = new URL("http://" + Globals.SERVER + "/join");
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 
             conn.setRequestMethod("POST");
@@ -114,7 +112,7 @@ public class AgentHandler {
 
         try {
             // open websocket
-            String ws = "ws://" + SERVER + "/world/" + WORLD_ID + "/" + clientRef.AGENT_ID;
+            String ws = "ws://" + Globals.SERVER + "/world/" + WORLD_ID + "/" + clientRef.AGENT_ID;
             websocket = new WorldWatchWS(new URI(ws));
 
             // add handler
@@ -208,7 +206,7 @@ public class AgentHandler {
                 "}";
 
         try {
-            URL url = new URL("http://" + SERVER + "/negotiation/notify");
+            URL url = new URL("http://" + Globals.SERVER + "/negotiation/notify");
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 
             conn.setRequestMethod("POST");
@@ -245,7 +243,7 @@ public class AgentHandler {
             try {
                 //!!! sessions contain only one session id for now
                 String session_id = sessions[0];
-                String ws = "ws://" + SERVER + "/negotiation/" + session_id + "/" + clientRef.AGENT_ID;
+                String ws = "ws://" + Globals.SERVER + "/negotiation/" + session_id + "/" + clientRef.AGENT_ID;
                 NegotiationWS websocket = new NegotiationWS(new URI(ws));
 
                 /* add handler
@@ -327,7 +325,7 @@ public class AgentHandler {
                 "}";
 
         try {
-            URL url = new URL("http://" + SERVER + "/negotiation/sessions");
+            URL url = new URL("http://" + Globals.SERVER + "/negotiation/sessions");
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 
             conn.setRequestMethod("POST");
@@ -408,7 +406,7 @@ public class AgentHandler {
         // post localhost:3001/move payload:
         // direction -> {N, W, E, S}
         try {
-            URL url = new URL("http://" + SERVER + "/move");
+            URL url = new URL("http://" + Globals.SERVER + "/move");
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 
             conn.setRequestMethod("POST");
@@ -471,7 +469,7 @@ public class AgentHandler {
     @SuppressWarnings("Duplicates")
     public void getWorldList(Consumer<String[]> callback) {
         try {
-            URL url = new URL("http://" + SERVER + "/worlds");
+            URL url = new URL("http://" + Globals.SERVER + "/worlds");
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 
             conn.setRequestMethod("GET");

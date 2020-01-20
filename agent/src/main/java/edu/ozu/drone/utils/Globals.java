@@ -7,6 +7,7 @@ import java.util.Map;
 public class Globals
 {
     public static final int BROADCAST_SIZE = 5;
+    public static final String SERVER = "localhost:3001";
 
     public enum WorldState {
         JOIN("JOIN"),
