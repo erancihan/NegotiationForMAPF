@@ -76,20 +76,6 @@ func (h *Handler) PlayerUnregister(ctx echo.Context, p *WorldPool) (err error) {
 		ctx.Echo().Logger.Fatal(err)
 	}
 
-	//if c <= 0 { // TODO clean up will happen on world controller close!
-	//	_, err := rds.Do(
-	//		"DEL",
-	//		"world:"+wid+":",
-	//		"world:"+wid+":map",
-	//		"world:"+wid+":notify",
-	//		"world:"+wid+":path",
-	//		"world:"+wid+":session_keys",
-	//	)
-	//	if err != nil {
-	//		ctx.Echo().Logger.Fatal(err)
-	//	}
-	//}
-
 	return err
 }
 
