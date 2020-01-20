@@ -59,7 +59,7 @@ public class AgentHandler {
      *
      * @param world_id id of the world the agent will join to
      */
-    public void join(String world_id, BiConsumer<JSONWorldWatch, Point> draw) {
+    public void join(String world_id, BiConsumer<JSONWorldWatch, String[]> draw) {
         logger.info("joining " + world_id);
 
         WORLD_ID = world_id.split(":")[1];
@@ -111,7 +111,7 @@ public class AgentHandler {
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="watch">
-    private void __watch(BiConsumer<JSONWorldWatch, Point> draw) {
+    private void __watch(BiConsumer<JSONWorldWatch, String[]> draw) {
         Assert.notNull(draw, "Draw function cannot be null");
 
         try {
@@ -123,7 +123,7 @@ public class AgentHandler {
             websocket.setMessageHandler(message -> {
                 JSONWorldWatch watch = gson.fromJson(message, JSONWorldWatch.class);
 
-                draw.accept(watch, AGENT_POSITION);
+                draw.accept(watch, clientRef.getBroadcastArray());
                 handleState(watch);
             });
 

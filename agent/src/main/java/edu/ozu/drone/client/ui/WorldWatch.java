@@ -122,11 +122,11 @@ public class WorldWatch extends javax.swing.JPanel {
         text_panel.setText(sb);
     }
 
-    public void draw(JSONWorldWatch data, Point agent_position)
+    public void draw(JSONWorldWatch data, String[] agent_position_data)
     {
         CompletableFuture.runAsync(() -> write_to_panel(data));
 
         canvas.setBackground(new Color(195, 224, 254));
-        canvas.setData(data, agent_position);
+        canvas.setData(data, agent_position_data);
     }
 }

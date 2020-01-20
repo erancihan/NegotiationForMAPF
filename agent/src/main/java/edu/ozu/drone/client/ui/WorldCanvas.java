@@ -6,7 +6,6 @@
 package edu.ozu.drone.client.ui;
 
 import edu.ozu.drone.utils.JSONWorldWatch;
-import edu.ozu.drone.utils.Point;
 
 import java.awt.*;
 
@@ -16,7 +15,7 @@ import java.awt.*;
  */
 public class WorldCanvas extends Canvas {
     private JSONWorldWatch data;
-    private Point xy_own;
+    private String[] own_path;
 
     private int r = 0;
     private int fov_center;
@@ -31,12 +30,12 @@ public class WorldCanvas extends Canvas {
         graphics.setColor(Color.WHITE);
         graphics.fillRect(offset, offset, (r * data.fov_size), (r * data.fov_size));
 
+        edu.ozu.drone.utils.Point xy_own = new edu.ozu.drone.utils.Point(own_path[0], "-");
         for (String[] agent_data : data.fov)
         { // draw agents
             String name = agent_data[0];
             String[] xy = agent_data[1].split(":");
-            String path = agent_data[2];
-
+            String[] path = agent_data[2].replaceAll("([\\[\\]]*)", "").split(",");
 
             int ox = (Integer.parseInt(xy[0]) - xy_own.x) + fov_center;
             int oy = (Integer.parseInt(xy[1]) - xy_own.y) + fov_center;
@@ -75,10 +74,10 @@ public class WorldCanvas extends Canvas {
         }
     }
 
-    void setData(JSONWorldWatch data, Point agent_position)
+    void setData(JSONWorldWatch data, String[] agent_position_data)
     {
         this.data = data;
-        this.xy_own = agent_position;
+        this.own_path = agent_position_data;
 
         this.r = this.getWidth() > this.getHeight()
                 ? (this.getHeight() - 2 * offset) / (data.fov_size)
