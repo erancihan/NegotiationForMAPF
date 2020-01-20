@@ -10,7 +10,7 @@ import edu.ozu.drone.utils.JSONWorldWatch;
 import edu.ozu.drone.utils.Point;
 
 import java.awt.*;
-import java.util.Arrays;
+import java.util.concurrent.CompletableFuture;
 
 /**
  *
@@ -41,6 +41,8 @@ public class WorldWatch extends javax.swing.JPanel {
         javax.swing.JPanel canvas_container = new javax.swing.JPanel();
         canvas = new edu.ozu.drone.client.ui.WorldCanvas();
         javax.swing.JPanel controls = new javax.swing.JPanel();
+        javax.swing.JScrollPane jScrollPane1 = new javax.swing.JScrollPane();
+        text_panel = new javax.swing.JTextPane();
 
         setBackground(new java.awt.Color(254, 254, 254));
         setToolTipText("");
@@ -50,7 +52,7 @@ public class WorldWatch extends javax.swing.JPanel {
 
         canvas_container.setMinimumSize(new java.awt.Dimension(300, 300));
         canvas_container.setPreferredSize(new java.awt.Dimension(300, 300));
-        canvas_container.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0));
+        canvas_container.setLayout(new java.awt.FlowLayout(1, 0, 0));
 
         canvas.setPreferredSize(new java.awt.Dimension(300, 300));
         canvas_container.add(canvas);
@@ -60,6 +62,17 @@ public class WorldWatch extends javax.swing.JPanel {
         controls.setBackground(new java.awt.Color(164, 221, 252));
         controls.setPreferredSize(new java.awt.Dimension(300, 300));
         controls.setLayout(new java.awt.GridBagLayout());
+
+        jScrollPane1.setMinimumSize(new java.awt.Dimension(300, 300));
+        jScrollPane1.setPreferredSize(new java.awt.Dimension(300, 300));
+
+        text_panel.setEditable(false);
+        text_panel.setFont(new java.awt.Font("Monospaced", 0, 12)); // NOI18N
+        text_panel.setPreferredSize(new java.awt.Dimension(300, 300));
+        jScrollPane1.setViewportView(text_panel);
+
+        controls.add(jScrollPane1, new java.awt.GridBagConstraints());
+
         add(controls, new java.awt.GridBagConstraints());
     }// </editor-fold>//GEN-END:initComponents
 
@@ -73,6 +86,7 @@ public class WorldWatch extends javax.swing.JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private edu.ozu.drone.client.ui.WorldCanvas canvas;
+    private javax.swing.JTextPane text_panel;
     // End of variables declaration//GEN-END:variables
 
     public void mount()
@@ -88,8 +102,21 @@ public class WorldWatch extends javax.swing.JPanel {
             client.leave();
     }
 
+    void write_to_panel(JSONWorldWatch data)
+    {
+        // write to text field
+        String sb =
+                "Agent_ID: " + data.agent_id + "\n" +
+                "World_ID: " + data.world_id + "\n" +
+                "State   : " + data.world_state;
+
+        text_panel.setText(sb);
+    }
+
     public void draw(JSONWorldWatch data, Point agent_position)
     {
+        CompletableFuture.runAsync(() -> write_to_panel(data));
+
         canvas.setBackground(new Color(195, 224, 254));
         canvas.setData(data, agent_position);
     }
