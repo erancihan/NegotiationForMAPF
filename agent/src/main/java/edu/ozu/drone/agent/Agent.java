@@ -45,17 +45,7 @@ public abstract class Agent {
     {
         String[] b = getBroadcastArray();
 
-        StringBuilder sb = new StringBuilder();
-        sb.append('[');
-        for (int i = 0; i < b.length; i++)
-        {
-            sb.append(b[i]);
-            if (i + 1 == b.length)
-                return sb.append(']').toString();
-            sb.append(',');
-        }
-
-        return "[]";
+        return edu.ozu.drone.utils.Utils.toString(b, ",");
     }
     //</editor-fold>
 
