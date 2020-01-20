@@ -59,6 +59,12 @@
             <type>jar</type>
             <scope>compile</scope>
         </dependency>
+        <!-- Async/Await -->
+        <dependency>
+            <groupId>com.ea.async</groupId>
+            <artifactId>ea-async</artifactId>
+            <version>1.2.3</version>
+        </dependency>
         <!-- Logging -->
         <dependency>
             <groupId>org.slf4j</groupId>
