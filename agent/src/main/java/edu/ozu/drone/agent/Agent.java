@@ -2,8 +2,10 @@ package edu.ozu.drone.agent;
 
 import edu.ozu.drone.utils.AStar;
 import edu.ozu.drone.utils.Action;
+import edu.ozu.drone.utils.Globals;
 import edu.ozu.drone.utils.Point;
 
+import java.util.Arrays;
 import java.util.List;
 
 public abstract class Agent {
@@ -42,17 +44,32 @@ public abstract class Agent {
     //<editor-fold defaultstate="collapsed" desc="Get Broadcast">
     public String getBroadcast()
     {
-        int broadcast_size = 3;
+        String[] b = getBroadcastArray();
 
         StringBuilder sb = new StringBuilder();
-        sb.append("[");
-        for (int i = time; (i < path.size()) && (i < time + broadcast_size); i++)
+        sb.append('[');
+        for (int i = 0; i < b.length; i++)
         {
-            sb.append(path.get(i));
-            if ((i+1 < path.size()) && (i+1 < time + broadcast_size)) sb.append(",");
+            sb.append(b[i]);
+            if (i + 1 == b.length)
+                return sb.append(']').toString();
+            sb.append(',');
         }
-        sb.append("]");
-        return String.valueOf(sb);
+
+        return "[]";
+    }
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="Get Broadcast Array">
+    public String[] getBroadcastArray()
+    {
+        String[] broadcast = new String[Globals.BROADCAST_SIZE];
+        for (int i = time; (i < path.size()) && (i < time + broadcast.length); i++)
+        {
+            broadcast[i] = path.get(i);
+        }
+
+        return broadcast;
     }
     //</editor-fold>
 }
