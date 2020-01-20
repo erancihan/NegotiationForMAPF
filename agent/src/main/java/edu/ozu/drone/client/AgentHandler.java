@@ -136,7 +136,7 @@ public class AgentHandler {
      * Essentially handles invocations of other functions depending on the
      * {world_state}:
      * 0 -> join
-     * 1 -> collision check
+     * 1 -> collision check/broadcast
      * 2 -> negotiation step
      * 3 -> move step
      *
@@ -148,7 +148,7 @@ public class AgentHandler {
                 collision_checked = false;
                 break;
             case 1:
-                // collision check
+                // collision check/broadcast
                 if (!collision_checked && hasCollision(watch.fov)) { // negotiation notification
                     notifyNegotiation(watch.fov);
                 }
@@ -241,7 +241,7 @@ public class AgentHandler {
             try {
                 //!!! sessions contain only one session id for now
                 String session_id = sessions[0];
-                String ws = "ws://" + SERVER + "/negotiation/" + session_id;
+                String ws = "ws://" + SERVER + "/negotiation/" + session_id + "/" + clientRef.AGENT_ID;
                 NegotiationWS websocket = new NegotiationWS(new URI(ws));
 
                 /* add handler
@@ -270,12 +270,13 @@ public class AgentHandler {
                             if (!current_state.equals("run"))
                             { // check state change
                                 current_state = json.state;
-                                logger.info("bidding stage");
-                            }
-                            if (json.turn.equals(clientRef.AGENT_ID))
-                            { // own turn to bid
-                                edu.ozu.drone.utils.Action action = clientRef.onMakeAction();
-                                // TODO make bid
+                                logger.info("bidding...");
+
+                                if (json.turn.equals(clientRef.AGENT_ID))
+                                { // own turn to bid
+                                    edu.ozu.drone.utils.Action action = clientRef.onMakeAction();
+                                    websocket.sendMessage(String.valueOf(action));
+                                }
                             }
                             break;
                         case "done":
@@ -297,7 +298,7 @@ public class AgentHandler {
                 e.printStackTrace();
             }
             // join negotiation session WS
-            websocket.sendMessage("join:agent:"+clientRef.AGENT_ID); // TODO send join message to socket
+            websocket.sendMessage("agent:" + clientRef.AGENT_ID + ":ready"); // TODO send join message to socket
             // on close
             // todo get next paths
             // todo update path
