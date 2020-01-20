@@ -336,7 +336,7 @@ public class WorldHandler extends javax.swing.JFrame {
     {
         if (!isJedisOK) { return; }
 
-        WID = "wid:" + world_id.getText() + ":";
+        WID = "world:" + world_id.getText() + ":";
         if (jedis.exists(WID))
         {
             logger.error("«World already exists!»");
