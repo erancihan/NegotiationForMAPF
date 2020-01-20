@@ -8,6 +8,7 @@ package edu.ozu.drone.client.ui;
 import edu.ozu.drone.client.AgentHandler;
 import edu.ozu.drone.utils.Globals;
 import edu.ozu.drone.utils.JSONWorldWatch;
+import edu.ozu.drone.utils.Utils;
 
 import java.awt.*;
 import java.util.Arrays;
@@ -114,8 +115,9 @@ public class WorldWatch extends javax.swing.JPanel {
                 "State   : " + Globals.WORLD_STATES.get(data.world_state) + "\n" +
                 "Field of View\n" +
                 Arrays.stream(data.fov)
-                        .map(key -> key[0].endsWith(client.getID()) ? "" : Arrays.toString(key))
-                        .collect(Collectors.joining("\n")) +
+                        .map(key -> key[0].endsWith(client.getID()) ? "" : Utils.toString(key, " "))
+                        .collect(Collectors.joining("\n"))
+                        .replaceAll("[\\[\\]]", "") +
                 "";
 
         text_panel.setText(sb);
