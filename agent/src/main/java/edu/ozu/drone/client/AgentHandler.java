@@ -51,9 +51,8 @@ public class AgentHandler {
      */
     public void join(String world_id, BiConsumer<JSONWorldWatch, String[]> draw)
     {
-        logger.info("joining " + world_id);
-
         WORLD_ID = world_id.split(":")[1];
+        logger.info("joining " + WORLD_ID);
 
         __postJOIN();
         __watch(draw);
@@ -173,21 +172,18 @@ public class AgentHandler {
         return agent_ids.toArray(new String[0]);
     }
 
-    //<editor-fold defaultstate="collapsed" desc="notify negotiation">
+    //<editor-fold defaultstate="collapsed" desc="Notify Negotiation Participants">
     private void notifyNegotiation(String[] agent_ids)
     {// notify negotiation
         // engage in bi-lateral negotiation session with each of the agents
         // TODO
-        __postNotify(String.valueOf(agents));
-    }
 
-    private void __postNotify(String agents) {
         String response = Utils.post(
             "http://" + Globals.SERVER + "/negotiation/notify",
             new HashMap<String, String>(){{
                 put("world_id", WORLD_ID);
                 put("agent_id", clientRef.AGENT_ID);
-                put("agents", agents);
+                put("agents", Utils.toString(agent_ids, ","));
             }}
         );
 
