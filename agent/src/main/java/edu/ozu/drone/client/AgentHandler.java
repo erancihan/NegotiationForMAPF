@@ -5,17 +5,11 @@ import edu.ozu.drone.agent.Agent;
 import edu.ozu.drone.utils.*;
 import org.springframework.util.Assert;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -67,42 +61,18 @@ public class AgentHandler {
     //<editor-fold defaultstate="collapsed" desc="post join">
     @SuppressWarnings("Duplicates")
     private void __postJOIN() {
-        try {
-            URL url = new URL("http://" + Globals.SERVER + "/join");
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        String response = Utils.post(
+            "http://" + Globals.SERVER + "/join",
+            new HashMap<String, String>() {{
+                put("world_id", WORLD_ID);
+                put("agent_id", clientRef.AGENT_ID);
+                put("agent_x", String.valueOf(clientRef.START.x));
+                put("agent_y", String.valueOf(clientRef.START.y));
+                put("broadcast", clientRef.getBroadcast());
+            }}
+        );
 
-            conn.setRequestMethod("POST");
-            conn.setRequestProperty("Content-Type", "application/json; utf-8");
-            conn.setRequestProperty("Accept", "application/json");
-            conn.setDoOutput(true);
-
-            String post_data = "{" +
-                    "\"world_id\":\"" + WORLD_ID + "\"," +
-                    "\"agent_id\":\"" + clientRef.AGENT_ID + "\"," +
-                    "\"agent_x\":\"" + clientRef.START.x + "\"," +
-                    "\"agent_y\":\"" + clientRef.START.y + "\"," +
-                    "\"broadcast\":\"" + clientRef.getBroadcast() + "\"" +
-                    "}";
-
-            // write to output stream
-            try (OutputStream stream = conn.getOutputStream()) {
-                byte[] bytes = post_data.getBytes(StandardCharsets.UTF_8);
-                stream.write(bytes, 0, bytes.length);
-            }
-
-            // read response
-            BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8));
-            String line;
-            StringBuilder response = new StringBuilder();
-            while ((line = reader.readLine()) != null) {
-                response.append(line);
-            }
-
-            // ! response should be empty
-            logger.info("__postJOIN:" + response);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        logger.info("__postJOIN:" + response);
     }
     //</editor-fold>
 
@@ -149,12 +119,12 @@ public class AgentHandler {
             case 0: // join
                 collision_checked = false;
                 break;
-            case 1:
-                // collision check/broadcast
-                if (!collision_checked && hasCollision(watch.fov)) { // negotiation notification
-                    notifyNegotiation(watch.fov);
+            case 1: // collision check/broadcast
+                if (!collision_checked)
+                {
+                    checkForCollisions(watch);
+                    collision_checked = true;
                 }
-                collision_checked = true;
                 break;
             case 2: // negotiation state
                 negotiate();
@@ -169,75 +139,62 @@ public class AgentHandler {
         }
     }
 
-    private boolean hasCollision(String[][] fov) {
-        for (String[] item : fov) {
-            if (item[2].equals("-")) {
-                continue;
-            }
-
-            String[] next = item[2].replaceAll("[\\[\\]]", "").split(",");
-            for (int i = 0; i < next.length; i++) {
-                String a = clientRef.path.get(clientRef.time + i);
-                if (a.equals(next[i])) {
-                    return true;
-                }
-            }
+    private void checkForCollisions(JSONWorldWatch data)
+    {
+        String[] agent_ids = getCollidingAgents(data.fov);
+        if (agent_ids.length > 0)
+        { // my path collides with broadcasted paths!
+            notifyNegotiation(agent_ids);
         }
-        return false;
+    }
+
+    private String[] getCollidingAgents(String[][] broadcasts)
+    {
+        ArrayList<String> agent_ids = new ArrayList<>();
+        String[] own_path = clientRef.getBroadcastArray();
+
+        for (String[] broadcast : broadcasts)
+        {
+            if (broadcast[2].equals("-"))
+                continue;
+
+            String[] path = broadcast[2].replaceAll("[\\[\\]]", "").split(",");
+            // check Vertex Conflict
+            for (int i = 0; i < path.length && i < own_path.length; i++)
+            {
+                if (path[i].equals(own_path[i]))
+                    agent_ids.add(broadcast[0]);
+            }
+            // TODO check Swap Conflict
+        }
+
+        return agent_ids.toArray(new String[0]);
     }
 
     //<editor-fold defaultstate="collapsed" desc="notify negotiation">
-    private void notifyNegotiation(String[][] fov) { // notify negotiation
-        List<String> agents = new ArrayList<>();
-        for (String[] agent : fov) {
-            agents.add("\"" + agent[0] + "\""); // add agent IDs
-        }
-
+    private void notifyNegotiation(String[] agent_ids)
+    {// notify negotiation
+        // engage in bi-lateral negotiation session with each of the agents
+        //
         __postNotify(String.valueOf(agents));
     }
 
-    //<editor-fold defaultstate="collapsed" desc="post notify">
-    @SuppressWarnings("Duplicates")
     private void __postNotify(String agents) {
-        String post_data = "{" +
-                "\"world_id\":\"" + WORLD_ID + "\"," +
-                "\"agent_id\":\"" + clientRef.AGENT_ID + "\"," +
-                "\"agents\":" + agents + "" +
-                "}";
+        String response = Utils.post(
+            "http://" + Globals.SERVER + "/negotiation/notify",
+            new HashMap<String, String>(){{
+                put("world_id", WORLD_ID);
+                put("agent_id", clientRef.AGENT_ID);
+                put("agents", agents);
+            }}
+        );
 
-        try {
-            URL url = new URL("http://" + Globals.SERVER + "/negotiation/notify");
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-
-            conn.setRequestMethod("POST");
-            conn.setRequestProperty("Content-Type", "application/json; utf-8");
-            conn.setRequestProperty("Accept", "application/json");
-            conn.setDoOutput(true);
-
-            // write to output stream
-            try (OutputStream stream = conn.getOutputStream()) {
-                byte[] bytes = post_data.getBytes(StandardCharsets.UTF_8);
-                stream.write(bytes, 0, bytes.length);
-            }
-
-            // read response
-            BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8));
-            String line;
-            StringBuilder response = new StringBuilder();
-            while ((line = reader.readLine()) != null) {
-                response.append(line);
-            }
-
-            // ! response should be empty
-            logger.info("__postNotify:" + response);
-        } catch (IOException err) {
-            err.printStackTrace();
-        }
+        logger.info("__postNotify" + response);
     }
     //</editor-fold>
-    //</editor-fold>
 
-    private void negotiate() {
+    private void negotiate()
+    {
         String[] sessions = getNegotiationSessions(); // retrieve sessions list
         if (sessions.length > 0) { // negotiating
             try {
@@ -319,47 +276,18 @@ public class AgentHandler {
      */
     @SuppressWarnings("Duplicates")
     private String[] getNegotiationSessions() {
-        String post_data = "{" +
-                "\"world_id\":\"" + WORLD_ID + "\"," +
-                "\"agent_id\":\"" + clientRef.AGENT_ID + "\"" +
-                "}";
+        String response = Utils.post(
+            "http://" + Globals.SERVER + "/negotiation/sessions",
+            new HashMap<String, String>(){{
+                put("world_id", WORLD_ID);
+                put("agent_id", clientRef.AGENT_ID);
+            }}
+        );
 
-        try {
-            URL url = new URL("http://" + Globals.SERVER + "/negotiation/sessions");
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-
-            conn.setRequestMethod("POST");
-            conn.setRequestProperty("Content-Type", "application/json; utf-8");
-            conn.setRequestProperty("Accept", "application/json");
-            conn.setDoOutput(true);
-
-            // write to output stream
-            try (OutputStream stream = conn.getOutputStream()) {
-                byte[] bytes = post_data.getBytes(StandardCharsets.UTF_8);
-                stream.write(bytes, 0, bytes.length);
-            }
-
-            // read response
-            BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8));
-            String line;
-            StringBuilder response = new StringBuilder();
-            while ((line = reader.readLine()) != null) {
-                response.append(line);
-            }
-
-            JSONSessionsList sessions = gson.fromJson(String.valueOf(response), JSONSessionsList.class);
-
-            return sessions.getSessions();
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-
-        return new String[]{};
+        JSONSessionsList sessions = gson.fromJson(response, JSONSessionsList.class);
+        return sessions.getSessions();
     }
     //</editor-fold>
-
-    private void negotiated() {
-    }
 
     private void move() {
         String[] curr = clientRef.path.get(clientRef.time).split("-");
@@ -401,49 +329,23 @@ public class AgentHandler {
     }
 
     //<editor-fold defaultstate="collapsed" desc="post move">
-    @SuppressWarnings("Duplicates")
     private void __postMOVE(String direction, String broadcast) {
         // post localhost:3001/move payload:
         // direction -> {N, W, E, S}
-        try {
-            URL url = new URL("http://" + Globals.SERVER + "/move");
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-
-            conn.setRequestMethod("POST");
-            conn.setRequestProperty("Content-Type", "application/json; utf-8");
-            conn.setRequestProperty("Accept", "application/json");
-            conn.setDoOutput(true);
-
-            String post_data = "{" +
-                    "\"agent_id\":\"" + clientRef.AGENT_ID + "\"," +
-                    "\"agent_x\":\"" + clientRef.POS.x + "\"," +
-                    "\"agent_y\":\"" + clientRef.POS.y + "\"," +
-                    "\"world_id\":\"" + WORLD_ID + "\"," +
-                    "\"direction\":\"" + direction + "\"," +
-                    "\"broadcast\":\"" + clientRef.getBroadcast() + "\"" +
-                    "}";
-
-            // write to output stream
-            try (OutputStream stream = conn.getOutputStream()) {
-                byte[] bytes = post_data.getBytes(StandardCharsets.UTF_8);
-                stream.write(bytes, 0, bytes.length);
-            }
-
-            // read response
-            BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8));
-            String line;
-            StringBuilder response = new StringBuilder();
-            while ((line = reader.readLine()) != null) {
-                response.append(line);
-            }
-
-            // ! response should be empty
-            logger.info("__postMOVE:" + response);
-        } catch (IOException err) {
-            err.printStackTrace();
-        }
+        String response = Utils.post(
+            "http://" + Globals.SERVER + "/move",
+            new HashMap<String, String>(){{
+                put("agent_id", clientRef.AGENT_ID);
+                put("world_id", WORLD_ID);
+                put("agent_x", String.valueOf(clientRef.POS.x));
+                put("agent_y", String.valueOf(clientRef.POS.y));
+                put("direction", direction);
+                put("broadcast", clientRef.getBroadcast());
+            }}
+        );
 
         // response should match with next path point in line
+        logger.info("__postMOVE:" + response);
     }
     //</editor-fold>
 
@@ -466,33 +368,11 @@ public class AgentHandler {
     }
 
     //<editor-fold defaultstate="collapsed" desc="get world list">
-    @SuppressWarnings("Duplicates")
-    public void getWorldList(Consumer<String[]> callback) {
-        try {
-            URL url = new URL("http://" + Globals.SERVER + "/worlds");
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-
-            conn.setRequestMethod("GET");
-
-            BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-
-            String il;
-            StringBuffer response = new StringBuffer();
-            while ((il = in.readLine()) != null) {
-                response.append(il);
-            }
-
-            Gson gson = new Gson();
-            edu.ozu.drone.utils.JSONWorldsList wl = gson.fromJson(String.valueOf(response), edu.ozu.drone.utils.JSONWorldsList.class);
-
-            callback.accept(wl.getWorlds());
-        } catch (IOException error) {
-            if (error.getClass().getName().equals("java.net.ConnectException")) {
-                logger.error("«check server status»");
-            } else {
-                error.printStackTrace();
-            }
-        }
+    public void getWorldList(Consumer<String[]> callback)
+    {
+        String response = Utils.get("http://" + Globals.SERVER + "/worlds");
+        edu.ozu.drone.utils.JSONWorldsList wl = gson.fromJson(response, edu.ozu.drone.utils.JSONWorldsList.class);
+        callback.accept(wl.getWorlds());
     }
     //</editor-fold>
 }
