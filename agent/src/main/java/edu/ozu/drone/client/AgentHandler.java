@@ -49,7 +49,8 @@ public class AgentHandler {
      *
      * @param world_id id of the world the agent will join to
      */
-    public void join(String world_id, BiConsumer<JSONWorldWatch, String[]> draw) {
+    public void join(String world_id, BiConsumer<JSONWorldWatch, String[]> draw)
+    {
         logger.info("joining " + world_id);
 
         WORLD_ID = world_id.split(":")[1];
@@ -58,9 +59,9 @@ public class AgentHandler {
         __watch(draw);
     }
 
-    //<editor-fold defaultstate="collapsed" desc="post join">
-    @SuppressWarnings("Duplicates")
-    private void __postJOIN() {
+    //<editor-fold defaultstate="collapsed" desc="Join to World :__postJOIN">
+    private void __postJOIN()
+    {
         String response = Utils.post(
             "http://" + Globals.SERVER + "/join",
             new HashMap<String, String>() {{
@@ -76,8 +77,9 @@ public class AgentHandler {
     }
     //</editor-fold>
 
-    //<editor-fold defaultstate="collapsed" desc="watch">
-    private void __watch(BiConsumer<JSONWorldWatch, String[]> draw) {
+    //<editor-fold defaultstate="collapsed" desc="Start watching World state :__watch">
+    private void __watch(BiConsumer<JSONWorldWatch, String[]> draw)
+    {
         Assert.notNull(draw, "Draw function cannot be null");
 
         try {
@@ -175,7 +177,7 @@ public class AgentHandler {
     private void notifyNegotiation(String[] agent_ids)
     {// notify negotiation
         // engage in bi-lateral negotiation session with each of the agents
-        //
+        // TODO
         __postNotify(String.valueOf(agents));
     }
 
@@ -270,11 +272,9 @@ public class AgentHandler {
     }
 
     //<editor-fold defaultstate="collapsed" desc="retrieve list of negotiation session IDs of agent">
-
     /**
      * Retrieves list of negotiation session IDs that agent will attend
      */
-    @SuppressWarnings("Duplicates")
     private String[] getNegotiationSessions() {
         String response = Utils.post(
             "http://" + Globals.SERVER + "/negotiation/sessions",
@@ -297,9 +297,7 @@ public class AgentHandler {
             String direction = direction(curr, next);
             Assert.isTrue((direction.length() > 0), "«DIRECTION cannot be empty»");
 
-            String broadcast = clientRef.getBroadcast();
-
-            __postMOVE(direction, broadcast);
+            __postMOVE(direction);
             clientRef.time = clientRef.time + 1;
         }
     }
@@ -329,7 +327,8 @@ public class AgentHandler {
     }
 
     //<editor-fold defaultstate="collapsed" desc="post move">
-    private void __postMOVE(String direction, String broadcast) {
+    private void __postMOVE(String direction)
+    {
         // post localhost:3001/move payload:
         // direction -> {N, W, E, S}
         String response = Utils.post(
