@@ -49,7 +49,7 @@
         <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-netbeans-modules-java-project</artifactId>
-            <version>RELEASE110</version>
+            <version>RELEASE112</version>
         </dependency>
         <!-- world handler Redis connection -->
         <dependency>
@@ -58,12 +58,6 @@
             <version>3.2.0</version>
             <type>jar</type>
             <scope>compile</scope>
-        </dependency>
-        <!-- Async/Await -->
-        <dependency>
-            <groupId>com.ea.async</groupId>
-            <artifactId>ea-async</artifactId>
-            <version>1.2.3</version>
         </dependency>
         <!-- Logging -->
         <dependency>
@@ -80,19 +74,6 @@
 
     <build>
         <plugins>
-            <plugin>
-                <groupId>com.ea.async</groupId>
-                <artifactId>ea-async-maven-plugin</artifactId>
-                <version>1.2.3</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>instrument</goal>
-                            <goal>instrument-test</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
