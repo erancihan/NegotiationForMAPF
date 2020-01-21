@@ -372,7 +372,7 @@ public class WorldHandler extends javax.swing.JFrame {
 
     void jedis_delete_world()
     {
-        if (!isJedisOK) { return; }
+        if (!isJedisOK || WID == null) { return; }
 
         logger.info("Deleting " + WID + " ...");
 
