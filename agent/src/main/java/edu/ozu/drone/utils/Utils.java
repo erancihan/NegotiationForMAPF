@@ -45,7 +45,7 @@ public class Utils {
         return null;
     }
 
-    public static String post(String path, HashMap<String, String> payload)
+    public static String post(String path, HashMap<String, Object> payload)
     {
         try {
             String post_data = gson.toJson(payload);
