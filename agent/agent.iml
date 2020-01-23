@@ -43,7 +43,7 @@
     <orderEntry type="library" name="Maven: org.glassfish.grizzly:grizzly-framework:2.4.4" level="project" />
     <orderEntry type="library" name="Maven: org.glassfish.grizzly:grizzly-http-server:2.4.4" level="project" />
     <orderEntry type="library" name="Maven: org.glassfish.grizzly:grizzly-http:2.4.4" level="project" />
-    <orderEntry type="library" name="Maven: com.google.code.gson:gson:2.8.5" level="project" />
+    <orderEntry type="library" name="Maven: com.google.code.gson:gson:2.8.6" level="project" />
     <orderEntry type="library" name="Maven: org.netbeans.api:org-netbeans-modules-java-project:RELEASE112" level="project" />
     <orderEntry type="library" name="Maven: org.netbeans.api:org-netbeans-api-annotations-common:RELEASE112" level="project" />
     <orderEntry type="library" name="Maven: org.netbeans.api:org-netbeans-api-java:RELEASE112" level="project" />
