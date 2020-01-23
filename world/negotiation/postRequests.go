@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/gomodule/redigo/redis"
 	"github.com/labstack/echo/v4"
+	"hash/fnv"
 	"math/rand"
 	"net/http"
 	"sort"
@@ -67,7 +68,10 @@ func (n *Handler) Notify(ctx echo.Context) (err error) {
 	// check if key exists
 	sessionID, err := redis.String(rds.Do("HGET", "world:"+r.WorldID+":session_keys", agentIDs))
 	if err != nil {
-		sessionID = strconv.FormatInt(time.Now().UnixNano(), 10)
+		// key does not exist
+		h := fnv.New64()
+		_, _ = h.Write([]byte(agentIDs))
+		sessionID = strconv.FormatUint(h.Sum64(), 36)
 
 		_, err = rds.Do("HSET", "world:"+r.WorldID+":session_keys", agentIDs, sessionID)
 		_, err = rds.Do("HSET", "world:"+r.WorldID+":session_keys", sessionID, agentIDs)
