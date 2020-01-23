@@ -91,7 +91,8 @@ public class NegotiationSession
                         break;
                     case "done":
                         logger.info("negotiation session is done");
-                        client.acceptLastBids();
+                        logger.info("accepted -> " + message);
+                        client.acceptLastBids(json);
                         //<editor-fold defaultstate="collapsed" desc="close socket when negotiation done">
                         try {
                             websocket.close();
@@ -107,7 +108,8 @@ public class NegotiationSession
             });
 
             // join negotiation session WS
-            websocket.sendMessage("agent:" + client.AGENT_ID + "-ready"); // TODO send join message to socket
+            // send ready message to socket
+            websocket.sendMessage("agent:" + client.AGENT_ID + "-ready");
         } catch (URISyntaxException e) {
             e.printStackTrace();
         }

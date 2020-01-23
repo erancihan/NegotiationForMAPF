@@ -200,11 +200,6 @@ public class AgentHandler {
         if (sessions.length > 0) { // negotiating
             NegotiationSession session = new NegotiationSession(sessions[0], clientRef);
             session.connect();
-
-            // on close
-            // todo get next paths
-            // todo update path
-            // todo recalculate
         }
 //         else:
 //             done

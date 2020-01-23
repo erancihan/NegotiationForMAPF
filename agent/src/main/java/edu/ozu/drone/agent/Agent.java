@@ -1,9 +1,7 @@
 package edu.ozu.drone.agent;
 
-import edu.ozu.drone.utils.AStar;
-import edu.ozu.drone.utils.Action;
-import edu.ozu.drone.utils.Globals;
-import edu.ozu.drone.utils.Point;
+import edu.ozu.drone.utils.*;
+import org.springframework.util.Assert;
 
 import java.util.List;
 
@@ -39,9 +37,29 @@ public abstract class Agent {
         return AStar.calculate(start, dest);
     }
 
-    public void acceptLastBids()
+    public List<String> getBidSpace()
     {
-        // TODO code
+        // TODO CODE
+        return path;
+    }
+
+    public void acceptLastBids(JSONNegotiationSession json)
+    {
+        String[] path = null;
+        for (String[] bid : json.bids)
+        {
+            if (bid[0].equals("agent:" + AGENT_ID))
+            {   // fetch own accepted path
+                path = bid[1].replaceAll("([\\[\\]]*)", "").split(",");
+
+                break;
+            }
+        }
+        Assert.notNull(path, "Accepted PATH should not be null!");
+
+        // todo acknowledge next path
+
+        // todo recalculate
     }
 
     //<editor-fold defaultstate="collapsed" desc="Get Broadcast">
