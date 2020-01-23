@@ -3,6 +3,8 @@ package edu.ozu.drone.agent;
 import edu.ozu.drone.utils.*;
 import org.springframework.util.Assert;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public abstract class Agent {
@@ -57,9 +59,24 @@ public abstract class Agent {
         }
         Assert.notNull(path, "Accepted PATH should not be null!");
 
-        // todo acknowledge next path
+        // acknowledge negotiation result and calculate from its last point to the goal
+        String[] end = path[path.length-1].split("-");
+        // recalculate path starting from the end point of agreed path
+        List<String> rest = calculatePath(new Point(Integer.parseInt(end[0]), Integer.parseInt(end[1])), DEST);
 
-        // todo recalculate
+        // ...glue them together
+        List<String> new_path = new ArrayList<>(Arrays.asList(path));
+        // ensure that connection points match
+        Assert.isTrue(
+                new_path.get(new_path.size() - 1).equals(rest.get(0)),
+                "Something went wrong while accepting last bids!"
+        );
+        for (int idx = 1; idx < rest.size(); idx++)
+        { // merge...
+            new_path.add(rest.get(idx));
+        }
+        // commit to global
+        this.path = new_path;
     }
 
     //<editor-fold defaultstate="collapsed" desc="Get Broadcast">
