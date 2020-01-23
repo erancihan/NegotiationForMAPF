@@ -84,14 +84,26 @@ public abstract class Agent {
     //<editor-fold defaultstate="collapsed" desc="Get Broadcast">
     public String getBroadcast()
     {
-        String[] b = getBroadcastArray();
+        return edu.ozu.drone.utils.Utils.toString(getBroadcastArray(this.time), ",");
+    }
+    //</editor-fold>
 
-        return edu.ozu.drone.utils.Utils.toString(b, ",");
+    //<editor-fold defaultstate="collapsed" desc="Get Next Broadcast">
+    public Object getNextBroadcast()
+    {
+        return edu.ozu.drone.utils.Utils.toString(getBroadcastArray(this.time + 1), ",") ;
     }
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Get Broadcast Array">
     public String[] getBroadcastArray()
+    {
+        return getBroadcastArray(time);
+    }
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="Get Broadcast Array (int time) ">
+    public String[] getBroadcastArray(int time)
     {
         List<String> broadcast = new ArrayList<>();
         for (int i = 0; (i < Globals.BROADCAST_SIZE) && (i + time < path.size()); i++)
