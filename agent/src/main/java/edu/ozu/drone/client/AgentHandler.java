@@ -21,7 +21,8 @@ public class AgentHandler {
     private WorldWatchWS websocket;
     private Gson gson;
     private String current_state = "";
-    private boolean collision_checked;
+    private boolean collision_checked = false;
+    private boolean session_connected = false;
 
     AgentHandler(Agent client) {
         Assert.notNull(client.START, "«START cannot be null»");
@@ -126,12 +127,16 @@ public class AgentHandler {
                 }
                 break;
             case 2: // negotiation state
-                // TODO ensure once
-                negotiate();
+                if (!session_connected)
+                {
+                    negotiate();
+                    session_connected = true;
+                }
                 break;
             case 3: // move and update broadcast
                 move();
                 collision_checked = false;
+                session_connected = false;
                 break;
             default:
                 logger.error("«unhandled world state:" + watch.world_state + "»");

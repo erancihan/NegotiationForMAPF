@@ -6,6 +6,7 @@ import java.io.IOException;
 
 @ClientEndpoint
 public class NegotiationWS {
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(NegotiationWS.class);
     private Session session = null;
     private NegotiationWS.MessageHandler handler;
 
@@ -43,6 +44,7 @@ public class NegotiationWS {
 
     public void close() throws IOException
     {
+        logger.info("negotiation ws close");
         session.close();
     }
 

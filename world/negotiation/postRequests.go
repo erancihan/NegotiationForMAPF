@@ -13,11 +13,19 @@ import (
 	"time"
 )
 
+type (
+	BidStruct struct {
+		AgentID   string `json:"agent_id" form:"agent_id" query:"agent_id"`
+		SessionID string `json:"session_id" form:"session_id" query:"session_id"`
+		Bid       string `json:"bid" form:"bid" query:"bid"`
+	}
+)
+
 //@POST returns session list for given world and agent
 func (n *Handler) Sessions(ctx echo.Context) (err error) {
-	r := new(struct{
+	r := new(struct {
 		WorldID string `json:"world_id" form:"world_id" query:"world_id"`
-		AgentID	string `json:"agent_id" form:"agent_id" query:"agent_id"`
+		AgentID string `json:"agent_id" form:"agent_id" query:"agent_id"`
 	})
 
 	rds := n.Pool.Get()
@@ -29,7 +37,9 @@ func (n *Handler) Sessions(ctx echo.Context) (err error) {
 	}
 
 	sessionList, err := redis.String(rds.Do("HGET", "world:"+r.WorldID+":notify", "agent:"+r.AgentID))
-	if err != nil { sessionList = "" }
+	if err != nil {
+		sessionList = ""
+	}
 
 	sessions := strings.Split(sessionList, ",")
 
@@ -44,9 +54,9 @@ func (n *Handler) Sessions(ctx echo.Context) (err error) {
 
 //@POST
 func (n *Handler) Notify(ctx echo.Context) (err error) {
-	r := new(struct{
-		WorldID string `json:"world_id" form:"world_id" query:"world_id"`
-		AgentID	string `json:"agent_id" form:"agent_id" query:"agent_id"`
+	r := new(struct {
+		WorldID string   `json:"world_id" form:"world_id" query:"world_id"`
+		AgentID string   `json:"agent_id" form:"agent_id" query:"agent_id"`
 		Agents  []string `json:"agents" form:"agents" query:"agents"`
 	})
 
@@ -58,7 +68,7 @@ func (n *Handler) Notify(ctx echo.Context) (err error) {
 		return ctx.NoContent(http.StatusBadRequest)
 	}
 
-	sort.Strings(r.Agents) // sort
+	sort.Strings(r.Agents)                  // sort
 	agentIDs := strings.Join(r.Agents, ",") // join
 
 	// shuffle agent order
@@ -77,6 +87,7 @@ func (n *Handler) Notify(ctx echo.Context) (err error) {
 		_, err = rds.Do("HSET", "world:"+r.WorldID+":session_keys", sessionID, agentIDs)
 		_, err = rds.Do("HSET", "negotiation:"+sessionID, "agents", agentIDs)
 		_, err = rds.Do("HSET", "negotiation:"+sessionID, "agent_count", len(r.Agents))
+		_, err = rds.Do("HSET", "negotiation:"+sessionID, "agents_left", len(r.Agents))
 
 		for _, agent := range r.Agents {
 			path, _ := redis.String(rds.Do("HGET", "world:"+r.WorldID+":path", agent)) // initial bid is path
@@ -86,13 +97,15 @@ func (n *Handler) Notify(ctx echo.Context) (err error) {
 		}
 
 		// initial order in which agents will bid
-		_, err = rds.Do("HSET", "negotiation:"+sessionID, "bid_order", r.Agents)
+		_, err = rds.Do("HSET", "negotiation:"+sessionID, "bid_order", strings.Join(r.Agents, ","))
 		// indicates which agent's turn is it to bid
 		_, err = rds.Do("HSET", "negotiation:"+sessionID, "turn", r.Agents[0])
-		// indicates state of negotiation => negotiation:<session_id> state <{join|bid|done}>
+		// indicates state of negotiation => negotiation:<session_id> state <{join|run|done}>
 		_, err = rds.Do("HSET", "negotiation:"+sessionID, "state", "join")
 
-		if err != nil { ctx.Logger().Fatal(err) }
+		if err != nil {
+			ctx.Logger().Fatal(err)
+		}
 	}
 
 	return ctx.NoContent(http.StatusOK)
@@ -100,45 +113,68 @@ func (n *Handler) Notify(ctx echo.Context) (err error) {
 
 //@POST
 func (n *Handler) Bid(ctx echo.Context) (err error) {
-	r := new(struct{
-		AgentID		string `json:"agent_id" form:"agent_id" query:"agent_id"`
-		SessionID 	string `json:"session_id" form:"session_id" query:"session_id"`
-		Bid 		string `json:"bid" form:"bid" query:"bid"`
-	})
+	r := new(BidStruct)
 
+	_ = n.BidProcess(ctx, r)
+
+	return ctx.NoContent(http.StatusOK)
+}
+
+func (n *Handler) BidProcess(ctx echo.Context, bid *BidStruct) (err error) {
 	rds := n.Pool.Get()
 	defer rds.Close()
 
-	turn, err := redis.String(rds.Do("HGET", "negotiation:"+r.SessionID, "turn"))
-	if turn == "agent:"+r.AgentID {
+	turn, err := redis.String(rds.Do("HGET", "negotiation:"+bid.SessionID, "turn"))
+	if turn == "agent:"+bid.AgentID {
 		// register and/or update bid
-		_, err = rds.Do("HSET", "negotiation:"+r.SessionID, "bid:"+r.AgentID, r.Bid)
-		if err != nil { ctx.Logger().Fatal(err) }
+		_, err = rds.Do("HSET", "negotiation:"+bid.SessionID, "bid:agent:"+bid.AgentID, bid.Bid)
+		if err != nil {
+			ctx.Logger().Fatal(err)
+		}
 
 		// retrieve state
-		state, err := redis.String(rds.Do("HGET", "negotiation:"+r.SessionID, "state"))
-		if err != nil { ctx.Logger().Fatal(err) }
+		state, err := redis.String(rds.Do("HGET", "negotiation:"+bid.SessionID, "state"))
+		if err != nil {
+			ctx.Logger().Fatal(err)
+		}
 
 		if state == "run" {
 			// update turn
-			// todo work with arrays???
-			order, err := redis.String(rds.Do("HGET", "negotiation:"+r.SessionID, "bid_order"))
+			order, err := redis.String(rds.Do("HGET", "negotiation:"+bid.SessionID, "bid_order"))
 			fmt.Println("debug:order", order)
-			if err != nil { ctx.Logger().Fatal(err) }
-
-			i := strings.Index(order, "agent:"+r.AgentID)
-			agentList := order[i:]
-			agents := strings.Split(agentList, ",")
-
-			nextAgent := ""
-			if len(agents) > 1 {
-				nextAgent = string(agentList[1])
+			if err != nil {
+				ctx.Logger().Fatal(err)
 			}
 
-			_, err = rds.Do("HSET", "negotiation:"+r.SessionID, "turn", nextAgent)
-			if err != nil { ctx.Logger().Fatal(err) }
+			nextAgent := ""
+			agents := strings.Split(order, ",")
+			for i, agent := range agents {
+				if agent == "agent:"+bid.AgentID { // agent who's turn
+					if i+1 < len(agents) { // there is more agents left on queue
+						nextAgent = agents[i+1]
+					} else {
+						// new order must be generated
+						rand.Seed(time.Now().UnixNano())
+						for ok := true; ok; ok = nextAgent == "agent:"+bid.AgentID {
+							// don't let the same agent bid over and over
+							// keep shuffling until next is different
+							rand.Shuffle(len(agents), func(i, j int) { agents[i], agents[j] = agents[j], agents[i] })
+							nextAgent = agents[0]
+						}
+					}
+					break
+				}
+			}
+			if nextAgent == "" {
+				ctx.Logger().Fatal("next agent cannot be empty")
+			}
+
+			_, err = rds.Do("HSET", "negotiation:"+bid.SessionID, "turn", nextAgent)
+			if err != nil {
+				ctx.Logger().Fatal(err)
+			}
 		}
 	}
 
-	return ctx.NoContent(http.StatusOK)
+	return err
 }

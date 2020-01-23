@@ -6,6 +6,7 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/labstack/echo/v4"
 	"net/http"
+	"strings"
 	"sync"
 	"time"
 )
@@ -151,7 +152,7 @@ func (n *Handler) Socket(ctx echo.Context) error {
 	}()
 
 	ping := time.NewTicker(SessionPingPeriod)
-	go readSessionMessages(ctx, client)
+	go n.readSessionMessages(ctx, client)
 	for {
 		select {
 		case s := <-client.updates:
@@ -168,12 +169,17 @@ func (n *Handler) Socket(ctx echo.Context) error {
 	return nil
 }
 
-func readSessionMessages(ctx echo.Context, client *SessionClient) {
+func (n *Handler) readSessionMessages(ctx echo.Context, client *SessionClient) {
 	client.conn.SetReadDeadline(time.Now().Add(SessionPongWait))
 	client.conn.SetPongHandler(func(string) error {
 		client.conn.SetReadDeadline(time.Now().Add(SessionPongWait))
 		return nil
 	})
+
+	rds := n.Pool.Get()
+	defer rds.Close()
+
+	sid := "negotiation:" + ctx.Param("session_id")
 
 	for {
 		_, msg, err := client.conn.ReadMessage()
@@ -181,10 +187,50 @@ func readSessionMessages(ctx echo.Context, client *SessionClient) {
 			return
 		}
 
-		// TODO get ready message
-		// TODO register ready message
-		// TODO iff all joined, update negotiation state to : {run}
 		fmt.Printf("> %s\n", msg)
+
+		msgData := strings.Split(string(msg), "-")
+		if msgData[1] == "ready" {
+			agents, err := redis.String(rds.Do("HGET", sid, "agents"))
+			if err != nil {
+				return
+			}
+
+			ids := strings.Split(agents, ",")
+			c := len(ids)
+			for i, id := range ids {
+				if id == msgData[0] {
+					ids = append(ids[:i], ids[i+1:]...)
+					c, err = redis.Int(rds.Do("HINCRBY", sid, "agents_left", "-1"))
+					if err != nil {
+						return
+					}
+
+					break
+				}
+			}
+
+			if c == 0 {
+				_, err = rds.Do("HSET", sid, "state", "run")
+				if err != nil {
+					return
+				}
+			}
+		}
+		if msgData[1] == "bid" {
+			// register bid
+			err = n.BidProcess(ctx, &BidStruct{
+				AgentID:   msgData[0],
+				SessionID: ctx.Param("session_id"),
+				Bid:       msgData[2],
+			})
+			if err != nil {
+				return
+			}
+		}
+		if msgData[1] == "accept" {
+			// register bid - accept
+		}
 	}
 }
 

@@ -19,6 +19,7 @@ public class NegotiationSession
     private Agent client;
     private String session_id;
     private String active_state = "";
+    boolean didBid = false;
 
     NegotiationSession(String session_id, Agent client)
     {
@@ -34,6 +35,7 @@ public class NegotiationSession
     {
         Assert.notNull(session_id, "Session ID cannot be null!");
         active_state = "";
+        didBid = false;
 
         try {
             //!!! sessions contain only one session id for now
@@ -55,22 +57,30 @@ public class NegotiationSession
                 switch (json.state) {
                     case "join":
                         if (!active_state.equals("join"))
-                        { // check state change
+                        { // register state change
                             active_state = json.state;
                             logger.info("joining to negotiation session");
                         }
                         break;
                     case "run":
                         if (!active_state.equals("run"))
-                        { // check state change
+                        { // register state change
                             active_state = json.state;
                             logger.info("bidding...");
-
-                            if (json.turn.equals(client.AGENT_ID))
-                            { // own turn to bid
+                        }
+                        System.out.println(client.AGENT_ID + ">" + json.turn);
+                        if (json.turn.equals("agent:" + client.AGENT_ID))
+                        {// own turn to bid
+                            if (!didBid)
+                            { // haven't bid yet
                                 edu.ozu.drone.utils.Action action = client.onMakeAction();
-                                websocket.sendMessage(String.valueOf(action));
+                                // todo process action
+
+                                websocket.sendMessage(client.AGENT_ID + "-bid-" + action);
+                                didBid = true;
                             }
+                        } else {
+                            didBid = false;
                         }
                         break;
                     case "done":
@@ -90,7 +100,7 @@ public class NegotiationSession
             });
 
             // join negotiation session WS
-            websocket.sendMessage("agent:" + client.AGENT_ID + ":ready"); // TODO send join message to socket
+            websocket.sendMessage("agent:" + client.AGENT_ID + "-ready"); // TODO send join message to socket
         } catch (URISyntaxException e) {
             e.printStackTrace();
         }
