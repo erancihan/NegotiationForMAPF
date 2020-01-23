@@ -91,7 +91,7 @@ public class NegotiationSession
                         break;
                     case "done":
                         logger.info("negotiation session is done");
-                        // TODO update path
+                        client.acceptLastBids();
                         //<editor-fold defaultstate="collapsed" desc="close socket when negotiation done">
                         try {
                             websocket.close();

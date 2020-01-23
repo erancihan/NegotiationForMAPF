@@ -39,6 +39,11 @@ public abstract class Agent {
         return AStar.calculate(start, dest);
     }
 
+    public void acceptLastBids()
+    {
+        // TODO code
+    }
+
     //<editor-fold defaultstate="collapsed" desc="Get Broadcast">
     public String getBroadcast()
     {
