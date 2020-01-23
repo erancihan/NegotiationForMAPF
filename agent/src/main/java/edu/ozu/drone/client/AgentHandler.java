@@ -353,6 +353,7 @@ public class AgentHandler {
 
     // todo handle better later
     public void exit() {
+        leave();
         System.exit(0);
     }
 
