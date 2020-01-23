@@ -20,7 +20,6 @@ public class AgentHandler {
     private Agent clientRef;
     private WorldWatchWS websocket;
     private Gson gson;
-    private String current_state = "";
     private boolean collision_checked = false;
     private boolean session_connected = false;
 
@@ -213,7 +212,7 @@ public class AgentHandler {
 //        clientRef.calculatePath(new Point(1,1), new Point(1, 1));
     }
 
-    //<editor-fold defaultstate="collapsed" desc="retrieve list of negotiation session IDs of agent">
+    //<editor-fold defaultstate="collapsed" desc="Retrieve list of negotiation session IDs of agent">
     /**
      * Retrieves list of negotiation session IDs that agent will attend
      */
@@ -266,7 +265,7 @@ public class AgentHandler {
         return "";
     }
 
-    //<editor-fold defaultstate="collapsed" desc="post move">
+    //<editor-fold defaultstate="collapsed" desc="Post Move">
     private void __postMOVE(String direction)
     {
         // post localhost:3001/move payload:
