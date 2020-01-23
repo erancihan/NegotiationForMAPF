@@ -27,6 +27,8 @@ public abstract class Agent {
     {
         logger.info("calculating path");
         path = calculatePath();
+
+        POS = new Point(path.get(0).split("-"));
     }
 
     public List<String> calculatePath()
