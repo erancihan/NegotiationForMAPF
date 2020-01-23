@@ -61,7 +61,7 @@ public class AgentHandler {
     //<editor-fold defaultstate="collapsed" desc="Join to World :__postJOIN">
     private void __postJOIN()
     {
-        HashMap<String, String> payload = new HashMap<>();
+        HashMap<String, Object> payload = new HashMap<>();
         payload.put("world_id", WORLD_ID);
         payload.put("agent_id", clientRef.AGENT_ID);
         payload.put("agent_x", String.valueOf(clientRef.START.x));
@@ -141,7 +141,7 @@ public class AgentHandler {
     private void checkForCollisions(JSONWorldWatch data)
     {
         String[] agent_ids = getCollidingAgents(data.fov);
-        if (agent_ids.length > 0)
+        if (agent_ids.length > 1)
         { // my path collides with broadcasted paths!
             notifyNegotiation(agent_ids);
         }
@@ -155,7 +155,10 @@ public class AgentHandler {
         for (String[] broadcast : broadcasts)
         {
             if (broadcast[2].equals("-"))
+            { // add self
+                agent_ids.add(broadcast[0]);
                 continue;
+            }
 
             String[] path = broadcast[2].replaceAll("[\\[\\]]", "").split(",");
             // check Vertex Conflict
@@ -175,10 +178,10 @@ public class AgentHandler {
     {// notify negotiation
         // engage in bi-lateral negotiation session with each of the agents
         // TODO
-        HashMap<String, String> payload = new HashMap<>();
+        HashMap<String, Object> payload = new HashMap<>();
         payload.put("world_id", WORLD_ID);
         payload.put("agent_id", clientRef.AGENT_ID);
-        payload.put("agents", Utils.toString(agent_ids, ","));
+        payload.put("agents", agent_ids);
 
         String response = Utils.post("http://" + Globals.SERVER + "/negotiation/notify", payload);
 
@@ -267,7 +270,7 @@ public class AgentHandler {
      * Retrieves list of negotiation session IDs that agent will attend
      */
     private String[] getNegotiationSessions() {
-        HashMap<String, String> payload = new HashMap<>();
+        HashMap<String, Object> payload = new HashMap<>();
         payload.put("world_id", WORLD_ID);
         payload.put("agent_id", clientRef.AGENT_ID);
 
@@ -320,7 +323,7 @@ public class AgentHandler {
     {
         // post localhost:3001/move payload:
         // direction -> {N, W, E, S}
-        HashMap<String, String> payload = new HashMap<>();
+        HashMap<String, Object> payload = new HashMap<>();
         payload.put("agent_id", clientRef.AGENT_ID);
         payload.put("world_id", WORLD_ID);
         payload.put("agent_x", String.valueOf(clientRef.POS.x));
