@@ -102,4 +102,18 @@ public abstract class Agent {
         return broadcast.toArray(new String[0]);
     }
     //</editor-fold>
+
+    public void move(JSONAgent response)
+    {
+        time = time + 1;
+        Point nextPoint =  new Point(path.get(Math.min(time, path.size() - 1)).split("-"));
+        Assert.isTrue(
+                (response.agent_x+"-"+response.agent_y).equals(nextPoint.key),
+                "next point and move action does not match! \n" +
+                response.agent_x + "-" + response.agent_y + " != " +
+                nextPoint.key
+        );
+
+        POS = nextPoint;
+    }
 }
