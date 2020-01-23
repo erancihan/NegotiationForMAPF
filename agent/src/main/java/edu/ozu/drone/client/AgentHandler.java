@@ -177,7 +177,7 @@ public class AgentHandler {
     private void notifyNegotiation(String[] agent_ids)
     {// notify negotiation
         // engage in bi-lateral negotiation session with each of the agents
-        // TODO
+        // TODO ?? what else is there
         HashMap<String, Object> payload = new HashMap<>();
         payload.put("world_id", WORLD_ID);
         payload.put("agent_id", clientRef.AGENT_ID);
