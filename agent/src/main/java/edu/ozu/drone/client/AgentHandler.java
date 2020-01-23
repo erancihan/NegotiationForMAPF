@@ -126,6 +126,7 @@ public class AgentHandler {
                 }
                 break;
             case 2: // negotiation state
+                // TODO ensure once
                 negotiate();
                 break;
             case 3: // move and update broadcast
@@ -193,67 +194,9 @@ public class AgentHandler {
     {
         String[] sessions = getNegotiationSessions(); // retrieve sessions list
         if (sessions.length > 0) { // negotiating
-            try {
-                //!!! sessions contain only one session id for now
-                String session_id = sessions[0];
-                String ws = "ws://" + Globals.SERVER + "/negotiation/" + session_id + "/" + clientRef.AGENT_ID;
-                NegotiationWS websocket = new NegotiationWS(new URI(ws));
+            NegotiationSession session = new NegotiationSession(sessions[0], clientRef);
+            session.connect();
 
-                /* add handler
-                 * Message format:
-                 *  agent_count: <integer>                      | number of agents
-                 *  bid_order: [agent_0, agent_1, ..., agent_i] | list of agent IDs.
-                 *  bids     : [bid_agent_0, ..., bid_agent_i]  | list of bids of agents with IDs given
-                 *  state    : {join|run|done}                  | state of the negotiation session
-                 *  turn     : "agent_id"                       | ID of agent who's turn it is to bid
-                 * */
-                websocket.setHandler(message -> {
-                    System.out.println(message);
-
-                    JSONNegotiationSession json = gson.fromJson(message, JSONNegotiationSession.class);
-                    // pass session data to agent -> onReceiveState
-                    clientRef.onReceiveState(new State(json));
-                    switch (json.state) {
-                        case "join":
-                            if (!current_state.equals("join"))
-                            { // check state change
-                                current_state = json.state;
-                                logger.info("joining to negotiation session");
-                            }
-                            break;
-                        case "run":
-                            if (!current_state.equals("run"))
-                            { // check state change
-                                current_state = json.state;
-                                logger.info("bidding...");
-
-                                if (json.turn.equals(clientRef.AGENT_ID))
-                                { // own turn to bid
-                                    edu.ozu.drone.utils.Action action = clientRef.onMakeAction();
-                                    websocket.sendMessage(String.valueOf(action));
-                                }
-                            }
-                            break;
-                        case "done":
-                            logger.info("negotiation session is done");
-                            //<editor-fold defaultstate="collapsed" desc="close socket when negotiation done">
-                            try {
-                                websocket.close();
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-                            //</editor-fold>
-                            break;
-                        default:
-                            logger.error("unexpected state, contact DEVs");
-                            System.exit(1);
-                    }
-                });
-            } catch (URISyntaxException e) {
-                e.printStackTrace();
-            }
-            // join negotiation session WS
-            websocket.sendMessage("agent:" + clientRef.AGENT_ID + ":ready"); // TODO send join message to socket
             // on close
             // todo get next paths
             // todo update path
