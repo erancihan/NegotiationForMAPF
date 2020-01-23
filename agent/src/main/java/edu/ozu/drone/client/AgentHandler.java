@@ -54,12 +54,12 @@ public class AgentHandler {
         WORLD_ID = world_id.split(":")[1];
         logger.info("joining " + WORLD_ID);
 
-        __postJOIN();
+        __postJoin();
         __watch(draw);
     }
 
-    //<editor-fold defaultstate="collapsed" desc="Join to World :__postJOIN">
-    private void __postJOIN()
+    //<editor-fold defaultstate="collapsed" desc="Join to World :__postJoin">
+    private void __postJoin()
     {
         HashMap<String, Object> payload = new HashMap<>();
         payload.put("world_id", WORLD_ID);
@@ -70,7 +70,7 @@ public class AgentHandler {
 
         String response = Utils.post("http://" + Globals.SERVER + "/join", payload);
 
-        logger.info("__postJOIN:" + response);
+        logger.info("__postJoin:" + WORLD_ID + "> " + response);
     }
     //</editor-fold>
 
