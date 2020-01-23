@@ -10,6 +10,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -61,16 +62,14 @@ public class AgentHandler {
     //<editor-fold defaultstate="collapsed" desc="Join to World :__postJOIN">
     private void __postJOIN()
     {
-        String response = Utils.post(
-            "http://" + Globals.SERVER + "/join",
-            new HashMap<String, String>() {{
-                put("world_id", WORLD_ID);
-                put("agent_id", clientRef.AGENT_ID);
-                put("agent_x", String.valueOf(clientRef.START.x));
-                put("agent_y", String.valueOf(clientRef.START.y));
-                put("broadcast", clientRef.getBroadcast());
-            }}
-        );
+        HashMap<String, String> payload = new HashMap<>();
+        payload.put("world_id", WORLD_ID);
+        payload.put("agent_id", clientRef.AGENT_ID);
+        payload.put("agent_x", String.valueOf(clientRef.START.x));
+        payload.put("agent_y", String.valueOf(clientRef.START.y));
+        payload.put("broadcast", clientRef.getBroadcast());
+
+        String response = Utils.post("http://" + Globals.SERVER + "/join", payload);
 
         logger.info("__postJOIN:" + response);
     }
@@ -177,15 +176,12 @@ public class AgentHandler {
     {// notify negotiation
         // engage in bi-lateral negotiation session with each of the agents
         // TODO
+        HashMap<String, String> payload = new HashMap<>();
+        payload.put("world_id", WORLD_ID);
+        payload.put("agent_id", clientRef.AGENT_ID);
+        payload.put("agents", Utils.toString(agent_ids, ","));
 
-        String response = Utils.post(
-            "http://" + Globals.SERVER + "/negotiation/notify",
-            new HashMap<String, String>(){{
-                put("world_id", WORLD_ID);
-                put("agent_id", clientRef.AGENT_ID);
-                put("agents", Utils.toString(agent_ids, ","));
-            }}
-        );
+        String response = Utils.post("http://" + Globals.SERVER + "/negotiation/notify", payload);
 
         logger.info("__postNotify" + response);
     }
@@ -272,13 +268,11 @@ public class AgentHandler {
      * Retrieves list of negotiation session IDs that agent will attend
      */
     private String[] getNegotiationSessions() {
-        String response = Utils.post(
-            "http://" + Globals.SERVER + "/negotiation/sessions",
-            new HashMap<String, String>(){{
-                put("world_id", WORLD_ID);
-                put("agent_id", clientRef.AGENT_ID);
-            }}
-        );
+        HashMap<String, String> payload = new HashMap<>();
+        payload.put("world_id", WORLD_ID);
+        payload.put("agent_id", clientRef.AGENT_ID);
+
+        String response = Utils.post("http://" + Globals.SERVER + "/negotiation/sessions", payload);
 
         JSONSessionsList sessions = gson.fromJson(response, JSONSessionsList.class);
         return sessions.getSessions();
@@ -327,17 +321,15 @@ public class AgentHandler {
     {
         // post localhost:3001/move payload:
         // direction -> {N, W, E, S}
-        String response = Utils.post(
-            "http://" + Globals.SERVER + "/move",
-            new HashMap<String, String>(){{
-                put("agent_id", clientRef.AGENT_ID);
-                put("world_id", WORLD_ID);
-                put("agent_x", String.valueOf(clientRef.POS.x));
-                put("agent_y", String.valueOf(clientRef.POS.y));
-                put("direction", direction);
-                put("broadcast", clientRef.getBroadcast());
-            }}
-        );
+        HashMap<String, String> payload = new HashMap<>();
+        payload.put("agent_id", clientRef.AGENT_ID);
+        payload.put("world_id", WORLD_ID);
+        payload.put("agent_x", String.valueOf(clientRef.POS.x));
+        payload.put("agent_y", String.valueOf(clientRef.POS.y));
+        payload.put("direction", direction);
+        payload.put("broadcast", clientRef.getBroadcast());
+
+        String response = Utils.post("http://" + Globals.SERVER + "/move", payload);
 
         // response should match with next path point in line
         logger.info("__postMOVE:" + response);
