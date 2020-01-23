@@ -122,6 +122,7 @@ public class WorldHandler extends javax.swing.JFrame {
         jScrollPane2.setViewportBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
 
         text_view.setEditable(false);
+        text_view.setFont(new java.awt.Font("Monospaced", 0, 12)); // NOI18N
         jScrollPane2.setViewportView(text_view);
 
         text_view_container.add(jScrollPane2);
