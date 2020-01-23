@@ -30,6 +30,12 @@ func (n *Handler) UpdateStatus(ctx echo.Context, pool *SessionPool) {
 	defer rds.Close()
 
 	for t := range n.Ticker.C {
+		ok, err := redis.Bool(rds.Do("EXISTS", "negotiation:"+ctx.Param("session_id")))
+		if !ok || err != nil {
+			ctx.Logger().Error(err)
+			return
+		}
+
 		s, err := n.GetStatus(ctx, rds, pool, t)
 		if err != nil {
 			ctx.Logger().Fatal(err)

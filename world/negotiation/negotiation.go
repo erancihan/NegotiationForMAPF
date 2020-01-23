@@ -257,5 +257,6 @@ func (n *Handler) Delete(ctx echo.Context, sessionID string)  {
 	defer rds.Close()
 
 	_, err := rds.Do("DEL", "negotiation:"+sessionID)
+	// TODO COLLECT NOTIFICATIONS AND SESSION KEYS
 	if err != nil { ctx.Logger().Error(err) }
 }
