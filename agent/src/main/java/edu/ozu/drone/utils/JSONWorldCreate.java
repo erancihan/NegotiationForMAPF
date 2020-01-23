@@ -26,6 +26,10 @@ public class JSONWorldCreate {
 
     @Override
     public String toString() {
-        return "{world_id:"+world_id+", player_count:"+player_count+", world_state:"+world_state+"}";
+        return "JSONWorldCreate{" +
+                "world_id='" + world_id + '\'' +
+                ", player_count='" + player_count + '\'' +
+                ", world_state='" + world_state + '\'' +
+                '}';
     }
 }

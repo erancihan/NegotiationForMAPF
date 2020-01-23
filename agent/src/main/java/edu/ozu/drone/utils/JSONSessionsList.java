@@ -1,5 +1,7 @@
 package edu.ozu.drone.utils;
 
+import java.util.Arrays;
+
 public class JSONSessionsList {
     private String[] sessions;
 
@@ -9,5 +11,12 @@ public class JSONSessionsList {
 
     public String[] getSessions() {
         return sessions;
+    }
+
+    @Override
+    public String toString() {
+        return "JSONSessionsList{" +
+                "sessions=" + Arrays.toString(sessions) +
+                '}';
     }
 }
