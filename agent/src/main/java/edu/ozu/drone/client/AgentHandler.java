@@ -8,7 +8,6 @@ import org.springframework.util.Assert;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
@@ -24,6 +23,7 @@ public class AgentHandler {
     private Gson gson;
     private boolean collision_checked = false;
     private boolean session_connected = false;
+    private boolean agent_did_move = false;
 
     AgentHandler(Agent client) {
         Assert.notNull(client.START, "«START cannot be null»");
@@ -119,12 +119,15 @@ public class AgentHandler {
         switch (watch.world_state) {
             case 0: // join
                 collision_checked = false;
+                session_connected = false;
+                agent_did_move = false;
                 break;
             case 1: // collision check/broadcast
                 if (!collision_checked)
                 {
                     checkForCollisions(watch);
                     collision_checked = true;
+                    agent_did_move = false;
                 }
                 break;
             case 2: // negotiation state
@@ -135,7 +138,11 @@ public class AgentHandler {
                 }
                 break;
             case 3: // move and update broadcast
-                move();
+                if (!agent_did_move)
+                {   // move once
+                    move();
+                    agent_did_move = true;
+                }
                 collision_checked = false;
                 session_connected = false;
                 break;
@@ -203,10 +210,6 @@ public class AgentHandler {
             NegotiationSession session = new NegotiationSession(sessions[0], clientRef);
             session.connect();
         }
-//         else:
-//             done
-//
-//        clientRef.calculatePath(new Point(1,1), new Point(1, 1));
     }
 
     //<editor-fold defaultstate="collapsed" desc="Retrieve list of negotiation session IDs of agent">
@@ -234,10 +237,10 @@ public class AgentHandler {
             Assert.isTrue((direction.length() > 0), "«DIRECTION cannot be empty»");
 
             __postMOVE(direction);
-            clientRef.time = clientRef.time + 1;
         }
     }
 
+    //<editor-fold defaultstate="collapsed" desc="Get Direction of next point">
     private String direction(String[] curr, String[] next) {
         int c_x = Integer.parseInt(curr[0]);
         int c_y = Integer.parseInt(curr[1]);
@@ -261,6 +264,7 @@ public class AgentHandler {
 
         return "";
     }
+    //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Post Move">
     private void __postMOVE(String direction)
@@ -273,12 +277,13 @@ public class AgentHandler {
         payload.put("agent_x", String.valueOf(clientRef.POS.x));
         payload.put("agent_y", String.valueOf(clientRef.POS.y));
         payload.put("direction", direction);
-        payload.put("broadcast", clientRef.getBroadcast());
+        payload.put("broadcast", clientRef.getNextBroadcast());
 
-        String response = Utils.post("http://" + Globals.SERVER + "/move", payload);
+        JSONAgent response = gson.fromJson(Utils.post("http://" + Globals.SERVER + "/move", payload), JSONAgent.class);
 
         // response should match with next path point in line
         logger.info("__postMOVE:" + response);
+        clientRef.move(response);
     }
     //</editor-fold>
 
