@@ -3,6 +3,7 @@ package edu.ozu.drone.agent.sample;
 import edu.ozu.drone.client.AgentClient;
 import edu.ozu.drone.agent.Agent;
 import edu.ozu.drone.utils.Action;
+import edu.ozu.drone.utils.ActionType;
 import edu.ozu.drone.utils.Point;
 
 public class HelloAgent extends Agent
@@ -22,7 +23,7 @@ public class HelloAgent extends Agent
     @Override
     public Action onMakeAction()
     {
-        return new Action();
+        return new Action(ActionType.OFFER, "");
     }
 
     @Override

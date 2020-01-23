@@ -3,6 +3,7 @@ package edu.ozu.drone.agent.sample;
 import edu.ozu.drone.agent.Agent;
 import edu.ozu.drone.client.AgentClient;
 import edu.ozu.drone.utils.Action;
+import edu.ozu.drone.utils.ActionType;
 import edu.ozu.drone.utils.Point;
 
 public class HelloAgent2 extends Agent {
@@ -19,7 +20,7 @@ public class HelloAgent2 extends Agent {
     @Override
     public Action onMakeAction()
     {
-        return new Action();
+        return new Action(ActionType.ACCEPT);
     }
 
     @Override

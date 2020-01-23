@@ -126,6 +126,15 @@ func (n *Handler) BidProcess(ctx echo.Context, bid *BidStruct) (err error) {
 
 	turn, err := redis.String(rds.Do("HGET", "negotiation:"+bid.SessionID, "turn"))
 	if turn == "agent:"+bid.AgentID {
+		if bid.Bid == "accept" { // agent accepted
+			_, err = rds.Do("HSET", "negotiation:"+bid.SessionID, "state", "done")
+			if err != nil {
+				ctx.Logger().Fatal(err)
+			}
+
+			return
+		}
+
 		// register and/or update bid
 		_, err = rds.Do("HSET", "negotiation:"+bid.SessionID, "bid:agent:"+bid.AgentID, bid.Bid)
 		if err != nil {

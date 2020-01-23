@@ -2,12 +2,11 @@ package edu.ozu.drone.client;
 
 import com.google.gson.Gson;
 import edu.ozu.drone.agent.Agent;
-import edu.ozu.drone.utils.Globals;
-import edu.ozu.drone.utils.JSONNegotiationSession;
-import edu.ozu.drone.utils.State;
+import edu.ozu.drone.utils.*;
 import org.springframework.util.Assert;
 
 import java.io.IOException;
+import java.lang.reflect.AccessibleObject;
 import java.net.URI;
 import java.net.URISyntaxException;
 
@@ -74,9 +73,16 @@ public class NegotiationSession
                             if (!didBid)
                             { // haven't bid yet
                                 edu.ozu.drone.utils.Action action = client.onMakeAction();
-                                // todo process action
+                                if (action.type == ActionType.ACCEPT)
+                                {
+                                    websocket.sendMessage(client.AGENT_ID + "-accept");
+                                }
+                                if (action.type == ActionType.OFFER)
+                                {
+                                    // todo process action
+                                    websocket.sendMessage(client.AGENT_ID + "-bid-" + action.bid);
+                                }
 
-                                websocket.sendMessage(client.AGENT_ID + "-bid-" + action);
                                 didBid = true;
                             }
                         } else {
@@ -85,6 +91,7 @@ public class NegotiationSession
                         break;
                     case "done":
                         logger.info("negotiation session is done");
+                        // TODO update path
                         //<editor-fold defaultstate="collapsed" desc="close socket when negotiation done">
                         try {
                             websocket.close();

@@ -1,11 +1,19 @@
 package edu.ozu.drone.utils;
 
 public class Action
-{  // action to take
+{
+    public ActionType type;
+    public String bid;
 
-    public Action()
+    public Action(ActionType type)
     {
+        this(type, "");
+    }
 
+    public Action(ActionType type, String bid)
+    {
+        this.type = type;
+        this.bid  = bid;
     }
 
     @Override
