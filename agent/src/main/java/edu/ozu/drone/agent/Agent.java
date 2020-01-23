@@ -93,13 +93,13 @@ public abstract class Agent {
     //<editor-fold defaultstate="collapsed" desc="Get Broadcast Array">
     public String[] getBroadcastArray()
     {
-        String[] broadcast = new String[Globals.BROADCAST_SIZE];
-        for (int i = time; (i < path.size()) && (i < time + broadcast.length); i++)
+        List<String> broadcast = new ArrayList<>();
+        for (int i = 0; (i < Globals.BROADCAST_SIZE) && (i + time < path.size()); i++)
         {
-            broadcast[i] = path.get(i);
+            broadcast.add(path.get(i + time));
         }
 
-        return broadcast;
+        return broadcast.toArray(new String[0]);
     }
     //</editor-fold>
 }
