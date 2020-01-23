@@ -2,11 +2,13 @@ package edu.ozu.drone.client;
 
 import com.google.gson.Gson;
 import edu.ozu.drone.agent.Agent;
-import edu.ozu.drone.utils.*;
+import edu.ozu.drone.utils.ActionType;
+import edu.ozu.drone.utils.Globals;
+import edu.ozu.drone.utils.JSONNegotiationSession;
+import edu.ozu.drone.utils.State;
 import org.springframework.util.Assert;
 
 import java.io.IOException;
-import java.lang.reflect.AccessibleObject;
 import java.net.URI;
 import java.net.URISyntaxException;
 
