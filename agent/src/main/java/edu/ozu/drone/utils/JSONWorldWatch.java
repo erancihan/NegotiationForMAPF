@@ -24,7 +24,7 @@ public class JSONWorldWatch {
                 ", time=" + time +
                 ", world_state=" + world_state +
                 ", position='" + position + '\'' +
-                ", fov=" + Arrays.toString(fov) +
+                ", fov=" + Arrays.deepToString(fov) +
                 ", fov_size=" + fov_size +
                 ", exec_time=" + exec_time +
                 '}';
