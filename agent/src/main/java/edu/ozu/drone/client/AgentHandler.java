@@ -10,6 +10,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -154,7 +156,7 @@ public class AgentHandler {
 
     private String[] getCollidingAgents(String[][] broadcasts)
     {
-        ArrayList<String> agent_ids = new ArrayList<>();
+        Set<String> agent_ids = new HashSet<>();
         String[] own_path = clientRef.getBroadcastArray();
 
         for (String[] broadcast : broadcasts)
