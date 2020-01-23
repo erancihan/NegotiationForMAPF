@@ -33,7 +33,6 @@ public class WorldCanvas extends Canvas {
         edu.ozu.drone.utils.Point xy_own = new edu.ozu.drone.utils.Point(own_path[0], "-");
         for (String[] agent_data : data.fov)
         { // draw agents
-            String name = agent_data[0];
             String[] xy = agent_data[1].split(":");
             String[] path = agent_data[2].replaceAll("([\\[\\]]*)", "").split(",");
 
