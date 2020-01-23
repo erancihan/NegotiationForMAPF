@@ -2,6 +2,7 @@ package edu.ozu.drone.utils;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import org.springframework.util.Assert;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -14,6 +15,7 @@ import java.util.HashMap;
 
 public class Utils {
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(Utils.class);
+    private static Gson gson = new Gson();
 
     public static String get(String path)
     {
@@ -46,8 +48,8 @@ public class Utils {
     public static String post(String path, HashMap<String, String> payload)
     {
         try {
-            Gson gson = new GsonBuilder().create();
             String post_data = gson.toJson(payload);
+            Assert.notNull(post_data, "Post Data returned null!");
 
             URL url = new URL(path);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
