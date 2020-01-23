@@ -67,7 +67,6 @@ public class NegotiationSession
                             active_state = json.state;
                             logger.info("bidding...");
                         }
-                        System.out.println(client.AGENT_ID + ">" + json.turn);
                         if (json.turn.equals("agent:" + client.AGENT_ID))
                         {// own turn to bid
                             if (!didBid)
@@ -91,7 +90,7 @@ public class NegotiationSession
                         break;
                     case "done":
                         logger.info("negotiation session is done");
-                        logger.info("accepted -> " + message);
+                        logger.info("accepted -> " + message.trim());
                         client.acceptLastBids(json);
                         //<editor-fold defaultstate="collapsed" desc="close socket when negotiation done">
                         try {
