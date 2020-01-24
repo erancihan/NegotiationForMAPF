@@ -106,6 +106,11 @@ func (n *Handler) Notify(ctx echo.Context) (err error) {
 		if err != nil {
 			ctx.Logger().Fatal(err)
 		}
+
+		_, err = rds.Do("HINCRBY", "world:"+r.WorldID+":", "negotiation_count", "1")
+		if err != nil {
+			ctx.Logger().Error("Notify: HINCRBY world negotiation_count 1 > ", err)
+		}
 	}
 
 	return ctx.NoContent(http.StatusOK)
