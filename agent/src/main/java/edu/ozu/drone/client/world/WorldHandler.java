@@ -9,6 +9,7 @@ import redis.clients.jedis.Jedis;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ItemEvent;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -143,9 +144,9 @@ public class WorldHandler extends javax.swing.JFrame {
 
         cycle_states_toggle_btn.setText("Cycle States");
         cycle_states_toggle_btn.setPreferredSize(new java.awt.Dimension(120, 31));
-        cycle_states_toggle_btn.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cycle_states_toggle_btnActionPerformed(evt);
+        cycle_states_toggle_btn.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                cycle_states_toggle_btnItemStateChanged(evt);
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -290,15 +291,21 @@ public class WorldHandler extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_move_state_btnActionPerformed
 
-    private void cycle_states_toggle_btnActionPerformed(java.awt.event.ActionEvent evt)
-    {//GEN-FIRST:event_cycle_states_toggle_btnActionPerformed
-        loop = !loop;
-        logger.info("loop -> " + loop);
-        if (loop)
+    private void cycle_states_toggle_btnItemStateChanged(java.awt.event.ItemEvent evt)
+    {//GEN-FIRST:event_cycle_states_toggle_btnItemStateChanged
+        int state = evt.getStateChange();
+
+        if (state == ItemEvent.SELECTED)
         {
+            loop = true;
             jedis.hset(WID, "time_tick", "0");
         }
-    }//GEN-LAST:event_cycle_states_toggle_btnActionPerformed
+        if (state == ItemEvent.DESELECTED)
+        {
+            loop = false;
+        }
+        logger.info("loop -> " + loop);
+    }//GEN-LAST:event_cycle_states_toggle_btnItemStateChanged
 
     /**
      * @param args the command line arguments
