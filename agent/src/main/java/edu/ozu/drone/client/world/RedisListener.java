@@ -31,6 +31,7 @@ class RedisListener
                 jedis.psubscribe(listener, "__key*__:" + wid); // changes to world key
             } catch (Exception e) {
                 logger.error("Excepction on jedis pubsub : " + e.getMessage());
+                e.printStackTrace();
             }
         });
         pubsub.setDaemon(true);
