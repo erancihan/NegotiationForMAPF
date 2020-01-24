@@ -18,12 +18,14 @@ public class NegotiationSession
     private Gson gson;
 
     private Agent client;
+    private String world_id;
     private String session_id;
     private String active_state = "";
     boolean didBid = false;
 
-    NegotiationSession(String session_id, Agent client)
+    NegotiationSession(String world_id, String session_id, Agent client)
     {
+        this.world_id = world_id;
         this.session_id = session_id;
         this.client = client;
 
@@ -40,7 +42,7 @@ public class NegotiationSession
 
         try {
             //!!! sessions contain only one session id for now
-            String ws = "ws://" + Globals.SERVER + "/negotiation/" + session_id + "/" + client.AGENT_ID;
+            String ws = "ws://" + Globals.SERVER + "/negotiation/" + world_id + "/" + session_id + "/" + client.AGENT_ID;
             NegotiationWS websocket = new NegotiationWS(new URI(ws));
 
             /* add handler

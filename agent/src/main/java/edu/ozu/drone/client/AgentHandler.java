@@ -207,7 +207,7 @@ public class AgentHandler {
     {
         String[] sessions = getNegotiationSessions(); // retrieve sessions list
         if (sessions.length > 0) { // negotiating
-            NegotiationSession session = new NegotiationSession(sessions[0], clientRef);
+            NegotiationSession session = new NegotiationSession(WORLD_ID, sessions[0], clientRef);
             session.connect();
         }
     }
