@@ -13,6 +13,7 @@ public class JSONWorldWatch {
     public String position;
     public String[][] fov;
     public int fov_size;
+    public int time_tick;
     public float exec_time;
 
     @Override
@@ -26,6 +27,7 @@ public class JSONWorldWatch {
                 ", position='" + position + '\'' +
                 ", fov=" + Arrays.deepToString(fov) +
                 ", fov_size=" + fov_size +
+                ", time_tick=" + time_tick +
                 ", exec_time=" + exec_time +
                 '}';
     }
