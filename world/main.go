@@ -61,7 +61,7 @@ func main() {
 	// Ticker -> ticks every X
 	h := &handler.Handler{
 		Pool:     pool,
-		Ticker:   *time.NewTicker(250 * time.Millisecond),
+		Ticker:   *time.NewTicker(10 * time.Millisecond),
 		Upgrader: &websocket.Upgrader{},
 		WorldMap: handler.NewWorldMap(),
 	}
