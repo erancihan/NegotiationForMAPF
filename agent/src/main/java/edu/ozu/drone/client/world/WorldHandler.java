@@ -392,7 +392,7 @@ public class WorldHandler extends javax.swing.JFrame {
                         "\n-------------\n" +
                         state_log
                             .stream()
-                            .map(item -> item[0] + " " + item[1].toString())
+                            .map(item -> String.format("%-23s", item[1].toString()) + " " + item[0].toString())
                             .collect(Collectors.joining("\n"))
                     );
                     if (loop)
@@ -428,6 +428,10 @@ public class WorldHandler extends javax.swing.JFrame {
         if (prev_state_id == curr_state_id)
         {
             return; // handle only once
+        }
+        if (data.get("player_count").equals("0"))
+        {
+            return; // do nothing if there are no players
         }
         if (curr_state_id == 0)
         {
