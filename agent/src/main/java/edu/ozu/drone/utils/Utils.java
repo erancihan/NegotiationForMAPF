@@ -37,9 +37,8 @@ public class Utils {
         } catch (IOException error) {
             if (error.getClass().getName().equals("java.net.ConnectException")) {
                 logger.error("«check server status»");
-            } else {
-                error.printStackTrace();
             }
+            error.printStackTrace();
         }
 
         return null;
