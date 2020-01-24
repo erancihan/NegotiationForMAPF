@@ -79,6 +79,8 @@ public class WorldHandler extends javax.swing.JFrame {
         cards_container.setOpaque(false);
         cards_container.setLayout(new java.awt.CardLayout());
 
+        create.setMinimumSize(new java.awt.Dimension(600, 88));
+        create.setPreferredSize(new java.awt.Dimension(600, 300));
         java.awt.GridBagLayout createLayout = new java.awt.GridBagLayout();
         createLayout.columnWidths = new int[] {0, 5, 0, 5, 0};
         createLayout.rowHeights = new int[] {0, 5, 0, 5, 0};
@@ -119,7 +121,8 @@ public class WorldHandler extends javax.swing.JFrame {
 
         controller.setLayout(new java.awt.GridBagLayout());
 
-        text_view_container.setPreferredSize(new java.awt.Dimension(250, 300));
+        text_view_container.setMinimumSize(new java.awt.Dimension(450, 300));
+        text_view_container.setPreferredSize(new java.awt.Dimension(450, 300));
         text_view_container.setLayout(new java.awt.GridLayout(1, 0));
 
         jScrollPane2.setViewportBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
@@ -289,12 +292,12 @@ public class WorldHandler extends javax.swing.JFrame {
 
     private void cycle_states_toggle_btnActionPerformed(java.awt.event.ActionEvent evt)
     {//GEN-FIRST:event_cycle_states_toggle_btnActionPerformed
-        this.loop = !this.loop;
-        logger.info("loop = " + this.loop);
-        if (this.loop)
-            jedis.hincrBy(WID, "time_tick", 1);
-        else
+        loop = !loop;
+        logger.info("loop -> " + loop);
+        if (loop)
+        {
             jedis.hset(WID, "time_tick", "0");
+        }
     }//GEN-LAST:event_cycle_states_toggle_btnActionPerformed
 
     /**
@@ -430,7 +433,7 @@ public class WorldHandler extends javax.swing.JFrame {
 
             prev_state_id = curr_state_id; // update state
 
-            state_log.add(new Object[]{"collision check done", new java.sql.Timestamp(System.currentTimeMillis())});
+            state_log.add(new Object[]{"- collision check done", new java.sql.Timestamp(System.currentTimeMillis())});
             logger.info("- collision check done");
             // move to next state: 1 -> 2
             jedis.hset(WID, "world_state", "2");
@@ -441,11 +444,11 @@ public class WorldHandler extends javax.swing.JFrame {
             notify_await_cycle = 0;
 
             // negotiation state, do nothing until active negotiation_count is 0
-            if (data.get("negotiation_count").equals("0"))
+            if (data.get("- negotiation_count").equals("0"))
             {
                 prev_state_id = curr_state_id;
 
-                state_log.add(new Object[]{"negotiations done", new java.sql.Timestamp(System.currentTimeMillis())});
+                state_log.add(new Object[]{"- negotiations done", new java.sql.Timestamp(System.currentTimeMillis())});
                 logger.info("- negotiations done");
                 // move to next state: 2 -> 3
                 jedis.hset(WID, "world_state", "3");
@@ -459,7 +462,7 @@ public class WorldHandler extends javax.swing.JFrame {
             {
                 prev_state_id = curr_state_id;
 
-                state_log.add(new Object[]{"movement complete", new java.sql.Timestamp(System.currentTimeMillis())});
+                state_log.add(new Object[]{"- movement complete", new java.sql.Timestamp(System.currentTimeMillis())});
                 logger.info("- movement complete");
                 // clear move_action_count
                 jedis.hset(WID, "move_action_count", "0");
