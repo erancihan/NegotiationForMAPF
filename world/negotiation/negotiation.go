@@ -257,6 +257,7 @@ func (n *Handler) Delete(ctx echo.Context, sessionID string)  {
 	defer rds.Close()
 
 	_, err := rds.Do("DEL", "negotiation:"+sessionID)
+	_, err = rds.Do("HINCRBY", "world:"+ctx.Param("world_id")+":", "negotiation_count", "-1")
 	// TODO COLLECT NOTIFICATIONS AND SESSION KEYS
 	if err != nil { ctx.Logger().Error(err) }
 }
