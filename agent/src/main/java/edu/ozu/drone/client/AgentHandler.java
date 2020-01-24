@@ -22,9 +22,7 @@ public class AgentHandler {
     private Agent clientRef;
     private WorldWatchWS websocket;
     private Gson gson;
-    private boolean collision_checked = false;
-    private boolean session_connected = false;
-    private boolean agent_did_move = false;
+    private int[] state_flag = new int[2];
 
     AgentHandler(Agent client) {
         Assert.notNull(client.START, "«START cannot be null»");
@@ -119,33 +117,31 @@ public class AgentHandler {
     private void handleState(JSONWorldWatch watch) {
         switch (watch.world_state) {
             case 0: // join
-                collision_checked = false;
-                session_connected = false;
-                agent_did_move = false;
+                state_flag = new int[]{0, 0};
                 break;
             case 1: // collision check/broadcast
-                if (!collision_checked)
+                if (state_flag[0] != 1)
                 {
                     checkForCollisions(watch);
-                    collision_checked = true;
-                    agent_did_move = false;
+                    state_flag[0] = 1;
+                    state_flag[1] = watch.time_tick;
                 }
                 break;
             case 2: // negotiation state
-                if (!session_connected)
+                if (state_flag[0] != 2)
                 {
                     negotiate();
-                    session_connected = true;
+                    state_flag[0] = 2;
+                    state_flag[1] = watch.time_tick;
                 }
                 break;
             case 3: // move and update broadcast
-                if (!agent_did_move)
+                if (state_flag[0] != 3)
                 {   // move once
                     move();
-                    agent_did_move = true;
+                    state_flag[0] = 3;
+                    state_flag[1] = watch.time_tick;
                 }
-                collision_checked = false;
-                session_connected = false;
                 break;
             default:
                 logger.error("«unhandled world state:" + watch.world_state + "»");
