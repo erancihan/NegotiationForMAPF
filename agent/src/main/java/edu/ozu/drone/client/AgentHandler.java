@@ -8,6 +8,7 @@ import org.springframework.util.Assert;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
@@ -207,6 +208,7 @@ public class AgentHandler {
     {
         String[] sessions = getNegotiationSessions(); // retrieve sessions list
         if (sessions.length > 0) { // negotiating
+            System.out.println(Arrays.toString(sessions));
             NegotiationSession session = new NegotiationSession(WORLD_ID, sessions[0], clientRef);
             session.connect();
         }
