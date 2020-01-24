@@ -349,6 +349,7 @@ public class WorldHandler extends javax.swing.JFrame {
         } catch (Exception e) {
             logger.error("«can't connect to Redis»");
             isJedisOK = false;
+            e.printStackTrace();
             // TODO pop a dialog window
         }
     }
@@ -387,7 +388,7 @@ public class WorldHandler extends javax.swing.JFrame {
                         .stream()
                         .map(key -> key + ": " + data.get(key))
                         .collect(Collectors.joining("\n")) +
-                    "\n ------------- \n" +
+                    "\n-------------\n" +
                     state_log
                         .stream()
                         .map(item -> item[0] + " " + item[1].toString())
