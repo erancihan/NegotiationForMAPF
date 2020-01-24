@@ -207,10 +207,15 @@ public class AgentHandler {
     private void negotiate()
     {
         String[] sessions = getNegotiationSessions(); // retrieve sessions list
-        if (sessions.length > 0) { // negotiating
-            System.out.println(Arrays.toString(sessions));
-            NegotiationSession session = new NegotiationSession(WORLD_ID, sessions[0], clientRef);
-            session.connect();
+        if (sessions.length > 0)
+        {
+            for (String sid : sessions)
+            {
+                if (sid.isEmpty()) { continue; }
+
+                NegotiationSession session = new NegotiationSession(WORLD_ID, sid, clientRef);
+                session.connect();
+            }
         }
     }
 
