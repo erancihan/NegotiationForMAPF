@@ -9,6 +9,7 @@ import redis.clients.jedis.Jedis;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -24,6 +25,8 @@ public class WorldHandler extends javax.swing.JFrame {
     private RedisListener redisListener;
     private redis.clients.jedis.Jedis jedis;
     private boolean isJedisOK = true;
+    private boolean loop = false;
+
     /**
      * Creates new form WorldHandler
      */
@@ -286,7 +289,12 @@ public class WorldHandler extends javax.swing.JFrame {
 
     private void cycle_states_toggle_btnActionPerformed(java.awt.event.ActionEvent evt)
     {//GEN-FIRST:event_cycle_states_toggle_btnActionPerformed
-        // TODO add your handling code here:
+        this.loop = !this.loop;
+        logger.info("loop = " + this.loop);
+        if (this.loop)
+            jedis.hincrBy(WID, "time_tick", 1);
+        else
+            jedis.hset(WID, "time_tick", "0");
     }//GEN-LAST:event_cycle_states_toggle_btnActionPerformed
 
     /**
@@ -349,6 +357,9 @@ public class WorldHandler extends javax.swing.JFrame {
 
         jedis.hset(WID, "player_count", "0");
         jedis.hset(WID, "world_state", "0");
+        jedis.hset(WID, "negotiation_count", "0"); // for negotiation state
+        jedis.hset(WID, "move_action_count", "0"); // for move state
+        jedis.hset(WID, "time_tick", "0"); // set time tick
 
         // subscribe(listen) to changes in world key
         redisListener = new RedisListener(
@@ -356,7 +367,7 @@ public class WorldHandler extends javax.swing.JFrame {
             WID,
             (channel, message) -> {
                 // update canvas
-                logger.info("redis>" + channel + "»" + message + "");
+//                logger.info("redis>" + channel + "»" + message + "");
 
                 Map<String, String> data = jedis.hgetAll(WID);
 
@@ -365,9 +376,19 @@ public class WorldHandler extends javax.swing.JFrame {
                         .keySet()
                         .stream()
                         .map(key -> key + ": " + data.get(key))
+                        .collect(Collectors.joining("\n")) +
+                    "\n ------------- \n" +
+                    state_log
+                        .stream()
+                        .map(item -> item[0] + " " + item[1].toString())
                         .collect(Collectors.joining("\n"))
                 );
-        });
+                if (loop)
+                {
+                    jedis_on_state_update(data);
+                    jedis.hincrBy(WID, "time_tick", 1);
+                }
+            });
         redisListener.run();
     }
 
@@ -379,5 +400,72 @@ public class WorldHandler extends javax.swing.JFrame {
 
         redisListener.close();
         jedis.del(WID, WID+"map", WID+"notify", WID+"path", WID+"session_keys");
+    }
+
+    private int prev_state_id = 0;
+    private int notify_await_cycle = 0;
+    private ArrayList<Object[]> state_log = new ArrayList<>();
+    void jedis_on_state_update(Map<String, String> data)
+    {
+        int curr_state_id = Integer.parseInt(data.get("world_state"));
+
+        if (curr_state_id == 0)
+        {
+            state_log.add(new Object[]{"- end of join state", new java.sql.Timestamp(System.currentTimeMillis())});
+            logger.info("- end of join state");
+            // join state, begin loop
+            jedis.hset(WID, "world_state", "1");
+        }
+        if (prev_state_id == curr_state_id)
+        {
+            return; // handle only once
+        }
+        if (curr_state_id == 1)
+        {
+            // collision check state, await 2 cycles for collision updates
+            if (notify_await_cycle < 2) {
+                notify_await_cycle += 1;
+                return; // return else
+            }
+
+            prev_state_id = curr_state_id; // update state
+
+            state_log.add(new Object[]{"collision check done", new java.sql.Timestamp(System.currentTimeMillis())});
+            logger.info("- collision check done");
+            // move to next state: 1 -> 2
+            jedis.hset(WID, "world_state", "2");
+        }
+        if (curr_state_id == 2)
+        {
+            // clear notify await
+            notify_await_cycle = 0;
+
+            // negotiation state, do nothing until active negotiation_count is 0
+            if (data.get("negotiation_count").equals("0"))
+            {
+                prev_state_id = curr_state_id;
+
+                state_log.add(new Object[]{"negotiations done", new java.sql.Timestamp(System.currentTimeMillis())});
+                logger.info("- negotiations done");
+                // move to next state: 2 -> 3
+                jedis.hset(WID, "world_state", "3");
+            }
+        }
+        if (curr_state_id == 3)
+        {
+            // move state, wait for move_action_count
+            // to match agent count, will indicate all agents took action
+            if (data.get("move_action_count").equals(data.get("player_count")))
+            {
+                prev_state_id = curr_state_id;
+
+                state_log.add(new Object[]{"movement complete", new java.sql.Timestamp(System.currentTimeMillis())});
+                logger.info("- movement complete");
+                // clear move_action_count
+                jedis.hset(WID, "move_action_count", "0");
+                // move to next state: 3 -> 1
+                jedis.hset(WID, "world_state", "1");
+            }
+        }
     }
 }
