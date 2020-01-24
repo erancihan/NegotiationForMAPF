@@ -418,13 +418,17 @@ public class WorldHandler extends javax.swing.JFrame {
         jedis.del(WID, WID+"map", WID+"notify", WID+"path", WID+"session_keys");
     }
 
-    private int prev_state_id = 0;
+    private int prev_state_id = -1;
     private int notify_await_cycle = 0;
     private ArrayList<Object[]> state_log = new ArrayList<>();
     void jedis_on_state_update(Map<String, String> data)
     {
         int curr_state_id = Integer.parseInt(data.get("world_state"));
 
+        if (prev_state_id == curr_state_id)
+        {
+            return; // handle only once
+        }
         if (curr_state_id == 0)
         {
             state_log.add(new Object[]{"- end of join state", new java.sql.Timestamp(System.currentTimeMillis())});
@@ -432,15 +436,12 @@ public class WorldHandler extends javax.swing.JFrame {
             // join state, begin loop
             jedis.hset(WID, "world_state", "1");
         }
-        if (prev_state_id == curr_state_id)
-        {
-            return; // handle only once
-        }
         if (curr_state_id == 1)
         {
             // collision check state, await 2 cycles for collision updates
-            if (notify_await_cycle < 2) {
+            if (notify_await_cycle < 200) {
                 notify_await_cycle += 1;
+                jedis.hincrBy(WID, "time_tick", 1);
                 return; // return else
             }
 
