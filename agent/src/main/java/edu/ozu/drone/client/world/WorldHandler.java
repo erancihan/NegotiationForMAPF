@@ -379,25 +379,30 @@ public class WorldHandler extends javax.swing.JFrame {
             (channel, message) -> {
                 // update canvas
 //                logger.info("redis>" + channel + "»" + message + "");
+                Object obj = jedis.hgetAll(WID);
+                try{
+                    Map<String, String> data = (Map<String, String>) obj;
 
-                Map<String, String> data = jedis.hgetAll(WID);
-
-                text_view.setText(
-                    data
-                        .keySet()
-                        .stream()
-                        .map(key -> key + ": " + data.get(key))
-                        .collect(Collectors.joining("\n")) +
-                    "\n-------------\n" +
-                    state_log
-                        .stream()
-                        .map(item -> item[0] + " " + item[1].toString())
-                        .collect(Collectors.joining("\n"))
-                );
-                if (loop)
-                {
-                    jedis_on_state_update(data);
-                    jedis.hincrBy(WID, "time_tick", 1);
+                    text_view.setText(
+                        data
+                            .keySet()
+                            .stream()
+                            .map(key -> key + ": " + data.get(key))
+                            .collect(Collectors.joining("\n")) +
+                        "\n-------------\n" +
+                        state_log
+                            .stream()
+                            .map(item -> item[0] + " " + item[1].toString())
+                            .collect(Collectors.joining("\n"))
+                    );
+                    if (loop)
+                    {
+                        jedis_on_state_update(data);
+                    }
+                } catch (Exception e) {
+                    System.err.println("> " + obj.toString());
+                    e.printStackTrace();
+                    System.exit(1);
                 }
             });
         redisListener.run();
