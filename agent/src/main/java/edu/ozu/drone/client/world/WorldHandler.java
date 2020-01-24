@@ -444,7 +444,7 @@ public class WorldHandler extends javax.swing.JFrame {
             notify_await_cycle = 0;
 
             // negotiation state, do nothing until active negotiation_count is 0
-            if (data.get("- negotiation_count").equals("0"))
+            if (data.get("negotiation_count").equals("0"))
             {
                 prev_state_id = curr_state_id;
 
