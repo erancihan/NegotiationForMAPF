@@ -237,7 +237,7 @@ public class AgentHandler {
 
     private void move() {
         String[] curr = clientRef.path.get(clientRef.time).split("-");
-        if (clientRef.time < clientRef.path.size()) {
+        if (clientRef.time + 1 < clientRef.path.size()) {
             String[] next = clientRef.path.get(clientRef.time + 1).split("-");
 
             String direction = direction(curr, next);
