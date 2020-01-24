@@ -24,11 +24,13 @@ type (
 		Fov         [][]string `json:"fov"`
 		FovSize     int        `json:"fov_size"`
 		ExecTime    float64    `json:"exec_time"`
+		TimeTick	int64      `json:"time_tick"`
 	}
 
 	RdsStatus struct {
 		PlayerCount string `redis:"player_count"`
 		WorldState  int    `redis:"world_state"`
+		TimeTick	int64      `json:"time_tick"`
 	}
 )
 
@@ -107,6 +109,7 @@ func (h *Handler) GetStatus(ctx echo.Context, rds redis.Conn, p *WorldPool, st t
 	status.Fov = agents
 	// todo return empty array, not null
 
+	status.TimeTick = rdsStatus.TimeTick
 	status.Time = time.Now().UnixNano()
 	status.ExecTime = float64(time.Since(st)) / float64(time.Millisecond)
 
