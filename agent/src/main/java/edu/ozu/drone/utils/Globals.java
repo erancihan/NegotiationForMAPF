@@ -8,6 +8,8 @@ public class Globals
 {
     public static final int BROADCAST_SIZE = 5;
     public static final String SERVER = "localhost:3001";
+    public static final String REDIS_HOST = "localhost";
+    public static final int REDIS_PORT = 6379;
 
     public enum WorldState {
         JOIN("JOIN"),
