@@ -3,6 +3,8 @@ package edu.ozu.drone.client;
 import com.google.gson.Gson;
 import edu.ozu.drone.agent.Agent;
 import edu.ozu.drone.client.handlers.Join;
+import edu.ozu.drone.client.handlers.Move;
+import edu.ozu.drone.client.world.WorldHandler;
 import edu.ozu.drone.utils.*;
 import org.springframework.util.Assert;
 
@@ -224,7 +226,7 @@ public class AgentHandler {
             String direction = direction(curr, next);
             Assert.isTrue((direction.length() > 0), "«DIRECTION cannot be empty»");
 
-            __postMOVE(direction);
+            clientRef.move(Move.__postMove(WORLD_ID, clientRef.AGENT_ID, clientRef.POS, direction, clientRef.getNextBroadcast()));
         }
     }
 
@@ -251,27 +253,6 @@ public class AgentHandler {
         }
 
         return "";
-    }
-    //</editor-fold>
-
-    //<editor-fold defaultstate="collapsed" desc="Post Move">
-    private void __postMOVE(String direction)
-    {
-        // post localhost:3001/move payload:
-        // direction -> {N, W, E, S}
-        HashMap<String, Object> payload = new HashMap<>();
-        payload.put("agent_id", clientRef.AGENT_ID);
-        payload.put("world_id", WORLD_ID);
-        payload.put("agent_x", String.valueOf(clientRef.POS.x));
-        payload.put("agent_y", String.valueOf(clientRef.POS.y));
-        payload.put("direction", direction);
-        payload.put("broadcast", clientRef.getNextBroadcast());
-
-        JSONAgent response = gson.fromJson(Utils.post("http://" + Globals.SERVER + "/move", payload), JSONAgent.class);
-
-        // response should match with next path point in line
-        logger.info("__postMOVE:" + response);
-        clientRef.move(response);
     }
     //</editor-fold>
 
