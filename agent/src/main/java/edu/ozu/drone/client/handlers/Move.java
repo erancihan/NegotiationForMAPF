@@ -13,6 +13,11 @@ public class Move {
     private static redis.clients.jedis.Jedis jedis = JedisConnection.getInstance();
     private static Gson gson = new Gson();
 
+    public static JSONAgent move(String worldID, String agentID, Point point, String direction, String next_broadcast)
+    {
+        return __postMove(worldID, agentID, point, direction, next_broadcast);
+    }
+
     @SuppressWarnings("Duplicates")
     public static JSONAgent __postMove(String worldID, String agentID, Point point, String direction, String next_broadcast)
     {
