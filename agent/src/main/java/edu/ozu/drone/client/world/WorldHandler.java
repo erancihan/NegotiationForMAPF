@@ -366,6 +366,7 @@ public class WorldHandler extends javax.swing.JFrame {
         }
         logger.info("Creating " + WID + " ...");
 
+        // create world
         jedis.hset(WID, "player_count", "0");
         jedis.hset(WID, "world_state", "0");
         jedis.hset(WID, "negotiation_count", "0"); // for negotiation state
