@@ -226,7 +226,7 @@ public class AgentHandler {
             String direction = direction(curr, next);
             Assert.isTrue((direction.length() > 0), "«DIRECTION cannot be empty»");
 
-            clientRef.move(Move.__postMove(WORLD_ID, clientRef.AGENT_ID, clientRef.POS, direction, clientRef.getNextBroadcast()));
+            clientRef.move(Move.move(WORLD_ID, clientRef.AGENT_ID, clientRef.POS, direction, clientRef.getNextBroadcast()));
         }
     }
 
