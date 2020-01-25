@@ -5,6 +5,7 @@
  */
 package edu.ozu.drone.client.world;
 
+import edu.ozu.drone.utils.Globals;
 import redis.clients.jedis.Jedis;
 
 import javax.swing.*;
@@ -21,7 +22,6 @@ import java.util.stream.Collectors;
 public class WorldHandler extends javax.swing.JFrame {
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(WorldHandler.class);
 
-    private final String REDIS_HOST = "localhost";
     private String WID;
     private RedisListener redisListener;
     private redis.clients.jedis.Jedis jedis;
@@ -343,7 +343,7 @@ public class WorldHandler extends javax.swing.JFrame {
     {
         world_id.setText(String.valueOf(System.currentTimeMillis()));
 
-        jedis = new Jedis(REDIS_HOST);
+        jedis = new Jedis(Globals.REDIS_HOST);
         try {
             jedis.connect();
         } catch (Exception e) {
@@ -375,7 +375,7 @@ public class WorldHandler extends javax.swing.JFrame {
 
         // subscribe(listen) to changes in world key
         redisListener = new RedisListener(
-            REDIS_HOST,
+            Globals.REDIS_HOST,
             WID,
             (channel, message) -> {
                 // update canvas
