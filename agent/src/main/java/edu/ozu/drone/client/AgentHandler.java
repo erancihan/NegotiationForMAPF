@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import edu.ozu.drone.agent.Agent;
 import edu.ozu.drone.client.handlers.Join;
 import edu.ozu.drone.client.handlers.Move;
+import edu.ozu.drone.client.handlers.Negotiation;
 import edu.ozu.drone.client.world.WorldHandler;
 import edu.ozu.drone.utils.*;
 import org.springframework.util.Assert;
@@ -189,7 +190,7 @@ public class AgentHandler {
 
     private void negotiate()
     {
-        String[] sessions = getNegotiationSessions(); // retrieve sessions list
+        String[] sessions = Negotiation.getSessions(WORLD_ID, clientRef.AGENT_ID); // retrieve sessions list
         if (sessions.length > 0)
         {
             for (String sid : sessions)
@@ -201,22 +202,6 @@ public class AgentHandler {
             }
         }
     }
-
-    //<editor-fold defaultstate="collapsed" desc="Retrieve list of negotiation session IDs of agent">
-    /**
-     * Retrieves list of negotiation session IDs that agent will attend
-     */
-    private String[] getNegotiationSessions() {
-        HashMap<String, Object> payload = new HashMap<>();
-        payload.put("world_id", WORLD_ID);
-        payload.put("agent_id", clientRef.AGENT_ID);
-
-        String response = Utils.post("http://" + Globals.SERVER + "/negotiation/sessions", payload);
-
-        JSONSessionsList sessions = gson.fromJson(response, JSONSessionsList.class);
-        return sessions.getSessions();
-    }
-    //</editor-fold>
 
     private void move() {
         String[] curr = clientRef.path.get(clientRef.time).split("-");
