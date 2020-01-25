@@ -36,4 +36,17 @@ public class World {
 
         return new String[0];
     }
+
+    public static int getTokenBalance(String worldID, String agentID)
+    {
+        try {
+            String balance = jedis.hget("world:" + worldID + ":bank", "agent:" + agentID);
+
+            return Integer.parseInt(balance);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return 0;
+    }
 }

@@ -1,5 +1,6 @@
 package edu.ozu.drone.agent;
 
+import edu.ozu.drone.client.handlers.World;
 import edu.ozu.drone.utils.*;
 import org.springframework.util.Assert;
 
@@ -18,6 +19,8 @@ public abstract class Agent {
     public Point POS;
     public List<String> path;
     public int time = 0;
+
+    private String WORLD_ID;
 
     public abstract void init();
     public abstract Action onMakeAction();
@@ -127,5 +130,21 @@ public abstract class Agent {
         );
 
         POS = nextPoint;
+    }
+
+    public void setWORLD_ID(String WORLD_ID)
+    {
+        this.WORLD_ID = WORLD_ID;
+    }
+
+    public int getTokenBalance()
+    {
+        if (WORLD_ID.isEmpty())
+        {
+            logger.error("world id is empty!");
+            return Globals.INITIAL_TOKEN_BALANCE;
+        }
+
+        return World.getTokenBalance(WORLD_ID, AGENT_ID);
     }
 }

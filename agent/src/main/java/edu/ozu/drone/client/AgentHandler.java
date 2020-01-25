@@ -59,6 +59,8 @@ public class AgentHandler {
         WORLD_ID = world_id.split(":")[1];
         logger.info("joining " + WORLD_ID);
 
+        clientRef.setWORLD_ID(WORLD_ID);
+
         Join.join(WORLD_ID, clientRef.AGENT_ID, clientRef.START, clientRef.getBroadcast());
         __watch(draw);
     }
