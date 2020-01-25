@@ -2,6 +2,7 @@ package edu.ozu.drone.client;
 
 import com.google.gson.Gson;
 import edu.ozu.drone.agent.Agent;
+import edu.ozu.drone.client.handlers.Join;
 import edu.ozu.drone.utils.*;
 import org.springframework.util.Assert;
 
@@ -55,25 +56,9 @@ public class AgentHandler {
         WORLD_ID = world_id.split(":")[1];
         logger.info("joining " + WORLD_ID);
 
-        __postJoin();
+        Join.join(WORLD_ID, clientRef.AGENT_ID, clientRef.START, clientRef.getBroadcast());
         __watch(draw);
     }
-
-    //<editor-fold defaultstate="collapsed" desc="Join to World :__postJoin">
-    private void __postJoin()
-    {
-        HashMap<String, Object> payload = new HashMap<>();
-        payload.put("world_id", WORLD_ID);
-        payload.put("agent_id", clientRef.AGENT_ID);
-        payload.put("agent_x", String.valueOf(clientRef.START.x));
-        payload.put("agent_y", String.valueOf(clientRef.START.y));
-        payload.put("broadcast", clientRef.getBroadcast());
-
-        String response = Utils.post("http://" + Globals.SERVER + "/join", payload);
-
-        logger.info("__postJoin:" + WORLD_ID + "> " + response);
-    }
-    //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Start watching World state :__watch">
     private void __watch(BiConsumer<JSONWorldWatch, String[]> draw)
