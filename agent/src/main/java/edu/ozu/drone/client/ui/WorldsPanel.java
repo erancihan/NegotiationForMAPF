@@ -6,6 +6,7 @@
 package edu.ozu.drone.client.ui;
 
 import edu.ozu.drone.client.AgentHandler;
+import edu.ozu.drone.client.handlers.World;
 
 import javax.swing.*;
 
@@ -193,7 +194,7 @@ public class WorldsPanel extends javax.swing.JPanel {
 
     private void getWorldList()
     {// fetch worlds list
-        client.getWorldList(response -> worlds_list.setListData(response));
+        worlds_list.setListData(World.list());
     }
 
     private void join()

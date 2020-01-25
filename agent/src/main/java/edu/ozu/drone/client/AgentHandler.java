@@ -259,13 +259,4 @@ public class AgentHandler {
         leave();
         System.exit(0);
     }
-
-    //<editor-fold defaultstate="collapsed" desc="get world list">
-    public void getWorldList(Consumer<String[]> callback)
-    {
-        String response = Utils.get("http://" + Globals.SERVER + "/worlds");
-        edu.ozu.drone.utils.JSONWorldsList wl = gson.fromJson(response, edu.ozu.drone.utils.JSONWorldsList.class);
-        callback.accept(wl.getWorlds());
-    }
-    //</editor-fold>
 }
