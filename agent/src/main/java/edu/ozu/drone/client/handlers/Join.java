@@ -13,9 +13,15 @@ public class Join {
     public static void join(String worldID, String agentID, Point start, String broadcast)
     {
         try {
+            // set map data
             jedis.hset("world:" + worldID + ":map", "agent:" + agentID, start.x + ":" + start.y);
             jedis.hset("world:" + worldID + ":map", start.x + ":" + start.y, "agent:" + agentID);
+
+            // set broadcast data
             jedis.hset("world:" + worldID + ":path", "agent:" + agentID, broadcast);
+
+            // set bank data
+            jedis.hset("world:" + worldID + ":bank", "agent:" + agentID, String.valueOf(Globals.INITIAL_TOKEN_BALANCE));
         } catch (Exception e) {
             logger.error("an error happened while joining to world");
             e.printStackTrace();
