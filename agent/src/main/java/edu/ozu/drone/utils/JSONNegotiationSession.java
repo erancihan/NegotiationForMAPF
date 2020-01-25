@@ -16,7 +16,7 @@ public class JSONNegotiationSession {
         return "JSONNegotiationSession{" +
                 "agent_count=" + agent_count +
                 ", bid_order='" + bid_order + '\'' +
-                ", bids=" + Arrays.toString(bids) +
+                ", bids=" + Arrays.deepToString(bids) +
                 ", state='" + state + '\'' +
                 ", turn='" + turn + '\'' +
                 '}';
