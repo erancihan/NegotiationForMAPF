@@ -89,7 +89,7 @@ public abstract class Agent {
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Get Next Broadcast">
-    public Object getNextBroadcast()
+    public String getNextBroadcast()
     {
         return edu.ozu.drone.utils.Utils.toString(getBroadcastArray(this.time + 1), ",") ;
     }
