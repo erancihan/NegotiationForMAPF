@@ -23,6 +23,7 @@ public class Join {
     }
 
     @Deprecated
+    @SuppressWarnings("Duplicates")
     public static void __postJoin(String worldID, String agentID, Point start, String broadcast)
     {
         HashMap<String, Object> payload = new HashMap<>();
