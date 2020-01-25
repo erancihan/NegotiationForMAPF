@@ -24,13 +24,13 @@ type (
 		Fov         [][]string `json:"fov"`
 		FovSize     int        `json:"fov_size"`
 		ExecTime    float64    `json:"exec_time"`
-		TimeTick	int64      `json:"time_tick"`
+		TimeTick    int64      `json:"time_tick"`
 	}
 
 	RdsStatus struct {
 		PlayerCount string `redis:"player_count"`
 		WorldState  int    `redis:"world_state"`
-		TimeTick	int64      `json:"time_tick"`
+		TimeTick    int64  `json:"time_tick"`
 	}
 )
 
@@ -90,7 +90,7 @@ func (h *Handler) GetStatus(ctx echo.Context, rds redis.Conn, p *WorldPool, st t
 
 	// fow
 	var agents [][]string
-	agents = append(agents, []string{"agent:"+aid, agentIsAt, "-"})
+	agents = append(agents, []string{"agent:" + aid, agentIsAt, "-"})
 	for i := 0; i < Fov; i++ {
 		for j := 0; j < Fov; j++ {
 			axS := ax + (j - Fov/2)
@@ -98,9 +98,11 @@ func (h *Handler) GetStatus(ctx echo.Context, rds redis.Conn, p *WorldPool, st t
 
 			at := strconv.Itoa(axS) + ":" + strconv.Itoa(ayS)
 			agentInFov, _ := redis.String(rds.Do("HGET", "world:"+wid+":map", at))
-			if len(agentInFov) > 0  && !(ax == axS && ay == ayS) {
+			if len(agentInFov) > 0 && !(ax == axS && ay == ayS) {
 				path, err := redis.String(rds.Do("HGET", "world:"+wid+":path", agentInFov))
-				if err != nil { path = "-" }
+				if err != nil {
+					path = "-"
+				}
 
 				agents = append(agents, []string{agentInFov, at, path})
 			}
