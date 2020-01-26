@@ -66,8 +66,6 @@ public abstract class Agent {
         Assert.notNull(accepted_path, "Accepted PATH should not be null!");
         Assert.isTrue(accepted_path.length > 0, "Accepted PATH should not be empty!");
 
-        System.out.println("> " + this.path);
-
         // acknowledge negotiation result and calculate from its last point to the goal
         String[] end = accepted_path[accepted_path.length-1].split("-");
         // recalculate path starting from the end point of agreed path
@@ -98,7 +96,6 @@ public abstract class Agent {
         }
         // commit to global
         this.path = new_path;
-        System.out.println("> " + this.path);
     }
     //</editor-fold>
 
