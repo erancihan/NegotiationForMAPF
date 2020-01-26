@@ -37,7 +37,7 @@ func (n *Handler) UpdateStatus(ctx echo.Context, pool *SessionPool) {
 			return
 		}
 		if !ok {
-			fmt.Println("ok:", ok)
+			fmt.Println("ok:", ok, "session does not exist")
 			return
 		}
 
