@@ -144,6 +144,7 @@ public class AgentHandler {
         String[] agent_ids = getCollidingAgents(data.fov);
         if (agent_ids.length > 1)
         { // my path collides with broadcasted paths!
+            logger.debug("notify negotiation > " + Arrays.toString(agent_ids));
             notifyNegotiation(agent_ids);
         }
     }
@@ -196,6 +197,7 @@ public class AgentHandler {
     private void negotiate()
     {
         String[] sessions = Negotiation.getSessions(WORLD_ID, clientRef.AGENT_ID); // retrieve sessions list
+        logger.debug("negotiate state > " + Arrays.toString(sessions));
         if (sessions.length > 0)
         {
             for (String sid : sessions)
