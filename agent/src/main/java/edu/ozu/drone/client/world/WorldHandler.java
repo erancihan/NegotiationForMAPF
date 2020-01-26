@@ -64,7 +64,7 @@ public class WorldHandler extends javax.swing.JFrame {
         cycle_delay = new javax.swing.JTextField();
         javax.swing.JButton join_state_btn = new javax.swing.JButton();
         javax.swing.JButton broadcast_state_btn = new javax.swing.JButton();
-        javax.swing.JButton negotatiate_state_btn = new javax.swing.JButton();
+        javax.swing.JButton negotiate_state_btn = new javax.swing.JButton();
         javax.swing.JButton move_state_btn = new javax.swing.JButton();
         javax.swing.JLabel jLabel4 = new javax.swing.JLabel();
 
@@ -195,17 +195,17 @@ public class WorldHandler extends javax.swing.JFrame {
         gridBagConstraints.gridy = 2;
         controls_container.add(broadcast_state_btn, gridBagConstraints);
 
-        negotatiate_state_btn.setText("NEGOTIATE");
-        negotatiate_state_btn.setPreferredSize(new java.awt.Dimension(120, 31));
-        negotatiate_state_btn.addActionListener(new java.awt.event.ActionListener() {
+        negotiate_state_btn.setText("NEGOTIATE");
+        negotiate_state_btn.setPreferredSize(new java.awt.Dimension(120, 31));
+        negotiate_state_btn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                negotatiate_state_btnActionPerformed(evt);
+                negotiate_state_btnActionPerformed(evt);
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
-        controls_container.add(negotatiate_state_btn, gridBagConstraints);
+        controls_container.add(negotiate_state_btn, gridBagConstraints);
 
         move_state_btn.setText("MOVE");
         move_state_btn.setPreferredSize(new java.awt.Dimension(120, 31));
@@ -275,13 +275,13 @@ public class WorldHandler extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_broadcast_state_btnActionPerformed
 
-    private void negotatiate_state_btnActionPerformed(java.awt.event.ActionEvent evt)
-    {//GEN-FIRST:event_negotatiate_state_btnActionPerformed
+    private void negotiate_state_btnActionPerformed(java.awt.event.ActionEvent evt)
+    {//GEN-FIRST:event_negotiate_state_btnActionPerformed
         if (isJedisOK)
         {
             jedis.hset(WID, "world_state", "2");
         }
-    }//GEN-LAST:event_negotatiate_state_btnActionPerformed
+    }//GEN-LAST:event_negotiate_state_btnActionPerformed
 
     private void move_state_btnActionPerformed(java.awt.event.ActionEvent evt)
     {//GEN-FIRST:event_move_state_btnActionPerformed
