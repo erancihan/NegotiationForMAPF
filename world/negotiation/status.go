@@ -1,6 +1,7 @@
 package negotiation
 
 import (
+	"fmt"
 	"github.com/gomodule/redigo/redis"
 	"github.com/labstack/echo/v4"
 	"strings"
@@ -32,6 +33,7 @@ func (n *Handler) UpdateStatus(ctx echo.Context, pool *SessionPool) {
 	for t := range n.Ticker.C {
 		ok, err := redis.Bool(rds.Do("EXISTS", "negotiation:"+ctx.Param("session_id")))
 		if !ok || err != nil {
+			fmt.Println("ok:", ok)
 			ctx.Logger().Error(err)
 			return
 		}
