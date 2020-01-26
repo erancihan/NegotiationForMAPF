@@ -416,7 +416,7 @@ public class WorldHandler extends javax.swing.JFrame {
         logger.info("Deleting " + WID + " ...");
 
         redisListener.close();
-        jedis.del(WID, WID+"map", WID+"notify", WID+"path", WID+"session_keys");
+        jedis.del(WID, WID+"map", WID+"notify", WID+"path", WID+"session_keys", WID+"bank");
     }
 
     private int prev_state_id = -1;
