@@ -14,6 +14,7 @@ public class NegotiationWS {
     {
         try
         {
+            logger.debug("creating new connection");
             WebSocketContainer container = ContainerProvider.getWebSocketContainer();
             container.connectToServer(this, endpoint);
         }
@@ -46,6 +47,7 @@ public class NegotiationWS {
     {
         logger.info("negotiation ws close");
         session.close();
+        session = null;
     }
 
     public void setHandler(MessageHandler handler)
