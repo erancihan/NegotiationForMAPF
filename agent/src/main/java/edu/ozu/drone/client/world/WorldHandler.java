@@ -6,6 +6,7 @@
 package edu.ozu.drone.client.world;
 
 import edu.ozu.drone.utils.Globals;
+import edu.ozu.drone.utils.Save;
 import redis.clients.jedis.Jedis;
 
 import javax.swing.*;
@@ -60,13 +61,12 @@ public class WorldHandler extends javax.swing.JFrame {
         text_view = new javax.swing.JTextPane();
         javax.swing.JPanel controls_container = new javax.swing.JPanel();
         javax.swing.JToggleButton cycle_states_toggle_btn = new javax.swing.JToggleButton();
-        javax.swing.JLabel jLabel3 = new javax.swing.JLabel();
-        cycle_delay = new javax.swing.JTextField();
         javax.swing.JButton join_state_btn = new javax.swing.JButton();
         javax.swing.JButton broadcast_state_btn = new javax.swing.JButton();
         javax.swing.JButton negotiate_state_btn = new javax.swing.JButton();
         javax.swing.JButton move_state_btn = new javax.swing.JButton();
         javax.swing.JLabel jLabel4 = new javax.swing.JLabel();
+        javax.swing.JButton save_logs_btn = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         addWindowListener(new java.awt.event.WindowAdapter() {
@@ -155,22 +155,6 @@ public class WorldHandler extends javax.swing.JFrame {
         gridBagConstraints.insets = new java.awt.Insets(14, 0, 0, 0);
         controls_container.add(cycle_states_toggle_btn, gridBagConstraints);
 
-        jLabel3.setText("Cycle Delay (ms)");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
-        controls_container.add(jLabel3, gridBagConstraints);
-
-        cycle_delay.setHorizontalAlignment(javax.swing.JTextField.CENTER);
-        cycle_delay.setText("100");
-        cycle_delay.setMinimumSize(new java.awt.Dimension(100, 37));
-        cycle_delay.setPreferredSize(new java.awt.Dimension(120, 37));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 7;
-        controls_container.add(cycle_delay, gridBagConstraints);
-
         join_state_btn.setText("JOIN");
         join_state_btn.setPreferredSize(new java.awt.Dimension(120, 31));
         join_state_btn.addActionListener(new java.awt.event.ActionListener() {
@@ -224,6 +208,19 @@ public class WorldHandler extends javax.swing.JFrame {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         controls_container.add(jLabel4, gridBagConstraints);
+
+        save_logs_btn.setText("Save Logs");
+        save_logs_btn.setPreferredSize(new java.awt.Dimension(120, 31));
+        save_logs_btn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                save_logs_btnActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 7;
+        gridBagConstraints.insets = new java.awt.Insets(15, 0, 0, 0);
+        controls_container.add(save_logs_btn, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -307,6 +304,11 @@ public class WorldHandler extends javax.swing.JFrame {
         logger.info("loop -> " + loop);
     }//GEN-LAST:event_cycle_states_toggle_btnItemStateChanged
 
+    private void save_logs_btnActionPerformed(java.awt.event.ActionEvent evt)
+    {//GEN-FIRST:event_save_logs_btnActionPerformed
+        Save.listToFile(state_log, world_id + ".txt");
+    }//GEN-LAST:event_save_logs_btnActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -334,7 +336,6 @@ public class WorldHandler extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel cards_container;
-    private javax.swing.JTextField cycle_delay;
     private javax.swing.JTextPane text_view;
     private javax.swing.JTextField world_id;
     // End of variables declaration//GEN-END:variables
