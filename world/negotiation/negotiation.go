@@ -189,7 +189,7 @@ func (n *Handler) readSessionMessages(ctx echo.Context, client *SessionClient) {
 
 		fmt.Printf("> %s\n", msg)
 
-		msgData := strings.Split(string(msg), "-")
+		msgData := strings.SplitN(string(msg), "-", 3)
 		if msgData[1] == "ready" {
 			agents, err := redis.String(rds.Do("HGET", sid, "agents"))
 			if err != nil {
