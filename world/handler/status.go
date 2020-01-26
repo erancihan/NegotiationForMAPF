@@ -88,7 +88,7 @@ func (h *Handler) GetStatus(ctx echo.Context, rds redis.Conn, p *WorldPool, st t
 	ax, _ := strconv.Atoi(agentpos[0])
 	ay, _ := strconv.Atoi(agentpos[1])
 
-	// fow
+	// fov
 	var agents [][]string
 	agents = append(agents, []string{"agent:" + aid, agentIsAt, "-"})
 	for i := 0; i < Fov; i++ {
