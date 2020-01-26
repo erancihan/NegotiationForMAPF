@@ -252,12 +252,38 @@ func (n *Handler) AgentUnregister(ctx echo.Context) (err error) {
 	return
 }
 
-func (n *Handler) Delete(ctx echo.Context, sessionID string)  {
+func (n *Handler) Delete(ctx echo.Context, sessionID string) (err error) {
 	rds := n.Pool.Get()
 	defer rds.Close()
 
-	_, err := rds.Do("DEL", "negotiation:"+sessionID)
-	_, err = rds.Do("HINCRBY", "world:"+ctx.Param("world_id")+":", "negotiation_count", "-1")
-	// TODO COLLECT NOTIFICATIONS AND SESSION KEYS
-	if err != nil { ctx.Logger().Error(err) }
+	worldID := "world:" + ctx.Param("world_id") + ":"
+	sid := ctx.Param("session_id")
+
+	fmt.Println("deleting negotiation session:", sid)
+
+	_, err = rds.Do("DEL", "negotiation:"+sessionID)
+	if err != nil {
+		ctx.Logger().Error(err)
+	}
+
+	agentIDs, err := redis.String(rds.Do("HGET", worldID+"session_keys", sid))
+	_, err = rds.Do("HDEL", worldID+"session_keys", agentIDs)
+	if err != nil {
+		ctx.Logger().Error(err)
+	}
+
+	ids := strings.Split(agentIDs, ",")
+	for _, agentID := range ids {
+		_, err = rds.Do("HDEL", worldID+"notify", agentID)
+		if err != nil {
+			ctx.Logger().Error(err)
+		}
+	}
+
+	_, err = rds.Do("HINCRBY", worldID, "negotiation_count", "-1")
+	if err != nil {
+		ctx.Logger().Error(err)
+	}
+
+	return err
 }
