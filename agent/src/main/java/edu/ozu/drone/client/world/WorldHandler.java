@@ -426,14 +426,14 @@ public class WorldHandler extends javax.swing.JFrame {
     {
         int curr_state_id = Integer.parseInt(data.get("world_state"));
 
-        if (prev_state_id == curr_state_id)
-        {
+        if (prev_state_id == curr_state_id) {
             return; // handle only once
         }
-        if (data.get("player_count").equals("0"))
-        {
+
+        if (data.get("player_count").equals("0")) {
             return; // do nothing if there are no players
         }
+
         if (curr_state_id == 0)
         {
             state_log.add(new Object[]{"- end of join state", new java.sql.Timestamp(System.currentTimeMillis())});
