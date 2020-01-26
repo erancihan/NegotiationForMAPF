@@ -166,7 +166,10 @@ public class AgentHandler {
             for (int i = 0; i < path.length && i < own_path.length; i++)
             {
                 if (path[i].equals(own_path[i]))
+                {
                     agent_ids.add(broadcast[0]);
+                    logger.info("found a collision at " + path[i] + "|" + Arrays.toString(broadcast));
+                }
             }
             // TODO check Swap Conflict
         }
