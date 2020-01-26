@@ -1,5 +1,7 @@
 package edu.ozu.drone.client.handlers;
 
+import edu.ozu.drone.utils.Globals;
+import edu.ozu.drone.utils.Point;
 import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
 
@@ -35,6 +37,28 @@ public class World {
         }
 
         return new String[0];
+    }
+
+    public static String[][] getFieldOfView(String worldID, String agentID)
+    {
+        ArrayList<String[]> agents = new ArrayList<>();
+        Point loc = new Point(jedis.hget("world:" + worldID + ":map", "agent:" + agentID).split(":"));
+
+        for (int i = 0; i < Globals.FIELD_OF_VIEW_SIZE; i++) {
+            for (int j = 0; j < Globals.FIELD_OF_VIEW_SIZE; j++) {
+                int axS = loc.x + (j - Globals.FIELD_OF_VIEW_SIZE / 2);
+                int ayS = loc.y + (i + Globals.FIELD_OF_VIEW_SIZE / 2);
+
+                String agent_key = jedis.hget("world:" + worldID + ":map", axS+":"+ayS);
+                if (agent_key.length() > 0 && !(loc.x == axS && loc.y == ayS))
+                { // key exists and it is not self
+                    String path = jedis.hget("world:" + worldID + ":path", agent_key);
+                    agents.add(new String[]{agent_key, axS+":"+ayS, path});
+                }
+            }
+        }
+
+        return agents.toArray(new String[0][3]);
     }
 
     public static int getTokenBalance(String worldID, String agentID)
