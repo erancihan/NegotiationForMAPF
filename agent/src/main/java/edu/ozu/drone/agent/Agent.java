@@ -50,27 +50,43 @@ public abstract class Agent {
         return path;
     }
 
+    //<editor-fold defaultstate="collapsed" desc="Accept Last Bids">
     public void acceptLastBids(JSONNegotiationSession json)
     {
-        String[] path = null;
+        String[] accepted_path = null;
         for (String[] bid : json.bids)
         {
             if (bid[0].equals("agent:" + AGENT_ID))
             {   // fetch own accepted path
-                path = bid[1].replaceAll("([\\[\\]]*)", "").split(",");
+                accepted_path = bid[1].replaceAll("([\\[\\]]*)", "").split(",");
 
                 break;
             }
         }
-        Assert.notNull(path, "Accepted PATH should not be null!");
+        Assert.notNull(accepted_path, "Accepted PATH should not be null!");
+        Assert.isTrue(accepted_path.length > 0, "Accepted PATH should not be empty!");
+
+        System.out.println("> " + this.path);
 
         // acknowledge negotiation result and calculate from its last point to the goal
-        String[] end = path[path.length-1].split("-");
+        String[] end = accepted_path[accepted_path.length-1].split("-");
         // recalculate path starting from the end point of agreed path
         List<String> rest = calculatePath(new Point(Integer.parseInt(end[0]), Integer.parseInt(end[1])), DEST);
 
         // ...glue them together
-        List<String> new_path = new ArrayList<>(Arrays.asList(path));
+        List<String> new_path = new ArrayList<>();
+        for (int idx = 0; idx < path.size() && !path.get(idx).equals(POS.key); idx++)
+        { // prepend path so far until current POS
+            new_path.add(path.get(idx));
+        }
+        new_path.add(POS.key); // add current POS
+        for (int idx = 0; idx < accepted_path.length; idx++)
+        { // add accepted paths
+            if (idx == 0 && accepted_path[idx].equals(POS.key)) {
+                continue; // skip if first index is current POS, as it is already added
+            }
+            new_path.add(accepted_path[idx]);
+        }
         // ensure that connection points match
         Assert.isTrue(
                 new_path.get(new_path.size() - 1).equals(rest.get(0)),
@@ -82,7 +98,9 @@ public abstract class Agent {
         }
         // commit to global
         this.path = new_path;
+        System.out.println("> " + this.path);
     }
+    //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Get Broadcast">
     public String getBroadcast()
@@ -125,8 +143,8 @@ public abstract class Agent {
         Assert.isTrue(
                 (response.agent_x+"-"+response.agent_y).equals(nextPoint.key),
                 "next point and move action does not match! \n" +
-                response.agent_x + "-" + response.agent_y + " != " +
-                nextPoint.key
+                response.agent_x + "-" + response.agent_y + " != " + nextPoint.key +
+                "\n PATH:" + path + "\n"
         );
 
         POS = nextPoint;
