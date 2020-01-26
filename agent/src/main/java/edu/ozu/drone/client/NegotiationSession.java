@@ -63,6 +63,9 @@ public class NegotiationSession
                         { // register state change
                             active_state = json.state;
                             logger.info("joining to negotiation session");
+                            // join negotiation session WS
+                            // send ready message to socket
+                            websocket.sendMessage("agent:" + client.AGENT_ID + "-ready");
                         }
                         break;
                     case "run":
@@ -109,10 +112,6 @@ public class NegotiationSession
                         System.exit(1);
                 }
             });
-
-            // join negotiation session WS
-            // send ready message to socket
-            websocket.sendMessage("agent:" + client.AGENT_ID + "-ready");
         } catch (URISyntaxException e) {
             e.printStackTrace();
         }
