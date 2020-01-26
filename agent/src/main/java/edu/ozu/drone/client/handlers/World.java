@@ -51,6 +51,8 @@ public class World {
                 int ayS = loc.y + (i + Globals.FIELD_OF_VIEW_SIZE / 2);
 
                 String agent_key = jedis.hget("world:" + worldID + ":map", axS+":"+ayS);
+                if (agent_key == null)
+                    continue;
                 if (agent_key.length() > 0 && !(loc.x == axS && loc.y == ayS))
                 { // key exists and it is not self
                     String path = jedis.hget("world:" + worldID + ":path", agent_key);
