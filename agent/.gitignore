@@ -78,3 +78,5 @@ nbbuild/
 dist/
 nbdist/
 .nb-gradle/
+
+**/testbed.java
