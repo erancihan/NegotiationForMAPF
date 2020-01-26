@@ -12,34 +12,34 @@ import (
 )
 
 var (
-	SessionPingPeriod 	= 8 * time.Second
-	SessionPongWait 	= 10 * time.Second
-	SessionWriteWait	= 2 * time.Second
+	SessionPingPeriod = 8 * time.Second
+	SessionPongWait   = 10 * time.Second
+	SessionWriteWait  = 2 * time.Second
 )
 
 type (
 	SessionClient struct {
-		conn *websocket.Conn
+		conn    *websocket.Conn
 		updates chan Status
 	}
 	SessionClientMap struct {
 		sync.RWMutex
 		m map[*SessionClient]bool
 	}
-	SessionPool 		struct {
+	SessionPool struct {
 		SessionId string
 		SubCount  int
 		Clients   *SessionClientMap
 	}
-	SessionMap 			struct {
+	SessionMap struct {
 		sync.RWMutex
 		m map[string]*SessionPool
 	}
 	Handler struct {
-		Pool	 	*redis.Pool
-		Upgrader 	*websocket.Upgrader
-		Ticker   	time.Ticker
-		SessionMap 	*SessionMap
+		Pool       *redis.Pool
+		Upgrader   *websocket.Upgrader
+		Ticker     time.Ticker
+		SessionMap *SessionMap
 	}
 )
 
@@ -135,7 +135,7 @@ func (n *Handler) Socket(ctx echo.Context) error {
 	}
 
 	client := &SessionClient{
-		conn: ws,
+		conn:    ws,
 		updates: make(chan Status),
 	}
 
@@ -158,12 +158,16 @@ func (n *Handler) Socket(ctx echo.Context) error {
 		case s := <-client.updates:
 			_ = ws.SetWriteDeadline(time.Now().Add(SessionWriteWait))
 			err = ws.WriteJSON(s)
-			if err != nil { return nil }
+			if err != nil {
+				return nil
+			}
 
 		case <-ping.C:
 			_ = ws.SetWriteDeadline(time.Now().Add(SessionWriteWait))
 			err = ws.WriteMessage(websocket.PingMessage, []byte{})
-			if err != nil { return nil }
+			if err != nil {
+				return nil
+			}
 		}
 	}
 	return nil
