@@ -42,14 +42,16 @@ public class World {
 
     public static String[][] getFieldOfView(String worldID, String agentID)
     {
+//        logger.info("get fov for: "+ worldID + " - " + agentID);
         ArrayList<String[]> agents = new ArrayList<>();
         Point loc = new Point(jedis.hget("world:" + worldID + ":map", "agent:" + agentID).split(":"));
 
         for (int i = 0; i < Globals.FIELD_OF_VIEW_SIZE; i++) {
             for (int j = 0; j < Globals.FIELD_OF_VIEW_SIZE; j++) {
                 int axS = loc.x + (j - Globals.FIELD_OF_VIEW_SIZE / 2);
-                int ayS = loc.y + (i + Globals.FIELD_OF_VIEW_SIZE / 2);
+                int ayS = loc.y + (i - Globals.FIELD_OF_VIEW_SIZE / 2);
 
+//                System.out.println("checking world:" + worldID + ":map" + " | " + axS+":"+ayS);
                 String agent_key = jedis.hget("world:" + worldID + ":map", axS+":"+ayS);
                 if (agent_key == null)
                     continue;
