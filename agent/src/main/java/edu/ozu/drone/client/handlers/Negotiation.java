@@ -11,6 +11,8 @@ public class Negotiation {
     {
         try {
             String session_list = jedis.hget("world:"+worldID+":notify", "agent:"+agentID);
+            if (session_list == null)
+                return new String[0];
 
             return session_list.split(",");
         } catch (Exception e) {
