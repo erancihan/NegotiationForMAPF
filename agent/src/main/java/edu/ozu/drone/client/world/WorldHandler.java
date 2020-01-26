@@ -306,7 +306,7 @@ public class WorldHandler extends javax.swing.JFrame {
 
     private void save_logs_btnActionPerformed(java.awt.event.ActionEvent evt)
     {//GEN-FIRST:event_save_logs_btnActionPerformed
-        Save.listToFile(state_log, world_id + ".txt");
+        Save.stringToFile(text_view.getText(), world_id.getText() + "-world-log.txt");
     }//GEN-LAST:event_save_logs_btnActionPerformed
 
     /**
