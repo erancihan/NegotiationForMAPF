@@ -20,7 +20,7 @@ public abstract class Agent {
     public List<String> path;
     public int time = 0;
 
-    private String WORLD_ID;
+    protected String WORLD_ID;
 
     public abstract void init();
     public abstract Action onMakeAction();
