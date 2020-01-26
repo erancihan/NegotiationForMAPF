@@ -2,6 +2,7 @@ package edu.ozu.drone.client.handlers;
 
 import edu.ozu.drone.utils.Globals;
 import edu.ozu.drone.utils.Point;
+import edu.ozu.drone.utils.Utils;
 import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
 
@@ -72,5 +73,14 @@ public class World {
         }
 
         return 0;
+    }
+
+    public static void doBroadcast(String wordlID, String agentID, String[] broadcast)
+    {
+        try {
+            jedis.hset("world:" + wordlID + ":path", "agent:" + agentID, Utils.toString(broadcast, ","));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
