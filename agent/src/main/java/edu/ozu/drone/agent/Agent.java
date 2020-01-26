@@ -96,6 +96,8 @@ public abstract class Agent {
         }
         // commit to global
         this.path = new_path;
+
+        World.doBroadcast(WORLD_ID, AGENT_ID, getBroadcastArray());
     }
     //</editor-fold>
 
