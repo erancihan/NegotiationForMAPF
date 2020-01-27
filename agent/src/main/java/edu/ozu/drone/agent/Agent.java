@@ -20,9 +20,10 @@ public abstract class Agent {
     public List<String> path;
     public int time = 0;
 
-    protected String WORLD_ID;
+    public String WORLD_ID;
 
     public abstract void init();
+    public abstract void preNegotiation();
     public abstract Action onMakeAction();
     public abstract void onReceiveState(edu.ozu.drone.utils.State state);
 
