@@ -20,6 +20,11 @@ type (
 		Bid       string `json:"bid" form:"bid" query:"bid"`
 		Type      string `json:"type" form:"type" query:"type"`
 	}
+	BidData struct {
+		Path    string
+		Token   int
+		AgentID string
+	}
 )
 
 //@POST returns session list for given world and agent
@@ -132,9 +137,67 @@ func (n *Handler) BidProcess(ctx echo.Context, bid *BidStruct) (err error) {
 
 	turn, err := redis.String(rds.Do("HGET", "negotiation:"+bid.SessionID, "turn"))
 	if turn == "agent:"+bid.AgentID {
-		if bid.Bid == "accept" { // agent accepted
+		if bid.Type == "accept" { // agent accepted
+			// conclude negotiation as one party has accepted
 			_, err = rds.Do("HSET", "negotiation:"+bid.SessionID, "state", "done")
 			if err != nil {
+				ctx.Logger().Fatal(err)
+			}
+
+			// update bank info
+			// fetch agent ids
+			wid := ctx.Param("world_id")
+			if len(wid) == 0 {
+				ctx.Logger().Fatal("world id cannot be empty!")
+			}
+			ids, _ := redis.String(rds.Do("HGET", "world:"+wid+":session_keys", bid.SessionID))
+			idsList := strings.Split(ids, ",")
+			fmt.Println(ids)
+			var agentBids []BidData
+			for _, id := range idsList { // collect agent data
+				agentBid, _ := redis.String(rds.Do("HGET", "negotiation:"+bid.SessionID, "bid:"+id))
+				agentBidData := strings.Split(agentBid, ":")
+				agentToken, _ := strconv.Atoi(agentBidData[1])
+
+				agentBids = append(agentBids, BidData{
+					AgentID: id,
+					Path:    agentBidData[0],
+					Token:   agentToken,
+				})
+			}
+			if len(agentBids) != 2 {
+				ctx.Logger().Fatal("there are more than 2 agents! ")
+				return
+			}
+
+			// compare diffs in last bid tokens, and distribute
+			if agentBids == nil {
+				ctx.Logger().Fatal("agentBids is nil!")
+				return
+			}
+			diff := agentBids[0].Token - agentBids[1].Token
+			if diff > 0 {
+				// 0 is paying
+				if agentBids[0].AgentID == "agent:"+bid.AgentID {
+					// agent 0 is the one accepted, so he pays nothing
+					return
+				}
+				// transaction
+				_, err = rds.Do("HINCRBY", "world:"+wid+":bank", agentBids[0].AgentID, "-1") // 0 pays
+				_, err = rds.Do("HINCRBY", "world:"+wid+":bank", agentBids[1].AgentID, "1")  // 1 receives
+			}
+			if diff < 0 {
+				// 1 is paying
+				if agentBids[1].AgentID == "agent:"+bid.AgentID {
+					// agent 1 is the one accepted, so he pays nothing
+					return
+				}
+				// transaction
+				_, err = rds.Do("HINCRBY", "world:"+wid+":bank", agentBids[0].AgentID, "1")  // 0 receives
+				_, err = rds.Do("HINCRBY", "world:"+wid+":bank", agentBids[1].AgentID, "-1") // 1 pays
+			}
+			if err != nil {
+				fmt.Println("something went wrong")
 				ctx.Logger().Fatal(err)
 			}
 
