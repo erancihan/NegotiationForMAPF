@@ -90,10 +90,10 @@ func (n *Handler) Notify(ctx echo.Context) (err error) {
 		_, err = rds.Do("HSET", "negotiation:"+sessionID, "agents_left", len(r.Agents))
 
 		for _, agent := range r.Agents {
-			path, _ := redis.String(rds.Do("HGET", "world:"+r.WorldID+":path", agent)) // initial bid is path
+			// path, _ := redis.String(rds.Do("HGET", "world:"+r.WorldID+":path", agent)) // initial bid is path
 			// world:{world_id}:notify agent:{agent_id} {session_id}
 			_, err = rds.Do("HSET", "world:"+r.WorldID+":notify", agent, sessionID)
-			_, err = rds.Do("HSET", "negotiation:"+sessionID, "bid:"+agent, path)
+			_, err = rds.Do("HSET", "negotiation:"+sessionID, "bid:"+agent, "[]:0")
 		}
 
 		// initial order in which agents will bid
