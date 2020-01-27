@@ -154,11 +154,11 @@ public class AgentHandler {
         Set<String> agent_ids = new HashSet<>();
         String[] own_path = clientRef.getBroadcastArray();
 
+        agent_ids.add("agent:"+clientRef.AGENT_ID); // add own data
         for (String[] broadcast : broadcasts)
         {
             if (broadcast[2].equals("-"))
-            { // add self
-                agent_ids.add(broadcast[0]);
+            { // own data
                 continue;
             }
 
@@ -170,6 +170,8 @@ public class AgentHandler {
                 {
                     agent_ids.add(broadcast[0]);
                     logger.info("found a collision at " + path[i] + "|" + Arrays.toString(broadcast));
+
+                    return agent_ids.toArray(new String[0]);
                 }
             }
             // check Swap Conflict
@@ -184,6 +186,8 @@ public class AgentHandler {
                 {
                     agent_ids.add(broadcast[0]);
                     logger.info("found a collision at " + path_reverse[i] + "|" + Arrays.toString(broadcast));
+
+                    return agent_ids.toArray(new String[0]);
                 }
             }
         }
