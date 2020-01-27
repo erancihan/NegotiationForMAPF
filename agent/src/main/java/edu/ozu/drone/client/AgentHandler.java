@@ -172,7 +172,20 @@ public class AgentHandler {
                     logger.info("found a collision at " + path[i] + "|" + Arrays.toString(broadcast));
                 }
             }
-            // TODO check Swap Conflict
+            // check Swap Conflict
+            // get reverse of path
+            String[] path_reverse = new String[path.length];
+            for (int i = 0; i < path.length; i++)
+                path_reverse[i] = path[path.length - 1 - i];
+            // check match
+            for (int i = 0; i < path_reverse.length; i++)
+            {
+                if (path_reverse[i].equals(own_path[i]))
+                {
+                    agent_ids.add(broadcast[0]);
+                    logger.info("found a collision at " + path_reverse[i] + "|" + Arrays.toString(broadcast));
+                }
+            }
         }
 
         return agent_ids.toArray(new String[0]);
