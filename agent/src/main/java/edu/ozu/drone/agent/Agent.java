@@ -5,7 +5,6 @@ import edu.ozu.drone.utils.*;
 import org.springframework.util.Assert;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public abstract class Agent {
@@ -59,7 +58,7 @@ public abstract class Agent {
         {
             if (bid[0].equals("agent:" + AGENT_ID))
             {   // fetch own accepted path
-                accepted_path = bid[1].replaceAll("([\\[\\]]*)", "").split(",");
+                accepted_path = bid[1].split(":")[0].replaceAll("([\\[\\]]*)", "").split(",");
 
                 break;
             }
