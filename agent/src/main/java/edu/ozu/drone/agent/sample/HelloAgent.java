@@ -24,6 +24,11 @@ public class HelloAgent extends Agent
     }
 
     @Override
+    public void preNegotiation() {
+
+    }
+
+    @Override
     public Action onMakeAction()
     {
         String[][] fov = World.getFieldOfView(this.WORLD_ID, this.AGENT_ID);
@@ -48,15 +53,7 @@ public class HelloAgent extends Agent
             bid[i] = path.get(i);
         }
 
-        String _bid = Utils.toString(bid, ",");
-
-        return new Action(ActionType.OFFER, _bid);
-    }
-
-    @Override
-    public void onReceiveState(edu.ozu.drone.utils.State state)
-    {
-        // receive state of negotiation sequence
+        return new Action(this, ActionType.OFFER, bid);
     }
 
     public static void main(String[] args)

@@ -20,13 +20,18 @@ public class HelloAgent2 extends Agent {
         DEST = new Point(10, 2);
     }
 
+    @Override
+    public void preNegotiation() {
+
+    }
+
     private int count = 0;
 
     @Override
     public Action onMakeAction()
     {
         if (count++ >= 2)
-            return new Action(ActionType.ACCEPT);
+            return new Action(this, ActionType.ACCEPT);
 
         String[][] fov = World.getFieldOfView(this.WORLD_ID, this.AGENT_ID);
 
@@ -49,15 +54,7 @@ public class HelloAgent2 extends Agent {
             bid[i] = path.get(i);
         }
 
-        String _bid = Utils.toString(bid, ",");
-
-        return new Action(ActionType.OFFER, _bid);
-    }
-
-    @Override
-    public void onReceiveState(edu.ozu.drone.utils.State state)
-    {
-
+        return new Action(this, ActionType.OFFER, bid);
     }
 
     public static void main(String[] args)
