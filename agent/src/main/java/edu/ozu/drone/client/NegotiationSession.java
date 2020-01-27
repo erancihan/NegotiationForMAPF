@@ -65,6 +65,7 @@ public class NegotiationSession
                             logger.info("joining to negotiation session");
                             // join negotiation session WS
                             // send ready message to socket
+                            client.preNegotiation();
                             websocket.sendMessage("agent:" + client.AGENT_ID + "-ready");
                         }
                         break;
