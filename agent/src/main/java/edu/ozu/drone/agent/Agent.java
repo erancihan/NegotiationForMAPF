@@ -24,7 +24,15 @@ public abstract class Agent {
     public abstract void init();
     public abstract void preNegotiation();
     public abstract Action onMakeAction();
-    public abstract void onReceiveState(edu.ozu.drone.utils.State state);
+
+    public void onReceiveState(State state)
+    {
+        // update current state info
+        for (String[] bid : state.bids)
+        {   // [agentID, bid path, bid tokens]
+            Object[] b = new Object[]{bid[0], bid[1].split(":")[0], bid[1].split(":")[1]};
+        }
+    }
 
     public void run()
     {
