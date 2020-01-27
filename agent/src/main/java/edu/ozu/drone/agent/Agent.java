@@ -35,7 +35,15 @@ public abstract class Agent {
             ArrayList<BidStruct> hist = history.getOrDefault(bid[0], new ArrayList<>());
 
             String[] b = bid[1].split(":");
-            hist.add(new BidStruct(bid[0], b[0], Integer.parseInt(b[1])));
+            BidStruct bidStruct = new BidStruct(bid[0], b[0], Integer.parseInt(b[1]));
+
+            if (hist.size() > 0) { // if there are elements
+                if (!hist.get(hist.size()-1).equals(bidStruct)) { // and the last one is different
+                    hist.add(bidStruct);
+                }
+            } else { // if there are no elements
+                hist.add(bidStruct);
+            }
 
             history.put(bid[0], hist);
         }
