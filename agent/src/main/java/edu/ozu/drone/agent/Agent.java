@@ -22,50 +22,43 @@ public abstract class Agent {
     public String WORLD_ID;
 
     public abstract void init();
+
     public abstract void preNegotiation();
+
     public abstract Action onMakeAction();
 
-    public void onReceiveState(State state)
-    {
+    public void onReceiveState(State state) {
         // update current state info
-        for (String[] bid : state.bids)
-        {   // [agentID, bid path, bid tokens]
+        for (String[] bid : state.bids) {   // [agentID, bid path, bid tokens]
             Object[] b = new Object[]{bid[0], bid[1].split(":")[0], bid[1].split(":")[1]};
         }
     }
 
-    public void run()
-    {
+    public void run() {
         logger.info("calculating path");
         path = calculatePath();
 
         POS = new Point(path.get(0).split("-"));
     }
 
-    public List<String> calculatePath()
-    {
+    public List<String> calculatePath() {
         return calculatePath(START, DEST);
     }
 
-    public List<String> calculatePath(Point start, Point dest)
-    {
+    public List<String> calculatePath(Point start, Point dest) {
         return AStar.calculate(start, dest);
     }
 
-    public List<String> getBidSpace()
-    {
+    public List<String> getBidSpace() {
         // TODO CODE
         return path;
     }
 
     //<editor-fold defaultstate="collapsed" desc="Accept Last Bids">
-    public void acceptLastBids(JSONNegotiationSession json)
-    {
+    public void acceptLastBids(JSONNegotiationSession json) {
         String[] accepted_path = null;
-        for (String[] bid : json.bids)
-        {
-            if (bid[0].equals("agent:" + AGENT_ID))
-            {   // fetch own accepted path
+        for (String[] bid : json.bids) {
+            if (bid[0].equals("agent:" + AGENT_ID)) {   // fetch own accepted path
                 accepted_path = bid[1].split(":")[0].replaceAll("([\\[\\]]*)", "").split(",");
 
                 break;
@@ -75,19 +68,17 @@ public abstract class Agent {
         Assert.isTrue(accepted_path.length > 0, "Accepted PATH should not be empty!");
 
         // acknowledge negotiation result and calculate from its last point to the goal
-        String[] end = accepted_path[accepted_path.length-1].split("-");
+        String[] end = accepted_path[accepted_path.length - 1].split("-");
         // recalculate path starting from the end point of agreed path
         List<String> rest = calculatePath(new Point(Integer.parseInt(end[0]), Integer.parseInt(end[1])), DEST);
 
         // ...glue them together
         List<String> new_path = new ArrayList<>();
-        for (int idx = 0; idx < path.size() && !path.get(idx).equals(POS.key); idx++)
-        { // prepend path so far until current POS
+        for (int idx = 0; idx < path.size() && !path.get(idx).equals(POS.key); idx++) { // prepend path so far until current POS
             new_path.add(path.get(idx));
         }
         new_path.add(POS.key); // add current POS
-        for (int idx = 0; idx < accepted_path.length; idx++)
-        { // add accepted paths
+        for (int idx = 0; idx < accepted_path.length; idx++) { // add accepted paths
             if (idx == 0 && accepted_path[idx].equals(POS.key)) {
                 continue; // skip if first index is current POS, as it is already added
             }
@@ -98,8 +89,7 @@ public abstract class Agent {
                 new_path.get(new_path.size() - 1).equals(rest.get(0)),
                 "Something went wrong while accepting last bids!"
         );
-        for (int idx = 1; idx < rest.size(); idx++)
-        { // merge...
+        for (int idx = 1; idx < rest.size(); idx++) { // merge...
             new_path.add(rest.get(idx));
         }
         // commit to global
@@ -110,32 +100,27 @@ public abstract class Agent {
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Get Broadcast">
-    public String getBroadcast()
-    {
+    public String getBroadcast() {
         return edu.ozu.drone.utils.Utils.toString(getBroadcastArray(this.time), ",");
     }
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Get Next Broadcast">
-    public String getNextBroadcast()
-    {
-        return edu.ozu.drone.utils.Utils.toString(getBroadcastArray(this.time + 1), ",") ;
+    public String getNextBroadcast() {
+        return edu.ozu.drone.utils.Utils.toString(getBroadcastArray(this.time + 1), ",");
     }
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Get Broadcast Array">
-    public String[] getBroadcastArray()
-    {
+    public String[] getBroadcastArray() {
         return getBroadcastArray(time);
     }
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Get Broadcast Array (int time) ">
-    public String[] getBroadcastArray(int time)
-    {
+    public String[] getBroadcastArray(int time) {
         List<String> broadcast = new ArrayList<>();
-        for (int i = 0; (i < Globals.BROADCAST_SIZE) && (i + time < path.size()); i++)
-        {
+        for (int i = 0; (i < Globals.BROADCAST_SIZE) && (i + time < path.size()); i++) {
             broadcast.add(path.get(i + time));
         }
 
@@ -143,29 +128,25 @@ public abstract class Agent {
     }
     //</editor-fold>
 
-    public void move(JSONAgent response)
-    {
+    public void move(JSONAgent response) {
         time = time + 1;
-        Point nextPoint =  new Point(path.get(Math.min(time, path.size() - 1)).split("-"));
+        Point nextPoint = new Point(path.get(Math.min(time, path.size() - 1)).split("-"));
         Assert.isTrue(
-                (response.agent_x+"-"+response.agent_y).equals(nextPoint.key),
+                (response.agent_x + "-" + response.agent_y).equals(nextPoint.key),
                 "next point and move action does not match! \n" +
-                response.agent_x + "-" + response.agent_y + " != " + nextPoint.key +
-                "\n PATH:" + path + "\n"
+                        response.agent_x + "-" + response.agent_y + " != " + nextPoint.key +
+                        "\n PATH:" + path + "\n"
         );
 
         POS = nextPoint;
     }
 
-    public void setWORLD_ID(String WORLD_ID)
-    {
+    public void setWORLD_ID(String WORLD_ID) {
         this.WORLD_ID = WORLD_ID;
     }
 
-    public int getTokenBalance()
-    {
-        if (WORLD_ID.isEmpty())
-        {
+    public int getTokenBalance() {
+        if (WORLD_ID.isEmpty()) {
             logger.error("world id is empty!");
             return Globals.INITIAL_TOKEN_BALANCE;
         }
