@@ -66,6 +66,6 @@ public class Action
 
     @Override
     public String toString() {
-        return super.toString();
+        return agent.AGENT_ID + "-" + type.toString().toLowerCase() + "-" + bid;
     }
 }
