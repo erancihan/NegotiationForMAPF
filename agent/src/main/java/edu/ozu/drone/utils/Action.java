@@ -24,6 +24,7 @@ public class Action
 
     private Action(Agent agent, ActionType type, String bid)
     {   // only invoked when making a bid
+        this.agent = agent;
 
         if (type == ActionType.OFFER)
         {
