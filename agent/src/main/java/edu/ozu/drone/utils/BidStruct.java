@@ -10,4 +10,11 @@ public class BidStruct {
         this.path = path;
         this.token_count = token_count;
     }
+
+    public boolean equals(BidStruct o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        return token_count == o.token_count && agent_id.equals(o.agent_id) && path.equals(o.path);
+    }
 }
