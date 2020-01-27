@@ -169,7 +169,7 @@ public class AgentHandler {
                 if (path[i].equals(own_path[i]))
                 {
                     agent_ids.add(broadcast[0]);
-                    logger.info("found a collision at " + path[i] + "|" + Arrays.toString(broadcast));
+                    logger.info("found a Vertex Conflict at " + path[i] + "|" + Arrays.toString(broadcast));
 
                     return agent_ids.toArray(new String[0]);
                 }
@@ -185,7 +185,7 @@ public class AgentHandler {
                 if (path_reverse[i].equals(own_path[i]))
                 {
                     agent_ids.add(broadcast[0]);
-                    logger.info("found a collision at " + path_reverse[i] + "|" + Arrays.toString(broadcast));
+                    logger.info("found a Swap Conflict at " + path_reverse[i] + "|" + Arrays.toString(broadcast));
 
                     return agent_ids.toArray(new String[0]);
                 }
