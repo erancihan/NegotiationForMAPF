@@ -221,23 +221,13 @@ func (n *Handler) readSessionMessages(ctx echo.Context, client *SessionClient) {
 				}
 			}
 		}
-		if msgData[1] == "bid" {
+		if msgData[1] == "offer" || msgData[1] == "accept" {
 			// register bid
 			err = n.BidProcess(ctx, &BidStruct{
 				AgentID:   msgData[0],
 				SessionID: ctx.Param("session_id"),
 				Bid:       msgData[2],
-			})
-			if err != nil {
-				return
-			}
-		}
-		if msgData[1] == "accept" {
-			// register bid - accept
-			err = n.BidProcess(ctx, &BidStruct{
-				AgentID:   msgData[0],
-				SessionID: ctx.Param("session_id"),
-				Bid:       "accept",
+				Type:      msgData[1],
 			})
 			if err != nil {
 				return
