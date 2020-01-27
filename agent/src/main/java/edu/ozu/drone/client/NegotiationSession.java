@@ -80,15 +80,7 @@ public class NegotiationSession
                             if (!didBid)
                             { // haven't bid yet
                                 edu.ozu.drone.utils.Action action = client.onMakeAction();
-                                if (action.type == ActionType.ACCEPT)
-                                {
-                                    websocket.sendMessage(client.AGENT_ID + "-accept");
-                                }
-                                if (action.type == ActionType.OFFER)
-                                {
-                                    // todo process action
-                                    websocket.sendMessage(client.AGENT_ID + "-bid-" + action.bid);
-                                }
+                                websocket.sendMessage(action.toString());
 
                                 didBid = true;
                             }
