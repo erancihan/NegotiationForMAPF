@@ -174,6 +174,7 @@ public class AgentHandler {
                     return agent_ids.toArray(new String[0]);
                 }
             }
+            /* disable swap conflict for now
             // check Swap Conflict
             // get reverse of path
             String[] path_reverse = new String[path.length];
@@ -190,6 +191,7 @@ public class AgentHandler {
                     return agent_ids.toArray(new String[0]);
                 }
             }
+            */
         }
 
         return agent_ids.toArray(new String[0]);
