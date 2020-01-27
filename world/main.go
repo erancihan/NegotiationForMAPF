@@ -89,7 +89,7 @@ func main() {
  	//e.GET("/negotiation/session/:key", n.Socket)
 	e.POST("/negotiation/sessions", n.Sessions) // has direct handler
 	e.POST("/negotiation/notify", n.Notify)
-	e.POST("/negotiation/bid", n.Bid)
+	e.POST("/negotiation/bid", n.Bid) // is not called!
 
 	e.File("/test", "res/test.html")
 
