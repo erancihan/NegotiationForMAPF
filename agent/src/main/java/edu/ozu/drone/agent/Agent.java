@@ -5,6 +5,7 @@ import edu.ozu.drone.utils.*;
 import org.springframework.util.Assert;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public abstract class Agent {
@@ -12,6 +13,7 @@ public abstract class Agent {
 
     public String AGENT_NAME, AGENT_ID;
     public Point START, DEST;
+    public HashMap<String, ArrayList<BidStruct>> history;
 
     public boolean isHeadless = false;
 
@@ -29,8 +31,13 @@ public abstract class Agent {
 
     public void onReceiveState(State state) {
         // update current state info
-        for (String[] bid : state.bids) {   // [agentID, bid path, bid tokens]
-            Object[] b = new Object[]{bid[0], bid[1].split(":")[0], bid[1].split(":")[1]};
+        for (String[] bid : state.bids) {   // [agentID, path:tokens]
+            ArrayList<BidStruct> hist = history.getOrDefault(bid[0], new ArrayList<>());
+
+            String[] b = bid[1].split(":");
+            hist.add(new BidStruct(bid[0], b[0], Integer.parseInt(b[1])));
+
+            history.put(bid[0], hist);
         }
     }
 
@@ -39,6 +46,7 @@ public abstract class Agent {
         path = calculatePath();
 
         POS = new Point(path.get(0).split("-"));
+        history = new HashMap<>();
     }
 
     public List<String> calculatePath() {
