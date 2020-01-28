@@ -99,6 +99,7 @@ public class NegotiationSession
                             e.printStackTrace();
                         }
                         //</editor-fold>
+                        client.postNegotiation();
                         break;
                     default:
                         logger.error("unexpected state, contact DEVs");
