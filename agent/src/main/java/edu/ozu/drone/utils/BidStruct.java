@@ -17,4 +17,13 @@ public class BidStruct {
 
         return token_count == o.token_count && agent_id.equals(o.agent_id) && path.equals(o.path);
     }
+
+    @Override
+    public String toString() {
+        return "BidStruct{" +
+                "agent_id='" + agent_id + '\'' +
+                ", path='" + path + '\'' +
+                ", token_count=" + token_count +
+                '}';
+    }
 }
