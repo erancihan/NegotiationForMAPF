@@ -56,6 +56,11 @@ public class HelloAgent extends Agent
         return new Action(this, ActionType.OFFER, bid);
     }
 
+    @Override
+    public void postNegotiation() {
+        logger.debug("history:" + history);
+    }
+
     public static void main(String[] args)
     {
         new AgentClient(args, new HelloAgent());

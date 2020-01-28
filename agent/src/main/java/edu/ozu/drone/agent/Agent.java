@@ -29,6 +29,8 @@ public abstract class Agent {
 
     public abstract Action onMakeAction();
 
+    public void postNegotiation() {};
+
     public void onReceiveState(State state) {
         // update current state info
         for (String[] bid : state.bids) {   // [agentID, path:tokens]
