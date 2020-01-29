@@ -1,14 +1,17 @@
 package edu.ozu.drone.agent.sample;
 
-import edu.ozu.drone.client.AgentClient;
 import edu.ozu.drone.agent.Agent;
+import edu.ozu.drone.client.AgentClient;
 import edu.ozu.drone.client.handlers.World;
-import edu.ozu.drone.utils.*;
+import edu.ozu.drone.utils.AStar;
+import edu.ozu.drone.utils.Action;
+import edu.ozu.drone.utils.ActionType;
+import edu.ozu.drone.utils.Point;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
+@SuppressWarnings("Duplicates")
 public class HelloAgent extends Agent
 {
     @Override
