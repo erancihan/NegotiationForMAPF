@@ -6,22 +6,23 @@
 package edu.ozu.drone.client.ui;
 
 import edu.ozu.drone.client.AgentHandler;
+import edu.ozu.drone.utils.Globals;
 import edu.ozu.drone.utils.JSONWorldWatch;
-import edu.ozu.drone.utils.Point;
+import edu.ozu.drone.utils.Utils;
 
 import java.awt.*;
 import java.util.Arrays;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 /**
  *
  * @author freedrone
  */
 public class WorldWatch extends javax.swing.JPanel {
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(WorldWatch.class);
 
-    private String agent_name;
     private AgentHandler client;
-    private String server;
-    private AgentUI parent;
     private String world_id;
 
     /**
@@ -43,6 +44,8 @@ public class WorldWatch extends javax.swing.JPanel {
         javax.swing.JPanel canvas_container = new javax.swing.JPanel();
         canvas = new edu.ozu.drone.client.ui.WorldCanvas();
         javax.swing.JPanel controls = new javax.swing.JPanel();
+        javax.swing.JScrollPane jScrollPane1 = new javax.swing.JScrollPane();
+        text_panel = new javax.swing.JTextPane();
 
         setBackground(new java.awt.Color(254, 254, 254));
         setToolTipText("");
@@ -52,7 +55,7 @@ public class WorldWatch extends javax.swing.JPanel {
 
         canvas_container.setMinimumSize(new java.awt.Dimension(300, 300));
         canvas_container.setPreferredSize(new java.awt.Dimension(300, 300));
-        canvas_container.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0));
+        canvas_container.setLayout(new java.awt.FlowLayout(1, 0, 0));
 
         canvas.setPreferredSize(new java.awt.Dimension(300, 300));
         canvas_container.add(canvas);
@@ -62,50 +65,75 @@ public class WorldWatch extends javax.swing.JPanel {
         controls.setBackground(new java.awt.Color(164, 221, 252));
         controls.setPreferredSize(new java.awt.Dimension(300, 300));
         controls.setLayout(new java.awt.GridBagLayout());
+
+        jScrollPane1.setMinimumSize(new java.awt.Dimension(300, 300));
+        jScrollPane1.setPreferredSize(new java.awt.Dimension(300, 300));
+
+        text_panel.setEditable(false);
+        text_panel.setFont(new java.awt.Font("Monospaced", 0, 12)); // NOI18N
+        text_panel.setPreferredSize(new java.awt.Dimension(300, 300));
+        jScrollPane1.setViewportView(text_panel);
+
+        controls.add(jScrollPane1, new java.awt.GridBagConstraints());
+
         add(controls, new java.awt.GridBagConstraints());
     }// </editor-fold>//GEN-END:initComponents
-
-    void setAgentName(String name) {
-        this.agent_name = name;
-    }
 
     void setClient(AgentHandler client) {
         this.client = client;
     }
 
-    void setServer(String server) {
-        this.server = server;
-    }
-
-    void setParent(AgentUI ui) {
-        this.parent = ui;
-    }
-    
     void setWorldID(String world_id) {
         this.world_id = world_id;
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private edu.ozu.drone.client.ui.WorldCanvas canvas;
+    private javax.swing.JTextPane text_panel;
     // End of variables declaration//GEN-END:variables
 
     public void mount()
     {
-        System.out.println("> " + client + " WorldWatch mount");
-        client.setWatchUIRef(this);
-        client.join(world_id);
+        logger.info("mount");
+        client.join(world_id, this::draw);
     }
 
     public void unmount()
     {
-        System.out.println("> " + client + " WorldWatch unmount");
+        logger.info("unmount");
         if (client != null)
             client.leave();
     }
 
-    public void draw(JSONWorldWatch data, Point agent_position)
+    private long prev_time = 0;
+    void write_to_panel(JSONWorldWatch data)
     {
+        // write to text field
+        String sb =
+                "Agent_ID: " + data.agent_id + "\n" +
+                "World_ID: " + data.world_id + "\n" +
+                "Location: " + data.position + "\n" +
+                "State   : " + Globals.WORLD_STATES.get(data.world_state) + "\n" +
+                "-----------\n"+
+                "ExecTime (ms): " + String.format("%8.4f", data.exec_time) + "\n" +
+                "Diff     (ms): " + String.format("%8.4f",(data.time - prev_time)/1E6) + "\n" +
+                "-----------\n"+
+                "Field of View" +
+                Arrays.stream(data.fov)
+                    .map(key -> key[0].endsWith(client.getID()) ? "" : Utils.toString(key, " "))
+                    .collect(Collectors.joining("\n"))
+                    .replaceAll("[\\[\\]]", "") +
+                "";
+
+        text_panel.setText(sb);
+        prev_time = data.time;
+    }
+
+    public void draw(JSONWorldWatch data, String[] agent_position_data)
+    {
+        CompletableFuture.runAsync(() -> write_to_panel(data));
+
         canvas.setBackground(new Color(195, 224, 254));
-        canvas.setData(data, agent_position);
+        canvas.setData(data, agent_position_data);
     }
 }

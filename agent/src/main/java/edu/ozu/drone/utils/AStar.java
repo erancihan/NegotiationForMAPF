@@ -4,13 +4,27 @@ import java.util.*;
 
 public class AStar {
 
+    public static List<String> calculateWithConstraints(Point start, Point dest, String[][] constraints_with_time)
+    {
+        // parse constraints
+        HashMap<String, ArrayList<String>> occupied_list = new HashMap<>();
+        for (String[] constraint : constraints_with_time)
+        {
+            ArrayList<String> vals = occupied_list.getOrDefault(constraint[0], new ArrayList<>());
+            vals.add(constraint[1]);
+            occupied_list.put(constraint[0], vals);
+        }
+
+        return new AStar().run(start, dest, occupied_list);
+    }
+
     public static List<String> calculate(Point start, Point dest)
     {
-        return new AStar().run(start, dest);
+        return new AStar().run(start, dest, new HashMap<>());
     }
 
     //<editor-fold defaultstate="collapsed" desc="A-Star implementation">
-    private List<String> run(Point start, Point goal) {
+    private List<String> run(Point start, Point goal, HashMap<String, ArrayList<String>> occupiedList) {
         int T = 0;
         double inf = Double.MAX_VALUE;
 
@@ -38,7 +52,7 @@ public class AStar {
                 return constructPath(links, start, goal);
             }
 
-            List<Point> neighbours = getNeighbours(current, T);
+            List<Point> neighbours = getNeighbours(current, T, occupiedList);
             for (Point neighbour : neighbours) {
                 if (closed.contains(neighbour)) {
                     continue;
@@ -60,7 +74,7 @@ public class AStar {
     }
 
     // todo retrieve env dims
-    private List<Point> getNeighbours(Point point, int t) {
+    private List<Point> getNeighbours(Point point, int t, HashMap<String, ArrayList<String>> occupiedList) {
         List<Point> nodes = new ArrayList<>();
 
         for (int i = 0; i < 9; i++) { // position of point
@@ -79,8 +93,14 @@ public class AStar {
             }
 
             Point n = new Point(x, y);
+            if (occupiedList.containsKey(n.key))
+            {
+                if (occupiedList.get(n.key).contains(String.valueOf(t)))
+                {
+                    continue;
+                }
+            }
             nodes.add(n);
-//            if (!env.isOccupiedAt(n.key, t)) { nodes.add(n); }
         }
 
         return nodes;

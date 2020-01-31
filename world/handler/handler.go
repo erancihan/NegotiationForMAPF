@@ -56,37 +56,30 @@ func (h *Handler) PlayerRegister(ctx echo.Context, p *WorldPool) error {
 }
 
 // todo unregister actions
-func (h *Handler) PlayerUnregister(ctx echo.Context, p *WorldPool) error {
-	wid := ctx.Param("world_id")
-	//pid := ctx.Param("player_id")
+func (h *Handler) PlayerUnregister(ctx echo.Context, p *WorldPool) (err error) {
+	wid := "world:" + ctx.Param("world_id") + ":"
+	aid := "agent:" + ctx.Param("agent_id")
 
 	rds := h.Pool.Get()
 	defer rds.Close()
 
-	c, err := redis.Int64(rds.Do("HINCRBY", "world:"+wid+":", "player_count", "-1"))
+	loc, err := redis.String(rds.Do("HGET", wid+"map", aid))
 	if err != nil {
 		ctx.Echo().Logger.Fatal(err)
-
-		return err
 	}
 
-	if c <= 0 {
-		_, err := rds.Do(
-			"DEL",
-			"world:"+wid+":",
-			"world:"+wid+":map",
-			"world:"+wid+":notify",
-			"world:"+wid+":path",
-			"world:"+wid+":session_keys",
-		)
-		if err != nil {
-			ctx.Echo().Logger.Fatal(err)
-		}
+	_, err = rds.Do("HDEL", wid+"map", aid)
+	_, err = rds.Do("HDEL", wid+"map", loc)
+	_, err = rds.Do("HDEL", wid+"path", aid)
+	_, err = rds.Do("HINCRBY", wid, "player_count", "-1")
+	if err != nil {
+		ctx.Echo().Logger.Fatal(err)
 	}
 
-	return nil
+	return err
 }
 
+/*
 func (h *Handler) CreateWorld(ctx echo.Context) (err error) {
 	world := new(World)
 	if err = ctx.Bind(world); err != nil {
@@ -118,6 +111,7 @@ func (h *Handler) CreateWorld(ctx echo.Context) (err error) {
 
 	return ctx.JSON(http.StatusOK, resp)
 }
+*/
 
 func (h *Handler) WorldList(ctx echo.Context) (err error) {
 	rds := h.Pool.Get()

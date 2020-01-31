@@ -91,5 +91,11 @@ func (h *Handler) Move(ctx echo.Context) (err error) {
 		ctx.Logger().Fatal(err)
 	}
 
+	// increment REDIS move action count
+	_, err = rds.Do("HINCRBY", "world:"+wid+":", "move_action_count", "1")
+	if err != nil {
+		ctx.Logger().Error("Move: HINCRBY move_action_count 1 > ", err)
+	}
+
 	return ctx.JSON(http.StatusOK, agent)
 }

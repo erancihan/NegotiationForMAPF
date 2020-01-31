@@ -5,9 +5,10 @@
  */
 package edu.ozu.drone.client.ui;
 
-import edu.ozu.drone.client.AgentClient;
 import edu.ozu.drone.client.AgentHandler;
+import org.springframework.util.Assert;
 
+import javax.swing.*;
 import java.awt.*;
 
 /**
@@ -15,6 +16,7 @@ import java.awt.*;
  * @author freedrone
  */
 public class AgentUI extends javax.swing.JFrame {
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(AgentUI.class);
 
     private AgentHandler client;
 
@@ -23,9 +25,10 @@ public class AgentUI extends javax.swing.JFrame {
      * @param client : reference to AgentClient class that invoked UI
      */
     public AgentUI(AgentHandler client) {
+        Assert.notNull(client, "AgentHandler cannot be null");
         this.client = client;
 
-        System.out.println("> " + this.client + " AgentUI");
+        logger.info("init");
 
         initComponents();
         onComponentsDidMount();
@@ -84,7 +87,7 @@ public class AgentUI extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void onWindowClosed(java.awt.event.WindowEvent event) {//GEN-FIRST:event_onWindowClosed
-        System.out.println("> " + this.client + " window closed");
+        logger.info("window closed");
 
         this.client.exit();
     }//GEN-LAST:event_onWindowClosed
@@ -99,16 +102,15 @@ public class AgentUI extends javax.swing.JFrame {
     }//GEN-LAST:event_formComponentResized
 
 //<editor-fold defaultstate="collapsed" desc="ignore main">
-//    /**
-//     * @param args the command line arguments
-//     */
-//    public static void main(String args[]) {
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String[] args) {
         /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
         /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
          * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html
          */
-/*
         try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
                 if ("Nimbus".equals(info.getName())) {
@@ -116,25 +118,14 @@ public class AgentUI extends javax.swing.JFrame {
                     break;
                 }
             }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(AgentUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(AgentUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(AgentUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
             java.util.logging.Logger.getLogger(AgentUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
- */
         //</editor-fold>
 
         /* Create and display the form */
-//        java.awt.EventQueue.invokeLater(new Runnable() {
-//            public void run() {
-//                new AgentUI().setVisible(true);
-//            }
-//        });
-//    }
+        java.awt.EventQueue.invokeLater(() -> new AgentUI(null).setVisible(true));
+    }
 //</editor-fold>
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -146,7 +137,7 @@ public class AgentUI extends javax.swing.JFrame {
 
     private void onComponentsDidMount()
     {
-        agent_name.setText(client.AGENT_NAME);
+        agent_name.setText(client.getAgentName());
 
         loadWorldsList();
     }
@@ -156,23 +147,19 @@ public class AgentUI extends javax.swing.JFrame {
         // switch to watch ui
         CardLayout cl = (CardLayout) worlds_info_container.getLayout();
         cl.show(worlds_info_container, "world_watch");
-        world_watch.setAgentName(client.AGENT_NAME);
         world_watch.setClient(client);
-        world_watch.setParent(this);
-        world_watch.setServer(client.getServer());
         world_watch.setWorldID(world_id);
         world_watch.mount();
 
         this.setSize(600, 367);
     }
 
-    public void loadWorldsList()
+    private void loadWorldsList()
     {
         CardLayout cl = (CardLayout) worlds_info_container.getLayout();
         cl.show(worlds_info_container, "worlds_list");
-        worlds_list.setAgentName(client.AGENT_NAME);
+        worlds_list.setClientRef(client);
         worlds_list.setParent(this);
-        worlds_list.setServer(client.getServer());
         worlds_list.loadList();
 
         this.setSize(400, 367);

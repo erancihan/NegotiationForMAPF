@@ -2,376 +2,246 @@ package edu.ozu.drone.client;
 
 import com.google.gson.Gson;
 import edu.ozu.drone.agent.Agent;
-import edu.ozu.drone.client.ui.WorldWatch;
-import edu.ozu.drone.utils.JSONNegotiationSession;
-import edu.ozu.drone.utils.JSONSessionsList;
-import edu.ozu.drone.utils.JSONWorldWatch;
-import edu.ozu.drone.utils.Point;
+import edu.ozu.drone.client.handlers.Join;
+import edu.ozu.drone.client.handlers.Move;
+import edu.ozu.drone.client.handlers.Negotiation;
+import edu.ozu.drone.client.world.WorldHandler;
+import edu.ozu.drone.utils.*;
 import org.springframework.util.Assert;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 public class AgentHandler {
-    private String SERVER = "localhost:3001";
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(AgentHandler.class);
+    private String AGENT_NAME;
     private String WORLD_ID = "";
-
     private Agent clientRef;
     private WorldWatchWS websocket;
     private Gson gson;
-    private Point AGENT_POSITION;
-    private WorldWatch watchUIRef;
+    private int[] state_flag = new int[2];
 
-    public String AGENT_NAME;
+    AgentHandler(Agent client) {
+        Assert.notNull(client.START, "«START cannot be null»");
+        Assert.notNull(client.AGENT_ID, "«AGENT_ID cannot be null»");
 
-    private boolean collision_checked;
-
-    AgentHandler(Agent client)
-    {
         clientRef = client;
+
         AGENT_NAME = client.AGENT_NAME;
 
-        Assert.notNull(client.START, "«START cannot be null»");
-        AGENT_POSITION = client.START;
-
         gson = new Gson();
+    }
+
+    public String getAgentName()
+    {
+        return AGENT_NAME;
+    }
+
+    public String getID()
+    {
+        return clientRef.AGENT_ID;
     }
 
     /**
      * The function that will be invoked by WebUI when player selects to join a world
      *
      * @param world_id id of the world the agent will join to
-     * */
-    public void join(String world_id)
+     */
+    public void join(String world_id, BiConsumer<JSONWorldWatch, String[]> draw)
     {
-        System.out.println("> " + this + " join " + world_id);
-
         WORLD_ID = world_id.split(":")[1];
+        logger.info("joining " + WORLD_ID);
 
-        __postJOIN();
-        __watch();
+        clientRef.setWORLD_ID(WORLD_ID);
+
+        Join.join(WORLD_ID, clientRef.AGENT_ID, clientRef.START, clientRef.getBroadcast());
+        __watch(draw);
     }
 
-    //<editor-fold defaultstate="collapsed" desc="post join">
-    @SuppressWarnings("Duplicates")
-    private void __postJOIN()
+    //<editor-fold defaultstate="collapsed" desc="Start watching World state :__watch">
+    private void __watch(BiConsumer<JSONWorldWatch, String[]> draw)
     {
-        try
-        {
-            URL url = new URL("http://" + SERVER + "/join");
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-
-            conn.setRequestMethod("POST");
-            conn.setRequestProperty("Content-Type", "application/json; utf-8");
-            conn.setRequestProperty("Accept", "application/json");
-            conn.setDoOutput(true);
-
-            String post_data = "{" +
-                    "\"world_id\":\""+WORLD_ID+"\","+
-                    "\"agent_id\":\""+clientRef.AGENT_ID+"\","+
-                    "\"agent_x\":\""+clientRef.START.x+"\","+
-                    "\"agent_y\":\""+clientRef.START.y+"\","+
-                    "\"broadcast\":\""+clientRef.getBroadcast()+"\""+
-                    "}";
-
-            // write to output stream
-            try (OutputStream stream = conn.getOutputStream())
-            {
-                byte[] bytes = post_data.getBytes(StandardCharsets.UTF_8);
-                stream.write(bytes, 0, bytes.length);
-            }
-
-            // read response
-            BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8));
-            String line;
-            StringBuilder response = new StringBuilder();
-            while ((line = reader.readLine()) != null)
-            {
-                response.append(line);
-            }
-
-            // ! response should be empty
-            System.out.println("> " + this + " __postJOIN:" + response);
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace();
-        }
-    }
-    //</editor-fold>
-
-    private void __watch()
-    {
-        Assert.notNull(watchUIRef, "Watch UI Reference cannot be null");
+        Assert.notNull(draw, "Draw function cannot be null");
 
         try {
             // open websocket
-            String ws = "ws://" + SERVER + "/world/" + WORLD_ID + "/" + clientRef.AGENT_ID;
+            String ws = "ws://" + Globals.SERVER + "/world/" + WORLD_ID + "/" + clientRef.AGENT_ID;
             websocket = new WorldWatchWS(new URI(ws));
 
             // add handler
             websocket.setMessageHandler(message -> {
                 JSONWorldWatch watch = gson.fromJson(message, JSONWorldWatch.class);
 
-                watchUIRef.draw(watch, AGENT_POSITION);
+                draw.accept(watch, clientRef.getBroadcastArray());
                 handleState(watch);
             });
 
             // send message
             websocket.sendMessage("ping");
-        }
-        catch (URISyntaxException e)
-        {
+        } catch (URISyntaxException e) {
             e.printStackTrace();
         }
     }
+    //</editor-fold>
 
     /**
      * The function that is invoked after agent joins a world. Allows agent
      * to observe the state of the environment.
-     *
+     * <p>
      * Essentially handles invocations of other functions depending on the
      * {world_state}:
      * 0 -> join
-     * 1 -> collision check
+     * 1 -> collision check/broadcast
      * 2 -> negotiation step
      * 3 -> move step
      *
      * @param watch: JSONWorldWatch
-     * */
-    private void handleState(JSONWorldWatch watch)
-    {
-        switch (watch.world_state)
-        {
+     */
+    private void handleState(JSONWorldWatch watch) {
+        switch (watch.world_state) {
             case 0: // join
-                collision_checked = false;
+                state_flag = new int[]{0, 0};
                 break;
-            case 1:
-                // collision check
-                if (!collision_checked && hasCollision(watch.fov))
-                { // negotiation notification
-                    notifyNegotiation(watch.fov);
+            case 1: // collision check/broadcast
+                if (state_flag[0] != 1)
+                {
+                    checkForCollisions(watch);
+                    state_flag[0] = 1;
+                    state_flag[1] = watch.time_tick;
                 }
-                collision_checked = true;
                 break;
             case 2: // negotiation state
-                negotiate();
+                if (state_flag[0] != 2)
+                {
+                    negotiate();
+                    state_flag[0] = 2;
+                    state_flag[1] = watch.time_tick;
+                }
                 break;
             case 3: // move and update broadcast
-                move();
-                collision_checked = false;
+                if (state_flag[0] != 3)
+                {   // move once
+                    move();
+                    state_flag[0] = 3;
+                    state_flag[1] = watch.time_tick;
+                }
                 break;
             default:
-                System.err.println("«unhandled world state:" + watch.world_state + "»");
+                logger.error("«unhandled world state:" + watch.world_state + "»");
                 break;
         }
     }
 
-    private boolean hasCollision(String[][] fov)
+    private void checkForCollisions(JSONWorldWatch data)
     {
-        for (String[] item: fov)
-        {
-            if (item[2].equals("-")) { continue; }
-
-            String[] next = item[2].replaceAll("[\\[\\]]", "").split(",");
-            for (int i = 0; i < next.length; i++)
-            {
-                String a = clientRef.path.get(clientRef.time + i);
-                if (a.equals(next[i])) { return true; }
-            }
+        String[] agent_ids = getCollidingAgents(data.fov);
+        if (agent_ids.length > 1)
+        { // my path collides with broadcasted paths!
+            logger.debug("notify negotiation > " + Arrays.toString(agent_ids));
+            notifyNegotiation(agent_ids);
         }
-        return false;
     }
 
-    //<editor-fold defaultstate="collapsed" desc="notify negotiation">
-    private void notifyNegotiation(String[][] fov)
-    { // notify negotiation
-        List<String> agents = new ArrayList<>();
-        for (String[] item: fov)
-        {
-            agents.add("\"" + item[0] + "\"");
-        }
-
-        __postNotify(String.valueOf(agents));
-    }
-
-    //<editor-fold defaultstate="collapsed" desc="post notify">
-    @SuppressWarnings("Duplicates")
-    private void __postNotify(String agents)
+    private String[] getCollidingAgents(String[][] broadcasts)
     {
-        String post_data = "{" +
-                "\"world_id\":\""+WORLD_ID+"\","+
-                "\"agent_id\":\""+clientRef.AGENT_ID+"\","+
-                "\"agents\":"+agents+""+
-                "}";
+        Set<String> agent_ids = new HashSet<>();
+        String[] own_path = clientRef.getBroadcastArray();
 
-        try
+        agent_ids.add("agent:"+clientRef.AGENT_ID); // add own data
+        for (String[] broadcast : broadcasts)
         {
-            URL url = new URL("http://" + SERVER + "/negotiation/notify");
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-
-            conn.setRequestMethod("POST");
-            conn.setRequestProperty("Content-Type", "application/json; utf-8");
-            conn.setRequestProperty("Accept", "application/json");
-            conn.setDoOutput(true);
-
-            // write to output stream
-            try (OutputStream stream = conn.getOutputStream())
-            {
-                byte[] bytes = post_data.getBytes(StandardCharsets.UTF_8);
-                stream.write(bytes, 0, bytes.length);
+            if (broadcast[2].equals("-"))
+            { // own data
+                continue;
             }
 
-            // read response
-            BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8));
-            String line;
-            StringBuilder response = new StringBuilder();
-            while ((line = reader.readLine()) != null)
+            String[] path = broadcast[2].replaceAll("[\\[\\]]", "").split(",");
+            // check Vertex Conflict
+            for (int i = 0; i < path.length && i < own_path.length; i++)
             {
-                response.append(line);
-            }
+                if (path[i].equals(own_path[i]))
+                {
+                    agent_ids.add(broadcast[0]);
+                    logger.info("found a Vertex Conflict at " + path[i] + "|" + Arrays.toString(broadcast));
 
-            // ! response should be empty
-            System.out.println("> " + this + " __postNotify:" + response);
+                    return agent_ids.toArray(new String[0]);
+                }
+            }
+            /* disable swap conflict for now
+            // check Swap Conflict
+            // get reverse of path
+            String[] path_reverse = new String[path.length];
+            for (int i = 0; i < path.length; i++)
+                path_reverse[i] = path[path.length - 1 - i];
+            // check match
+            for (int i = 0; i < path_reverse.length; i++)
+            {
+                if (path_reverse[i].equals(own_path[i]))
+                {
+                    agent_ids.add(broadcast[0]);
+                    logger.info("found a Swap Conflict at " + path_reverse[i] + "|" + Arrays.toString(broadcast));
+
+                    return agent_ids.toArray(new String[0]);
+                }
+            }
+            */
         }
-        catch (IOException err)
-        {
-            err.printStackTrace();
-        }
+
+        return agent_ids.toArray(new String[0]);
     }
-    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="Notify Negotiation Participants">
+    private void notifyNegotiation(String[] agent_ids)
+    {// notify negotiation
+        // engage in bi-lateral negotiation session with each of the agents
+        // TODO ?? what else is there
+        HashMap<String, Object> payload = new HashMap<>();
+        payload.put("world_id", WORLD_ID);
+        payload.put("agent_id", clientRef.AGENT_ID);
+        payload.put("agents", agent_ids);
+
+        String response = Utils.post("http://" + Globals.SERVER + "/negotiation/notify", payload);
+
+        logger.info("__postNotify" + response);
+    }
     //</editor-fold>
 
     private void negotiate()
     {
-        String[] sessions = sessions(); // retrieve sessions list
+        String[] sessions = Negotiation.getSessions(WORLD_ID, clientRef.AGENT_ID); // retrieve sessions list
+        logger.debug("negotiate state > " + Arrays.toString(sessions));
         if (sessions.length > 0)
-        { // negotiating
-            try
-            {
-                //!!! sessions contain only one session id for now
-                String session_id = sessions[0];
-                String ws = "ws://"+SERVER+"/negotiation/session/"+session_id;
-                NegotiationWS websocket = new NegotiationWS(new URI(ws));
-
-                // add handler
-                websocket.setHandler(message -> {
-                    JSONNegotiationSession session = gson.fromJson(message, JSONNegotiationSession.class);
-                    // todo
-
-                    if (session.state.equals("done"))
-                    {
-                        //<editor-fold defaultstate="collapsed" desc="on negotiation done">
-                        try
-                        {
-                            websocket.close();
-                        }
-                        catch (IOException e)
-                        {
-                            e.printStackTrace();
-                        }
-                        //</editor-fold>
-                    }
-                });
-
-            }
-            catch (URISyntaxException e)
-            {
-                e.printStackTrace();
-            }
-            // join negotiation session WS
-            // on close
-            // todo get next paths
-            // todo update path
-            // todo recalculate
-        }
-        // else:
-            // done
-
-//        clientRef.calculatePath(new Point(1,1), new Point(1, 1));
-    }
-
-    //<editor-fold defaultstate="collapsed" desc="retrieve list of negotiation session IDs of agent">
-    /**
-     * Retrieves list of negotiation session IDs that agent will attend
-     * */
-    @SuppressWarnings("Duplicates")
-    private String[] sessions()
-    {
-        String post_data = "{" +
-                "\"world_id\":\""+WORLD_ID+"\","+
-                "\"agent_id\":\""+clientRef.AGENT_ID+"\""+
-                "}";
-
-        try
         {
-            URL url = new URL("http://"+SERVER+"/negotiation/sessions");
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-
-            conn.setRequestMethod("POST");
-            conn.setRequestProperty("Content-Type", "application/json; utf-8");
-            conn.setRequestProperty("Accept", "application/json");
-            conn.setDoOutput(true);
-
-            // write to output stream
-            try (OutputStream stream = conn.getOutputStream())
+            for (String sid : sessions)
             {
-                byte[] bytes = post_data.getBytes(StandardCharsets.UTF_8);
-                stream.write(bytes, 0, bytes.length);
+                if (sid.isEmpty()) { continue; }
+
+                NegotiationSession session = new NegotiationSession(WORLD_ID, sid, clientRef);
+                session.connect();
             }
-
-            // read response
-            BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8));
-            String line;
-            StringBuilder response = new StringBuilder();
-            while ((line = reader.readLine()) != null)
-            {
-                response.append(line);
-            }
-
-            JSONSessionsList sessions = gson.fromJson(String.valueOf(response), JSONSessionsList.class);
-
-            return sessions.getSessions();
         }
-        catch (IOException ex)
-        {
-            ex.printStackTrace();
-        }
-
-        return new String[]{};
-    }
-    //</editor-fold>
-
-    private void negotiated()
-    {}
-
-    private void move()
-    {
-         String[] curr = clientRef.path.get(clientRef.time).split("-");
-         if (clientRef.time < clientRef.path.size())
-         {
-             String[] next = clientRef.path.get(clientRef.time + 1).split("-");
-
-             String direction = direction(curr, next);
-             Assert.isTrue((direction.length() > 0), "«DIRECTION cannot be empty»");
-
-             String broadcast = clientRef.getBroadcast();
-
-             __postMOVE(direction, broadcast);
-             clientRef.time = clientRef.time + 1;
-         }
     }
 
+    private void move() {
+        String[] curr = clientRef.path.get(clientRef.time).split("-");
+        if (clientRef.time + 1 < clientRef.path.size()) {
+            String[] next = clientRef.path.get(clientRef.time + 1).split("-");
+
+            String direction = direction(curr, next);
+            Assert.isTrue((direction.length() > 0), "«DIRECTION cannot be empty»");
+
+            clientRef.move(Move.move(WORLD_ID, clientRef.AGENT_ID, clientRef.POS, direction, clientRef.getNextBroadcast()));
+        }
+    }
+
+    //<editor-fold defaultstate="collapsed" desc="Get Direction of next point">
     private String direction(String[] curr, String[] next) {
         int c_x = Integer.parseInt(curr[0]);
         int c_y = Integer.parseInt(curr[1]);
@@ -379,16 +249,14 @@ public class AgentHandler {
         int n_x = Integer.parseInt(next[0]);
         int n_y = Integer.parseInt(next[1]);
 
-        if (n_x == c_x)
-        {
+        if (n_x == c_x) {
             if (n_y - c_y < 0)
                 return "N";
             if (n_y - c_y > 0)
                 return "S";
         }
 
-        if (n_y == c_y)
-        {
+        if (n_y == c_y) {
             if (n_x - c_x < 0)
                 return "W";
             if (n_x - c_x > 0)
@@ -397,80 +265,24 @@ public class AgentHandler {
 
         return "";
     }
-
-    //<editor-fold defaultstate="collapsed" desc="post move">
-    @SuppressWarnings("Duplicates")
-    private void __postMOVE(String direction, String broadcast)
-    {
-        // post localhost:3001/move payload:
-        // direction -> {N, W, E, S}
-        try
-        {
-            URL url = new URL("http://" + SERVER + "/move");
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-
-            conn.setRequestMethod("POST");
-            conn.setRequestProperty("Content-Type", "application/json; utf-8");
-            conn.setRequestProperty("Accept", "application/json");
-            conn.setDoOutput(true);
-
-            String post_data = "{" +
-                    "\"agent_id\":\""+clientRef.AGENT_ID+"\"," +
-                    "\"agent_x\":\""+clientRef.POS.x+"\"," +
-                    "\"agent_y\":\""+clientRef.POS.y+"\"," +
-                    "\"world_id\":\""+WORLD_ID+"\"," +
-                    "\"direction\":\""+direction+"\"," +
-                    "\"broadcast\":\""+clientRef.getBroadcast()+"\"" +
-                    "}";
-
-            // write to output stream
-            try (OutputStream stream = conn.getOutputStream())
-            {
-                byte[] bytes = post_data.getBytes(StandardCharsets.UTF_8);
-                stream.write(bytes, 0, bytes.length);
-            }
-
-            // read response
-            BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8));
-            String line;
-            StringBuilder response = new StringBuilder();
-            while ((line = reader.readLine()) != null)
-            {
-                response.append(line);
-            }
-
-            // ! response should be empty
-            System.out.println("> " + this + " __postMOVE:" + response);
-        }
-        catch (IOException err)
-        {
-            err.printStackTrace();
-        }
-
-        // response should match with next path point in line
-    }
     //</editor-fold>
 
     /**
      * Function to be called when world watch disconnects
-     * */
-    public void leave()
-    {
-        try
-        {
-            if (websocket != null)
+     */
+    public void leave() {
+        try {
+            if (websocket != null) {
                 websocket.close();
-        }
-        catch (IOException e)
-        {
+            }
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public String getServer() { return SERVER; }
-
-    public void setWatchUIRef(WorldWatch worldWatch) { this.watchUIRef = worldWatch; }
-
     // todo handle better later
-    public void exit() { System.exit(0); }
+    public void exit() {
+        leave();
+        System.exit(0);
+    }
 }

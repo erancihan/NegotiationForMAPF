@@ -61,7 +61,7 @@ func main() {
 	// Ticker -> ticks every X
 	h := &handler.Handler{
 		Pool:     pool,
-		Ticker:   *time.NewTicker(250 * time.Millisecond),
+		Ticker:   *time.NewTicker(10 * time.Millisecond),
 		Upgrader: &websocket.Upgrader{},
 		WorldMap: handler.NewWorldMap(),
 	}
@@ -77,19 +77,19 @@ func main() {
 	// routes
 	e.GET("/", h.Home)
 	e.GET("/uuid", h.UKey)
-	e.GET("/worlds", h.WorldList)
+	e.GET("/worlds", h.WorldList) // has direct handler
 	e.GET("/world/:world_id/:agent_id", h.Socket)
 	//e.GET("/world/:key", h.Socket)
-	e.POST("/world/create", h.CreateWorld)
+	//e.POST("/world/create", h.CreateWorld)
 	e.POST("/move", h.Move)
-	e.POST("/join", h.Join)
+	e.POST("/join", h.Join) // has direct handler
 
 	// negotiation routes
-	e.GET("/negotiation/:session_id", n.Socket)
+	e.GET("/negotiation/:world_id/:session_id/:agent_id", n.Socket)
  	//e.GET("/negotiation/session/:key", n.Socket)
-	e.POST("/negotiation/sessions", n.Sessions)
+	e.POST("/negotiation/sessions", n.Sessions) // has direct handler
 	e.POST("/negotiation/notify", n.Notify)
-	e.POST("/negotiation/bid", n.Bid)
+	e.POST("/negotiation/bid", n.Bid) // is not called!
 
 	e.File("/test", "res/test.html")
 

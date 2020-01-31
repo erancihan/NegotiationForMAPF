@@ -5,10 +5,9 @@ import edu.ozu.drone.client.ui.AgentUI;
 import org.springframework.util.Assert;
 
 import javax.swing.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class AgentClient {
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(AgentClient.class);
     private AgentHandler handler;
 
     public AgentClient(String[] args, Agent agent)
@@ -22,7 +21,7 @@ public class AgentClient {
 
         if (!agent.isHeadless)
         {
-            System.out.println("> " + this + "display ui");
+            logger.info("Display UI");
             __launchUI();
         }
     }
@@ -42,7 +41,7 @@ public class AgentClient {
                 }
             }
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
-            Logger.getLogger(AgentUI.class.getName()).log(Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(AgentUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
 
