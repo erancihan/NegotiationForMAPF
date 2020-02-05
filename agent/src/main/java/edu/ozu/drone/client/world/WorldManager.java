@@ -341,7 +341,7 @@ public class WorldManager extends javax.swing.JFrame {
     private javax.swing.JTextField world_id;
     // End of variables declaration//GEN-END:variables
 
-    void onComponentsDidMount()
+    private void onComponentsDidMount()
     {
         world_id.setText(String.valueOf(System.currentTimeMillis()));
 
