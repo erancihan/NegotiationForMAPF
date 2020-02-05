@@ -56,17 +56,17 @@ public class AgentHandler {
      */
     public void join(String world_id)
     {   // headless join
+        this.join(world_id, (arg0, arg1) -> {});
+    }
+
+    public void join(String world_id, BiConsumer<JSONWorldWatch, String[]> draw)
+    {
         WORLD_ID = world_id.split(":")[1];
         logger.info("joining " + WORLD_ID);
 
         clientRef.setWORLD_ID(WORLD_ID);
 
         Join.join(WORLD_ID, clientRef.AGENT_ID, clientRef.START, clientRef.getBroadcast());
-    }
-
-    public void join(String world_id, BiConsumer<JSONWorldWatch, String[]> draw)
-    {
-        this.join(world_id);
         __watch(draw);
     }
 
