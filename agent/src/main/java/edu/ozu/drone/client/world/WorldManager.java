@@ -20,8 +20,8 @@ import java.util.stream.Collectors;
  *
  * @author freedrone
  */
-public class WorldHandler extends javax.swing.JFrame {
-    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(WorldHandler.class);
+public class WorldManager extends javax.swing.JFrame {
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(WorldManager.class);
 
     private String WID;
     private RedisListener redisListener;
@@ -32,7 +32,7 @@ public class WorldHandler extends javax.swing.JFrame {
     /**
      * Creates new form WorldHandler
      */
-    public WorldHandler()
+    public WorldManager()
     {
         logger.info("init");
 
@@ -326,12 +326,13 @@ public class WorldHandler extends javax.swing.JFrame {
                 }
             }
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(WorldHandler.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(WorldManager.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
+        //</editor-fold>
         //</editor-fold>
 
         /* Create and display the form */
-        java.awt.EventQueue.invokeLater(() -> new WorldHandler().setVisible(true));
+        java.awt.EventQueue.invokeLater(() -> new WorldManager().setVisible(true));
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

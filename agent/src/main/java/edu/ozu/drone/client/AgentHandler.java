@@ -5,7 +5,7 @@ import edu.ozu.drone.agent.Agent;
 import edu.ozu.drone.client.handlers.Join;
 import edu.ozu.drone.client.handlers.Move;
 import edu.ozu.drone.client.handlers.Negotiation;
-import edu.ozu.drone.client.world.WorldHandler;
+import edu.ozu.drone.client.world.WorldManager;
 import edu.ozu.drone.utils.*;
 import org.springframework.util.Assert;
 
