@@ -23,13 +23,23 @@ public abstract class Agent {
 
     public String WORLD_ID;
 
-    public abstract void init();
+    public Agent(String agentName, String agentID, Point start, Point dest)
+    {
+        this.AGENT_NAME = agentName;
+        this.AGENT_ID   = agentID;
+        this.START      = start;
+        this.DEST       = dest;
+
+        this.isHeadless = true; // unless client says so
+    }
+
+    public void init() { }
 
     public abstract void preNegotiation();
 
     public abstract Action onMakeAction();
 
-    public void postNegotiation() {};
+    public void postNegotiation() { }
 
     public void onReceiveState(State state) {
         // update current state info
