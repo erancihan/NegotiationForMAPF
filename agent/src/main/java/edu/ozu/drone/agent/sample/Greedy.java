@@ -9,15 +9,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 @SuppressWarnings("Duplicates")
-public class Greedy1 extends Agent
+public class Greedy extends Agent
 {
-    public Greedy1()
+    public Greedy()
     {
         this("Greedy Agent 1", "GREEDY1", new Point(2, 0), new Point(2, 10));
         isHeadless = false;
     }
 
-    public Greedy1(String agentName, String agentID, Point start, Point dest)
+    public Greedy(String agentName, String agentID, Point start, Point dest)
     {
         super(agentName, agentID, start, dest);
     }
@@ -104,6 +104,6 @@ public class Greedy1 extends Agent
 
     public static void main(String[] args)
     {
-        new AgentClient(args, new Greedy1());
+        new AgentClient(args, new Greedy());
     }
 }
