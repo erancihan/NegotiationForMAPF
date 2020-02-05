@@ -48,4 +48,16 @@ public class AgentClient {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(() -> new AgentUI(this.handler).setVisible(true));
     }
+
+    // Handler Hooks
+
+    public void join(String worldID)
+    {
+        handler.join(worldID);
+    }
+
+    public void leave()
+    {
+        handler.leave();
+    }
 }

@@ -54,6 +54,11 @@ public class AgentHandler {
      *
      * @param world_id id of the world the agent will join to
      */
+    public void join(String world_id)
+    {   // headless join
+        this.join(world_id, (arg0, arg1) -> {});
+    }
+
     public void join(String world_id, BiConsumer<JSONWorldWatch, String[]> draw)
     {
         WORLD_ID = world_id.split(":")[1];

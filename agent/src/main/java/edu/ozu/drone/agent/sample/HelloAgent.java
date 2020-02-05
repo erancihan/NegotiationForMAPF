@@ -14,16 +14,17 @@ import java.util.List;
 @SuppressWarnings("Duplicates")
 public class HelloAgent extends Agent
 {
-    @Override
-    public void init()
+    public HelloAgent()
     {
+        this("Hello Agent", "S006486", new Point(2, 0), new Point(2, 10));
+
         logger.info("loading hello agent");
+        isHeadless = false;
+    }
 
-        AGENT_NAME = "Hello Agent";
-        AGENT_ID   = "S006486";
-
-        START = new Point(2, 0);
-        DEST = new Point(2, 10);
+    public HelloAgent(String agentName, String agentID, Point start, Point dest)
+    {
+        super(agentName, agentID, start, dest);
     }
 
     @Override

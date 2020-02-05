@@ -9,15 +9,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 @SuppressWarnings("Duplicates")
-public class Conceder1 extends Agent {
-    @Override
-    public void init()
+public class Conceder extends Agent {
+    public Conceder()
     {
-        AGENT_NAME = "Conceder 1";
-        AGENT_ID = "CONCEDER1";
+        this("Conceder 1", "CONCEDER1", new Point(2, 0), new Point(2, 10));
+        isHeadless = false;
+    }
 
-        START = new Point(2, 0);
-        DEST = new Point(2, 10);
+    public Conceder(String agentName, String agentID, Point start, Point dest)
+    {
+        super(agentName, agentID, start, dest);
     }
 
     private ArrayList<String[]> bids = new ArrayList<>();
@@ -88,6 +89,6 @@ public class Conceder1 extends Agent {
 
     public static void main(String[] args)
     {
-        new AgentClient(args, new Conceder1());
+        new AgentClient(args, new Conceder());
     }
 }
