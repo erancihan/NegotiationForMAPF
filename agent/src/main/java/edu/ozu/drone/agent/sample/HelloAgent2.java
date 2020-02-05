@@ -3,21 +3,25 @@ package edu.ozu.drone.agent.sample;
 import edu.ozu.drone.agent.Agent;
 import edu.ozu.drone.client.AgentClient;
 import edu.ozu.drone.client.handlers.World;
-import edu.ozu.drone.utils.*;
+import edu.ozu.drone.utils.AStar;
+import edu.ozu.drone.utils.Action;
+import edu.ozu.drone.utils.ActionType;
+import edu.ozu.drone.utils.Point;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
-public class HelloAgent2 extends Agent {
+public class HelloAgent2 extends Agent
+{
+    public HelloAgent2()
+    {
+        this("Hello Agent2", "S006487", new Point(0, 2), new Point(10, 2));
+        isHeadless = false;
+    }
 
-    @Override
-    public void init() {
-        AGENT_NAME = "Hello Agent2";
-        AGENT_ID   = "S006487";
-
-        START = new Point(0, 2);
-        DEST = new Point(10, 2);
+    public HelloAgent2(String agentName, String agentID, Point start, Point dest)
+    {
+        super(agentName, agentID, start, dest);
     }
 
     @Override
