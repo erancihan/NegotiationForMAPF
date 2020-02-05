@@ -17,8 +17,10 @@ public class ScenarioManager extends javax.swing.JFrame {
     /**
      * Creates new form ScenarioManager
      */
-    public ScenarioManager() {
+    public ScenarioManager()
+    {
         initComponents();
+        onComponentsDidMount();
     }
 
     /**
@@ -31,15 +33,24 @@ public class ScenarioManager extends javax.swing.JFrame {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
-        javax.swing.JPanel cards_container = new javax.swing.JPanel();
-        create_scenario = new javax.swing.JPanel();
+        cards_container = new javax.swing.JPanel();
+        javax.swing.JPanel create_scenario = new javax.swing.JPanel();
+        javax.swing.JPanel panel_upper = new javax.swing.JPanel();
         javax.swing.JPanel inputs_container = new javax.swing.JPanel();
-        jLabel1 = new javax.swing.JLabel();
-        jTextField1 = new javax.swing.JTextField();
-        jLabel2 = new javax.swing.JLabel();
-        jTextField2 = new javax.swing.JTextField();
-        filler1 = new javax.swing.Box.Filler(new java.awt.Dimension(20, 0), new java.awt.Dimension(20, 0), new java.awt.Dimension(20, 32767));
-        run_scenario = new javax.swing.JPanel();
+        javax.swing.JLabel label_width = new javax.swing.JLabel();
+        width_input = new javax.swing.JTextField();
+        javax.swing.JLabel label_height = new javax.swing.JLabel();
+        height_input = new javax.swing.JTextField();
+        javax.swing.JButton generate_scenario_btn = new javax.swing.JButton();
+        javax.swing.JButton run_scenario_btn = new javax.swing.JButton();
+        javax.swing.Box.Filler filler1 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 10), new java.awt.Dimension(0, 10), new java.awt.Dimension(32767, 10));
+        javax.swing.JPanel scenario_info_container = new javax.swing.JPanel();
+        javax.swing.JScrollPane jScrollPane1 = new javax.swing.JScrollPane();
+        scenario_info_pane = new javax.swing.JTextPane();
+        javax.swing.JPanel agent_list_container = new javax.swing.JPanel();
+        javax.swing.JScrollPane jScrollPane2 = new javax.swing.JScrollPane();
+        agents_list = new javax.swing.JList<>();
+        javax.swing.JPanel run_scenario = new javax.swing.JPanel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setMinimumSize(new java.awt.Dimension(600, 300));
@@ -52,55 +63,113 @@ public class ScenarioManager extends javax.swing.JFrame {
 
         cards_container.setLayout(new java.awt.CardLayout());
 
+        create_scenario.setBackground(new java.awt.Color(230, 230, 230));
         create_scenario.setMaximumSize(new java.awt.Dimension(600, 300));
+        create_scenario.setLayout(new java.awt.GridBagLayout());
 
-        inputs_container.setMaximumSize(new java.awt.Dimension(300, 300));
-        inputs_container.setPreferredSize(new java.awt.Dimension(300, 300));
-        java.awt.GridBagLayout inputs_containerLayout = new java.awt.GridBagLayout();
-        inputs_containerLayout.columnWidths = new int[] {0, 5, 0, 5, 0, 5, 0, 5, 0};
-        inputs_containerLayout.rowHeights = new int[] {0, 5, 0, 5, 0, 5, 0, 5, 0, 5, 0, 5, 0, 5, 0, 5, 0, 5, 0, 5, 0};
-        inputs_container.setLayout(inputs_containerLayout);
+        panel_upper.setLayout(new javax.swing.BoxLayout(panel_upper, javax.swing.BoxLayout.LINE_AXIS));
 
-        jLabel1.setText("Width");
+        inputs_container.setBackground(new java.awt.Color(240, 240, 240));
+        inputs_container.setMaximumSize(new java.awt.Dimension(600, 300));
+        inputs_container.setMinimumSize(new java.awt.Dimension(100, 26));
+        inputs_container.setPreferredSize(new java.awt.Dimension(200, 100));
+        inputs_container.setLayout(new java.awt.GridBagLayout());
+
+        label_width.setText("Width");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        inputs_container.add(jLabel1, gridBagConstraints);
+        gridBagConstraints.gridy = 0;
+        inputs_container.add(label_width, gridBagConstraints);
 
-        jTextField1.setText("jTextField1");
+        width_input.setToolTipText("");
+        width_input.setMinimumSize(new java.awt.Dimension(80, 26));
+        width_input.setPreferredSize(new java.awt.Dimension(80, 26));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 2;
-        inputs_container.add(jTextField1, gridBagConstraints);
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        inputs_container.add(width_input, gridBagConstraints);
 
-        jLabel2.setText("Height");
+        label_height.setText("Height");
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 6;
-        gridBagConstraints.gridy = 2;
-        inputs_container.add(jLabel2, gridBagConstraints);
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        inputs_container.add(label_height, gridBagConstraints);
 
-        jTextField2.setText("jTextField2");
+        height_input.setMinimumSize(new java.awt.Dimension(80, 26));
+        height_input.setPreferredSize(new java.awt.Dimension(80, 26));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 8;
-        gridBagConstraints.gridy = 2;
-        inputs_container.add(jTextField2, gridBagConstraints);
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        inputs_container.add(height_input, gridBagConstraints);
+
+        generate_scenario_btn.setText("Generate");
+        generate_scenario_btn.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        generate_scenario_btn.setMaximumSize(new java.awt.Dimension(100, 30));
+        generate_scenario_btn.setMinimumSize(new java.awt.Dimension(100, 30));
+        generate_scenario_btn.setPreferredSize(new java.awt.Dimension(100, 30));
+        generate_scenario_btn.setSize(new java.awt.Dimension(100, 0));
+        generate_scenario_btn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                generate_scenario_btnActionPerformed(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 4;
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 3;
+        inputs_container.add(generate_scenario_btn, gridBagConstraints);
+
+        run_scenario_btn.setText("Run");
+        run_scenario_btn.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        run_scenario_btn.setMaximumSize(new java.awt.Dimension(100, 30));
+        run_scenario_btn.setMinimumSize(new java.awt.Dimension(100, 30));
+        run_scenario_btn.setPreferredSize(new java.awt.Dimension(100, 30));
+        run_scenario_btn.setSize(new java.awt.Dimension(100, 30));
+        run_scenario_btn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                run_scenario_btnActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 4;
+        inputs_container.add(run_scenario_btn, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
         inputs_container.add(filler1, gridBagConstraints);
 
-        javax.swing.GroupLayout create_scenarioLayout = new javax.swing.GroupLayout(create_scenario);
-        create_scenario.setLayout(create_scenarioLayout);
-        create_scenarioLayout.setHorizontalGroup(
-            create_scenarioLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(create_scenarioLayout.createSequentialGroup()
-                .addComponent(inputs_container, javax.swing.GroupLayout.DEFAULT_SIZE, 377, Short.MAX_VALUE)
-                .addGap(223, 223, 223))
-        );
-        create_scenarioLayout.setVerticalGroup(
-            create_scenarioLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(inputs_container, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-        );
+        panel_upper.add(inputs_container);
+
+        scenario_info_container.setPreferredSize(new java.awt.Dimension(400, 150));
+        scenario_info_container.setSize(new java.awt.Dimension(400, 100));
+        scenario_info_container.setLayout(new java.awt.BorderLayout());
+
+        scenario_info_pane.setBackground(new java.awt.Color(250, 250, 250));
+        jScrollPane1.setViewportView(scenario_info_pane);
+
+        scenario_info_container.add(jScrollPane1, java.awt.BorderLayout.CENTER);
+
+        panel_upper.add(scenario_info_container);
+
+        create_scenario.add(panel_upper, new java.awt.GridBagConstraints());
+
+        agent_list_container.setBackground(new java.awt.Color(238, 238, 230));
+        agent_list_container.setPreferredSize(new java.awt.Dimension(600, 150));
+        agent_list_container.setLayout(new java.awt.BorderLayout());
+
+        agents_list.setModel(new javax.swing.AbstractListModel<String>() {
+            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
+            public int getSize() { return strings.length; }
+            public String getElementAt(int i) { return strings[i]; }
+        });
+        jScrollPane2.setViewportView(agents_list);
+
+        agent_list_container.add(jScrollPane2, java.awt.BorderLayout.CENTER);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        create_scenario.add(agent_list_container, gridBagConstraints);
 
         cards_container.add(create_scenario, "create");
 
@@ -136,10 +205,26 @@ public class ScenarioManager extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_formWindowClosing
 
+    private void generate_scenario_btnActionPerformed(java.awt.event.ActionEvent evt)
+    {//GEN-FIRST:event_generate_scenario_btnActionPerformed
+        // TODO add your handling code here:
+        // fetch scenario info
+        // generate resources
+    }//GEN-LAST:event_generate_scenario_btnActionPerformed
+
+    private void run_scenario_btnActionPerformed(java.awt.event.ActionEvent evt)
+    {//GEN-FIRST:event_run_scenario_btnActionPerformed
+        // switch card to run
+        CardLayout cl = (CardLayout) cards_container.getLayout();
+        cl.show(cards_container, "run");
+        // start scenario
+        // TODO add your handling code here:
+    }//GEN-LAST:event_run_scenario_btnActionPerformed
+
     /**
      * @param args the command line arguments
      */
-    public static void main(String args[]) {
+    public static void main(String[] args) {
         /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
         /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
@@ -162,12 +247,15 @@ public class ScenarioManager extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JPanel create_scenario;
-    private javax.swing.Box.Filler filler1;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JTextField jTextField1;
-    private javax.swing.JTextField jTextField2;
-    private javax.swing.JPanel run_scenario;
+    private javax.swing.JList<String> agents_list;
+    private javax.swing.JPanel cards_container;
+    private javax.swing.JTextField height_input;
+    private javax.swing.JTextPane scenario_info_pane;
+    private javax.swing.JTextField width_input;
     // End of variables declaration//GEN-END:variables
+
+    private void onComponentsDidMount()
+    {
+
+    }
 }
