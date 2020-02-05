@@ -5,7 +5,11 @@
  */
 package edu.ozu.drone.client.world;
 
+import edu.ozu.drone.agent.Agent;
+
 import javax.swing.*;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 
 /**
@@ -49,7 +53,7 @@ public class ScenarioManager extends javax.swing.JFrame {
         scenario_info_pane = new javax.swing.JTextPane();
         javax.swing.JPanel agent_list_container = new javax.swing.JPanel();
         javax.swing.JScrollPane jScrollPane2 = new javax.swing.JScrollPane();
-        agents_list = new javax.swing.JList<>();
+        agents_table = new javax.swing.JTable();
         javax.swing.JPanel run_scenario = new javax.swing.JPanel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
@@ -157,12 +161,18 @@ public class ScenarioManager extends javax.swing.JFrame {
         agent_list_container.setPreferredSize(new java.awt.Dimension(600, 150));
         agent_list_container.setLayout(new java.awt.BorderLayout());
 
-        agents_list.setModel(new javax.swing.AbstractListModel<String>() {
-            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
-            public int getSize() { return strings.length; }
-            public String getElementAt(int i) { return strings[i]; }
-        });
-        jScrollPane2.setViewportView(agents_list);
+        agents_table.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String [] {
+                "Title 1", "Title 2", "Title 3", "Title 4"
+            }
+        ));
+        jScrollPane2.setViewportView(agents_table);
 
         agent_list_container.add(jScrollPane2, java.awt.BorderLayout.CENTER);
 
@@ -247,7 +257,7 @@ public class ScenarioManager extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JList<String> agents_list;
+    private javax.swing.JTable agents_table;
     private javax.swing.JPanel cards_container;
     private javax.swing.JTextField height_input;
     private javax.swing.JTextPane scenario_info_pane;
@@ -256,6 +266,51 @@ public class ScenarioManager extends javax.swing.JFrame {
 
     private void onComponentsDidMount()
     {
+        
+    }
+}
 
+class AgentsTableModel extends AbstractTableModel
+{
+    private boolean[][] editable_cells; // 2d array to represent rows and columns
+    private String[] columns = new String[]{"Agent Class", "Count"};
+    private Agent[] agents;
+
+    private AgentsTableModel(int rows, int cols)
+    {
+        this.editable_cells = new boolean[rows][cols];
+    }
+
+    @Override
+    public Object getValueAt(int rowIndex, int columnIndex)
+    {
+        return null;
+    }
+
+    public void setCellEditable(int row, int col, boolean value)
+    {
+        this.editable_cells[row][col] = value;
+        this.fireTableCellUpdated(row, col);
+    }
+
+    @Override
+    public String getColumnName(int column) {
+        return columns[column];
+    }
+
+    @Override
+    public int getRowCount() {
+        return agents.length;
+    }
+
+    @Override
+    public int getColumnCount() {
+        return columns.length;
+    }
+
+    @Override
+    public boolean isCellEditable(int row, int column)
+    {
+        return this.editable_cells[row][column];
     }
 }
