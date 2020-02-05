@@ -9,14 +9,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 @SuppressWarnings("Duplicates")
-public class Conceder1 extends Agent {
-    public Conceder1()
+public class Conceder extends Agent {
+    public Conceder()
     {
         this("Conceder 1", "CONCEDER1", new Point(2, 0), new Point(2, 10));
         isHeadless = false;
     }
 
-    public Conceder1(String agentName, String agentID, Point start, Point dest)
+    public Conceder(String agentName, String agentID, Point start, Point dest)
     {
         super(agentName, agentID, start, dest);
     }
@@ -89,6 +89,6 @@ public class Conceder1 extends Agent {
 
     public static void main(String[] args)
     {
-        new AgentClient(args, new Conceder1());
+        new AgentClient(args, new Conceder());
     }
 }
