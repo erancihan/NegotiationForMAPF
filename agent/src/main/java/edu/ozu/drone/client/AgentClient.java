@@ -49,10 +49,15 @@ public class AgentClient {
         java.awt.EventQueue.invokeLater(() -> new AgentUI(this.handler).setVisible(true));
     }
 
-    // handler hooks
+    // Handler Hooks
 
     public void join(String worldID)
     {
         handler.join(worldID);
+    }
+
+    public void leave()
+    {
+        handler.leave();
     }
 }
