@@ -178,21 +178,11 @@ func (n *Handler) BidProcess(ctx echo.Context, bid *BidStruct) (err error) {
 			diff := agentBids[0].Token - agentBids[1].Token
 			if diff > 0 {
 				// 0 is paying
-				if agentBids[0].AgentID == "agent:"+bid.AgentID {
-					// agent 0 is the one accepted, so he pays nothing
-					return
-				}
-				// transaction
 				_, err = rds.Do("HINCRBY", "world:"+wid+":bank", agentBids[0].AgentID, "-1") // 0 pays
 				_, err = rds.Do("HINCRBY", "world:"+wid+":bank", agentBids[1].AgentID, "1")  // 1 receives
 			}
 			if diff < 0 {
 				// 1 is paying
-				if agentBids[1].AgentID == "agent:"+bid.AgentID {
-					// agent 1 is the one accepted, so he pays nothing
-					return
-				}
-				// transaction
 				_, err = rds.Do("HINCRBY", "world:"+wid+":bank", agentBids[0].AgentID, "1")  // 0 receives
 				_, err = rds.Do("HINCRBY", "world:"+wid+":bank", agentBids[1].AgentID, "-1") // 1 pays
 			}
