@@ -402,10 +402,8 @@ public class WorldManager extends javax.swing.JFrame {
     {
         if (!isJedisOK || WID == null) { return; }
 
-        logger.info("Deleting " + WID + " ...");
-
         redisListener.close();
-        jedis.del(WID, WID+"map", WID+"notify", WID+"path", WID+"session_keys", WID+"bank");
+        WorldHandler.deleteWorld(WID);
     }
 
     private int prev_state_id = -1;

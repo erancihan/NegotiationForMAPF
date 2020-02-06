@@ -33,4 +33,11 @@ public class WorldHandler
         // subscribe(listen) to changes in world key
         return new RedisListener(Globals.REDIS_HOST, WID, callback);
     }
+
+    public static void deleteWorld(String WID)
+    {
+        logger.info("Deleting " + WID + " ...");
+
+        jedis.del(WID, WID+"map", WID+"notify", WID+"path", WID+"session_keys", WID+"bank");
+    }
 }
