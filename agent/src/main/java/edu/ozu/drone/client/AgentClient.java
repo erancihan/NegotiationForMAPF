@@ -10,6 +10,11 @@ public class AgentClient {
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(AgentClient.class);
     private AgentHandler handler;
 
+    public AgentClient(Agent agent)
+    {
+        this(new String[0], agent);
+    }
+
     public AgentClient(String[] args, Agent agent)
     {
         Assert.notNull(agent, "agent cannot be null");
@@ -23,6 +28,8 @@ public class AgentClient {
         {
             logger.info("Display UI");
             __launchUI();
+        } else {
+            logger.info("Agent is headless! waiting for join hook...");
         }
     }
 
