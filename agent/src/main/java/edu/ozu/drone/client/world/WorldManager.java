@@ -7,6 +7,7 @@ package edu.ozu.drone.client.world;
 
 import edu.ozu.drone.utils.Globals;
 import edu.ozu.drone.utils.Save;
+import org.springframework.util.Assert;
 import redis.clients.jedis.Jedis;
 
 import javax.swing.*;
@@ -361,29 +362,13 @@ public class WorldManager extends javax.swing.JFrame {
         if (!isJedisOK) { return; }
 
         WID = "world:" + world_id.getText() + ":";
-        if (jedis.exists(WID))
-        {
-            logger.error("«World already exists!»");
-            return;
-        }
-        logger.info("Creating " + WID + " ...");
-
-        // create world
-        jedis.hset(WID, "player_count", "0");
-        jedis.hset(WID, "world_state", "0");
-        jedis.hset(WID, "negotiation_count", "0"); // for negotiation state
-        jedis.hset(WID, "move_action_count", "0"); // for move state
-        jedis.hset(WID, "time_tick", "0"); // set time tick
-
-        // subscribe(listen) to changes in world key
-        redisListener = new RedisListener(
-            Globals.REDIS_HOST,
+        redisListener = WorldHandler.createWorld(
             WID,
             (channel, message) -> {
                 // update canvas
 //                logger.info("redis>" + channel + "»" + message + "");
                 Object obj = jedis.hgetAll(WID);
-                try{
+                try {
                     Map<String, String> data = (Map<String, String>) obj;
 
                     text_view.setText(
@@ -408,6 +393,8 @@ public class WorldManager extends javax.swing.JFrame {
                     System.exit(1);
                 }
             });
+
+        Assert.notNull(redisListener, "redis listener cannot be null!");
         redisListener.run();
     }
 
