@@ -6,11 +6,16 @@
 package edu.ozu.drone.client.world;
 
 import edu.ozu.drone.agent.Agent;
+import edu.ozu.drone.agent.sample.Conceder;
+import edu.ozu.drone.agent.sample.Greedy;
+import edu.ozu.drone.agent.sample.HelloAgent;
+import org.springframework.util.Assert;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
-import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -266,7 +271,13 @@ public class ScenarioManager extends javax.swing.JFrame {
 
     private void onComponentsDidMount()
     {
-        
+        ArrayList<Class<? extends Agent>> agents = new ArrayList<>();
+        agents.add(HelloAgent.class);
+        agents.add(Greedy.class);
+        agents.add(Conceder.class);
+
+        AgentsTableModel table = new AgentsTableModel(agents);
+        agents_table.setModel(table);
     }
 }
 
@@ -274,22 +285,47 @@ class AgentsTableModel extends AbstractTableModel
 {
     private boolean[][] editable_cells; // 2d array to represent rows and columns
     private String[] columns = new String[]{"Agent Class", "Count"};
-    private Agent[] agents;
+    private ArrayList<Object[]> rows = new ArrayList<>();
 
-    private AgentsTableModel(int rows, int cols)
+    AgentsTableModel(ArrayList<Class<? extends Agent>> agents)
     {
-        this.editable_cells = new boolean[rows][cols];
+        editable_cells = new boolean[agents.size()][columns.length];
+
+        for (int i = 0; i < agents.size(); i++) {
+            Agent agent = null;
+            try {
+                agent = agents.get(i).newInstance();
+            } catch (InstantiationException | IllegalAccessException e) {
+                e.printStackTrace();
+                System.exit(1);
+            }
+            Assert.notNull(agent, "something went wrong while fetching agent classes");
+
+            rows.add(new Object[]{agent, 0});
+            editable_cells[i][0] = false;
+            editable_cells[i][1] = true;
+        }
     }
 
     @Override
-    public Object getValueAt(int rowIndex, int columnIndex)
+    public Object getValueAt(int row, int col)
     {
-        return null;
+        if (col == 0)
+            return rows.get(row)[col].getClass().getSimpleName();
+        return rows.get(row)[col].toString();
+    }
+
+    @Override
+    public void setValueAt(Object o, int row, int col)
+    {
+        if (o instanceof String)
+            rows.get(row)[col] = Integer.parseInt(String.valueOf(o));
+        this.fireTableCellUpdated(row, col);
     }
 
     public void setCellEditable(int row, int col, boolean value)
     {
-        this.editable_cells[row][col] = value;
+        this.rows.get(row)[col] = value;
         this.fireTableCellUpdated(row, col);
     }
 
@@ -300,7 +336,7 @@ class AgentsTableModel extends AbstractTableModel
 
     @Override
     public int getRowCount() {
-        return agents.length;
+        return rows.size();
     }
 
     @Override
