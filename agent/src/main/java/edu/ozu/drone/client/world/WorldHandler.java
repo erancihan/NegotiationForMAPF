@@ -3,9 +3,7 @@ package edu.ozu.drone.client.world;
 import edu.ozu.drone.client.handlers.JedisConnection;
 import edu.ozu.drone.utils.Globals;
 
-import java.util.Map;
 import java.util.function.BiConsumer;
-import java.util.stream.Collectors;
 
 public class WorldHandler
 {
