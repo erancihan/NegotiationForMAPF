@@ -286,21 +286,12 @@ class AgentsTableModel extends AbstractTableModel
     private String[] columns = new String[]{"Agent Class", "Count"};
     private ArrayList<Object[]> rows = new ArrayList<>();
 
-    AgentsTableModel(ArrayList<Class<? extends Agent>> agents)
+    AgentsTableModel(String[] agents)
     {
-        editable_cells = new boolean[agents.size()][columns.length];
+        editable_cells = new boolean[agents.length][columns.length];
 
-        for (int i = 0; i < agents.size(); i++) {
-            Agent agent = null;
-            try {
-                agent = agents.get(i).newInstance();
-            } catch (InstantiationException | IllegalAccessException e) {
-                e.printStackTrace();
-                System.exit(1);
-            }
-            Assert.notNull(agent, "something went wrong while fetching agent classes");
-
-            rows.add(new Object[]{agent, 0});
+        for (int i = 0; i < agents.length; i++) {
+            rows.add(new Object[]{agents[i], 0});
             editable_cells[i][0] = false;
             editable_cells[i][1] = true;
         }
@@ -309,8 +300,6 @@ class AgentsTableModel extends AbstractTableModel
     @Override
     public Object getValueAt(int row, int col)
     {
-        if (col == 0)
-            return rows.get(row)[col].getClass().getSimpleName();
         return rows.get(row)[col].toString();
     }
 
