@@ -29,7 +29,7 @@ public class AgentClient {
             logger.info("Display UI");
             __launchUI();
         } else {
-            logger.info("Agent is headless! waiting for join hook...");
+            logger.info(agent.AGENT_ID + " is headless! waiting for join hook...");
         }
     }
 
