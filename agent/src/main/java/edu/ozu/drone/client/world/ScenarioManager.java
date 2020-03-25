@@ -16,8 +16,7 @@ import org.springframework.util.Assert;
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 
 /**
  *
@@ -26,6 +25,7 @@ import java.util.HashMap;
 public class ScenarioManager extends javax.swing.JFrame
 {
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ScenarioManager.class);
+    private Random rng = new Random();
 
     private String worldID = null;
 
@@ -279,6 +279,7 @@ public class ScenarioManager extends javax.swing.JFrame
         // fetch scenario information
         int width = Integer.parseInt(width_input.getText());
         int height = Integer.parseInt(height_input.getText());
+        int N = 1;
 
         // initialize world
         worldID = "world:" + System.currentTimeMillis() + ":";
@@ -288,39 +289,108 @@ public class ScenarioManager extends javax.swing.JFrame
         listener.run();
 
         // initialize agents
-        for (int row = 0; row < agents_table.getRowCount(); row++)
-        {
-            String agentName = (String) agents_table.getValueAt(row, 0);
-            int agentCount = Integer.parseInt((String) agents_table.getValueAt(row, 1));
-            this.agent_count += agentCount;
+        generateAgentStartLocations(width, height, N);
+        generateAgentDestinations(width, height, N);
+        initializeAgents();
+    }
 
-            for (int i = 0; i < agentCount; i++) {
+    private HashSet<String> AgentStartLocations = new HashSet<>();
+    private void generateAgentStartLocations(int width, int height, int n)
+    {
+        for (int row = 0; row < agents_table.getRowCount(); row++)
+        {   // for each row
+            int ac = Integer.parseInt((String) agents_table.getValueAt(row, 1));
+            for (int i = 0; i < ac; i++)
+            {   // for the amount of agents that there is
+                int x = -1;
+                int y = -1;
+                do {
+                    x = rng.nextInt(width);
+                    y = rng.nextInt(height);
+                } while (!isPremisesClear(x, y, n));
+
+                // assert x & y >= 0
+                Assert.isTrue((x >= 0 && y >= 0), "P_t:(x, y) cannot be negative");
+                // register to AgentStartLocations
+                AgentStartLocations.add(x+":"+y);
+            }
+        }
+    }
+
+    private boolean isPremisesClear(int _x, int _y, int _N)
+    {
+        // TODO search the premises
+        return true;
+    }
+
+    private HashSet<String> AgentDestinations = new HashSet<>();
+    private void generateAgentDestinations(int width, int height, int n)
+    {
+        for (int row = 0; row < agents_table.getRowCount(); row++)
+        {   // for each row
+            int ac = Integer.parseInt((String) agents_table.getValueAt(row, 1));
+            for (int i = 0; i < ac; i++)
+            {   // for the amount of agents that there is
+                int x = -1;
+                int y = -1;
+                do {
+                    x = rng.nextInt(width);
+                    y = rng.nextInt(height);
+                } while (AgentDestinations.contains(x+":"+y));
+
+                // assert x & y >= 0
+                Assert.isTrue((x >= 0 && y >= 0), "P_d:(x, y) cannot be negative");
+                // register to AgentDestinations
+                AgentDestinations.add(x+":"+y);
+            }
+        }
+    }
+
+    private void initializeAgents()
+    {
+        Iterator<String> StartLocIter = AgentStartLocations.iterator();
+        Iterator<String> DestIter = AgentDestinations.iterator();
+
+        for (int row = 0; row < agents_table.getRowCount(); row++)
+        {   // for each agent class
+            String agentName = (String) agents_table.getValueAt(row, 0);
+            int ac = Integer.parseInt((String) agents_table.getValueAt(row, 1));
+            this.agent_count += ac;
+
+            for (int i = 0; i < ac; i++)
+            {   // for the amount of agents that there is
                 logger.info("generating agent with ID: " + agentName + row + "" + i);
+
+                Assert.isTrue(StartLocIter.hasNext() && DestIter.hasNext(), "Ran out of locations!");
+
+                String[] StartLoc = StartLocIter.next().split(":");
+                String[] DestLoc = DestIter.next().split(":");
                 try {
-                    AgentClient client = new AgentClient(agents_map.get(agentName)
-                        .getDeclaredConstructor(
-                            String.class,
-                            String.class,
-                            Point.class,
-                            Point.class
-                        ).newInstance(
-                            "Agent" + row + "" + i,
-                            "Agent" + row + "" + i,
-                            new Point( 1,  1), // randomise
-                            new Point(10, 10)  // randomise
-                        ));
+                    AgentClient client = new AgentClient(
+                            agents_map.get(agentName)
+                            .getDeclaredConstructor(
+                                    String.class,
+                                    String.class,
+                                    Point.class,
+                                    Point.class
+                            ).newInstance(
+                                    "Agent" + row + "" + i,
+                                    "Agent" + row + "" + i,
+                                    new Point(StartLoc[0], StartLoc[1]), // randomise
+                                    new Point(DestLoc[0], DestLoc[1])  // randomise
+                            ));
                     client.join(worldID);
                 } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
                     e.printStackTrace();
                     System.exit(1);
                 }
             }
-        }
+        } // end loop over agents
     }
 
     private void runScenario()
     {
-
+        // TODO start run scenario
     }
 
     private void redisListener(String channel, String message)
