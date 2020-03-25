@@ -27,6 +27,8 @@ public class ScenarioManager extends javax.swing.JFrame
 {
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ScenarioManager.class);
 
+    private String worldID = null;
+
     /**
      * Creates new form ScenarioManager
      */
@@ -118,7 +120,7 @@ public class ScenarioManager extends javax.swing.JFrame
         gridBagConstraints.gridy = 2;
         inputs_container.add(filler1, gridBagConstraints);
 
-        run_scenario_btn.setText("Run");
+        run_scenario_btn.setText("Generate");
         run_scenario_btn.setPreferredSize(new java.awt.Dimension(100, 30));
         run_scenario_btn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -209,7 +211,8 @@ public class ScenarioManager extends javax.swing.JFrame
 //        CardLayout cl = (CardLayout) cards_container.getLayout();
 //        cl.show(cards_container, "run");
         // start scenario
-        run();
+        generateScenario();
+        runScenario();
     }//GEN-LAST:event_run_scenario_btnActionPerformed
 
     /**
@@ -270,22 +273,21 @@ public class ScenarioManager extends javax.swing.JFrame
     }
 
     private RedisListener listener = null;
-    private String worldID = null;
     private int agent_count = 0; // track number of agents there should be
-    private void run()
+    private void generateScenario()
     {
-        // fetch scenario info
+        // fetch scenario information
         int width = Integer.parseInt(width_input.getText());
         int height = Integer.parseInt(height_input.getText());
 
-        // initialise world
+        // initialize world
         worldID = "world:" + System.currentTimeMillis() + ":";
         listener = WorldHandler.createWorld(worldID, (channel, message) -> {}); // TODO set bounds
 
         Assert.notNull(listener, "redis listener cannot be null!");
         listener.run();
 
-        // initialise agents
+        // initialize agents
         for (int row = 0; row < agents_table.getRowCount(); row++)
         {
             String agentName = (String) agents_table.getValueAt(row, 0);
@@ -314,9 +316,11 @@ public class ScenarioManager extends javax.swing.JFrame
                 }
             }
         }
+    }
 
-        // cycle states
-        // loop();
+    private void runScenario()
+    {
+
     }
 
     private void redisListener(String channel, String message)
