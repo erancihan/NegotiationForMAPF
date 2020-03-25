@@ -9,18 +9,23 @@ import edu.ozu.drone.agent.Agent;
 import edu.ozu.drone.agent.sample.Conceder;
 import edu.ozu.drone.agent.sample.Greedy;
 import edu.ozu.drone.agent.sample.HelloAgent;
+import edu.ozu.drone.client.AgentClient;
+import edu.ozu.drone.utils.Point;
 import org.springframework.util.Assert;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
-import java.awt.*;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  *
  * @author freedrone
  */
-public class ScenarioManager extends javax.swing.JFrame {
+public class ScenarioManager extends javax.swing.JFrame
+{
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ScenarioManager.class);
 
     /**
      * Creates new form ScenarioManager
@@ -49,9 +54,8 @@ public class ScenarioManager extends javax.swing.JFrame {
         width_input = new javax.swing.JTextField();
         javax.swing.JLabel label_height = new javax.swing.JLabel();
         height_input = new javax.swing.JTextField();
-        javax.swing.JButton generate_scenario_btn = new javax.swing.JButton();
-        javax.swing.JButton run_scenario_btn = new javax.swing.JButton();
         javax.swing.Box.Filler filler1 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 10), new java.awt.Dimension(0, 10), new java.awt.Dimension(32767, 10));
+        javax.swing.JButton run_scenario_btn = new javax.swing.JButton();
         javax.swing.JPanel scenario_info_container = new javax.swing.JPanel();
         javax.swing.JScrollPane jScrollPane1 = new javax.swing.JScrollPane();
         scenario_info_pane = new javax.swing.JTextPane();
@@ -109,29 +113,13 @@ public class ScenarioManager extends javax.swing.JFrame {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         inputs_container.add(height_input, gridBagConstraints);
-
-        generate_scenario_btn.setText("Generate");
-        generate_scenario_btn.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        generate_scenario_btn.setMaximumSize(new java.awt.Dimension(100, 30));
-        generate_scenario_btn.setMinimumSize(new java.awt.Dimension(100, 30));
-        generate_scenario_btn.setPreferredSize(new java.awt.Dimension(100, 30));
-        generate_scenario_btn.setSize(new java.awt.Dimension(100, 0));
-        generate_scenario_btn.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                generate_scenario_btnActionPerformed(evt);
-            }
-        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
-        inputs_container.add(generate_scenario_btn, gridBagConstraints);
+        gridBagConstraints.gridy = 2;
+        inputs_container.add(filler1, gridBagConstraints);
 
         run_scenario_btn.setText("Run");
-        run_scenario_btn.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        run_scenario_btn.setMaximumSize(new java.awt.Dimension(100, 30));
-        run_scenario_btn.setMinimumSize(new java.awt.Dimension(100, 30));
         run_scenario_btn.setPreferredSize(new java.awt.Dimension(100, 30));
-        run_scenario_btn.setSize(new java.awt.Dimension(100, 30));
         run_scenario_btn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 run_scenario_btnActionPerformed(evt);
@@ -139,17 +127,12 @@ public class ScenarioManager extends javax.swing.JFrame {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 3;
         inputs_container.add(run_scenario_btn, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        inputs_container.add(filler1, gridBagConstraints);
 
         panel_upper.add(inputs_container);
 
         scenario_info_container.setPreferredSize(new java.awt.Dimension(400, 150));
-        scenario_info_container.setSize(new java.awt.Dimension(400, 100));
         scenario_info_container.setLayout(new java.awt.BorderLayout());
 
         scenario_info_pane.setBackground(new java.awt.Color(250, 250, 250));
@@ -216,23 +199,17 @@ public class ScenarioManager extends javax.swing.JFrame {
 
     private void formWindowClosing(java.awt.event.WindowEvent evt)
     {//GEN-FIRST:event_formWindowClosing
-        // TODO add your handling code here:
+        onClose();
     }//GEN-LAST:event_formWindowClosing
-
-    private void generate_scenario_btnActionPerformed(java.awt.event.ActionEvent evt)
-    {//GEN-FIRST:event_generate_scenario_btnActionPerformed
-        // TODO add your handling code here:
-        // fetch scenario info
-        // generate resources
-    }//GEN-LAST:event_generate_scenario_btnActionPerformed
 
     private void run_scenario_btnActionPerformed(java.awt.event.ActionEvent evt)
     {//GEN-FIRST:event_run_scenario_btnActionPerformed
-        // switch card to run
-        CardLayout cl = (CardLayout) cards_container.getLayout();
-        cl.show(cards_container, "run");
-        // start scenario
         // TODO add your handling code here:
+        // switch card to run
+//        CardLayout cl = (CardLayout) cards_container.getLayout();
+//        cl.show(cards_container, "run");
+        // start scenario
+        run();
     }//GEN-LAST:event_run_scenario_btnActionPerformed
 
     /**
@@ -268,15 +245,84 @@ public class ScenarioManager extends javax.swing.JFrame {
     private javax.swing.JTextField width_input;
     // End of variables declaration//GEN-END:variables
 
+    private HashMap<String, Class<? extends Agent>> agents_map;
     private void onComponentsDidMount()
     {
-        ArrayList<Class<? extends Agent>> agents = new ArrayList<>();
-        agents.add(HelloAgent.class);
-        agents.add(Greedy.class);
-        agents.add(Conceder.class);
+        agents_map = new HashMap<>();
+        // add agent classes by hand
+        agents_map.put(HelloAgent.class.getSimpleName(), HelloAgent.class);
+        agents_map.put(Greedy.class.getSimpleName(), Greedy.class);
+        agents_map.put(Conceder.class.getSimpleName(), Conceder.class);
 
-        AgentsTableModel table = new AgentsTableModel(agents);
+        AgentsTableModel table = new AgentsTableModel(agents_map.keySet().toArray(new String[0]));
         agents_table.setModel(table);
+    }
+
+    private void onClose()
+    {
+        if (listener == null || worldID == null)
+        {
+            return;
+        }
+
+        listener.close();
+        WorldHandler.deleteWorld(worldID);
+    }
+
+    private RedisListener listener = null;
+    private String worldID = null;
+    private int agent_count = 0; // track number of agents there should be
+    private void run()
+    {
+        // fetch scenario info
+        int width = Integer.parseInt(width_input.getText());
+        int height = Integer.parseInt(height_input.getText());
+
+        // initialise world
+        worldID = "world:" + System.currentTimeMillis() + ":";
+        listener = WorldHandler.createWorld(worldID, (channel, message) -> {}); // TODO set bounds
+
+        Assert.notNull(listener, "redis listener cannot be null!");
+        listener.run();
+
+        // initialise agents
+        for (int row = 0; row < agents_table.getRowCount(); row++)
+        {
+            String agentName = (String) agents_table.getValueAt(row, 0);
+            int agentCount = Integer.parseInt((String) agents_table.getValueAt(row, 1));
+            this.agent_count += agentCount;
+
+            for (int i = 0; i < agentCount; i++) {
+                logger.info("generating agent with ID: " + agentName + row + "" + i);
+                try {
+                    AgentClient client = new AgentClient(agents_map.get(agentName)
+                        .getDeclaredConstructor(
+                            String.class,
+                            String.class,
+                            Point.class,
+                            Point.class
+                        ).newInstance(
+                            "Agent" + row + "" + i,
+                            "Agent" + row + "" + i,
+                            new Point( 1,  1), // randomise
+                            new Point(10, 10)  // randomise
+                        ));
+                    client.join(worldID);
+                } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+                    e.printStackTrace();
+                    System.exit(1);
+                }
+            }
+        }
+
+        // cycle states
+        // loop();
+    }
+
+    private void redisListener(String channel, String message)
+    {
+        // will fire every time data is updated
+        // or... just don't use this at all...
     }
 }
 
