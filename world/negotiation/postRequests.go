@@ -13,20 +13,6 @@ import (
 	"time"
 )
 
-type (
-	BidStruct struct {
-		AgentID   string `json:"agent_id" form:"agent_id" query:"agent_id"`
-		SessionID string `json:"session_id" form:"session_id" query:"session_id"`
-		Bid       string `json:"bid" form:"bid" query:"bid"`
-		Type      string `json:"type" form:"type" query:"type"`
-	}
-	BidData struct {
-		Path    string
-		Token   int
-		AgentID string
-	}
-)
-
 //@POST returns session list for given world and agent
 func (n *Handler) Sessions(ctx echo.Context) (err error) {
 	r := new(struct {

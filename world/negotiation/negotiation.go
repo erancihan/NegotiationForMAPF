@@ -7,7 +7,6 @@ import (
 	"github.com/labstack/echo/v4"
 	"net/http"
 	"strings"
-	"sync"
 	"time"
 )
 
@@ -15,32 +14,6 @@ var (
 	SessionPingPeriod = 8 * time.Second
 	SessionPongWait   = 10 * time.Second
 	SessionWriteWait  = 2 * time.Second
-)
-
-type (
-	SessionClient struct {
-		conn    *websocket.Conn
-		updates chan Status
-	}
-	SessionClientMap struct {
-		sync.RWMutex
-		m map[*SessionClient]bool
-	}
-	SessionPool struct {
-		SessionId string
-		SubCount  int
-		Clients   *SessionClientMap
-	}
-	SessionMap struct {
-		sync.RWMutex
-		m map[string]*SessionPool
-	}
-	Handler struct {
-		Pool       *redis.Pool
-		Upgrader   *websocket.Upgrader
-		Ticker     time.Ticker
-		SessionMap *SessionMap
-	}
 )
 
 func NewSessionMap() *SessionMap {
