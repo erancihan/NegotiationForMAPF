@@ -8,6 +8,7 @@ import org.springframework.util.Assert;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 
 public abstract class Agent {
@@ -15,7 +16,7 @@ public abstract class Agent {
 
     public String AGENT_NAME, AGENT_ID;
     public Point START, DEST;
-    public HashMap<String, ArrayList<BidStruct>> history;
+    public HashMap<String, HashSet<String>> history;
 
     public boolean isHeadless = false;
 
@@ -34,6 +35,8 @@ public abstract class Agent {
         this.DEST       = dest;
 
         this.isHeadless = true; // unless client says so
+
+        history = new HashMap<String, HashSet<String>>();
         // create and store agent keys
         keys = KeyHandler.create(this);
     }
@@ -48,6 +51,8 @@ public abstract class Agent {
 
     public void onReceiveState(State state) {
         // update current state info
+        // TODO WTF!?
+        /*
         for (String[] bid : state.bids) {   // [agentID, path:tokens]
             ArrayList<BidStruct> hist = history.getOrDefault(bid[0], new ArrayList<>());
 
@@ -64,6 +69,7 @@ public abstract class Agent {
 
             history.put(bid[0], hist);
         }
+         */
     }
 
     public void run() {
@@ -185,5 +191,9 @@ public abstract class Agent {
         }
 
         return World.getTokenBalance(WORLD_ID, AGENT_ID);
+    }
+
+    public HashSet<String> getOwnBidHistory() {
+        return history.get(AGENT_ID);
     }
 }
