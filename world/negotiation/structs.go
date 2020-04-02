@@ -19,6 +19,14 @@ type (
 		Token   int
 		AgentID string
 	}
+	Contract struct {
+		Ox string `json:"Ox" form:"Ox" query:"Ox" redis:"Ox"`
+		X string `json:"x" form:"x" query:"x" redis:"x"`
+		ETa string `json:"ETa" form:"ETa" query:"ETa" redis:"ETa"`
+		A string `json:"a" form:"a" query:"a" redis:"a"`
+		ETb string `json:"ETb" form:"ETb" query:"ETb" redis:"ETb"`
+		B string `json:"b" form:"b" query:"b" redis:"b"`
+	}
 	Status struct {
 		AgentCount 	int 		`json:"agent_count"`
 		BidOrder 	string		`json:"bid_order"`
