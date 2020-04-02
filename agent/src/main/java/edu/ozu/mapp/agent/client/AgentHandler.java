@@ -5,7 +5,9 @@ import edu.ozu.mapp.agent.Agent;
 import edu.ozu.mapp.agent.client.handlers.Join;
 import edu.ozu.mapp.agent.client.handlers.Move;
 import edu.ozu.mapp.agent.client.handlers.Negotiation;
-import edu.ozu.mapp.utils.*;
+import edu.ozu.mapp.utils.Globals;
+import edu.ozu.mapp.utils.JSONWorldWatch;
+import edu.ozu.mapp.utils.Utils;
 import org.springframework.util.Assert;
 
 import java.io.IOException;
@@ -19,11 +21,14 @@ import java.util.function.BiConsumer;
 
 public class AgentHandler {
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(AgentHandler.class);
+
     private String AGENT_NAME;
     private String WORLD_ID = "";
     private Agent clientRef;
     private WorldWatchWS websocket;
+
     private Gson gson;
+
     private int[] state_flag = new int[2];
 
     AgentHandler(Agent client) {
