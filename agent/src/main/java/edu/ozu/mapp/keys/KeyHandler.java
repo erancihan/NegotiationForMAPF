@@ -41,7 +41,11 @@ public class KeyHandler {
         try {
             AgentKeys keys = new AgentKeys(generateKeyPair(), agent);
 
-            jedis.hset(KEY_VAULT, agent.AGENT_ID, keys.get_public().toString());
+            jedis.hset(
+                    KEY_VAULT,
+                    agent.AGENT_ID,
+                    Base64.getEncoder().encodeToString(keys.get_public().getEncoded())
+            );
 
             return keys;
         } catch (Exception e) {
