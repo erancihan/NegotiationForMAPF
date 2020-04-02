@@ -1,5 +1,7 @@
 package edu.ozu.mapp.agent.client.handlers;
 
+import edu.ozu.mapp.agent.client.models.Contract;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,7 +27,7 @@ public class Negotiation {
         return new String[0];
     }
 
-    public static String getActiveBid(String WORLD_ID, String AGENT_ID)
+    public static Contract getContract(String WORLD_ID, String AGENT_ID)
     {
         Map<String, String> sess = new HashMap<>();
         try {
@@ -36,11 +38,12 @@ public class Negotiation {
             }
 
             sess = jedis.hgetAll("negotiation:"+session_id);
-            System.out.println(sess);
+            sess.put("_session_id", session_id);
+
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        return sess.getOrDefault("bid:agent:"+AGENT_ID, "[]:0");
+        return new Contract(sess);
     }
 }
