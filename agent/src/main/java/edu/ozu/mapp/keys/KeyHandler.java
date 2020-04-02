@@ -9,6 +9,8 @@ import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import java.security.*;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 
 public class KeyHandler {
@@ -86,8 +88,19 @@ public class KeyHandler {
         return null;
     }
 
-    public static String getPubKey(String agentID)
+    public static PublicKey getPubKey(String agentID)
     {
-        return jedis.hget(KEY_VAULT, agentID);
+        String key_str = jedis.hget(KEY_VAULT, agentID);
+
+        PublicKey key = null;
+        try {
+            key = KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(Base64.getDecoder().decode(key_str)));
+        } catch (InvalidKeySpecException | NoSuchAlgorithmException e) {
+            logger.error("failed to fetch public key!");
+            e.printStackTrace();
+            System.exit(1);
+        }
+
+        return key;
     }
 }
