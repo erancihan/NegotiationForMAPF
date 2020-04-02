@@ -79,6 +79,7 @@ public class NegotiationSession
                             if (!didBid)
                             { // haven't bid yet
                                 edu.ozu.mapp.utils.Action action = client.onMakeAction();
+                                action.bid.apply(this); //TODO change behaviour
                                 websocket.sendMessage(action.toString());
 
                                 didBid = true;
@@ -108,5 +109,9 @@ public class NegotiationSession
         } catch (URISyntaxException e) {
             e.printStackTrace();
         }
+    }
+
+    public String getActiveState() {
+        return active_state;
     }
 }
