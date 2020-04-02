@@ -199,7 +199,6 @@ func (n *Handler) readSessionMessages(ctx echo.Context, client *SessionClient) {
 			err = n.BidProcess(ctx, &BidStruct{
 				AgentID:   msgData[0],
 				SessionID: ctx.Param("session_id"),
-				Bid:       msgData[2],
 				Type:      msgData[1],
 			})
 			if err != nil {
