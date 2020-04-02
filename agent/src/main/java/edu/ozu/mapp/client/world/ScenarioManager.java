@@ -6,9 +6,9 @@
 package edu.ozu.mapp.client.world;
 
 import edu.ozu.mapp.agent.Agent;
-import edu.ozu.mapp.agent.sample.Conceder;
-import edu.ozu.mapp.agent.sample.Greedy;
-import edu.ozu.mapp.agent.sample.HelloAgent;
+import mappagent.sample.Conceder;
+import mappagent.sample.Greedy;
+import mappagent.sample.HelloAgent;
 import edu.ozu.mapp.client.AgentClient;
 import edu.ozu.mapp.utils.Point;
 import org.springframework.util.Assert;

@@ -1,4 +1,4 @@
-package edu.ozu.mapp.agent.sample;
+package mappagent.sample;
 
 import edu.ozu.mapp.agent.Agent;
 import edu.ozu.mapp.client.AgentClient;
