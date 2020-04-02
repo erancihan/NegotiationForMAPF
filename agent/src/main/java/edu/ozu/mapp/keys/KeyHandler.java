@@ -1,5 +1,6 @@
 package edu.ozu.mapp.keys;
 
+import edu.ozu.mapp.agent.Agent;
 import edu.ozu.mapp.agent.client.handlers.JedisConnection;
 
 import javax.crypto.BadPaddingException;
@@ -15,15 +16,14 @@ public class KeyHandler {
 
     private static final String KEY_VAULT = "PubKeyVault";
 
-    private static AgentKeys generateKeyPair(String AgentID)
+    private static KeyPair generateKeyPair()
     {
         try
         {
             KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
             generator.initialize(2048);
-            KeyPair pair = generator.generateKeyPair();
 
-            return new AgentKeys(pair.getPrivate(), pair.getPublic(), AgentID);
+            return generator.generateKeyPair();
         } catch (NoSuchAlgorithmException e) {
             logger.error("error while generating key pairs");
             e.printStackTrace();
@@ -33,18 +33,18 @@ public class KeyHandler {
         return null;
     }
 
-    public static AgentKeys create(String agentID)
+    public static AgentKeys create(Agent agent)
     {
         try {
             if (jedis.exists(KEY_VAULT)) {
-                if (jedis.hexists(KEY_VAULT, agentID)) {
+                if (jedis.hexists(KEY_VAULT, agent.AGENT_ID)) {
                     return null;
                 }
             }
 
-            AgentKeys keys = generateKeyPair(agentID);
+            AgentKeys keys = new AgentKeys(generateKeyPair(), agent);
 
-            jedis.hset(KEY_VAULT, agentID, keys.get_public().toString());
+            jedis.hset(KEY_VAULT, agent.AGENT_ID, keys.get_public().toString());
 
             return keys;
         } catch (Exception e) {
