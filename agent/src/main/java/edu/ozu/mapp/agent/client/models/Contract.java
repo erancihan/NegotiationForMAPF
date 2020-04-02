@@ -75,7 +75,9 @@ public class Contract {
             jedis.hset("negotiation:"+sess_id, "Ox", Ox);
             jedis.hset("negotiation:"+sess_id, "x", x);
             jedis.hset("negotiation:"+sess_id, "ETa", ETa);
+            jedis.hset("negotiation:"+sess_id, "A", a);
             jedis.hset("negotiation:"+sess_id, "ETb", ETb);
+            jedis.hset("negotiation:"+sess_id, "B", b);
         }
     }
 }
