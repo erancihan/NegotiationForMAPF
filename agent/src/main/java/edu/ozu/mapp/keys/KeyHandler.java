@@ -2,6 +2,7 @@ package edu.ozu.mapp.keys;
 
 import edu.ozu.mapp.agent.Agent;
 import edu.ozu.mapp.agent.client.handlers.JedisConnection;
+import org.springframework.util.Assert;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -35,6 +36,8 @@ public class KeyHandler {
 
     public static AgentKeys create(Agent agent)
     {
+        Assert.isTrue(agent.AGENT_ID != null && !agent.AGENT_ID.isEmpty(), "Agent is empty!!!");
+
         try {
             if (jedis.exists(KEY_VAULT)) {
                 if (jedis.hexists(KEY_VAULT, agent.AGENT_ID)) {
