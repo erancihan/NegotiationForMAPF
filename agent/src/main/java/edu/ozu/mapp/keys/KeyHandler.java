@@ -39,12 +39,6 @@ public class KeyHandler {
         Assert.isTrue(agent.AGENT_ID != null && !agent.AGENT_ID.isEmpty(), "Agent is empty!!!");
 
         try {
-            if (jedis.exists(KEY_VAULT)) {
-                if (jedis.hexists(KEY_VAULT, agent.AGENT_ID)) {
-                    return null;
-                }
-            }
-
             AgentKeys keys = new AgentKeys(generateKeyPair(), agent);
 
             jedis.hset(KEY_VAULT, agent.AGENT_ID, keys.get_public().toString());
