@@ -75,8 +75,8 @@ public class Greedy extends Agent
                 if (agentID.equals("agent:"+AGENT_ID))
                     continue;
                 // get the last bid
-                ArrayList<BidStruct> opponentBids = history.get("agent:"+agentID);
-                lastBid = opponentBids.get(opponentBids.size()-1);
+//                ArrayList<BidStruct> opponentBids = history.get("agent:"+agentID);
+//                lastBid = opponentBids.get(opponentBids.size()-1);
             }
             if (lastBid != null) {
                 // if last bid of opponent does not collide with my path

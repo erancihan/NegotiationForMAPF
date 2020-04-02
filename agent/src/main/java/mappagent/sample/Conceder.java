@@ -71,8 +71,8 @@ public class Conceder extends Agent {
             if (agentID.equals("agent:"+AGENT_ID))
                 continue;
             // get the last bid
-            ArrayList<BidStruct> opponentBids = history.get("agent:"+agentID);
-            lastBid = opponentBids.get(opponentBids.size()-1);
+            String[] opponentBids = history.get("agent:" + agentID).toArray(new String[0]);
+//            lastBid = new BidStruct()[opponentBids.length - 1];
         }
 
         if (current_tokens == 0 || (lastBid != null && lastBid.token_count > 0))
