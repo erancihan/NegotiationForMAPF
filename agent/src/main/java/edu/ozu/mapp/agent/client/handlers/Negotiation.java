@@ -1,4 +1,4 @@
-package edu.ozu.mapp.client.handlers;
+package edu.ozu.mapp.agent.client.handlers;
 
 import java.util.HashMap;
 import java.util.Map;

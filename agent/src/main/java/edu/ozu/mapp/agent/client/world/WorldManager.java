@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package edu.ozu.mapp.client.world;
+package edu.ozu.mapp.agent.client.world;
 
 import edu.ozu.mapp.utils.Globals;
 import edu.ozu.mapp.utils.Save;

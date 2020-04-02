@@ -1,4 +1,4 @@
-package edu.ozu.mapp.client;
+package edu.ozu.mapp.agent.client;
 
 import javax.websocket.*;
 import java.io.IOException;

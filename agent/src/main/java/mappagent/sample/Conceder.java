@@ -1,8 +1,8 @@
 package mappagent.sample;
 
 import edu.ozu.mapp.agent.Agent;
-import edu.ozu.mapp.client.AgentClient;
-import edu.ozu.mapp.client.handlers.World;
+import edu.ozu.mapp.agent.client.AgentClient;
+import edu.ozu.mapp.agent.client.handlers.World;
 import edu.ozu.mapp.utils.*;
 
 import java.util.ArrayList;

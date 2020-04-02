@@ -1,7 +1,7 @@
-package edu.ozu.mapp.client;
+package edu.ozu.mapp.agent.client;
 
 import edu.ozu.mapp.agent.Agent;
-import edu.ozu.mapp.client.ui.AgentUI;
+import edu.ozu.mapp.agent.client.ui.AgentUI;
 import org.springframework.util.Assert;
 
 import javax.swing.*;

@@ -1,8 +1,8 @@
 package edu.ozu.mapp.utils;
 
 import edu.ozu.mapp.agent.Agent;
-import edu.ozu.mapp.client.handlers.Negotiation;
-import edu.ozu.mapp.client.handlers.World;
+import edu.ozu.mapp.agent.client.handlers.Negotiation;
+import edu.ozu.mapp.agent.client.handlers.World;
 
 public class Action
 {

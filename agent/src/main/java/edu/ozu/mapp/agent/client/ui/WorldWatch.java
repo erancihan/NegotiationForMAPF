@@ -3,9 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package edu.ozu.mapp.client.ui;
+package edu.ozu.mapp.agent.client.ui;
 
-import edu.ozu.mapp.client.AgentHandler;
+import edu.ozu.mapp.agent.client.AgentHandler;
 import edu.ozu.mapp.utils.Globals;
 import edu.ozu.mapp.utils.JSONWorldWatch;
 import edu.ozu.mapp.utils.Utils;
@@ -42,7 +42,7 @@ public class WorldWatch extends javax.swing.JPanel {
     private void initComponents() {
 
         javax.swing.JPanel canvas_container = new javax.swing.JPanel();
-        canvas = new edu.ozu.mapp.client.ui.WorldCanvas();
+        canvas = new edu.ozu.mapp.agent.client.ui.WorldCanvas();
         javax.swing.JPanel controls = new javax.swing.JPanel();
         javax.swing.JScrollPane jScrollPane1 = new javax.swing.JScrollPane();
         text_panel = new javax.swing.JTextPane();
@@ -88,7 +88,7 @@ public class WorldWatch extends javax.swing.JPanel {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private edu.ozu.mapp.client.ui.WorldCanvas canvas;
+    private edu.ozu.mapp.agent.client.ui.WorldCanvas canvas;
     private javax.swing.JTextPane text_panel;
     // End of variables declaration//GEN-END:variables
 

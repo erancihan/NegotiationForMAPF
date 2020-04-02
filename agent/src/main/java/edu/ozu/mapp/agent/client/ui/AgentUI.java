@@ -3,9 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package edu.ozu.mapp.client.ui;
+package edu.ozu.mapp.agent.client.ui;
 
-import edu.ozu.mapp.client.AgentHandler;
+import edu.ozu.mapp.agent.client.AgentHandler;
 import org.springframework.util.Assert;
 
 import javax.swing.*;
@@ -46,8 +46,8 @@ public class AgentUI extends javax.swing.JFrame {
         javax.swing.JPanel agent_info = new javax.swing.JPanel();
         agent_name = new javax.swing.JLabel();
         worlds_info_container = new javax.swing.JPanel();
-        worlds_list = new edu.ozu.mapp.client.ui.WorldsPanel();
-        world_watch = new edu.ozu.mapp.client.ui.WorldWatch();
+        worlds_list = new edu.ozu.mapp.agent.client.ui.WorldsPanel();
+        world_watch = new edu.ozu.mapp.agent.client.ui.WorldWatch();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         addComponentListener(new java.awt.event.ComponentAdapter() {
@@ -130,9 +130,9 @@ public class AgentUI extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel agent_name;
-    private edu.ozu.mapp.client.ui.WorldWatch world_watch;
+    private edu.ozu.mapp.agent.client.ui.WorldWatch world_watch;
     private javax.swing.JPanel worlds_info_container;
-    private edu.ozu.mapp.client.ui.WorldsPanel worlds_list;
+    private edu.ozu.mapp.agent.client.ui.WorldsPanel worlds_list;
     // End of variables declaration//GEN-END:variables
 
     private void onComponentsDidMount()

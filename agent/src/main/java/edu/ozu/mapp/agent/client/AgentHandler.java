@@ -1,10 +1,10 @@
-package edu.ozu.mapp.client;
+package edu.ozu.mapp.agent.client;
 
 import com.google.gson.Gson;
 import edu.ozu.mapp.agent.Agent;
-import edu.ozu.mapp.client.handlers.Join;
-import edu.ozu.mapp.client.handlers.Move;
-import edu.ozu.mapp.client.handlers.Negotiation;
+import edu.ozu.mapp.agent.client.handlers.Join;
+import edu.ozu.mapp.agent.client.handlers.Move;
+import edu.ozu.mapp.agent.client.handlers.Negotiation;
 import edu.ozu.mapp.utils.*;
 import org.springframework.util.Assert;
 

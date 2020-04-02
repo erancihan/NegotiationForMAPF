@@ -3,13 +3,13 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package edu.ozu.mapp.client.world;
+package edu.ozu.mapp.agent.client.world;
 
 import edu.ozu.mapp.agent.Agent;
 import mappagent.sample.Conceder;
 import mappagent.sample.Greedy;
 import mappagent.sample.HelloAgent;
-import edu.ozu.mapp.client.AgentClient;
+import edu.ozu.mapp.agent.client.AgentClient;
 import edu.ozu.mapp.utils.Point;
 import org.springframework.util.Assert;
 

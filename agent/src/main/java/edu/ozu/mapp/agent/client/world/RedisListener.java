@@ -1,4 +1,4 @@
-package edu.ozu.mapp.client.world;
+package edu.ozu.mapp.agent.client.world;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPubSub;

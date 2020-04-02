@@ -3,10 +3,10 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package edu.ozu.mapp.client.ui;
+package edu.ozu.mapp.agent.client.ui;
 
-import edu.ozu.mapp.client.AgentHandler;
-import edu.ozu.mapp.client.handlers.World;
+import edu.ozu.mapp.agent.client.AgentHandler;
+import edu.ozu.mapp.agent.client.handlers.World;
 
 import javax.swing.*;
 

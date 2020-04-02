@@ -71,14 +71,14 @@
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.DesignCardLayout"/>
       <SubComponents>
-        <Component class="edu.ozu.mapp.client.ui.WorldsPanel" name="worlds_list">
+        <Component class="edu.ozu.mapp.agent.client.ui.WorldsPanel" name="worlds_list">
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignCardLayout" value="org.netbeans.modules.form.compat2.layouts.DesignCardLayout$CardConstraintsDescription">
               <CardConstraints cardName="worlds_list"/>
             </Constraint>
           </Constraints>
         </Component>
-        <Component class="edu.ozu.mapp.client.ui.WorldWatch" name="world_watch">
+        <Component class="edu.ozu.mapp.agent.client.ui.WorldWatch" name="world_watch">
           <Events>
             <EventHandler event="componentHidden" listener="java.awt.event.ComponentListener" parameters="java.awt.event.ComponentEvent" handler="world_watchComponentHidden"/>
           </Events>

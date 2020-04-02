@@ -1,6 +1,6 @@
-package edu.ozu.mapp.client.world;
+package edu.ozu.mapp.agent.client.world;
 
-import edu.ozu.mapp.client.handlers.JedisConnection;
+import edu.ozu.mapp.agent.client.handlers.JedisConnection;
 import edu.ozu.mapp.utils.Globals;
 
 import java.util.function.BiConsumer;

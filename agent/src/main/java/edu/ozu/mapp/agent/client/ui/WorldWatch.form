@@ -52,7 +52,7 @@
         <Property name="verticalGap" type="int" value="0"/>
       </Layout>
       <SubComponents>
-        <Component class="edu.ozu.mapp.client.ui.WorldCanvas" name="canvas">
+        <Component class="edu.ozu.mapp.agent.client.ui.WorldCanvas" name="canvas">
           <AuxValues>
             <AuxValue name="JavaCodeGenerator_InitCodePre" type="java.lang.String" value="canvas.setPreferredSize(new java.awt.Dimension(300, 300));"/>
           </AuxValues>
