@@ -4,11 +4,26 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 
 public class AgentKeys {
-    public PrivateKey privateKey;
-    public PublicKey publicKey;
+    private String _agentID;
 
-    public AgentKeys(PrivateKey aPrivate, PublicKey aPublic) {
-        privateKey = aPrivate;
-        publicKey = aPublic;
+    private PrivateKey _private;
+    private PublicKey _public;
+
+    public AgentKeys(PrivateKey aPrivate, PublicKey aPublic, String agentID) {
+        _agentID = agentID;
+        _private = aPrivate;
+        _public = aPublic;
+    }
+
+    public PrivateKey getPrivateKey(String AgentID) {
+        if (_agentID.equals(AgentID))
+        {   // TODO this should be instance check, not ID check!!!
+            return _private;
+        }
+        return null;
+    }
+
+    public PublicKey get_public() {
+        return _public;
     }
 }

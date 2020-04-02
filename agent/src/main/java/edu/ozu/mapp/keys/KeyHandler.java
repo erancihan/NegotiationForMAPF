@@ -8,8 +8,6 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import java.security.*;
 import java.util.Base64;
-import java.util.HashMap;
-import java.util.Map;
 
 public class KeyHandler {
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(KeyHandler.class);
@@ -17,7 +15,7 @@ public class KeyHandler {
 
     private static final String KEY_VAULT = "PubKeyVault";
 
-    private static AgentKeys generateKeyPair()
+    private static AgentKeys generateKeyPair(String AgentID)
     {
         try
         {
@@ -25,9 +23,7 @@ public class KeyHandler {
             generator.initialize(2048);
             KeyPair pair = generator.generateKeyPair();
 
-            AgentKeys keys = new AgentKeys(pair.getPrivate(), pair.getPublic());
-
-            return keys;
+            return new AgentKeys(pair.getPrivate(), pair.getPublic(), AgentID);
         } catch (NoSuchAlgorithmException e) {
             logger.error("error while generating key pairs");
             e.printStackTrace();
@@ -46,9 +42,9 @@ public class KeyHandler {
                 }
             }
 
-            AgentKeys keys = generateKeyPair();
+            AgentKeys keys = generateKeyPair(agentID);
 
-            jedis.hset(KEY_VAULT, agentID, keys.publicKey.toString());
+            jedis.hset(KEY_VAULT, agentID, keys.get_public().toString());
 
             return keys;
         } catch (Exception e) {
