@@ -1,6 +1,8 @@
 package edu.ozu.mapp.agent;
 
-import edu.ozu.mapp.client.handlers.World;
+import edu.ozu.mapp.agent.client.handlers.World;
+import edu.ozu.mapp.keys.AgentKeys;
+import edu.ozu.mapp.keys.KeyHandler;
 import edu.ozu.mapp.utils.*;
 import org.springframework.util.Assert;
 
@@ -22,6 +24,7 @@ public abstract class Agent {
     public int time = 0;
 
     public String WORLD_ID;
+    public AgentKeys keys;
 
     public Agent(String agentName, String agentID, Point start, Point dest)
     {
@@ -31,6 +34,8 @@ public abstract class Agent {
         this.DEST       = dest;
 
         this.isHeadless = true; // unless client says so
+        // create and store agent keys
+        keys = KeyHandler.create(this);
     }
 
     public void init() { }
