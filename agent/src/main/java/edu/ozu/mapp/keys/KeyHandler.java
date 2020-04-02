@@ -1,0 +1,96 @@
+package edu.ozu.mapp.keys;
+
+import edu.ozu.mapp.agent.client.handlers.JedisConnection;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import java.security.*;
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
+
+public class KeyHandler {
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(KeyHandler.class);
+    private static redis.clients.jedis.Jedis jedis = JedisConnection.getInstance();
+
+    private static final String KEY_VAULT = "PubKeyVault";
+
+    private static AgentKeys generateKeyPair()
+    {
+        try
+        {
+            KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
+            generator.initialize(2048);
+            KeyPair pair = generator.generateKeyPair();
+
+            AgentKeys keys = new AgentKeys(pair.getPrivate(), pair.getPublic());
+
+            return keys;
+        } catch (NoSuchAlgorithmException e) {
+            logger.error("error while generating key pairs");
+            e.printStackTrace();
+            System.exit(1);
+        }
+
+        return null;
+    }
+
+    public static AgentKeys create(String agentID)
+    {
+        try {
+            if (jedis.exists(KEY_VAULT)) {
+                if (jedis.hexists(KEY_VAULT, agentID)) {
+                    return null;
+                }
+            }
+
+            AgentKeys keys = generateKeyPair();
+
+            jedis.hset(KEY_VAULT, agentID, keys.publicKey.toString());
+
+            return keys;
+        } catch (Exception e) {
+            logger.error("an error happened while creating Key Pairs");
+            e.printStackTrace();
+            System.exit(1);
+        }
+        return null;
+    }
+
+    public static String encrypt(String text, PrivateKey key)
+    {
+        try {
+            Cipher cipher = Cipher.getInstance("RSA");
+            cipher.init(Cipher.ENCRYPT_MODE, key);
+            return Base64.getEncoder().encodeToString(cipher.doFinal(text.getBytes()));
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | BadPaddingException | IllegalBlockSizeException e) {
+            logger.error("error when encrypting!");
+            e.printStackTrace();
+            System.exit(1);
+        }
+
+        return null;
+    }
+
+    public static String decrypt(String text, PublicKey key)
+    {
+        try {
+            Cipher cipher = Cipher.getInstance("RSA");
+            cipher.init(Cipher.DECRYPT_MODE, key);
+            return new String(cipher.doFinal(Base64.getDecoder().decode(text)));
+        } catch (NoSuchPaddingException | NoSuchAlgorithmException | InvalidKeyException | BadPaddingException | IllegalBlockSizeException e) {
+            logger.error("error when decrypting!");
+            e.printStackTrace();
+            System.exit(1);
+        }
+
+        return null;
+    }
+
+    public static String getPubKey(String agentID)
+    {
+        return jedis.hget(KEY_VAULT, agentID);
+    }
+}
