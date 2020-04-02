@@ -1,10 +1,15 @@
 package negotiation
 
 import (
+	crand "crypto/rand"
+	"crypto/rsa"
+	"crypto/x509"
+	"encoding/base64"
 	"fmt"
 	"github.com/gomodule/redigo/redis"
 	"github.com/labstack/echo/v4"
 	"hash/fnv"
+	"math"
 	"math/rand"
 	"net/http"
 	"sort"
@@ -129,7 +134,7 @@ func (n *Handler) BidProcess(ctx echo.Context, bid *BidStruct) (err error) {
 		}
 
 		// register and/or update bid
-		_, err = rds.Do("HSET", "negotiation:"+bid.SessionID, "bid:agent:"+bid.AgentID, bid.Bid)
+		//_, err = rds.Do("HSET", "negotiation:"+bid.SessionID, "Bid", bid.Bid)
 		if err != nil {
 			ctx.Logger().Fatal(err)
 		}
@@ -195,8 +200,42 @@ func HandleAccept(rds redis.Conn, bid *BidStruct, ctx echo.Context) (err error) 
 	if len(wid) == 0 {
 		ctx.Logger().Fatal("world id cannot be empty!")
 	}
+
+	contract := Contract{}
+	sess, err := redis.Values(rds.Do("HGETALL", "negotiation:"+bid.SessionID))
+	if err != nil {
+		ctx.Logger().Fatal(err)
+	}
+	err = redis.ScanStruct(sess, contract)
+	if err != nil {
+		ctx.Logger().Fatal(err)
+	}
+
+	// decrypt
+	PKa_str, err := redis.String(rds.Do("HGET", "PubKeyVault", contract.A))
+	PKb_str, err := redis.String(rds.Do("HGET", "PubKeyVault", contract.B))
+	if err != nil {
+		ctx.Logger().Fatal(err)
+	}
+
+	PKa_b64, err := base64.StdEncoding.DecodeString(PKa_str)
+	PKb_b64, err := base64.StdEncoding.DecodeString(PKb_str)
+	if err != nil {
+		ctx.Logger().Fatal(err)
+	}
+
+	PKa, err := x509.ParsePKCS1PrivateKey(PKa_b64)
+	PKb, err := x509.ParsePKCS1PrivateKey(PKb_b64)
+
+	Ta_b, err := rsa.DecryptPKCS1v15(crand.Reader, PKa, []byte(contract.ETa))
+	Tb_b, err := rsa.DecryptPKCS1v15(crand.Reader, PKb, []byte(contract.ETb))
+
+	Ta, err := strconv.Atoi(string(Ta_b))
+	Tb, err := strconv.Atoi(string(Tb_b))
+
 	ids, _ := redis.String(rds.Do("HGET", "world:"+wid+":session_keys", bid.SessionID))
 	idsList := strings.Split(ids, ",")
+
 	fmt.Println(ids)
 	var agentBids []BidData
 	for _, id := range idsList { // collect agent data
@@ -220,16 +259,20 @@ func HandleAccept(rds redis.Conn, bid *BidStruct, ctx echo.Context) (err error) 
 		ctx.Logger().Fatal("agentBids is nil!")
 		return
 	}
-	diff := agentBids[0].Token - agentBids[1].Token
-	if diff > 0 {
-		// 0 is paying
-		_, err = rds.Do("HINCRBY", "world:"+wid+":bank", agentBids[0].AgentID, "-1") // 0 pays
-		_, err = rds.Do("HINCRBY", "world:"+wid+":bank", agentBids[1].AgentID, "1")  // 1 receives
+
+	if bid.AgentID == contract.A {
+		// A accepted
+		d := math.Max(float64(Ta - Tb), 0)
+
+		_, err = rds.Do("HINCRBY", "world:"+wid+":bank", "agent:"+contract.A, d) 	// A receives D
+		_, err = rds.Do("HINCRBY", "world:"+wid+":bank", "agent:"+contract.B, -1*d) // B pays D
 	}
-	if diff < 0 {
-		// 1 is paying
-		_, err = rds.Do("HINCRBY", "world:"+wid+":bank", agentBids[0].AgentID, "1")  // 0 receives
-		_, err = rds.Do("HINCRBY", "world:"+wid+":bank", agentBids[1].AgentID, "-1") // 1 pays
+	if bid.AgentID == contract.B {
+		// B accepted
+		d := math.Max(float64(Ta - Tb), 0)
+
+		_, err = rds.Do("HINCRBY", "world:"+wid+":bank", "agent:"+contract.A, -1*d) // A pays D
+		_, err = rds.Do("HINCRBY", "world:"+wid+":bank", "agent:"+contract.B, d) 	// B receives D
 	}
 	if err != nil {
 		fmt.Println("something went wrong")
