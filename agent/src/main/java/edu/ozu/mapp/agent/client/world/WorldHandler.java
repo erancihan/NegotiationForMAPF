@@ -2,17 +2,33 @@ package edu.ozu.mapp.agent.client.world;
 
 import edu.ozu.mapp.agent.client.handlers.JedisConnection;
 import edu.ozu.mapp.utils.Globals;
+import redis.clients.jedis.Jedis;
 
+import java.util.Timer;
+import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 
 public class WorldHandler
 {
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(WorldHandler.class);
-    private static redis.clients.jedis.Jedis jedis = JedisConnection.getInstance();
+    private static redis.clients.jedis.Jedis jedis;
 
     public static RedisListener createWorld(String WID, BiConsumer<String, String> callback)
     {
-        if (jedis == null || !jedis.isConnected()) {
+        jedis = new Jedis(Globals.REDIS_HOST, Globals.REDIS_PORT);
+        while (jedis == null) {
+            logger.error("«Jedis is null!»");
+            logger.info("connecting...");
+
+            try {
+                TimeUnit.MILLISECONDS.sleep(300);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
+        if (!jedis.isConnected()) {
+            logger.error("«Jedis cannot connect!»");
             return null;
         }
 
