@@ -5,8 +5,9 @@ import redis
 from flask import Flask, jsonify, render_template, request
 from flask_socketio import SocketIO, emit
 
+from negotiation import negotiation_notify
 from structs import Move, Notify
-from world import world_list, world_move, world_notify
+from world import world_list, world_move
 
 r = redis.Redis(host='localhost', port=6379)
 
@@ -41,7 +42,7 @@ def post_world_move():
 def post_negotiation_notify():
     req = jsons.load(request.get_json(), Notify)
 
-    world_notify(req, r)
+    negotiation_notify(req, r)
 
     return '', 200
 

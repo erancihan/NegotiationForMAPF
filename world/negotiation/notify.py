@@ -6,11 +6,11 @@ from redis import Redis
 from structs import Notify
 
 
-def notify(data: Notify, redis: Redis):
+def negotiation_notify(data: Notify, redis: Redis):
     data.agents.sort()
 
     agent_ids = ','.join(data.agents)
-    session_id = redis.hget("world:"+data.world_id+":session_key", agent_ids)
+    session_id = redis.hget("world:" + data.world_id + ":session_key", agent_ids)
     if session_id is not None:
         return
 
