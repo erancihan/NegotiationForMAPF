@@ -49,7 +49,7 @@ def post_negotiation_notify():
 
 @socketio.on('world_state', '/world')
 def on_get_world_state(message):
-    resp = world_socket(message['world_id'], message['agent_id'])
+    resp = world_socket(message['world_id'], message['agent_id'], r)
 
     emit('sync_world_state', resp)
 
