@@ -7,7 +7,7 @@ from flask_socketio import SocketIO, emit
 
 from negotiation import negotiation_notify, negotiation_socket
 from structs import Move, Notify
-from world import world_list, world_move, world_socket
+from world import world_list, world_move, world_socket, world_create, world_listen, world_delete
 
 r = redis.Redis(host='localhost', port=6379)
 
@@ -23,6 +23,16 @@ def home():
     }
 
     return render_template('index.html')
+
+
+@app.route("/world/create", methods=['POST'])
+def create_world():
+    return jsonify(world_create(request.get_json(), r))
+
+
+@app.route("/world/delete", methods=['POST'])
+def delete_world():
+    return jsonify(world_delete(request.get_json(), r))
 
 
 @app.route("/worlds", methods=['GET'])
@@ -45,6 +55,13 @@ def post_negotiation_notify():
     negotiation_notify(req, r)
 
     return '', 200
+
+
+@socketio.on('world_listen', '/world')
+def on_world_listen(message):
+    resp = world_listen(message["world_id"], r)
+
+    emit('sync_world_listen', resp)
 
 
 @socketio.on('world_state', '/world')
