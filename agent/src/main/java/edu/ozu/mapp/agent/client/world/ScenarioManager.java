@@ -6,11 +6,11 @@
 package edu.ozu.mapp.agent.client.world;
 
 import edu.ozu.mapp.agent.Agent;
+import edu.ozu.mapp.agent.client.AgentClient;
+import edu.ozu.mapp.utils.Point;
 import mappagent.sample.Conceder;
 import mappagent.sample.Greedy;
 import mappagent.sample.HelloAgent;
-import edu.ozu.mapp.agent.client.AgentClient;
-import edu.ozu.mapp.utils.Point;
 import org.springframework.util.Assert;
 
 import javax.swing.*;
@@ -307,7 +307,7 @@ public class ScenarioManager extends javax.swing.JFrame
                 do {
                     x = rng.nextInt(width);
                     y = rng.nextInt(height);
-                } while (!isPremisesClear(x, y, n));
+                } while (!isPremisesClear(x, y, n) || AgentStartLocations.contains(x+":"+y));
 
                 // assert x & y >= 0
                 Assert.isTrue((x >= 0 && y >= 0), "P_t:(x, y) cannot be negative");
@@ -349,7 +349,6 @@ public class ScenarioManager extends javax.swing.JFrame
     private void initializeAgents()
     {
         Iterator<String> StartLocIter = AgentStartLocations.iterator();
-        Iterator<String> DestIter = AgentDestinations.iterator();
 
         for (int row = 0; row < agents_table.getRowCount(); row++)
         {   // for each agent class
@@ -359,12 +358,19 @@ public class ScenarioManager extends javax.swing.JFrame
 
             for (int i = 0; i < ac; i++)
             {   // for the amount of agents that there is
-                logger.info("generating agent with ID: " + agentName + row + "" + i);
+                Iterator<String> DestLocIter = AgentDestinations.iterator();
+                Assert.isTrue(StartLocIter.hasNext() && DestLocIter.hasNext(), "Ran out of locations!");
 
-                Assert.isTrue(StartLocIter.hasNext() && DestIter.hasNext(), "Ran out of locations!");
+                String StartLoc = StartLocIter.next();
+                String DestLoc;
+                do {
+                     DestLoc = DestLocIter.next();
+                } while (StartLoc.equals(DestLoc));
 
-                String[] StartLoc = StartLocIter.next().split(":");
-                String[] DestLoc = DestIter.next().split(":");
+                StartLocIter.remove();  // unregister location
+                DestLocIter.remove();   // unregister location
+
+                logger.info("generating agent with ID: " + agentName + row + "" + i + "|" + StartLoc + "->" + DestLoc);
                 try {
                     AgentClient client = new AgentClient(
                             agents_map.get(agentName)
@@ -376,8 +382,8 @@ public class ScenarioManager extends javax.swing.JFrame
                             ).newInstance(
                                     "Agent" + row + "" + i,
                                     "Agent" + row + "" + i,
-                                    new Point(StartLoc[0], StartLoc[1]), // randomise
-                                    new Point(DestLoc[0], DestLoc[1])  // randomise
+                                    new Point(StartLoc.split(":")), // randomise
+                                    new Point(DestLoc.split(":"))  // randomise
                             ));
                     client.join(worldID);
                 } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
