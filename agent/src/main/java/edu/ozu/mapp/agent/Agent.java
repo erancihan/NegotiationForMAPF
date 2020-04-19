@@ -16,7 +16,7 @@ public abstract class Agent {
 
     public String AGENT_NAME, AGENT_ID;
     public Point START, DEST;
-    public HashMap<String, HashSet<String>> history;
+    public HashMap<String, HashSet<String>> history = new HashMap<>();
 
     public boolean isHeadless = false;
 
@@ -194,6 +194,6 @@ public abstract class Agent {
     }
 
     public HashSet<String> getOwnBidHistory() {
-        return history.get(AGENT_ID);
+        return history.containsKey(AGENT_ID) ? history.get(AGENT_ID) : new HashSet<String>();
     }
 }
