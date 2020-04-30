@@ -3,6 +3,26 @@ package edu.ozu.mapp.utils;
 import java.util.*;
 
 public class AStar {
+    public static void main(String[] args) {
+        HashMap<String, String[]> occupied = new HashMap<>();
+
+        ArrayList<String[]> paths = new ArrayList<>();
+
+        for (int i = 0; i < 5; i++) {
+            ArrayList<String[]> _o = new ArrayList<>();
+            for (String key: occupied.keySet()) {
+                _o.add(occupied.get(key));
+            }
+
+            List<String> a = calculateWithConstraints(new Point(5, 5), new Point(10, 10), _o.toArray(new String[0][0]));
+
+            paths.add(a.toArray(new String[0]));
+
+            occupied.put("9-10", new String[]{"9-10", "inf"});
+        }
+
+        System.out.println(Arrays.deepToString(paths.toArray(new String[0][])));
+    }
 
     public static List<String> calculateWithConstraints(Point start, Point dest, String[][] constraints_with_time)
     {
@@ -95,7 +115,7 @@ public class AStar {
             Point n = new Point(x, y);
             if (occupiedList.containsKey(n.key))
             {
-                if (occupiedList.get(n.key).contains(String.valueOf(t)))
+                if (occupiedList.get(n.key).contains(String.valueOf(t)) || occupiedList.get(n.key).contains("inf"))
                 {
                     continue;
                 }
