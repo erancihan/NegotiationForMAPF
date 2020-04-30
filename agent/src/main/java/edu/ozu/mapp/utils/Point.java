@@ -2,7 +2,7 @@ package edu.ozu.mapp.utils;
 
 import org.springframework.util.Assert;
 
-public class Point {
+public class Point implements Comparable<Point> {
     public int x, y;
     public String key;
 
@@ -33,10 +33,25 @@ public class Point {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (o instanceof Point)
-            return (x == ((Point) o).x) && (y == ((Point) o).y);
+    public boolean equals(Object that) {
+        if (that instanceof Point)
+            return (x == ((Point) that).x) && (y == ((Point) that).y);
         else
             return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return key.hashCode();
+    }
+
+    @Override
+    public int compareTo(Point that) {
+        return this.key.compareTo(that.key);
+    }
+
+    @Override
+    public String toString() {
+        return "Point{" + key + '}';
     }
 }
