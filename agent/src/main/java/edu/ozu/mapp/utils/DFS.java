@@ -4,8 +4,9 @@ import java.util.*;
 
 public class DFS
 {
-    public static void main(String[] args) {
-        for (Point[] points : new DFS(new Point(0, 0), new Point(3, 3)).run())
+    public static void main(String[] args)
+    {
+        for (Point[] points : new DFS(new Point(0, 0), new Point(3, 3), true).run())
             System.out.println(Arrays.toString(points));
     }
 
@@ -15,17 +16,27 @@ public class DFS
     private int max_recurse_depth;
     private ArrayList<Point[]> paths;
 
-    public DFS(Point from, Point to) {
-        _f = from;
-        _t = to;
+    private boolean DEBUG = false;
+
+    public DFS(Point From, Point To, boolean IsDebug)
+    {
+        _f = From;
+        _t = To;
 
         paths = new ArrayList<>();
         max_recurse_depth = Math.abs(_f.x - _t.x) + Math.abs(_f.y - _t.y); // manhattan dist
+
+        DEBUG = IsDebug;
+    }
+
+    public DFS(Point From, Point To)
+    {
+        this(From, To, false);
     }
 
     public List<Point[]> run()
     {
-        System.out.println(_f + " ... " + _t + " :" + max_recurse_depth);
+        if (DEBUG) System.out.println(_f + " ... " + _t + " :" + max_recurse_depth);
         loop(_f, new ArrayList<>(), 0);
 
         return paths;
@@ -59,7 +70,8 @@ public class DFS
         }
     }
 
-    private static List<Point> getNeighborhood(Point curr)
+    @SuppressWarnings("Duplicates")
+    private List<Point> getNeighborhood(Point curr)
     {
         List<Point> hood = new ArrayList<>();
 
