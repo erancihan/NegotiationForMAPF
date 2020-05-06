@@ -4,12 +4,8 @@ import edu.ozu.mapp.agent.Agent;
 import edu.ozu.mapp.agent.client.handlers.JedisConnection;
 import org.springframework.util.Assert;
 
-import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 import java.security.*;
-import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 
@@ -64,7 +60,7 @@ public class KeyHandler {
             Cipher cipher = Cipher.getInstance("RSA");
             cipher.init(Cipher.ENCRYPT_MODE, key);
             return Base64.getEncoder().encodeToString(cipher.doFinal(text.getBytes()));
-        } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | BadPaddingException | IllegalBlockSizeException e) {
+        } catch (Exception e) {
             logger.error("error when encrypting!");
             e.printStackTrace();
             System.exit(1);
@@ -79,7 +75,7 @@ public class KeyHandler {
             Cipher cipher = Cipher.getInstance("RSA");
             cipher.init(Cipher.DECRYPT_MODE, key);
             return new String(cipher.doFinal(Base64.getDecoder().decode(text)));
-        } catch (NoSuchPaddingException | NoSuchAlgorithmException | InvalidKeyException | BadPaddingException | IllegalBlockSizeException e) {
+        } catch (Exception e) {
             logger.error("error when decrypting!");
             e.printStackTrace();
             System.exit(1);
@@ -95,7 +91,7 @@ public class KeyHandler {
         PublicKey key = null;
         try {
             key = KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(Base64.getDecoder().decode(key_str)));
-        } catch (InvalidKeySpecException | NoSuchAlgorithmException e) {
+        } catch (Exception e) {
             logger.error("failed to fetch public key!");
             e.printStackTrace();
             System.exit(1);
