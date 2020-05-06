@@ -6,10 +6,7 @@ import edu.ozu.mapp.keys.KeyHandler;
 import edu.ozu.mapp.utils.*;
 import org.springframework.util.Assert;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 public abstract class Agent {
     public static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(Agent.class);
@@ -88,9 +85,24 @@ public abstract class Agent {
         return AStar.calculate(start, dest);
     }
 
-    public List<String> getBidSpace() {
-        // TODO CODE
-        return path;
+    public List<Bid> GetBidSpace(Point From, Point To)
+    {
+        BFS search = new BFS(From, To, Globals.FIELD_OF_VIEW_SIZE).init();
+
+        PriorityQueue<Bid> bids = new PriorityQueue<>();
+        for (Path path : search.paths)
+        {
+            if (path.contains(To)) bids.add(
+                new Bid(AGENT_ID, path, (Integer x) -> (double) (1 - ((x - search.Min) / (search.Max - search.Min))))
+            );
+        }
+
+        return new ArrayList<>(bids);
+    }
+
+    public List<Bid> GetCurrentBidSpace()
+    {
+        return GetBidSpace(POS, DEST);
     }
 
     //<editor-fold defaultstate="collapsed" desc="Accept Last Bids">
