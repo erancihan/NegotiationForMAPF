@@ -7,8 +7,10 @@ package edu.ozu.mapp.agent.client.world;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import edu.ozu.mapp.agent.client.WorldWatchSocketIO;
 import edu.ozu.mapp.utils.Globals;
 import edu.ozu.mapp.utils.Save;
+import org.springframework.util.Assert;
 import redis.clients.jedis.Jedis;
 
 import javax.swing.*;
@@ -25,6 +27,7 @@ import java.util.stream.Collectors;
 public class WorldManager extends javax.swing.JFrame {
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(WorldManager.class);
     private Gson gson = new Gson();
+    private WorldWatchSocketIO WorldListener = null;
     private java.lang.reflect.Type messageMapType = new TypeToken<Map<String, String>>() {}.getType();
 
     private String WID;
@@ -364,7 +367,7 @@ public class WorldManager extends javax.swing.JFrame {
         if (!isJedisOK) { return; }
 
         WID = "world:" + world_id.getText() + ":";
-        new WorldHandler().CreateWorld(
+        WorldListener = new WorldHandler().CreateWorld(
             WID,
             (message) -> {
                 // update canvas
@@ -391,12 +394,15 @@ public class WorldManager extends javax.swing.JFrame {
                     System.exit(1);
                 }
             });
+
+        Assert.notNull(WorldListener, "World Listener cannot be null!");
     }
 
     void jedis_delete_world()
     {
         if (!isJedisOK || WID == null) { return; }
 
+        if (WorldListener != null) WorldListener.close();
         WorldHandler.deleteWorld(WID);
     }
 
