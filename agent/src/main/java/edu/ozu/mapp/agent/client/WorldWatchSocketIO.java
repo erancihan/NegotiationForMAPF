@@ -5,7 +5,6 @@ import io.socket.client.Socket;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.Timer;
@@ -55,7 +54,7 @@ public class WorldWatchSocketIO {
         }, 0, 100);
     }
 
-    public void close() throws IOException
+    public void close()
     {
         logger.info("world socket connection close");
         if (timer != null) timer.cancel();
