@@ -1,6 +1,5 @@
 package edu.ozu.mapp.agent.client;
 
-import edu.ozu.mapp.utils.Globals;
 import io.socket.client.IO;
 import io.socket.client.Socket;
 import org.json.JSONException;
@@ -18,20 +17,24 @@ public class WorldWatchSocketIO {
 
     private Socket socket;
     private Timer timer;
-    private String _WorldID, _AgentID;
+    private String _WorldID;
     private String _Message = "";
 
-    public WorldWatchSocketIO(String WorldID, String AgentID)
+    public WorldWatchSocketIO(String WorldID, Consumer<String> callback)
     {
         _WorldID = WorldID;
-        _AgentID = AgentID;
 
         try {
-            socket = IO.socket("http://" + Globals.SERVER + "/world");
+            socket = IO.socket("http://localhost:5000/world");
             socket.connect();
         } catch (URISyntaxException e) {
             e.printStackTrace();
+            System.exit(1);
         }
+
+        socket.on("sync_world_listen", objects -> {
+            callback.accept(String.valueOf(objects[0]));
+        });
 
         timer = new Timer();
         timer.scheduleAtFixedRate(new TimerTask() {
@@ -41,13 +44,12 @@ public class WorldWatchSocketIO {
 
                 try {
                     data.put("world_id", _WorldID);
-                    data.put("agent_id", _AgentID);
                     data.put("message", _Message);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
 
-                socket.emit("world_state", data);
+                socket.emit("world_listen", data);
                 _Message = ""; // clear message after sending
             }
         }, 0, 100);
@@ -62,7 +64,7 @@ public class WorldWatchSocketIO {
 
     public void setMessageHandler(Consumer<String> consumer)
     {
-        socket.on("sync_world_state", objects -> {
+        socket.on("sync_world_listen", objects -> {
             System.out.println(Arrays.deepToString(objects));
             consumer.accept(String.valueOf(objects[0]));
         });

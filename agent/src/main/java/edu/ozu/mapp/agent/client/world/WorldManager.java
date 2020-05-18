@@ -5,9 +5,10 @@
  */
 package edu.ozu.mapp.agent.client.world;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import edu.ozu.mapp.utils.Globals;
 import edu.ozu.mapp.utils.Save;
-import org.springframework.util.Assert;
 import redis.clients.jedis.Jedis;
 
 import javax.swing.*;
@@ -23,9 +24,10 @@ import java.util.stream.Collectors;
  */
 public class WorldManager extends javax.swing.JFrame {
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(WorldManager.class);
+    private Gson gson = new Gson();
+    private java.lang.reflect.Type messageMapType = new TypeToken<Map<String, String>>() {}.getType();
 
     private String WID;
-    private RedisListener redisListener;
     private redis.clients.jedis.Jedis jedis;
     private boolean isJedisOK = true;
     private boolean loop = false;
@@ -362,15 +364,12 @@ public class WorldManager extends javax.swing.JFrame {
         if (!isJedisOK) { return; }
 
         WID = "world:" + world_id.getText() + ":";
-        redisListener = WorldHandler.createWorld(
+        new WorldHandler().CreateWorld(
             WID,
-            (channel, message) -> {
+            (message) -> {
                 // update canvas
-//                logger.info("redis>" + channel + "»" + message + "");
-                Object obj = jedis.hgetAll(WID);
                 try {
-                    Map<String, String> data = (Map<String, String>) obj;
-
+                    Map<String, String> data = gson.fromJson(message, messageMapType);
                     text_view.setText(
                         data
                             .keySet()
@@ -388,21 +387,16 @@ public class WorldManager extends javax.swing.JFrame {
                         jedis_on_state_update(data);
                     }
                 } catch (Exception e) {
-                    System.err.println("> " + obj.toString());
                     e.printStackTrace();
                     System.exit(1);
                 }
             });
-
-        Assert.notNull(redisListener, "redis listener cannot be null!");
-        redisListener.run();
     }
 
     void jedis_delete_world()
     {
         if (!isJedisOK || WID == null) { return; }
 
-        redisListener.close();
         WorldHandler.deleteWorld(WID);
     }
 
