@@ -7,6 +7,7 @@ package edu.ozu.mapp.agent.client.world;
 
 import edu.ozu.mapp.agent.Agent;
 import edu.ozu.mapp.agent.client.AgentClient;
+import edu.ozu.mapp.agent.client.WorldWatchSocketIO;
 import edu.ozu.mapp.utils.Point;
 import mappagent.sample.Conceder;
 import mappagent.sample.Greedy;
@@ -15,6 +16,7 @@ import org.springframework.util.Assert;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
@@ -272,7 +274,7 @@ public class ScenarioManager extends javax.swing.JFrame
         WorldHandler.deleteWorld(worldID);
     }
 
-    private RedisListener listener = null;
+    private WorldWatchSocketIO listener = null;
     private int agent_count = 0; // track number of agents there should be
     private void generateScenario()
     {
@@ -283,10 +285,9 @@ public class ScenarioManager extends javax.swing.JFrame
 
         // initialize world
         worldID = "world:" + System.currentTimeMillis() + ":";
-        listener = WorldHandler.createWorld(worldID, (channel, message) -> {}); // TODO set bounds
+        listener = new WorldHandler().CreateWorld(worldID, (message) -> {}); // TODO set bounds
 
         Assert.notNull(listener, "redis listener cannot be null!");
-        listener.run();
 
         // initialize agents
         generateAgentStartLocations(width, height, N);
