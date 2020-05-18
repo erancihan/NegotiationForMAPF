@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -35,8 +34,10 @@ func main() {
 
 	redisServer := os.Getenv("REDIS_SERVER")
 	if redisServer == "" {
-		e.Logger.Fatal(errors.New("env: redis_server is missing"))
+		redisServer = "localhost:6379"
+		e.Logger.Warn("env: redis_server is missing, using " + redisServer)
 	}
+	fmt.Print("REDIS_SERVER := ", redisServer)
 
 	// pool setup
 	pool := &redis.Pool{
