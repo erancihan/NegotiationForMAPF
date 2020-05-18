@@ -403,7 +403,7 @@ public class WorldManager extends javax.swing.JFrame {
         if (!isJedisOK || WID == null) { return; }
 
         if (WorldListener != null) WorldListener.close();
-        WorldHandler.deleteWorld(WID);
+        WorldHandler.DeleteWorld(WID);
     }
 
     private int prev_state_id = -1;

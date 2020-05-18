@@ -11,7 +11,7 @@ public class WorldHandler
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(WorldHandler.class);
     private static redis.clients.jedis.Jedis jedis;
 
-    public static void deleteWorld(String WID)
+    public static void DeleteWorld(String WID)
     {
         logger.info("Deleting " + WID + " ...");
 

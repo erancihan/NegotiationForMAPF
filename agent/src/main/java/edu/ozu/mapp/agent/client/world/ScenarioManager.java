@@ -16,7 +16,6 @@ import org.springframework.util.Assert;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
@@ -271,7 +270,7 @@ public class ScenarioManager extends javax.swing.JFrame
         }
 
         listener.close();
-        WorldHandler.deleteWorld(worldID);
+        WorldHandler.DeleteWorld(worldID);
     }
 
     private WorldWatchSocketIO listener = null;
