@@ -10,44 +10,53 @@ import java.util.Map;
 public class Contract {
     public String Ox;
     public String x;
-    private String ETa;
-    public String a; // id of agent A
-    private String ETb;
-    public String b; // id of agent B
-    private String sess_id;
+    private String ETa = "";
+    public String A = ""; // id of agent A
+    private String ETb = "";
+    public String B = ""; // id of agent B
+    private String sess_id = "";
 
-    public Contract(Map<String, String> sess) {
+    public Contract(Map<String, String> sess)
+    {
         Ox = sess.getOrDefault("Ox", "");
         x = sess.getOrDefault("x", "");
+
+        A = sess.get("A");
+        B = sess.get("B");
+
         ETa = sess.getOrDefault("ETa", "");
         ETb = sess.getOrDefault("ETb", "");
 
         sess_id = sess.get("_session_id");
     }
 
-    public String getETa(String AgentID) {
-        return KeyHandler.decrypt(ETa, KeyHandler.getPubKey(AgentID));
+    public String getETa(Agent agent)
+    {
+        return KeyHandler.decrypt(ETa, agent.GetPubKey());
     }
 
-    public String getETb(String AgentID) {
-        return KeyHandler.decrypt(ETb, KeyHandler.getPubKey(AgentID));
+    public String getETb(Agent agent)
+    {
+        return KeyHandler.decrypt(ETb, agent.GetPubKey());
     }
 
-    public String getToken(String AgentID) {
-        if (a.equals(AgentID)) {
-            return getETa(AgentID);
+    public String getTokenOf(Agent agent)
+    {
+        if (A.equals(agent.AGENT_ID)) {
+            return getETa(agent);
         }
-        if (b.equals(AgentID)) {
-            return getETb(AgentID);
+        if (B.equals(agent.AGENT_ID)) {
+            return getETb(agent);
         }
 
         return "";
     }
 
-    public void set(Agent agent, String O, int next) {
-        if (a.equals(agent.AGENT_ID))
+    public void set(Agent agent, String O, int next)
+    {
+        if (A.equals(agent.AGENT_ID))
         {
-            int current = Integer.parseInt(getETa(a));
+            int current = Integer.parseInt(getETa(agent));
             if (current < next)
             {
                 Ox = O;
@@ -56,9 +65,9 @@ public class Contract {
             }
         }
 
-        if (b.equals(agent.AGENT_ID))
+        if (B.equals(agent.AGENT_ID))
         {
-            int current = Integer.parseInt(getETb(b));
+            int current = Integer.parseInt(getETb(agent));
             if (current < next)
             {
                 Ox = O;
@@ -75,9 +84,20 @@ public class Contract {
             jedis.hset("negotiation:"+sess_id, "Ox", Ox);
             jedis.hset("negotiation:"+sess_id, "x", x);
             jedis.hset("negotiation:"+sess_id, "ETa", ETa);
-            jedis.hset("negotiation:"+sess_id, "A", a);
+            jedis.hset("negotiation:"+sess_id, "A", A);
             jedis.hset("negotiation:"+sess_id, "ETb", ETb);
-            jedis.hset("negotiation:"+sess_id, "B", b);
+            jedis.hset("negotiation:"+sess_id, "B", B);
         }
+    }
+
+    public boolean isAgentSet(Agent agent) {
+        if (A.equals(agent.AGENT_ID)) {
+            return !ETa.isEmpty();
+        }
+        if (B.equals(agent.AGENT_ID)) {
+            return !ETb.isEmpty();
+        }
+
+        return true;
     }
 }
