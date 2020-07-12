@@ -2,6 +2,7 @@ package edu.ozu.mapp.agent.client;
 
 import com.google.gson.Gson;
 import edu.ozu.mapp.agent.Agent;
+import edu.ozu.mapp.agent.client.handlers.Negotiation;
 import edu.ozu.mapp.utils.Globals;
 import edu.ozu.mapp.utils.JSONNegotiationSession;
 import edu.ozu.mapp.utils.State;
@@ -21,6 +22,7 @@ public class NegotiationSession
     private String session_id;
     private String active_state = "";
     boolean didBid = false;
+    boolean didDone = false;
 
     NegotiationSession(String world_id, String session_id, Agent client)
     {
@@ -34,6 +36,79 @@ public class NegotiationSession
     }
 
     void connect()
+    {
+        connectSocketIO();
+    }
+
+    void connectSocketIO()
+    {
+        didBid = false;
+        didDone = false;
+        Assert.notNull(session_id, "Session ID cannot be null!");
+
+        try
+        {
+            NegotiationSocketIO sess = new NegotiationSocketIO(world_id, client.AGENT_ID, session_id);
+
+            //<editor-fold defaultstate="collapsed" desc="Set On Sync Handler">
+            sess.setOnSyncHandler(message -> {
+                logger.debug(message);
+
+                JSONNegotiationSession json = gson.fromJson(message, JSONNegotiationSession.class);
+                client.onReceiveState(new State(json));
+
+                switch (json.state)
+                {
+                    case "run":
+                        if (json.turn.equals("agent:"+client.AGENT_ID))
+                        {
+                            if (didBid) break;
+
+                            edu.ozu.mapp.utils.Action action = client.onMakeAction();
+                            action.bid.apply(this); // TODO change behaviour
+
+                            sess.emitTakeAction(action.toString());
+
+                            didBid = true;
+                        } else {
+                            didBid = false;
+                        }
+                        break;
+                    case "done":
+                        logger.info("negotiation session is done");
+
+                        if (didDone) break;
+
+                        client.acceptLastBids(json);
+
+                        //<editor-fold defaultstate="collapsed" desc="close socket when negotiation done">
+                        try { sess.close(); }
+                        catch (IOException e) { e.printStackTrace(); }
+                        //</editor-fold>
+
+                        client.postNegotiation();
+
+                        didDone = true;
+                        break;
+                }
+            });
+            //</editor-fold>
+            //<editor-fold defaultstate="collapsed" desc="Set On Joined Handler">
+            sess.setOnJoinedHandler(message -> {
+                logger.debug(message);
+
+                client.preNegotiation();
+
+                sess.emitReady();
+            });
+            //</editor-fold>
+
+            sess.start();
+        }
+        catch (Exception exception) { exception.printStackTrace(); }
+    }
+
+    void connectWS()
     {
         Assert.notNull(session_id, "Session ID cannot be null!");
         active_state = "";
