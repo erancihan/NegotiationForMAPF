@@ -421,60 +421,59 @@ public class WorldManager extends javax.swing.JFrame {
             return; // do nothing if there are no players
         }
 
-        if (curr_state_id == 0)
+        switch (curr_state_id)
         {
-            state_log.add(new Object[]{"- end of join state", new java.sql.Timestamp(System.currentTimeMillis())});
-            logger.info("- end of join state");
-            // join state, begin loop
-            jedis.hset(WID, "world_state", "1");
-        }
-        if (curr_state_id == 1)
-        {
-            // collision check state, await 2 cycles for collision updates
-            if (notify_await_cycle < 2) {
-                notify_await_cycle += 1;
-                jedis.hincrBy(WID, "time_tick", 1);
-                return; // return else
-            }
-
-            prev_state_id = curr_state_id; // update state
-
-            state_log.add(new Object[]{"- collision check done", new java.sql.Timestamp(System.currentTimeMillis())});
-            logger.info("- collision check done");
-            // move to next state: 1 -> 2
-            jedis.hset(WID, "world_state", "2");
-        }
-        if (curr_state_id == 2)
-        {
-            // clear notify await
-            notify_await_cycle = 0;
-
-            // negotiation state, do nothing until active negotiation_count is 0
-            if (data.get("negotiation_count").equals("0"))
-            {
-                prev_state_id = curr_state_id;
-
-                state_log.add(new Object[]{"- negotiations done", new java.sql.Timestamp(System.currentTimeMillis())});
-                logger.info("- negotiations done");
-                // move to next state: 2 -> 3
-                jedis.hset(WID, "world_state", "3");
-            }
-        }
-        if (curr_state_id == 3)
-        {
-            // move state, wait for move_action_count
-            // to match agent count, will indicate all agents took action
-            if (data.get("move_action_count").equals(data.get("player_count")))
-            {
-                prev_state_id = curr_state_id;
-
-                state_log.add(new Object[]{"- movement complete", new java.sql.Timestamp(System.currentTimeMillis())});
-                logger.info("- movement complete");
-                // clear move_action_count
-                jedis.hset(WID, "move_action_count", "0");
-                // move to next state: 3 -> 1
+            case 0:
+                state_log.add(new Object[]{"- end of join state", new java.sql.Timestamp(System.currentTimeMillis())});
+                logger.info("- end of join state");
+                // join state, begin loop
                 jedis.hset(WID, "world_state", "1");
-            }
+                break;
+            case 1:
+                // collision check state, await 2 cycles for collision updates
+                if (notify_await_cycle < 2) {
+                    notify_await_cycle += 1;
+                    jedis.hincrBy(WID, "time_tick", 1);
+                    return; // return else
+                }
+
+                prev_state_id = curr_state_id; // update state
+
+                state_log.add(new Object[]{"- collision check done", new java.sql.Timestamp(System.currentTimeMillis())});
+                logger.info("- collision check done");
+                // move to next state: 1 -> 2
+                jedis.hset(WID, "world_state", "2");
+                break;
+            case 2:
+                // clear notify await
+                notify_await_cycle = 0;
+
+                // negotiation state, do nothing until active negotiation_count is 0
+                if (data.get("negotiation_count").equals("0"))
+                {
+                    prev_state_id = curr_state_id;
+
+                    state_log.add(new Object[]{"- negotiations done", new java.sql.Timestamp(System.currentTimeMillis())});
+                    logger.info("- negotiations done");
+                    // move to next state: 2 -> 3
+                    jedis.hset(WID, "world_state", "3");
+                }
+                break;
+            case 3:
+                // move state, wait for move_action_count
+                // to match agent count, will indicate all agents took action
+                if (data.get("move_action_count").equals(data.get("player_count")))
+                {
+                    prev_state_id = curr_state_id;
+
+                    state_log.add(new Object[]{"- movement complete", new java.sql.Timestamp(System.currentTimeMillis())});
+                    logger.info("- movement complete");
+                    // clear move_action_count
+                    jedis.hset(WID, "move_action_count", "0");
+                    // move to next state: 3 -> 1
+                    jedis.hset(WID, "world_state", "1");
+                }
+                break;
         }
     }
 }
