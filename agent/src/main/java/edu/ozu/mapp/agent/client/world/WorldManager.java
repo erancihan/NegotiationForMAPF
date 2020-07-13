@@ -431,7 +431,7 @@ public class WorldManager extends javax.swing.JFrame {
         if (curr_state_id == 1)
         {
             // collision check state, await 2 cycles for collision updates
-            if (notify_await_cycle < 200) {
+            if (notify_await_cycle < 2) {
                 notify_await_cycle += 1;
                 jedis.hincrBy(WID, "time_tick", 1);
                 return; // return else
