@@ -2,7 +2,6 @@ package edu.ozu.mapp.agent.client;
 
 import com.google.gson.Gson;
 import edu.ozu.mapp.agent.Agent;
-import edu.ozu.mapp.agent.client.handlers.Negotiation;
 import edu.ozu.mapp.utils.Globals;
 import edu.ozu.mapp.utils.JSONNegotiationSession;
 import edu.ozu.mapp.utils.State;
@@ -21,7 +20,9 @@ public class NegotiationSession
     private String world_id;
     private String session_id;
     private String active_state = "";
+    boolean didJoin = false;
     boolean didBid = false;
+        int _didBid = -1;
     boolean didDone = false;
 
     NegotiationSession(String world_id, String session_id, Agent client)
@@ -31,18 +32,17 @@ public class NegotiationSession
         this.client = client;
 
         gson = new Gson();
-
-        logger.info("creating new session connection to " + session_id);
     }
 
     void connect()
     {
+        logger.info("connecting to " + session_id + " as " + client.AGENT_ID);
         connectSocketIO();
     }
 
     void connectSocketIO()
     {
-        didBid = false;
+        _didBid = -1;
         didDone = false;
         Assert.notNull(session_id, "Session ID cannot be null!");
 
@@ -52,26 +52,25 @@ public class NegotiationSession
 
             //<editor-fold defaultstate="collapsed" desc="Set On Sync Handler">
             sess.setOnSyncHandler(message -> {
-                logger.debug(message);
-
                 JSONNegotiationSession json = gson.fromJson(message, JSONNegotiationSession.class);
                 client.onReceiveState(new State(json));
+
+                active_state = json.state;
 
                 switch (json.state)
                 {
                     case "run":
+                        logger.info(client.AGENT_ID + " : session=" + session_id + " : state=run : turn=" + json.turn );
                         if (json.turn.equals("agent:"+client.AGENT_ID))
                         {
-                            if (didBid) break;
+                            logger.info(client.AGENT_ID + " : sess ");
+                            if (_didBid < json.turn_count) break;
+                            _didBid = json.turn_count;
 
                             edu.ozu.mapp.utils.Action action = client.onMakeAction();
                             action.bid.apply(this); // TODO change behaviour
 
                             sess.emitTakeAction(action.toString());
-
-                            didBid = true;
-                        } else {
-                            didBid = false;
                         }
                         break;
                     case "done":
@@ -89,8 +88,22 @@ public class NegotiationSession
                         client.postNegotiation();
 
                         didDone = true;
+
+                        logger.info(client.AGENT_ID + " : session=" + session_id + " : state=done" );
                         break;
                 }
+            });
+            //</editor-fold>
+            //<editor-fold defaultstate="collapsed" desc="Set Will Join">
+            sess.setWillJoinHandler(message -> {
+                if (didJoin) return;
+                logger.debug(message);
+
+                client.PrepareContract(this);
+
+                sess.emitReady();
+                didJoin = true;
+                logger.info(client.AGENT_ID + " : session=" + session_id + " : will join" );
             });
             //</editor-fold>
             //<editor-fold defaultstate="collapsed" desc="Set On Joined Handler">
@@ -99,7 +112,15 @@ public class NegotiationSession
 
                 client.preNegotiation();
 
-                sess.emitReady();
+                logger.info(client.AGENT_ID + " : session=" + session_id + " : joined" );
+            });
+            //</editor-fold>
+            //<editor-fold defaultstate="collapsed" desc="Set On Joined Handler">
+            sess.setOnNegotiationDoneHandler(message -> {
+                // This should be invoked only once
+                logger.debug(message);
+
+                logger.info(client.AGENT_ID + " : session=" + session_id + " : done");
             });
             //</editor-fold>
 
@@ -119,14 +140,14 @@ public class NegotiationSession
             String ws = "ws://" + Globals.SERVER + "/negotiation/" + world_id + "/" + session_id + "/" + client.AGENT_ID;
             NegotiationWS websocket = new NegotiationWS(new URI(ws));
 
-            /* add handler
-             * Message format:
-             *  agent_count: <integer>                      | number of agents
-             *  bid_order: [agent_0, agent_1, ..., agent_i] | list of agent IDs.
-             *  bids     : [bid_agent_0, ..., bid_agent_i]  | list of bids of agents with IDs given
-             *  state    : {join|run|done}                  | state of the negotiation session
-             *  turn     : "agent_id"                       | ID of agent who's turn it is to bid
-             * */
+//             * add handler
+//             * Message format:
+//             *  agent_count: <integer>                      | number of agents
+//             *  bid_order: [agent_0, agent_1, ..., agent_i] | list of agent IDs.
+//             *  bids     : [bid_agent_0, ..., bid_agent_i]  | list of bids of agents with IDs given
+//             *  state    : {join|run|done}                  | state of the negotiation session
+//             *  turn     : "agent_id"                       | ID of agent who's turn it is to bid
+//             *
             websocket.setHandler(message -> {
                 JSONNegotiationSession json = gson.fromJson(message, JSONNegotiationSession.class);
                 // pass session data to agent -> onReceiveState
