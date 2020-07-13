@@ -1,9 +1,11 @@
+from typing import Union
+
 from redis import Redis
 
 
 def list_world_entries(redis: Redis):
-    e: bytes
+    e: Union[bytes, str]
 
-    data = {'worlds': [e.decode('utf-8') for e in redis.scan_iter("world:*:")]}
+    data = {'worlds': [e if isinstance(e, str) else e.decode('utf-8') for e in redis.scan_iter("world:*:")]}
 
     return data
