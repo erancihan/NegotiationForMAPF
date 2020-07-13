@@ -27,11 +27,16 @@ public class NegotiationSocketIO {
         _SessionID = SessionID;
 
         try {
-            socket = IO.socket("http://" + Globals.SERVER + "/negotiation");
+            socket = IO.socket("http://localhost:5000/negotiation");
             socket.connect();
         } catch (URISyntaxException e) {
             e.printStackTrace();
         }
+    }
+
+    public void start()
+    {
+        logger.info("negotiation socket connection start");
 
         timer = new Timer();
         timer.scheduleAtFixedRate(new TimerTask() {
@@ -61,9 +66,39 @@ public class NegotiationSocketIO {
         if (socket != null) socket.close();
     }
 
-    public void setHandler(Consumer<String> consumer)
+    public void setOnSyncHandler(Consumer<String> consumer)
     {
         socket.on("sync_negotiation_state", objects -> consumer.accept(String.valueOf(objects[0])));
+    }
+
+    public void setWillJoinHandler(Consumer<String> consumer)
+    {
+        socket.on("invoke_will_join", objects -> consumer.accept(""));
+    }
+
+    public void setOnJoinedHandler(Consumer<String> consumer)
+    {
+        socket.on("invoke_on_joined", objects -> consumer.accept(String.valueOf(objects[0])));
+    }
+
+    public void emitReady()
+    {
+        socket.emit("negotiation_agent_ready", _SessionID + ":" + _AgentID);
+    }
+
+    public void setOnMakeActionHandler(Consumer<String> consumer)
+    {
+        socket.on("invoke_on_make_action", objects -> consumer.accept(String.valueOf(objects[0])));
+    }
+
+    public void emitTakeAction(String string)
+    {
+        socket.emit("respond_to_make_action", string + "-" + _SessionID);
+    }
+
+    public void setOnNegotiationDoneHandler(Consumer<String> consumer)
+    {
+        socket.on("invoke_on_negotiation_done", objects -> consumer.accept(String.valueOf(objects[0])));
     }
 
     public void sendMessage(String message)
