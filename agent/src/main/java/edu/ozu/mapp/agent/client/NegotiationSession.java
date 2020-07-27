@@ -37,7 +37,8 @@ public class NegotiationSession
     void connect()
     {
         logger.info("connecting to " + session_id + " as " + client.AGENT_ID);
-        connectSocketIO();
+//        connectSocketIO();
+        connectWS();
     }
 
     void connectSocketIO()
@@ -131,15 +132,16 @@ public class NegotiationSession
 
     void connectWS()
     {
-        Assert.notNull(session_id, "Session ID cannot be null!");
-        active_state = "";
         didBid = false;
+        didJoin = false;
+        active_state = "";
+
+        Assert.notNull(session_id, "Session ID cannot be null!");
 
         try {
             //!!! sessions contain only one session id for now
             String ws = "ws://" + Globals.SERVER + "/negotiation/" + world_id + "/" + session_id + "/" + client.AGENT_ID;
             NegotiationWS websocket = new NegotiationWS(new URI(ws));
-
 //             * add handler
 //             * Message format:
 //             *  agent_count: <integer>                      | number of agents
@@ -150,36 +152,37 @@ public class NegotiationSession
 //             *
             websocket.setHandler(message -> {
                 JSONNegotiationSession json = gson.fromJson(message, JSONNegotiationSession.class);
-                // pass session data to agent -> onReceiveState
-                client.onReceiveState(new State(json));
-                switch (json.state) {
+                client.onReceiveState(new State(json));                // pass session data to agent -> onReceiveState
+
+                active_state = json.state;
+
+                switch (json.state)
+                {
                     case "join":
-                        if (!active_state.equals("join"))
-                        { // register state change
-                            active_state = json.state;
-                            logger.info("joining to negotiation session");
-                            // join negotiation session WS
-                            // send ready message to socket
-                            client.preNegotiation();
-                            websocket.sendMessage("agent:" + client.AGENT_ID + "-ready");
-                        }
+                        if (didJoin) break;
+
+                        client.PrepareContract(this);
+
+                        logger.info("joining to negotiation session");
+                        // join negotiation session WS
+                        // send ready message to socket
+                        client.preNegotiation();
+
+                        websocket.sendMessage("agent:" + client.AGENT_ID + "-ready");
+                        didJoin = true;
+
                         break;
                     case "run":
-                        if (!active_state.equals("run"))
-                        { // register state change
-                            active_state = json.state;
-                            logger.info("bidding...");
-                        }
+                        logger.info(client.AGENT_ID + " : session=" + session_id + " : state=run : turn=" + json.turn );
                         if (json.turn.equals("agent:" + client.AGENT_ID))
-                        {// own turn to bid
-                            if (!didBid)
-                            { // haven't bid yet
-                                edu.ozu.mapp.utils.Action action = client.onMakeAction();
-                                action.bid.apply(this); //TODO change behaviour
-                                websocket.sendMessage(action.toString());
+                        {   // own turn to bid
+                            if (didBid) break;
 
-                                didBid = true;
-                            }
+                            edu.ozu.mapp.utils.Action action = client.onMakeAction();
+                            action.bid.apply(this); //TODO change behaviour
+                            websocket.sendMessage(action.toString());
+
+                            didBid = true;
                         } else {
                             didBid = false;
                         }
