@@ -19,9 +19,12 @@ import (
 
 //@POST
 func (n *Handler) Bid(ctx echo.Context) (err error) {
+	rds := n.Pool.Get()
+	defer rds.Close()
+
 	r := new(Bid)
 
-	_ = r.Process(ctx, n)
+	_ = r.Process(ctx, rds)
 
 	return ctx.NoContent(http.StatusOK)
 }

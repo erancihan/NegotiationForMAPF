@@ -7,13 +7,9 @@ import (
 	"math/rand"
 	"strings"
 	"time"
-	"world/negotiation"
 )
 
-func (bid *Bid) Process(ctx echo.Context, handler *negotiation.Handler) (err error) {
-	rds := handler.Pool.Get()
-	defer rds.Close()
-
+func (bid *Bid) Process(ctx echo.Context, rds redis.Conn) (err error) {
 	turn, err := redis.String(rds.Do("HGET", "negotiation:"+bid.SessionID, "turn"))
 	if turn == "agent:"+bid.AgentID {
 		if bid.Type == "accept" {
