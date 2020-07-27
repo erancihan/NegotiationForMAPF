@@ -1,10 +1,6 @@
 package bid
 
 import (
-	crand "crypto/rand"
-	"crypto/rsa"
-	"crypto/x509"
-	"encoding/base64"
 	"fmt"
 	"github.com/gomodule/redigo/redis"
 	"github.com/labstack/echo/v4"
@@ -37,7 +33,7 @@ func (bid *Bid) Accept(ctx echo.Context, rds redis.Conn) (err error) {
 	if err != nil {
 		ctx.Logger().Fatal(err)
 	}
-
+/*
 	// decrypt
 	PKa_str, err := redis.String(rds.Do("HGET", "PubKeyVault", contract.A))
 	PKb_str, err := redis.String(rds.Do("HGET", "PubKeyVault", contract.B))
@@ -65,6 +61,9 @@ func (bid *Bid) Accept(ctx echo.Context, rds redis.Conn) (err error) {
 
 	Ta, err := strconv.Atoi(string(Ta_b))
 	Tb, err := strconv.Atoi(string(Tb_b))
+*/
+	Ta, err := strconv.Atoi(contract.ETa)
+	Tb, err := strconv.Atoi(contract.ETb)
 	if err != nil {
 		ctx.Logger().Fatal(err)
 	}
