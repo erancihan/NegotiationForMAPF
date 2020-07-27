@@ -33,7 +33,7 @@ public class Action
         }
         if (type == ActionType.ACCEPT)
         {
-            this.bid = Negotiation.getContract(agent.WORLD_ID, agent.AGENT_ID);
+            this.bid = Negotiation.getContract(agent);
         }
         this.type = type;
 
@@ -44,12 +44,14 @@ public class Action
     {
         int owned_tokens = World.getTokenBalance(agent.WORLD_ID, agent.AGENT_ID);   // get own token balance
 
-        Contract contract = Negotiation.getContract(agent.WORLD_ID, agent.AGENT_ID);
+        Contract contract = Negotiation.getContract(agent);
 
-        int own_token_offer = Integer.parseInt(contract.getToken(agent.AGENT_ID)); // get own bid token count
+        int own_token_offer = Integer.parseInt(contract.getTokenOf(agent)); // get own bid token count
 
         boolean will_increase_tokens = false;
         // if current bid is in agents bid history
+        System.out.println(agent);
+        System.out.println(agent.getOwnBidHistory());
         if (agent.getOwnBidHistory().contains(bid)) {
             will_increase_tokens = true;
         }

@@ -65,7 +65,7 @@ public class Conceder extends Agent {
         // -> if opponent insists to stay on their path
 
         // get opponent's bid
-        BidStruct lastBid = null;
+        Bid lastBid = null;
         for (String agentID : history.keySet()) { // get last bid of opponent
             // AgentID is in format "agent:ID"
             if (agentID.equals("agent:"+AGENT_ID))
@@ -75,7 +75,7 @@ public class Conceder extends Agent {
 //            lastBid = new BidStruct()[opponentBids.length - 1];
         }
 
-        if (current_tokens == 0 || (lastBid != null && lastBid.token_count > 0))
+        if (current_tokens == 0)
         {   // if token count is > 0, it is a repeating offer
             // give second best bid
             // TODO ACCEPT CONDITION

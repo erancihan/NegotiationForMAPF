@@ -69,7 +69,7 @@ public class Greedy extends Agent
             // give second best bid or accept opponent's offer
             // or accept
             // TODO BETTER HISTORY STRUCTURE - GET LAST BID BETTER
-            BidStruct lastBid = null;
+            Bid lastBid = null;
             for (String agentID : history.keySet()) { // get last bid
                 // AgentID is in format "agent:ID"
                 if (agentID.equals("agent:"+AGENT_ID))
@@ -82,7 +82,7 @@ public class Greedy extends Agent
                 // if last bid of opponent does not collide with my path
                 // accept it
                 String[] broadcast = getBroadcastArray();
-                String[] bid_path = lastBid.path.replaceAll("([\\[\\]]*)", "").split(",");
+                String[] bid_path = lastBid.path.toStringArray();
                 // if last bid does not collides
                 boolean willAccept = true;
                 for (int i = 0; i < broadcast.length; i++) { // TODO PROVIDE BUILT IN FUNCTION

@@ -97,7 +97,7 @@ public abstract class Agent {
         for (Path path : search.paths)
         {
             if (path.contains(To)) bids.add(
-                new Bid(AGENT_ID, path, (Integer x) -> (double) (1 - ((x - search.Min) / (search.Max - search.Min))))
+                new Bid(AGENT_ID, path, (Double x) -> 1 - ((x - search.Min) / (search.Max - search.Min)))
             );
         }
 

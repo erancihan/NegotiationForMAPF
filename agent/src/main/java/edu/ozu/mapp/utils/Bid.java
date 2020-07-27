@@ -9,9 +9,9 @@ public class Bid implements Comparable<Bid>
     public Path path;
     public double utility;
 
-    public Bid(String agent_id, Path path, Function<Integer, Double> utilityFunc)
+    public Bid(String agent_id, Path path, Function<Double, Double> utilityFunc)
     {
-        this(agent_id, path, utilityFunc.apply(path.size()));
+        this(agent_id, path, utilityFunc.apply((double) path.size()));
     }
 
     public Bid(String agent_id, Path path, double utility)
@@ -32,7 +32,7 @@ public class Bid implements Comparable<Bid>
     @Override
     public String toString()
     {
-        return "Bid{" + agent_id + ':' + Arrays.toString(path.toStringArray()) + ':' + utility + '}';
+        return "\nBid{" + agent_id + ':' + Arrays.toString(path.toStringArray()) + ':' + utility + '}';
     }
 
     @Override
