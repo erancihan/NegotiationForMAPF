@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime
 
 import jsons
@@ -5,7 +6,7 @@ import redis
 from flask import Flask, jsonify, render_template, request
 from flask_socketio import SocketIO, emit
 
-from negotiation import negotiation_notify, negotiation_socket
+from negotiation import negotiation_notify
 from structs import Move, Notify
 from world import world_list, world_move, world_socket, world_create, world_listen, world_delete
 
@@ -71,9 +72,15 @@ def on_get_world_state(message):
     emit('sync_world_state', resp)
 
 
+"""
+========================================================================================================================
+Negotiation Handlers
+========================================================================================================================
+"""
+"""
 @socketio.on('negotiation_state', '/negotiation')
 def on_get_negotiation_state(message):
-    resp = negotiation_socket(message['world_id'], message['session_id'], message['agent_id'])
+    resp = negotiation_socket(message['world_id'], message['session_id'], message['agent_id'], r)
 
     emit('sync_negotiation_state', resp)
 
@@ -84,7 +91,10 @@ def on_respond_to_make_action(message):
 @socketio.on('negotiation_agent_ready', '/negotiation')
 def on_agent_ready_for_negotiation(message):
     agent_ready_for_negotiation(message, r)
-
+"""
 
 if __name__ == '__main__':
+    logging.getLogger('socketio').setLevel(logging.ERROR)
+    logging.getLogger('engineio').setLevel(logging.ERROR)
+
     socketio.run(app)
