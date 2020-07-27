@@ -12,6 +12,7 @@ import java.util.Map;
 
 public class Contract {
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(Contract.class);
+    private static final boolean HAS_ENCRYPTION = false;
 
     public String Ox;
     public String x;
@@ -86,13 +87,15 @@ public class Contract {
         sess.put("A", agents[0]);
         if (agent.AGENT_ID.equals(agents[0]))
         {   // set ETa, if A is the invoking agent
-            sess.put("ETa", KeyHandler.encrypt("0", agent));
+            if (HAS_ENCRYPTION) sess.put("ETa", KeyHandler.encrypt("0", agent));
+            else sess.put("ETa", "0");
         }
         // ID of agent B
         sess.put("B", agents[1]);
         if (agent.AGENT_ID.equals(agents[1]))
         {   // set ETb, if B is the invoking agent
-            sess.put("ETb", KeyHandler.encrypt("0", agent));
+            if (HAS_ENCRYPTION) sess.put("ETb", KeyHandler.encrypt("0", agent));
+            else sess.put("ETb", "0");
         }
 
         // finally, create contract for real this time
@@ -108,12 +111,12 @@ public class Contract {
 
     public String getETa(Agent agent)
     {
-        return agent.Decrypt(ETa);
+        return HAS_ENCRYPTION ? agent.Decrypt(ETa) : ETa;
     }
 
     public String getETb(Agent agent)
     {
-        return agent.Decrypt(ETb);
+        return HAS_ENCRYPTION ? agent.Decrypt(ETb) : ETb;
     }
 
     public String getTokenOf(Agent agent)
@@ -137,7 +140,7 @@ public class Contract {
             {
                 Ox = O;
                 x = agent.AGENT_ID;
-                ETa = agent.Encrypt(String.valueOf(next));
+                ETa = HAS_ENCRYPTION ? agent.Encrypt(String.valueOf(next)) : String.valueOf(next);
             }
         }
 
@@ -148,7 +151,7 @@ public class Contract {
             {
                 Ox = O;
                 x = agent.AGENT_ID;
-                ETb = agent.Encrypt(String.valueOf(next));
+                ETb = HAS_ENCRYPTION ? agent.Encrypt(String.valueOf(next)) : String.valueOf(next);
             }
         }
     }
