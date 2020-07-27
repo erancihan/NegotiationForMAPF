@@ -19,8 +19,9 @@ def negotiation_notify(data: Notify, redis: Redis):
     redis.hset("world:"+data.world_id+":session_keys", agent_ids, session_id)
     redis.hset("world:"+data.world_id+":session_keys", session_id, agent_ids)
     redis.hset("negotiation:"+session_id, "agents", agent_ids)
+    redis.hset("negotiation:"+session_id, "joined_agents", "")
     redis.hset("negotiation:"+session_id, "agent_count", len(data.agents))
-    redis.hset("negotiation:"+session_id, "agent_left", len(data.agents))
+    redis.hset("negotiation:"+session_id, "agents_left", len(data.agents))
 
     for agent in data.agents:
         redis.hset("world:"+data.world_id+":notify", agent, session_id)
@@ -32,6 +33,9 @@ def negotiation_notify(data: Notify, redis: Redis):
     redis.hset("negotiation:"+session_id, "bid_order", bid_order)
     redis.hset("negotiation:"+session_id, "turn", data.agents[0])
     redis.hset("negotiation:"+session_id, "state", "join")
+
+    redis.hset("negotiation:"+session_id, "turn_count", "0")
+    redis.hset("negotiation:"+session_id, "turn_index", "-1")
 
     redis.hincrby("world:"+data.world_id+":", "negotiation_count", "1")
 
