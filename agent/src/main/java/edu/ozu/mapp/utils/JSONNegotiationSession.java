@@ -10,6 +10,7 @@ public class JSONNegotiationSession {
     @SerializedName("bids") public String[][] bids;
     @SerializedName("state") public String state;
     @SerializedName("turn") public String turn;
+    @SerializedName("turn_count") public int turn_count;
 
     @Override
     public String toString() {
