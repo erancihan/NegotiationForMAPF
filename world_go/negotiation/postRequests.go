@@ -65,7 +65,7 @@ func (n *Handler) Notify(ctx echo.Context) (err error) {
 		return ctx.NoContent(http.StatusBadRequest)
 	}
 
-	sort.Strings(r.Agents)                  // sort
+	sort.Strings(r.Agents)                  	// sort
 	agentIDs := strings.Join(r.Agents, ",") // join
 
 	// shuffle agent order
@@ -83,6 +83,7 @@ func (n *Handler) Notify(ctx echo.Context) (err error) {
 		_, err = rds.Do("HSET", "world:"+r.WorldID+":session_keys", agentIDs, sessionID)
 		_, err = rds.Do("HSET", "world:"+r.WorldID+":session_keys", sessionID, agentIDs)
 		_, err = rds.Do("HSET", "negotiation:"+sessionID, "agents", agentIDs)
+		_, err = rds.Do("HSET", "negotiation:"+sessionID, "joined_agents", "")
 		_, err = rds.Do("HSET", "negotiation:"+sessionID, "agent_count", len(r.Agents))
 		_, err = rds.Do("HSET", "negotiation:"+sessionID, "agents_left", len(r.Agents))
 
@@ -206,7 +207,7 @@ func HandleAccept(rds redis.Conn, bid *BidStruct, ctx echo.Context) (err error) 
 	if err != nil {
 		ctx.Logger().Fatal(err)
 	}
-	err = redis.ScanStruct(sess, contract)
+	err = redis.ScanStruct(sess, &contract)
 	if err != nil {
 		ctx.Logger().Fatal(err)
 	}
@@ -226,12 +227,21 @@ func HandleAccept(rds redis.Conn, bid *BidStruct, ctx echo.Context) (err error) 
 
 	PKa, err := x509.ParsePKCS1PrivateKey(PKa_b64)
 	PKb, err := x509.ParsePKCS1PrivateKey(PKb_b64)
+	if err != nil {
+		ctx.Logger().Fatal(err)
+	}
 
 	Ta_b, err := rsa.DecryptPKCS1v15(crand.Reader, PKa, []byte(contract.ETa))
 	Tb_b, err := rsa.DecryptPKCS1v15(crand.Reader, PKb, []byte(contract.ETb))
+	if err != nil {
+		ctx.Logger().Fatal(err)
+	}
 
 	Ta, err := strconv.Atoi(string(Ta_b))
 	Tb, err := strconv.Atoi(string(Tb_b))
+	if err != nil {
+		ctx.Logger().Fatal(err)
+	}
 
 	ids, _ := redis.String(rds.Do("HGET", "world:"+wid+":session_keys", bid.SessionID))
 	idsList := strings.Split(ids, ",")
