@@ -14,18 +14,19 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	. "world/negotiation/bid"
 )
 
 //@POST
 func (n *Handler) Bid(ctx echo.Context) (err error) {
-	r := new(BidStruct)
+	r := new(Bid)
 
 	_ = n.BidProcess(ctx, r)
 
 	return ctx.NoContent(http.StatusOK)
 }
 
-func (n *Handler) BidProcess(ctx echo.Context, bid *BidStruct) (err error) {
+func (n *Handler) BidProcess(ctx echo.Context, bid *Bid) (err error) {
 	rds := n.Pool.Get()
 	defer rds.Close()
 
@@ -89,7 +90,7 @@ func (n *Handler) BidProcess(ctx echo.Context, bid *BidStruct) (err error) {
 	return err
 }
 
-func HandleAccept(rds redis.Conn, bid *BidStruct, ctx echo.Context) (err error) {
+func HandleAccept(rds redis.Conn, bid *Bid, ctx echo.Context) (err error) {
 	// agent accepted
 	// conclude negotiation as one party has accepted
 	_, err = rds.Do("HSET", "negotiation:"+bid.SessionID, "state", "done")

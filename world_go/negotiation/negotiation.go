@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"strings"
 	"time"
+	. "world/negotiation/bid"
 )
 
 var (
@@ -196,7 +197,7 @@ func (n *Handler) readSessionMessages(ctx echo.Context, client *SessionClient) {
 		}
 		if msgData[1] == "offer" || msgData[1] == "accept" {
 			// register bid
-			err = n.BidProcess(ctx, &BidStruct{
+			err = n.BidProcess(ctx, &Bid{
 				AgentID:   msgData[0],
 				SessionID: ctx.Param("session_id"),
 				Type:      msgData[1],
