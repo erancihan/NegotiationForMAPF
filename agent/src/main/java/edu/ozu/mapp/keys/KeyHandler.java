@@ -42,7 +42,7 @@ public class KeyHandler {
             jedis.hset(
                     KEY_VAULT,
                     agent.AGENT_ID,
-                    Base64.getEncoder().encodeToString(keys.get_public().getEncoded())
+                    Base64.getEncoder().encodeToString(keys.GetPublicKey().getEncoded())
             );
 
             return keys;
@@ -54,7 +54,12 @@ public class KeyHandler {
         return null;
     }
 
-    public static String encrypt(String text, PrivateKey key)
+    public static String encrypt(String text, Agent agent)
+    {
+        return encrypt(text, agent.GetPubKey());
+    }
+
+    public static String encrypt(String text, PublicKey key)
     {
         try {
             Cipher cipher = Cipher.getInstance("RSA");
@@ -69,7 +74,7 @@ public class KeyHandler {
         return null;
     }
 
-    public static String decrypt(String text, PublicKey key)
+    public static String decrypt(String text, PrivateKey key)
     {
         try {
             Cipher cipher = Cipher.getInstance("RSA");

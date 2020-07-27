@@ -1,11 +1,14 @@
 package edu.ozu.mapp.agent;
 
+import edu.ozu.mapp.agent.client.NegotiationSession;
 import edu.ozu.mapp.agent.client.handlers.World;
+import edu.ozu.mapp.agent.client.models.Contract;
 import edu.ozu.mapp.keys.AgentKeys;
 import edu.ozu.mapp.keys.KeyHandler;
 import edu.ozu.mapp.utils.*;
 import org.springframework.util.Assert;
 
+import java.security.PublicKey;
 import java.util.*;
 
 public abstract class Agent {
@@ -40,13 +43,14 @@ public abstract class Agent {
 
     public void init() { }
 
-    public abstract void preNegotiation();
+    public void preNegotiation() { }
 
     public abstract Action onMakeAction();
 
     public void postNegotiation() { }
 
-    public void onReceiveState(State state) {
+    public void onReceiveState(State state)
+    {
         // update current state info
         // TODO WTF!?
         /*
@@ -196,7 +200,8 @@ public abstract class Agent {
         this.WORLD_ID = WORLD_ID;
     }
 
-    public int getTokenBalance() {
+    public int getTokenBalance()
+    {
         if (WORLD_ID.isEmpty()) {
             logger.error("world id is empty!");
             return Globals.INITIAL_TOKEN_BALANCE;
@@ -207,5 +212,34 @@ public abstract class Agent {
 
     public HashSet<String> getOwnBidHistory() {
         return history.containsKey(AGENT_ID) ? history.get(AGENT_ID) : new HashSet<String>();
+    }
+
+    public String Encrypt(String text)
+    {
+        return KeyHandler.encrypt(text, keys.GetPublicKey());
+    }
+
+    public String Decrypt(String text)
+    {
+        return KeyHandler.decrypt(text, keys.GetPrivateKey(this));
+    }
+
+    public PublicKey GetPubKey()
+    {
+        return keys.GetPublicKey();
+    }
+
+    /**
+     * Invoked only when negotiation is initiated, and agent
+     * is about to join. (Before {@link #preNegotiation()})
+     *
+     * Negotiation session status should be "join" for this
+     * function to be invoked
+     *
+     * Fills the empty contract with necessary information.
+     * */
+    public Contract PrepareContract(NegotiationSession session)
+    {
+       return Contract.Create(this, session);
     }
 }

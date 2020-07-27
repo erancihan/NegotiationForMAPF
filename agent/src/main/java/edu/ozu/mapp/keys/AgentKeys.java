@@ -26,7 +26,7 @@ public class AgentKeys {
         _public = pair.getPublic();
     }
 
-    public PrivateKey getPrivateKey(Agent agent) {
+    public PrivateKey GetPrivateKey(Agent agent) {
         if (_agentID.equals(agent.AGENT_ID))
         {   // TODO this should be instance check, not ID check!!!
             return _private;
@@ -34,7 +34,7 @@ public class AgentKeys {
         return null;
     }
 
-    public PublicKey get_public() {
+    public PublicKey GetPublicKey() {
         return _public;
     }
 }
