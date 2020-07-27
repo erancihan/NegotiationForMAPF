@@ -215,7 +215,7 @@ public class AgentHandler {
         payload.put("agent_id", clientRef.AGENT_ID);
         payload.put("agents", agent_ids);
 
-        String response = Utils.post("http://" + Globals.SERVER + "/negotiation/notify", payload);
+        String response = Utils.post("http://localhost:5000/negotiation/notify", payload);
 
         logger.info("__postNotify" + response);
     }
