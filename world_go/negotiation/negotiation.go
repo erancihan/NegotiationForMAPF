@@ -197,11 +197,12 @@ func (n *Handler) readSessionMessages(ctx echo.Context, client *SessionClient) {
 		}
 		if msgData[1] == "offer" || msgData[1] == "accept" {
 			// register bid
-			err = n.BidProcess(ctx, &Bid{
+			bid := &Bid{
 				AgentID:   msgData[0],
 				SessionID: ctx.Param("session_id"),
 				Type:      msgData[1],
-			})
+			}
+			err = bid.Process(ctx, rds)
 			if err != nil {
 				return
 			}
