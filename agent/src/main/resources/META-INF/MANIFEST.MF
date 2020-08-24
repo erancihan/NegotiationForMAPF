@@ -1,2 +1,2 @@
 Manifest-Version: 1.0
-Main-Class: edu.ozu.drone.client.ui.AgentUI
+Main-Class: edu.ozu.mapp.agent.client.ui.AgentUI

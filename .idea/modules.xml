@@ -3,7 +3,8 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/agent/agent.iml" filepath="$PROJECT_DIR$/agent/agent.iml" />
-      <module fileurl="file://$PROJECT_DIR$/world/world.iml" filepath="$PROJECT_DIR$/world/world.iml" />
+      <module fileurl="file://$PROJECT_DIR$/world_go/world_go.iml" filepath="$PROJECT_DIR$/world_go/world_go.iml" />
+      <module fileurl="file://$PROJECT_DIR$/world_py/world_py.iml" filepath="$PROJECT_DIR$/world_py/world_py.iml" />
     </modules>
   </component>
 </project>
