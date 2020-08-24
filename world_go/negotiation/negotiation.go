@@ -29,6 +29,8 @@ func (t *SessionMap) Load(key string) (*SessionPool, bool) {
 
 	result, ok := t.m[key]
 
+	fmt.Printf("SessionMap Load : %s : %v \n", key, ok)
+
 	return result, ok
 }
 
@@ -77,9 +79,10 @@ func (t *SessionMap) Delete(key string) {
 
 func (n *Handler) Socket(ctx echo.Context) error {
 	sid := ctx.Param("session_id")
-	//aid := ctx.Param("agent_id")
+	aid := ctx.Param("agent_id")
 
 	// TODO verify agent id
+	fmt.Println("negotiation Socket : " + aid + " - " + sid)
 
 	n.Upgrader.CheckOrigin = func(r *http.Request) bool {
 		return true
