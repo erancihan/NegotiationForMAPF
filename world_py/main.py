@@ -13,7 +13,7 @@ from world import world_list, world_move, world_socket, world_create, world_list
 r = redis.Redis(host='localhost', port=6379, encoding='utf-8', decode_responses=True)
 
 app = Flask(__name__, template_folder='./templates')
-socketio = SocketIO(app)
+socketio = SocketIO(app, logger=False)
 
 
 @app.route("/")
@@ -94,7 +94,11 @@ def on_agent_ready_for_negotiation(message):
 """
 
 if __name__ == '__main__':
+    app.config["LOG_LEVEL"] = "ERROR"
+
     logging.getLogger('socketio').setLevel(logging.ERROR)
     logging.getLogger('engineio').setLevel(logging.ERROR)
+    logging.getLogger('werkzeug').setLevel(logging.ERROR)
+    logging.getLogger('geventwebsocket.handler').setLevel(logging.ERROR)
 
-    socketio.run(app)
+    socketio.run(app, log_output=False)
