@@ -27,13 +27,15 @@ public class Action
     {   // only invoked when making a bid
         this.agent = agent;
 
-        if (type == ActionType.OFFER)
-        {
-            this.bid = makeOffer(agent, type, bid);
-        }
-        if (type == ActionType.ACCEPT)
-        {
-            this.bid = Negotiation.getContract(agent);
+        switch(type) {
+            case OFFER:
+                this.bid = makeOffer(agent, type, bid);
+                break;
+            case ACCEPT:
+                this.bid = Negotiation.getContract(agent);
+                break;
+            default:
+                break;
         }
         this.type = type;
 
@@ -68,16 +70,24 @@ public class Action
                 logger.error("cannot demand same path without tokens: " + owned_tokens + " < " + own_token_offer);
                 System.exit(1);
             }
-
-            contract.set(agent, bid, own_token_offer);
         }
+
+        System.out.println(bid);
+        contract.set(agent, bid, own_token_offer);
 
         return contract;
     }
 
+    public String toWSMSGString() {
+        return agent.AGENT_ID + "-" + type.toString().toLowerCase();
+    }
 
     @Override
     public String toString() {
-        return agent.AGENT_ID + "-" + type.toString().toLowerCase();
+        return "Action{" +
+                "type=" + type +
+                ", bid=" + bid +
+                ", agent=" + agent.AGENT_ID +
+                '}';
     }
 }

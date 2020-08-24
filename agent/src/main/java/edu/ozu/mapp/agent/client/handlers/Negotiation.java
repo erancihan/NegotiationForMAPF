@@ -41,8 +41,10 @@ public class Negotiation {
                 System.exit(1);
             }
             sess = jedis.hgetAll("negotiation:"+session_id);
+            sess.put("_session_id", session_id);
 
-            System.out.println(sess);
+            logger.debug("{session_id:"+session_id+"}");
+            logger.debug(sess.toString());
         } catch (Exception e) {
             logger.error("Could not get contract " + WORLD_ID + " | " + AGENT_ID);
             e.printStackTrace();

@@ -34,6 +34,7 @@ public class Contract {
         ETb = sess.getOrDefault("ETb", "");
 
         sess_id = sess.get("_session_id");
+        Assert.isTrue(!sess_id.isEmpty(), "Session ID cannot be null");
     }
 
     public static Contract Create(Map<String, String> sess)
@@ -133,10 +134,12 @@ public class Contract {
 
     public void set(Agent agent, String O, int next)
     {
+        logger.debug("{A:"+A+", B:"+B+", Ox:"+O+", x:"+agent.AGENT_ID+"}");
         if (A.equals(agent.AGENT_ID))
         {
             int current = Integer.parseInt(getETa(agent));
-            if (current < next)
+            logger.debug("{current:"+current+", next:"+next+"}");
+//            if (current <= next)  // TODO take care of this later
             {
                 Ox = O;
                 x = agent.AGENT_ID;
@@ -147,17 +150,20 @@ public class Contract {
         if (B.equals(agent.AGENT_ID))
         {
             int current = Integer.parseInt(getETb(agent));
-            if (current < next)
+            logger.debug("{current:"+current+", next:"+next+"}");
+//            if (current <= next)  // TODO take care of this later
             {
                 Ox = O;
                 x = agent.AGENT_ID;
                 ETb = HAS_ENCRYPTION ? agent.Encrypt(String.valueOf(next)) : String.valueOf(next);
             }
         }
+        logger.debug("{A:"+A+", B:"+B+", Ox:"+Ox+", x:"+agent.AGENT_ID+"}");
     }
 
     private void apply()
     {
+        logger.debug("apply:{Ox:"+Ox+", session_id:"+sess_id+"}");
         redis.clients.jedis.Jedis jedis = JedisConnection.getInstance();
 
         jedis.hset("negotiation:"+sess_id, "Ox", Ox);
@@ -170,6 +176,7 @@ public class Contract {
 
     public void apply(NegotiationSession session)
     {
+        logger.debug("apply:{state:"+session.getActiveState()+"}");
         if (session.getActiveState().equals("run") || session.getActiveState().equals("join"))
         {
             apply();
@@ -185,5 +192,19 @@ public class Contract {
         }
 
         return true;
+    }
+
+    @Override
+    public String toString()
+    {
+        return "Contract{" +
+                "Ox='" + Ox + '\'' +
+                ", x='" + x + '\'' +
+                ", ETa='" + ETa + '\'' +
+                ", A='" + A + '\'' +
+                ", ETb='" + ETb + '\'' +
+                ", B='" + B + '\'' +
+                ", sess_id='" + sess_id + '\'' +
+                '}';
     }
 }

@@ -1,6 +1,7 @@
 package edu.ozu.mapp.agent;
 
 import edu.ozu.mapp.agent.client.NegotiationSession;
+import edu.ozu.mapp.agent.client.handlers.Negotiation;
 import edu.ozu.mapp.agent.client.handlers.World;
 import edu.ozu.mapp.agent.client.models.Contract;
 import edu.ozu.mapp.keys.AgentKeys;
@@ -109,46 +110,96 @@ public abstract class Agent {
         return GetBidSpace(POS, DEST);
     }
 
+    @SuppressWarnings("Duplicates")
     //<editor-fold defaultstate="collapsed" desc="Accept Last Bids">
-    public void acceptLastBids(JSONNegotiationSession json) {
-        String[] accepted_path = null;
-        for (String[] bid : json.bids) {
-            if (bid[0].equals("agent:" + AGENT_ID)) {   // fetch own accepted path
-                accepted_path = bid[1].split(":")[0].replaceAll("([\\[\\]]*)", "").split(",");
+    public void  acceptLastBids(JSONNegotiationSession json) {
+        // get contract
+        Contract contract = Negotiation.getContract(this);
+        logger.debug("AcceptLastBids:"+contract);
+        logger.debug("          json:"+json);
 
-                break;
-            }
-        }
-        Assert.notNull(accepted_path, "Accepted PATH should not be null!");
-        Assert.isTrue(accepted_path.length > 0, "Accepted PATH should not be empty!");
-
-        // acknowledge negotiation result and calculate from its last point to the goal
-        String[] end = accepted_path[accepted_path.length - 1].split("-");
-        // recalculate path starting from the end point of agreed path
-        List<String> rest = calculatePath(new Point(Integer.parseInt(end[0]), Integer.parseInt(end[1])), DEST);
-
-        // ...glue them together
         List<String> new_path = new ArrayList<>();
-        for (int idx = 0; idx < path.size() && !path.get(idx).equals(POS.key); idx++) { // prepend path so far until current POS
-            new_path.add(path.get(idx));
-        }
-        new_path.add(POS.key); // add current POS
-        for (int idx = 0; idx < accepted_path.length; idx++) { // add accepted paths
-            if (idx == 0 && accepted_path[idx].equals(POS.key)) {
-                continue; // skip if first index is current POS, as it is already added
+
+        // use contract to apply select paths
+        // if 'x' is self, update planned path
+        if (contract.x.equals(this.AGENT_ID)) {
+            logger.debug("x is self | {contract.x:"+contract.x + " == a_id:" + this.AGENT_ID + "}");
+
+            String[] Ox = contract.Ox.replaceAll("([\\[\\]]*)", "").split(",");
+
+            logger.debug("{current POS:" + this.POS + " == Ox[0]:" + Ox[0] + "}");
+            Assert.isTrue(this.POS.equals(new Point(Ox[0].split("-"))), "");
+
+            // acknowledge negotiation result and calculate from its last point to the goal
+            Point end = new Point(Ox[Ox.length - 1].split("-"));
+            // recalculate path starting from the end point of agreed path
+            logger.debug("{accepted_path:" + Arrays.toString(Ox) + "}");
+            List<String> rest = calculatePath(end, DEST);
+
+            // ...glue them together
+            new_path = new ArrayList<>();
+            for (int idx = 0; idx < path.size() && !path.get(idx).equals(POS.key); idx++)
+            {   // prepend path so far until current POS
+                // for history purposes
+                new_path.add(path.get(idx));
             }
-            new_path.add(accepted_path[idx]);
+            new_path.add(POS.key); // add current POS
+            for (int idx = 0; idx < Ox.length; idx++)
+            {   // add accepted paths
+                if (idx == 0 && Ox[idx].equals(POS.key))
+                {   // skip if first index is current POS, as it is already added
+                    continue;
+                }
+                new_path.add(Ox[idx]);
+            }
+
+            // ensure that connection points match
+            Assert.isTrue(
+                    new_path.get(new_path.size() - 1).equals(rest.get(0)),
+                    "Something went wrong while accepting last bids!"
+            );
+
+            // merge...
+            for (int idx = 1; idx < rest.size(); idx++)
+            {
+                new_path.add(rest.get(idx));
+            }
+        } else {
+            // else use 'Ox' & others as constraint & re-calculate path
+            logger.debug("x is not self | {contract.x:"+contract.x + " != a_id:" + this.AGENT_ID + "}");
+
+            String[] Ox = contract.Ox.replaceAll("([\\[\\]]*)", "").split(",");
+
+            // create constraints
+            ArrayList<String[]> constraints = new ArrayList<>();
+            for (int i = 0; i < Ox.length; i++)
+            {   // Add Ox as constraint
+                constraints.add(new String[]{Ox[i], String.valueOf(this.time + i)});
+            }
+            // TODO add from FoV
+
+            List<String> rest = AStar.calculateWithConstraints(POS, DEST, constraints.toArray(new String[0][0]));
+
+            new_path = new ArrayList<>();
+            for (int idx = 0; idx < path.size() && !path.get(idx).equals(POS.key); idx++)
+            {   // prepend path so far until current POS
+                // for history purposes
+                new_path.add(path.get(idx));
+            }
+
+            // ensure that connection points match
+            Assert.isTrue(POS.key.equals(rest.get(0)), "Something went wrong while accepting last bids!");
+            Assert.isTrue(DEST.key.equals(rest.get(rest.size() - 1)), "Something went wrong while accepting last bids!");
+
+            // merge...
+            // since current POS is already in 'rest'@0, we can just add it
+            new_path.addAll(rest);
         }
-        // ensure that connection points match
-        Assert.isTrue(
-                new_path.get(new_path.size() - 1).equals(rest.get(0)),
-                "Something went wrong while accepting last bids!"
-        );
-        for (int idx = 1; idx < rest.size(); idx++) { // merge...
-            new_path.add(rest.get(idx));
-        }
-        // commit to global
+
+        // update global path
+        logger.debug(this.AGENT_ID + "{path:" + this.path + "}");
         this.path = new_path;
+        logger.debug(this.AGENT_ID + "{path:" + this.path + "}");
 
         World.doBroadcast(WORLD_ID, AGENT_ID, getBroadcastArray());
     }

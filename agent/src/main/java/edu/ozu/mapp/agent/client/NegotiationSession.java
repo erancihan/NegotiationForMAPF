@@ -179,8 +179,9 @@ public class NegotiationSession
                             if (didBid) break;
 
                             edu.ozu.mapp.utils.Action action = client.onMakeAction();
+                            logger.debug(action.toString());
                             action.bid.apply(this); //TODO change behaviour
-                            websocket.sendMessage(action.toString());
+                            websocket.sendMessage(action.toWSMSGString());
 
                             didBid = true;
                         } else {
