@@ -11,6 +11,7 @@ def negotiation_notify(data: Notify, redis: Redis):
 
     agent_ids = ','.join(data.agents)
     session_id = redis.hget("world:" + data.world_id + ":session_key", agent_ids)
+    print("> session_id :", session_id)
     if session_id is not None:
         return
 
@@ -37,6 +38,6 @@ def negotiation_notify(data: Notify, redis: Redis):
     redis.hset("negotiation:"+session_id, "turn_count", "0")
     redis.hset("negotiation:"+session_id, "turn_index", "-1")
 
-    redis.hincrby("world:"+data.world_id+":", "negotiation_count", "1")
+    # redis.hincrby("world:"+data.world_id+":", "negotiation_count", "1")
 
     return
