@@ -300,8 +300,11 @@ public class WorldManager extends javax.swing.JFrame {
 
         if (state == ItemEvent.SELECTED)
         {
-            loop = true;
+            sim_start_time = System.nanoTime();
+            logger.debug("SIM_START_TIME="+sim_start_time);
             jedis.hset(WID, "time_tick", "0");
+            state_log.add(new Object[]{"- SIM_START", new java.sql.Timestamp(System.currentTimeMillis())});
+            loop = true;
         }
         if (state == ItemEvent.DESELECTED)
         {
@@ -347,6 +350,10 @@ public class WorldManager extends javax.swing.JFrame {
     private javax.swing.JTextPane text_view;
     private javax.swing.JTextField world_id;
     // End of variables declaration//GEN-END:variables
+
+    private long sim_start_time;
+    private long sim_finish_time;
+    private long sim_time_diff;
 
     private void onComponentsDidMount()
     {
@@ -426,7 +433,16 @@ public class WorldManager extends javax.swing.JFrame {
             // do nothing if there are no active agents
             if (loop) {
                 loop = false;
+                sim_finish_time = System.nanoTime();
                 cycle_states_toggle_btn.setSelected(false);
+
+                sim_time_diff = sim_finish_time - sim_start_time;
+
+                logger.debug("SIM_FINISH_TIME="+sim_finish_time);
+                logger.debug("SIM_DURATION_TIME:" + (sim_time_diff / 1E9));
+                long _t = System.currentTimeMillis();
+                state_log.add(new Object[]{"- SIM_FINISH", new java.sql.Timestamp(_t)});
+                state_log.add(new Object[]{"- SIM_DURATION: " + (sim_time_diff / 1E9) + " seconds", new java.sql.Timestamp(_t)});
             }
             return;
         }
