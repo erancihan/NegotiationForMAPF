@@ -5,6 +5,7 @@ import edu.ozu.mapp.agent.Agent;
 import edu.ozu.mapp.agent.client.handlers.Join;
 import edu.ozu.mapp.agent.client.handlers.Move;
 import edu.ozu.mapp.agent.client.handlers.Negotiation;
+import edu.ozu.mapp.agent.client.handlers.World;
 import edu.ozu.mapp.utils.Globals;
 import edu.ozu.mapp.utils.JSONWorldWatch;
 import edu.ozu.mapp.utils.Utils;
@@ -30,6 +31,7 @@ public class AgentHandler {
     private Gson gson;
 
     private int[] state_flag = new int[2];
+    private int is_moving = 1;
 
     AgentHandler(Agent client) {
         Assert.notNull(client.START, "«START cannot be null»");
@@ -238,7 +240,14 @@ public class AgentHandler {
     }
 
     private void move() {
+        // check if agent is moving
+        // 0: stopped  | out of moves
+        // 1: can move | has moves to move
+        if (is_moving == 0) return;
+
         String[] curr = clientRef.path.get(clientRef.time).split("-");
+        // if next time equals to path size
+        // current location is the destination
         if (clientRef.time + 1 < clientRef.path.size()) {
             String[] next = clientRef.path.get(clientRef.time + 1).split("-");
 
@@ -246,6 +255,12 @@ public class AgentHandler {
             Assert.isTrue((direction.length() > 0), "«DIRECTION cannot be empty»");
 
             clientRef.move(Move.move(WORLD_ID, clientRef.AGENT_ID, clientRef.POS, direction, clientRef.getNextBroadcast()));
+        } else {
+            // no more moves left, agent should stop
+            is_moving = 0;
+
+            // let the world know that you are done with it!
+            World.leave(WORLD_ID, clientRef.AGENT_ID);
         }
     }
 
@@ -283,6 +298,7 @@ public class AgentHandler {
             if (websocket != null) {
                 websocket.close();
             }
+            World.leave(WORLD_ID, clientRef.AGENT_ID);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -292,5 +308,13 @@ public class AgentHandler {
     public void exit() {
         leave();
         System.exit(0);
+    }
+
+    public String getDest() {
+        return clientRef.DEST.key;
+    }
+
+    public String getStart() {
+        return clientRef.START.key;
     }
 }

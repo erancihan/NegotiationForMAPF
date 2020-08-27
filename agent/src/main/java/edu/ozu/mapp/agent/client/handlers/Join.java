@@ -22,6 +22,9 @@ public class Join {
 
             // set bank data
             jedis.hset("world:" + worldID + ":bank", "agent:" + agentID, String.valueOf(Globals.INITIAL_TOKEN_BALANCE));
+
+            // register agent as ACTIVE
+            jedis.sadd("world:" + worldID + ":active_agents", "agent:" + agentID);
         } catch (Exception e) {
             logger.error("an error happened while joining to world");
             e.printStackTrace();

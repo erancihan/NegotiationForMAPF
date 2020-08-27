@@ -235,8 +235,12 @@ public abstract class Agent {
     //</editor-fold>
 
     public void move(JSONAgent response) {
+        // update internal clock
         time = time + 1;
+
+        // get next point
         Point nextPoint = new Point(path.get(Math.min(time, path.size() - 1)).split("-"));
+        // validate next location
         Assert.isTrue(
                 (response.agent_x + "-" + response.agent_y).equals(nextPoint.key),
                 "next point and move action does not match! \n" +
@@ -244,6 +248,7 @@ public abstract class Agent {
                         "\n PATH:" + path + "\n"
         );
 
+        // update current position
         POS = nextPoint;
     }
 

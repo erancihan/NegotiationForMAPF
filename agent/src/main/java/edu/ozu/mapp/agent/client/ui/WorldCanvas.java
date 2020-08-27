@@ -81,19 +81,23 @@ public class WorldCanvas extends Canvas {
             graphics.drawLine(offset, (offset + j*r), (offset + r*data.fov_size), (offset + j*r));
         }
 
-        if ((xy_own.x - fov_center) < 0 || (xy_own.y - fov_center) < 0)
-        { // draw walls
-            for (int y = 0; y < data.fov_size; y++)
-                for (int x = 0; x < data.fov_size; x++)
-                {
-                    int cx = xy_own.x - fov_center + x;
-                    int cy = xy_own.y - fov_center + y;
+        for (int y = 0; y < data.fov_size; y++)
+        {
+            for (int x = 0; x < data.fov_size; x++)
+            {
+                int cx = xy_own.x - fov_center + x;
+                int cy = xy_own.y - fov_center + y;
 
-                    if (cx >= 0 && cy >= 0) { continue; }
+                // draw coordinates
+                graphics.setColor(Color.RED);
+                graphics.drawString(cx + "," + cy, (offset + (x * r) + 2), (offset + (y * r) + 13));
 
+                if (cx < 0 || cy < 0)
+                {   // draw walls
                     graphics.setColor(new java.awt.Color(56, 56, 56));
                     graphics.fillRect((offset + (x * r) + 1), (offset + (y * r) + 1), (r - 1), (r - 1));
                 }
+            }
         }
     }
 

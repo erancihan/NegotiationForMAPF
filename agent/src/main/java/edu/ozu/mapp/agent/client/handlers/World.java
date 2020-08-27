@@ -87,4 +87,14 @@ public class World {
             e.printStackTrace();
         }
     }
+
+    public static void leave(String WorldID, String AgentID)
+    {
+        try {
+            jedis.srem("world:"+WorldID+":active_agents", "agent:"+AgentID);
+            logger.debug("World@leave{world:"+WorldID+": , agent:"+AgentID+"}");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }
