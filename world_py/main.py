@@ -101,4 +101,4 @@ if __name__ == '__main__':
     logging.getLogger('werkzeug').setLevel(logging.ERROR)
     logging.getLogger('geventwebsocket.handler').setLevel(logging.ERROR)
 
-    socketio.run(app, log_output=False)
+    socketio.run(app, port=5000, log_output=False)
