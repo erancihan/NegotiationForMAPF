@@ -422,6 +422,15 @@ public class WorldManager extends javax.swing.JFrame {
             return; // do nothing if there are no players
         }
 
+        if (data.get("active_agent_count").equals("0")) {
+            // do nothing if there are no active agents
+            if (loop) {
+                loop = false;
+                cycle_states_toggle_btn.setSelected(false);
+            }
+            return;
+        }
+
         switch (curr_state_id)
         {
             case 0:
