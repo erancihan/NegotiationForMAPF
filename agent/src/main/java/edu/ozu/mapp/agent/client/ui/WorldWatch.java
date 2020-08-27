@@ -114,9 +114,9 @@ public class WorldWatch extends javax.swing.JPanel {
                 "World_ID: " + data.world_id + "\n" +
                 "Location: " + data.position + "\n" +
                 "State   : " + Globals.WORLD_STATES.get(data.world_state) + "\n" +
-                "-----------\n"+
-                "ExecTime (ms): " + String.format("%8.4f", data.exec_time) + "\n" +
-                "Diff     (ms): " + String.format("%8.4f",(data.time - prev_time)/1E6) + "\n" +
+//                "-----------\n"+
+//                "ExecTime (ms): " + String.format("%8.4f", data.exec_time) + "\n" +
+//                "ReqTime  (ms): " + String.format("%8.4f",(data.time - prev_time)/1E6) + "\n" +
                 "-----------\n"+
                 "Field of View" +
                 Arrays.stream(data.fov)
@@ -126,7 +126,7 @@ public class WorldWatch extends javax.swing.JPanel {
                 "";
 
         text_panel.setText(sb);
-        prev_time = data.time;
+//        prev_time = data.time;
     }
 
     public void draw(JSONWorldWatch data, String[] agent_position_data)
