@@ -110,10 +110,12 @@ public class WorldWatch extends javax.swing.JPanel {
     {
         // write to text field
         String sb =
-                "Agent_ID: " + data.agent_id + "\n" +
-                "World_ID: " + data.world_id + "\n" +
-                "Location: " + data.position + "\n" +
-                "State   : " + Globals.WORLD_STATES.get(data.world_state) + "\n" +
+                "Agent_ID    : " + data.agent_id + "\n" +
+                "World_ID    : " + data.world_id + "\n" +
+                "Location    : " + data.position + "\n" +
+                "Start Loc.  : " + client.getStart() + "\n" +
+                "Destination : " + client.getDest() + "\n" +
+                "World State : " + Globals.WORLD_STATES.get(data.world_state) + "\n" +
 //                "-----------\n"+
 //                "ExecTime (ms): " + String.format("%8.4f", data.exec_time) + "\n" +
 //                "ReqTime  (ms): " + String.format("%8.4f",(data.time - prev_time)/1E6) + "\n" +

@@ -293,4 +293,12 @@ public class AgentHandler {
         leave();
         System.exit(0);
     }
+
+    public String getDest() {
+        return clientRef.DEST.key;
+    }
+
+    public String getStart() {
+        return clientRef.START.key;
+    }
 }
