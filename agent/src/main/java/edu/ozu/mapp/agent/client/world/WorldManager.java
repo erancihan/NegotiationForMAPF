@@ -66,7 +66,7 @@ public class WorldManager extends javax.swing.JFrame {
         javax.swing.JScrollPane jScrollPane2 = new javax.swing.JScrollPane();
         text_view = new javax.swing.JTextPane();
         javax.swing.JPanel controls_container = new javax.swing.JPanel();
-        javax.swing.JToggleButton cycle_states_toggle_btn = new javax.swing.JToggleButton();
+        cycle_states_toggle_btn = new javax.swing.JToggleButton();
         javax.swing.JButton join_state_btn = new javax.swing.JButton();
         javax.swing.JButton broadcast_state_btn = new javax.swing.JButton();
         javax.swing.JButton negotiate_state_btn = new javax.swing.JButton();
@@ -343,6 +343,7 @@ public class WorldManager extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel cards_container;
+    private javax.swing.JToggleButton cycle_states_toggle_btn;
     private javax.swing.JTextPane text_view;
     private javax.swing.JTextField world_id;
     // End of variables declaration//GEN-END:variables
