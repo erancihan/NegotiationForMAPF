@@ -1,6 +1,7 @@
 package edu.ozu.mapp.agent;
 
 import edu.ozu.mapp.agent.client.NegotiationSession;
+import edu.ozu.mapp.agent.client.handlers.FileLogger;
 import edu.ozu.mapp.agent.client.handlers.Negotiation;
 import edu.ozu.mapp.agent.client.handlers.World;
 import edu.ozu.mapp.agent.client.models.Contract;
@@ -14,6 +15,7 @@ import java.util.*;
 
 public abstract class Agent {
     public static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(Agent.class);
+    private static FileLogger fl;
 
     public String AGENT_NAME, AGENT_ID;
     public Point START, DEST;
@@ -36,6 +38,7 @@ public abstract class Agent {
         this.DEST       = dest;
 
         this.isHeadless = true; // unless client says so
+        fl = FileLogger.CreateAgentLogger(AGENT_ID);
 
         history = new HashMap<String, HashSet<String>>();
         // create and store agent keys
@@ -253,6 +256,7 @@ public abstract class Agent {
     }
 
     public void setWORLD_ID(String WORLD_ID) {
+        fl.setWorldID(WORLD_ID);
         this.WORLD_ID = WORLD_ID;
     }
 
@@ -297,5 +301,21 @@ public abstract class Agent {
     public Contract PrepareContract(NegotiationSession session)
     {
        return Contract.Create(this, session);
+    }
+
+    public void logNegoPre(String session_id) {
+        fl.logAgentPreNego(session_id, this);
+    }
+
+    public void logNegoPost(String session_id) {
+        fl.logAgentPostNego(session_id, this);
+    }
+
+    public void logNegoAct(Action action) {
+        fl.logAgentActNego(action, this);
+    }
+
+    public void logWorldJoin() {
+        fl.logAgentWorldJoin(this);
     }
 }

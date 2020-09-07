@@ -1,25 +1,33 @@
 package edu.ozu.mapp.agent.client.handlers;
 
 import edu.ozu.mapp.agent.Agent;
+import edu.ozu.mapp.agent.client.AgentHandler;
+import edu.ozu.mapp.utils.Action;
 import org.springframework.util.Assert;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.logging.Logger;
 
-public class FileLogger extends Logger {
+public class FileLogger {
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(FileLogger.class);
+
     private File file;
     private String file_path;
     private String WorldID;
     private String AgentID;
     private boolean IsAgent;
 
-    public static Logger getLogger(Class<?> clazz) {
-        return null;
+    public FileLogger(boolean IsAgent) {
+        this.IsAgent = IsAgent;
+    }
+
+    public FileLogger(String AgentID, boolean IsAgent) {
+        this(IsAgent);
+
+        this.AgentID = AgentID;
     }
 
     private static class SHEETS {
@@ -48,12 +56,12 @@ public class FileLogger extends Logger {
 
     public static FileLogger CreateAgentLogger(String AgentID)
     {
-        return new FileLogger();
+        return new FileLogger(AgentID, true);
     }
 
     public static FileLogger CreateWorldLogger(String WorldID)
     {
-        return new FileLogger();
+        return new FileLogger(false);
     }
 
     public void setAgentID(String agentID) {
@@ -78,30 +86,31 @@ public class FileLogger extends Logger {
         return file;
     }
 
-    private File getFile() throws IOException {
-        if (file == null) {
-            Assert.isTrue(!WorldID.isEmpty(), "World ID cannot be empty");
+    private File getWorldFile() throws IOException {
+        return getFile("", false);
+    }
 
-            if (IsAgent) {
-                Assert.isTrue(!AgentID.isEmpty(), "Agent ID cannot be empty");
-                file_path = String.format("logs/WORLD-%s/AGENT-%s.log", WorldID, AgentID);
-            } else {
-                file_path = String.format("logs/WORLD-%s/WORLD.log", WorldID);
-            }
-//            logger.debug(String.format("opening log file %s", file_path));
+    private File getFile(String Type) throws IOException {
+        return getFile(Type, IsAgent);
+    }
 
-            // open file if exists
-            file = new File(file_path);
-            file.getParentFile().mkdirs();
-            if (!file.exists()) {
-                file.createNewFile();
-            }
+    private File getFile(String Type, boolean IsAgentLog) throws IOException {
+        Assert.isTrue(!WorldID.isEmpty(), "World ID cannot be empty");
 
-            try (FileOutputStream stream = new FileOutputStream(file)) {
-//                workbook.write(stream);
-            }
+        String file_path;
+        if (IsAgentLog) {
+            Assert.isTrue(!AgentID.isEmpty(), "Agent ID cannot be empty");
+            file_path = String.format("logs/WORLD-%s/AGENT-%s-%s.log", WorldID, Type, AgentID);
+        } else {
+            file_path = String.format("logs/WORLD-%s/WORLD.log", WorldID);
+        }
+        logger.debug(String.format("opening log file %s", file_path));
 
-            return file;
+        // open file if exists
+        File file = new File(file_path);
+        file.getParentFile().mkdirs();
+        if (!file.exists()) {
+            file.createNewFile();
         }
 
         return file;
@@ -128,10 +137,80 @@ public class FileLogger extends Logger {
     public void logAgentPOS(Agent agent) {
         String timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date());
 
-        Assert.notNull("", "SHEET " + SHEETS.AGENT.COORD + " DOES NOT EXIST");
+        try {
+            FileWriter writer = new FileWriter(getFile(String.valueOf(SHEETS.AGENT.COORD)), true);
+            writer.append(timestamp).append(";").append(agent.POS.key).append(System.lineSeparator());
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
-    public void logW(String str) {
-        Assert.isTrue(!WorldID.isEmpty(), "World ID cannot be empty");
+    public void logAgentPreNego(String sessID, Agent agent) {
+        String timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date());
+
+        try {
+            FileWriter writer = new FileWriter(getFile(String.valueOf(SHEETS.AGENT.NEGOTIATIONS)), true);
+            writer
+                    .append(timestamp).append(";")
+                    .append("PRE" ).append(";")
+                    .append(sessID).append(";")
+                    .append(agent.path.toString()).append(";")
+                    .append(System.lineSeparator());
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void logAgentActNego(Action action, Agent agent) {
+        String timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date());
+
+        try {
+            FileWriter writer = new FileWriter(getFile(String.valueOf(SHEETS.AGENT.NEGOTIATIONS)), true);
+            writer
+                    .append(timestamp).append(";")
+                    .append("ACTION" ).append(";")
+                    .append(action.toString()).append(";")
+                    .append(System.lineSeparator())
+            ;
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void logAgentPostNego(String sessID, Agent agent) {
+        String timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date());
+
+        try {
+            FileWriter writer = new FileWriter(getFile(String.valueOf(SHEETS.AGENT.NEGOTIATIONS)), true);
+            writer
+                    .append(timestamp).append(";")
+                    .append("POST").append(";")
+                    .append(sessID).append(";")
+                    .append(agent.path.toString()).append(";")
+                    .append(System.lineSeparator());
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void logAgentWorldJoin(Agent agent) {
+        String timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date());
+
+        try {
+            FileWriter writer = new FileWriter(getWorldFile(), true);
+            writer
+                    .append(timestamp).append(";")
+                    .append(agent.AGENT_ID).append(";")
+                    .append("START:").append(agent.START.key).append(";")
+                    .append("DEST:").append(agent.DEST.key).append(";")
+                    .append(System.lineSeparator());
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

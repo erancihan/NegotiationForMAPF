@@ -2,13 +2,11 @@ package edu.ozu.mapp.agent.client;
 
 import com.google.gson.Gson;
 import edu.ozu.mapp.agent.Agent;
-import edu.ozu.mapp.agent.client.handlers.Join;
-import edu.ozu.mapp.agent.client.handlers.Move;
-import edu.ozu.mapp.agent.client.handlers.Negotiation;
-import edu.ozu.mapp.agent.client.handlers.World;
+import edu.ozu.mapp.agent.client.handlers.*;
 import edu.ozu.mapp.utils.Globals;
 import edu.ozu.mapp.utils.JSONWorldWatch;
 import edu.ozu.mapp.utils.Utils;
+import org.netbeans.modules.editor.document.StubImpl;
 import org.springframework.util.Assert;
 
 import java.io.IOException;
@@ -19,9 +17,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.BiConsumer;
+import java.util.logging.Logger;
 
 public class AgentHandler {
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(AgentHandler.class);
+    private static FileLogger fl;
 
     private String AGENT_NAME;
     private String WORLD_ID = "";
@@ -38,6 +38,9 @@ public class AgentHandler {
         Assert.notNull(client.AGENT_ID, "«AGENT_ID cannot be null»");
 
         clientRef = client;
+
+        // init file logger
+        fl = FileLogger.CreateAgentLogger(clientRef.AGENT_ID);
 
         AGENT_NAME = client.AGENT_NAME;
 
@@ -68,8 +71,11 @@ public class AgentHandler {
     {
         WORLD_ID = world_id.split(":")[1];
         logger.info("joining " + WORLD_ID);
+        fl.setWorldID(WORLD_ID);
+        fl.logAgentPOS(clientRef);
 
         clientRef.setWORLD_ID(WORLD_ID);
+        clientRef.logWorldJoin();
 
         Join.join(WORLD_ID, clientRef.AGENT_ID, clientRef.START, clientRef.getBroadcast());
         __watch(draw);
@@ -262,6 +268,7 @@ public class AgentHandler {
             // let the world know that you are done with it!
             World.leave(WORLD_ID, clientRef.AGENT_ID);
         }
+        fl.logAgentPOS(clientRef);
     }
 
     //<editor-fold defaultstate="collapsed" desc="Get Direction of next point">

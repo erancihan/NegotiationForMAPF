@@ -10,6 +10,7 @@ import java.util.HashMap;
 
 public class Move {
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(Move.class);
+
     private static redis.clients.jedis.Jedis jedis = JedisConnection.getInstance();
     private static Gson gson = new Gson();
 

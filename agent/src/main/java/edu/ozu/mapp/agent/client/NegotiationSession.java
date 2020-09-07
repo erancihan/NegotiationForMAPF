@@ -167,6 +167,7 @@ public class NegotiationSession
                         // join negotiation session WS
                         // send ready message to socket
                         client.preNegotiation();
+                        client.logNegoPre(session_id);
 
                         websocket.sendMessage("agent:" + client.AGENT_ID + "-ready");
                         didJoin = true;
@@ -180,6 +181,7 @@ public class NegotiationSession
 
                             edu.ozu.mapp.utils.Action action = client.onMakeAction();
                             logger.debug(action.toString());
+                            client.logNegoAct(action);
                             action.bid.apply(this); //TODO change behaviour
                             websocket.sendMessage(action.toWSMSGString());
 
@@ -200,6 +202,7 @@ public class NegotiationSession
                         }
                         //</editor-fold>
                         client.postNegotiation();
+                        client.logNegoPost(session_id);
                         break;
                     default:
                         logger.error("unexpected state, contact DEVs");
