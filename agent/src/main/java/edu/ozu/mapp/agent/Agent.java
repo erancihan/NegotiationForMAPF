@@ -325,11 +325,11 @@ public abstract class Agent {
         fl.logAgentActNego(action, this);
     }
 
-    public void setConflictLocation(String conflictLocation) {
+    public void SetConflictLocation(String conflictLocation) {
         this.conflictLocation = conflictLocation;
     }
 
-    public String getConflictLocation() {
+    public String GetConflictLocation() {
         return conflictLocation;
     }
 
@@ -341,5 +341,9 @@ public abstract class Agent {
         }
 
         history.get(AGENT_ID).add(O);
+    }
+
+    public String GetCurrentTokenC() {
+        return String.valueOf(World.getTokenBalance(WORLD_ID, AGENT_ID));
     }
 }

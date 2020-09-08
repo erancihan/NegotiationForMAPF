@@ -6,7 +6,6 @@ import edu.ozu.mapp.agent.client.handlers.*;
 import edu.ozu.mapp.utils.Globals;
 import edu.ozu.mapp.utils.JSONWorldWatch;
 import edu.ozu.mapp.utils.Utils;
-import org.netbeans.modules.editor.document.StubImpl;
 import org.springframework.util.Assert;
 
 import java.io.IOException;
@@ -17,7 +16,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.BiConsumer;
-import java.util.logging.Logger;
 
 public class AgentHandler {
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(AgentHandler.class);
@@ -191,7 +189,7 @@ public class AgentHandler {
                     // TODO
                     // since first Vertex Conflict found is immediately returned
                     // logging the conflict location here should pose no issue
-                    conflict_location = "";
+                    conflict_location = path[i];
                     return agent_ids.toArray(new String[0]);
                 }
             }
@@ -245,7 +243,7 @@ public class AgentHandler {
             {
                 if (sid.isEmpty()) { continue; }
 
-                clientRef.setConflictLocation(conflict_location);
+                clientRef.SetConflictLocation(conflict_location);
                 NegotiationSession session = new NegotiationSession(WORLD_ID, sid, clientRef);
                 session.connect();
             }

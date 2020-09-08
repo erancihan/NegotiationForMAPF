@@ -1,7 +1,6 @@
 package edu.ozu.mapp.agent.client.handlers;
 
 import edu.ozu.mapp.agent.Agent;
-import edu.ozu.mapp.agent.client.AgentHandler;
 import edu.ozu.mapp.utils.Action;
 import org.springframework.util.Assert;
 
@@ -160,7 +159,8 @@ public class FileLogger {
                     .append("PRE" ).append(";")                         // state
                     .append(sessID).append(";")                         // negotiation session id
                     .append(agent.path.toString()).append(";")          // agents path before negotiation session
-                    .append(agent.getConflictLocation()).append(";")    // conflict location
+                    .append(agent.GetCurrentTokenC()).append(";")       // print token count
+                    .append(agent.GetConflictLocation()).append(";")    // conflict location
                     .append(System.lineSeparator());
             writer.close();
         } catch (IOException e) {
@@ -191,10 +191,11 @@ public class FileLogger {
         try {
             FileWriter writer = new FileWriter(getFile(String.valueOf(SHEETS.AGENT.NEGOTIATIONS)), true);
             writer
-                    .append(timestamp).append(";")
-                    .append("POST").append(";")
-                    .append(sessID).append(";")
-                    .append(agent.path.toString()).append(";")
+                    .append(timestamp).append(";")                      // timestamp
+                    .append("POST").append(";")                         // state
+                    .append(sessID).append(";")                         // negotiation session id
+                    .append(agent.path.toString()).append(";")          // agents path after negotiation session
+                    .append(agent.GetCurrentTokenC()).append(";")       // print token count
                     .append(System.lineSeparator());
             writer.close();
         } catch (IOException e) {
