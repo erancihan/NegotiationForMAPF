@@ -71,6 +71,8 @@ public class World {
         try {
             String balance = jedis.hget("world:" + worldID + ":bank", "agent:" + agentID);
 
+            if (balance == null || balance.isEmpty()) return 0;
+
             return Integer.parseInt(balance);
         } catch (Exception e) {
             e.printStackTrace();

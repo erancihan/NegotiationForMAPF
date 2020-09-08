@@ -196,6 +196,7 @@ public class FileLogger {
                     .append(sessID).append(";")                         // negotiation session id
                     .append(agent.path.toString()).append(";")          // agents path after negotiation session
                     .append(agent.GetCurrentTokenC()).append(";")       // print token count
+                    .append("").append(";")                             // print win or lose
                     .append(System.lineSeparator());
             writer.close();
         } catch (IOException e) {
@@ -247,8 +248,26 @@ public class FileLogger {
         }
     }
 
-    public void logAgentNotify() {
+    public void LogAgentInfo(Agent agent) {
+        LogAgentInfo(agent, "");
+    }
 
+    public void LogAgentInfo(Agent agent, String step) {
+        String timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date());
+
+        try {
+            FileWriter writer = new FileWriter(getFile("INFO"), true);
+            writer
+                    .append(timestamp).append(";")                  // timestamp
+                    .append(agent.GetCurrentTokenC()).append(";")   // current token count
+                    .append(String.valueOf(agent.time)).append(";") // agent's internal time step counter
+                    .append(agent.POS.key).append(";")              // current pos of agent
+                    .append(step).append(";")                       // step name
+                    .append(System.lineSeparator());
+            writer.close();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
     }
 
     public void logWorldCreate() {

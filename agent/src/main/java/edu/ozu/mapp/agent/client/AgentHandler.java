@@ -70,13 +70,15 @@ public class AgentHandler {
     {
         WORLD_ID = world_id.split(":")[1];
         logger.info("joining " + WORLD_ID);
-        fl.setWorldID(WORLD_ID);            // SET AGENT WORLD INFO ON LOGGER
-        fl.logAgentPOS(clientRef);          // LOG AGENT LOCATION
 
         clientRef.setWORLD_ID(WORLD_ID);
-        fl.logAgentWorldJoin(clientRef);    // LOG AGENT JOIN
 
         Join.join(WORLD_ID, clientRef.AGENT_ID, clientRef.START, clientRef.getBroadcast());
+
+        fl.setWorldID(WORLD_ID);            // SET AGENT WORLD INFO ON LOGGER
+        fl.LogAgentInfo(clientRef, "JOIN");     // LOG AGENT INFO ON JOIN
+        fl.logAgentWorldJoin(clientRef);    // LOG AGENT JOIN
+
         __watch(draw);
     }
 
@@ -273,7 +275,7 @@ public class AgentHandler {
             // let the world know that you are done with it!
             World.leave(WORLD_ID, clientRef.AGENT_ID);
         }
-        fl.logAgentPOS(clientRef);
+        fl.LogAgentInfo(clientRef, "MOVE");  // LOG AGENT INFO ON MOVE CALL
     }
 
     //<editor-fold defaultstate="collapsed" desc="Get Direction of next point">
@@ -310,6 +312,7 @@ public class AgentHandler {
             if (websocket != null) {
                 websocket.close();
             }
+            fl.LogAgentInfo(clientRef, "LEAVE");  // LOG AGENT INFO ON LEAVE
             fl.logAgentWorldLeave(clientRef);           // LOG AGENT LEAVING
             World.leave(WORLD_ID, clientRef.AGENT_ID);
         } catch (IOException e) {
