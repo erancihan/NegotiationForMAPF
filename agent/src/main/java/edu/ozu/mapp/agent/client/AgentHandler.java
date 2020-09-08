@@ -32,6 +32,7 @@ public class AgentHandler {
 
     private int[] state_flag = new int[2];
     private int is_moving = 1;
+    private String conflict_location = "";
 
     AgentHandler(Agent client) {
         Assert.notNull(client.START, "«START cannot be null»");
@@ -71,11 +72,11 @@ public class AgentHandler {
     {
         WORLD_ID = world_id.split(":")[1];
         logger.info("joining " + WORLD_ID);
-        fl.setWorldID(WORLD_ID);
-        fl.logAgentPOS(clientRef);
+        fl.setWorldID(WORLD_ID);            // SET AGENT WORLD INFO ON LOGGER
+        fl.logAgentPOS(clientRef);          // LOG AGENT LOCATION
 
         clientRef.setWORLD_ID(WORLD_ID);
-        clientRef.logWorldJoin();
+        fl.logAgentWorldJoin(clientRef);    // LOG AGENT JOIN
 
         Join.join(WORLD_ID, clientRef.AGENT_ID, clientRef.START, clientRef.getBroadcast());
         __watch(draw);
@@ -187,6 +188,10 @@ public class AgentHandler {
                     agent_ids.add(broadcast[0]);
                     logger.info("found a Vertex Conflict at " + path[i] + "|" + Arrays.toString(broadcast));
 
+                    // TODO
+                    // since first Vertex Conflict found is immediately returned
+                    // logging the conflict location here should pose no issue
+                    conflict_location = "";
                     return agent_ids.toArray(new String[0]);
                 }
             }
@@ -210,6 +215,7 @@ public class AgentHandler {
             */
         }
 
+        conflict_location = "";
         return agent_ids.toArray(new String[0]);
     }
 
@@ -239,6 +245,7 @@ public class AgentHandler {
             {
                 if (sid.isEmpty()) { continue; }
 
+                clientRef.setConflictLocation(conflict_location);
                 NegotiationSession session = new NegotiationSession(WORLD_ID, sid, clientRef);
                 session.connect();
             }
@@ -305,6 +312,7 @@ public class AgentHandler {
             if (websocket != null) {
                 websocket.close();
             }
+            fl.logAgentWorldLeave(clientRef);           // LOG AGENT LEAVING
             World.leave(WORLD_ID, clientRef.AGENT_ID);
         } catch (IOException e) {
             e.printStackTrace();

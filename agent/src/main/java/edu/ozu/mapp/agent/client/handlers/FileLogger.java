@@ -139,7 +139,11 @@ public class FileLogger {
 
         try {
             FileWriter writer = new FileWriter(getFile(String.valueOf(SHEETS.AGENT.COORD)), true);
-            writer.append(timestamp).append(";").append(agent.POS.key).append(System.lineSeparator());
+            writer
+                    .append(timestamp).append(";")                  // timestamp
+                    .append(String.valueOf(agent.time)).append(";") // agent's internal time step counter
+                    .append(agent.POS.key).append(";")              // agent's location
+                    .append(System.lineSeparator());
             writer.close();
         } catch (IOException e) {
             e.printStackTrace();
@@ -152,10 +156,11 @@ public class FileLogger {
         try {
             FileWriter writer = new FileWriter(getFile(String.valueOf(SHEETS.AGENT.NEGOTIATIONS)), true);
             writer
-                    .append(timestamp).append(";")
-                    .append("PRE" ).append(";")
-                    .append(sessID).append(";")
-                    .append(agent.path.toString()).append(";")
+                    .append(timestamp).append(";")                      // timestamp
+                    .append("PRE" ).append(";")                         // state
+                    .append(sessID).append(";")                         // negotiation session id
+                    .append(agent.path.toString()).append(";")          // agents path before negotiation session
+                    .append(agent.getConflictLocation()).append(";")    // conflict location
                     .append(System.lineSeparator());
             writer.close();
         } catch (IOException e) {
@@ -201,16 +206,51 @@ public class FileLogger {
         String timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date());
 
         try {
+            /* In post process, this data will be joined by LEAVE */
             FileWriter writer = new FileWriter(getWorldFile(), true);
             writer
-                    .append(timestamp).append(";")
-                    .append(agent.AGENT_ID).append(";")
-                    .append("START:").append(agent.START.key).append(";")
-                    .append("DEST:").append(agent.DEST.key).append(";")
+                    .append(timestamp).append(";")                          // timestamp
+                    .append("JOIN").append(";")                             // agent's interaction with the world
+                    .append(agent.AGENT_ID).append(";")                     // agent identifier
+                    .append(agent.AGENT_NAME).append(";")                   // name
+                    .append("START:").append(agent.START.key).append(";")   // source
+                    .append("DEST:").append(agent.DEST.key).append(";")     // destination
+                    .append(agent.path.toString()).append(";")              // initial planned path
+                    .append(String.valueOf(agent.path.size())).append(";")  // initial planned path length
+                    // TODO initial token count
                     .append(System.lineSeparator());
             writer.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public void logAgentWorldLeave(Agent agent) {
+        String timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date());
+
+        try {
+            FileWriter writer = new FileWriter(getWorldFile(), true);
+            writer
+                    .append(timestamp).append(";")                          // timestamp
+                    .append("LEAVE").append(";")                            // agent's interaction with the world
+                    .append(agent.AGENT_ID).append(";")                     // agent identifier
+                    .append(agent.path.toString()).append(";")              // @LEAVE this is the path taken
+                    .append(String.valueOf(agent.path.size())).append(";")  // @LEAVE this is the taken path length
+                    // TODO nego count
+                    .append(String.valueOf(agent.winC)).append(";")         // sum win
+                    .append(String.valueOf(agent.loseC)).append(";")        // sum lose
+                    .append(System.lineSeparator());
+            writer.close();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    public void logAgentNotify() {
+
+    }
+
+    public void logWorldCreate() {
+        // TODO log world configuration
     }
 }

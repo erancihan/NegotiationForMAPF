@@ -8,13 +8,15 @@ import edu.ozu.mapp.agent.client.models.Contract;
 import edu.ozu.mapp.keys.AgentKeys;
 import edu.ozu.mapp.keys.KeyHandler;
 import edu.ozu.mapp.utils.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
 import java.security.PublicKey;
 import java.util.*;
 
 public abstract class Agent {
-    public static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(Agent.class);
+    public static final Logger logger = LoggerFactory.getLogger(Agent.class);
     private static FileLogger fl;
 
     public String AGENT_NAME, AGENT_ID;
@@ -29,6 +31,10 @@ public abstract class Agent {
 
     public String WORLD_ID;
     public AgentKeys keys;
+    private String conflictLocation;
+
+    public int winC = 0;
+    public int loseC = 0;
 
     public Agent(String agentName, String agentID, Point start, Point dest)
     {
@@ -126,6 +132,7 @@ public abstract class Agent {
         // use contract to apply select paths
         // if 'x' is self, update planned path
         if (contract.x.equals(this.AGENT_ID)) {
+            // WIN condition
             logger.debug("x is self | {contract.x:"+contract.x + " == a_id:" + this.AGENT_ID + "}");
 
             String[] Ox = contract.Ox.replaceAll("([\\[\\]]*)", "").split(",");
@@ -167,8 +174,10 @@ public abstract class Agent {
             {
                 new_path.add(rest.get(idx));
             }
+            winC++;
         } else {
             // else use 'Ox' & others as constraint & re-calculate path
+            // LOSE condition
             logger.debug("x is not self | {contract.x:"+contract.x + " != a_id:" + this.AGENT_ID + "}");
 
             String[] Ox = contract.Ox.replaceAll("([\\[\\]]*)", "").split(",");
@@ -197,6 +206,7 @@ public abstract class Agent {
             // merge...
             // since current POS is already in 'rest'@0, we can just add it
             new_path.addAll(rest);
+            loseC++;
         }
 
         // update global path
@@ -210,13 +220,13 @@ public abstract class Agent {
 
     //<editor-fold defaultstate="collapsed" desc="Get Broadcast">
     public String getBroadcast() {
-        return edu.ozu.mapp.utils.Utils.toString(getBroadcastArray(this.time), ",");
+        return Utils.toString(getBroadcastArray(this.time), ",");
     }
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Get Next Broadcast">
     public String getNextBroadcast() {
-        return edu.ozu.mapp.utils.Utils.toString(getBroadcastArray(this.time + 1), ",");
+        return Utils.toString(getBroadcastArray(this.time + 1), ",");
     }
     //</editor-fold>
 
@@ -315,7 +325,11 @@ public abstract class Agent {
         fl.logAgentActNego(action, this);
     }
 
-    public void logWorldJoin() {
-        fl.logAgentWorldJoin(this);
+    public void setConflictLocation(String conflictLocation) {
+        this.conflictLocation = conflictLocation;
+    }
+
+    public String getConflictLocation() {
+        return conflictLocation;
     }
 }
