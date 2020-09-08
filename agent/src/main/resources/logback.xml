@@ -8,7 +8,7 @@
         </filter>
         <encoder>
             <pattern>
-                %black(%d{YYYY-MM-DD HH:mm:ss.SSS}) %highlight(%-5level) [%cyan(%-16t)] %yellow(%-40C{1.}) %-35blue(%class{0}.java:%line): %msg%n%throwable
+                %black(%d{YYYY-MM-DD HH:mm:ss.SSS}) %highlight(%-5level) [%cyan(%-16t)] %yellow(%-50C{1.}) %-40blue(%class{0}.java:%line): %msg%n%throwable
             </pattern>
         </encoder>
     </appender>
@@ -20,7 +20,7 @@
         </filter>
         <encoder>
             <pattern>
-                %black(%d{YYYY-MM-DD HH:mm:ss.SSS}) %highlight(%-5level) [%cyan(%-16t)] %yellow(%-40C{1.}) %-35blue(%class{0}.java:%line): %red(%msg) %n%throwable
+                %black(%d{YYYY-MM-DD HH:mm:ss.SSS}) %highlight(%-5level) [%cyan(%-16t)] %yellow(%-50C{1.}) %-40blue(%class{0}.java:%line): %red(%msg) %n%throwable
             </pattern>
         </encoder>
     </appender>
