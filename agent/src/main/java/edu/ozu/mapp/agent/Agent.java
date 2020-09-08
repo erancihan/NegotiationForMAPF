@@ -332,4 +332,14 @@ public abstract class Agent {
     public String getConflictLocation() {
         return conflictLocation;
     }
+
+    public void OnContractUpdated(String O)
+    {
+        if (!history.containsKey(AGENT_ID))
+        {
+            history.put(AGENT_ID, new HashSet<String>());
+        }
+
+        history.get(AGENT_ID).add(O);
+    }
 }

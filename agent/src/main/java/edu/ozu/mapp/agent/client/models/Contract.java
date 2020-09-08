@@ -158,7 +158,8 @@ public class Contract {
                 ETb = HAS_ENCRYPTION ? agent.Encrypt(String.valueOf(next)) : String.valueOf(next);
             }
         }
-        logger.debug("{A:"+A+", B:"+B+", Ox:"+Ox+", x:"+agent.AGENT_ID+"}");
+        logger.debug("Cotract@Set{A:"+A+", B:"+B+", Ox:"+Ox+", x:"+agent.AGENT_ID+"}");
+        agent.OnContractUpdated(O);
     }
 
     private void apply()
@@ -197,14 +198,6 @@ public class Contract {
     @Override
     public String toString()
     {
-        return "Contract{" +
-                "Ox='" + Ox + '\'' +
-                ", x='" + x + '\'' +
-                ", ETa='" + ETa + '\'' +
-                ", A='" + A + '\'' +
-                ", ETb='" + ETb + '\'' +
-                ", B='" + B + '\'' +
-                ", sess_id='" + sess_id + '\'' +
-                '}';
+        return String.format("Contract{Ox:'%s', x:'%s', ETa:'%s', A:'%s', ETb:'%s', B:'%s', sess_id:'%s'}", Ox, x, ETa, A, ETb, B, sess_id);
     }
 }

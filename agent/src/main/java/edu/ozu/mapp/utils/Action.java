@@ -45,6 +45,7 @@ public class Action
     private Contract makeOffer(Agent agent, ActionType type, String bid)
     {
         int owned_tokens = World.getTokenBalance(agent.WORLD_ID, agent.AGENT_ID);   // get own token balance
+        logger.debug("owned tokens: " + owned_tokens);
 
         Contract contract = Negotiation.getContract(agent);
 
@@ -52,8 +53,6 @@ public class Action
 
         boolean will_increase_tokens = false;
         // if current bid is in agents bid history
-        System.out.println(agent);
-        System.out.println(agent.getOwnBidHistory());
         if (agent.getOwnBidHistory().contains(bid)) {
             will_increase_tokens = true;
         }
@@ -62,7 +61,9 @@ public class Action
         if (agent.getBroadcast().equals(bid)) {
             will_increase_tokens = true;
         }
-
+        logger.debug("broadcast   : " + agent.getBroadcast());
+        logger.debug("bid         : " + bid);
+        logger.debug("token offer : " + own_token_offer);
         if (will_increase_tokens) {
             own_token_offer += 1;
 
@@ -71,8 +72,8 @@ public class Action
                 System.exit(1);
             }
         }
+        logger.debug("token offer : " + own_token_offer);
 
-        System.out.println(bid);
         contract.set(agent, bid, own_token_offer);
 
         return contract;
@@ -84,10 +85,6 @@ public class Action
 
     @Override
     public String toString() {
-        return "Action{" +
-                "type=" + type +
-                ", bid=" + bid +
-                ", agent=" + agent.AGENT_ID +
-                '}';
+        return String.format("Action{type: %6s, bid: %s, agent: %s}", type, bid, agent.AGENT_ID);
     }
 }
