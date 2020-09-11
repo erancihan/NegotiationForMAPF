@@ -35,12 +35,15 @@ public class WorldManager extends javax.swing.JFrame {
     private boolean isJedisOK = true;
     private boolean loop = false;
 
+    private World world;
+
     /**
      * Creates new form WorldHandler
      */
     public WorldManager()
     {
         logger.info("init");
+        world = new World();
 
         initComponents();
         onComponentsDidMount();
@@ -375,7 +378,7 @@ public class WorldManager extends javax.swing.JFrame {
         if (!isJedisOK) { return; }
 
         WID = "world:" + world_id.getText() + ":";
-        WorldListener = new World().CreateWorld(
+        WorldListener = new World().Create(
             WID,
             (message) -> {
                 // update canvas
@@ -411,7 +414,7 @@ public class WorldManager extends javax.swing.JFrame {
         if (!isJedisOK || WID == null) { return; }
 
         if (WorldListener != null) WorldListener.close();
-        World.DeleteWorld(WID);
+        World.Delete(WID);
     }
 
     private int prev_state_id = -1;

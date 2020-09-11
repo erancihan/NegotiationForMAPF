@@ -11,7 +11,7 @@ public class World
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(World.class);
     private static redis.clients.jedis.Jedis jedis;
 
-    public static void DeleteWorld(String WID)
+    public static void Delete(String WID)
     {
         logger.info("Deleting " + WID + " ...");
 
@@ -21,7 +21,7 @@ public class World
         Utils.post("http://localhost:5000/world/delete", payload);
     }
 
-    public WorldWatchSocketIO CreateWorld(String WID, Consumer<String> callback)
+    public WorldWatchSocketIO Create(String WID, Consumer<String> callback)
     {
         HashMap<String, Object> payload = new HashMap<>();
         payload.put("world_id", WID);
