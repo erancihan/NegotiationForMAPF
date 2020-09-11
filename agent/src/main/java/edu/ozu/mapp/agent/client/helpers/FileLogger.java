@@ -2,13 +2,17 @@ package edu.ozu.mapp.agent.client.helpers;
 
 import edu.ozu.mapp.agent.Agent;
 import edu.ozu.mapp.utils.Action;
+import edu.ozu.mapp.utils.Globals;
 import org.springframework.util.Assert;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 public class FileLogger {
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(FileLogger.class);
@@ -60,15 +64,19 @@ public class FileLogger {
 
     public static FileLogger CreateWorldLogger(String WorldID)
     {
-        return new FileLogger(false);
+        return new FileLogger(false).setWorldID(WorldID);
     }
 
-    public void setAgentID(String agentID) {
+    public FileLogger setAgentID(String agentID) {
         AgentID = agentID;
+
+        return this;
     }
 
-    public void setWorldID(String worldID) {
+    public FileLogger setWorldID(String worldID) {
         WorldID = worldID;
+
+        return this;
     }
 
     private File getFile(String WorldID, String AgentID) throws IOException {
@@ -203,7 +211,7 @@ public class FileLogger {
             writer
                     .append(timestamp).append(";")
                     .append(String.format(
-                            "{\"name\":\"%s\", \"turn\": \"%s\", \"contract\": \"%s\"}",
+                            "{\"name\":\"%s\", \"turn\":\"%s\", \"contract\":\"%s\"}",
                             name,                                       // ACCEPT or OFFER
                             prev_bidding_agent,                         // whose turn it is
                             Negotiation.getContract(agent).toString()   // contract
@@ -245,14 +253,17 @@ public class FileLogger {
             /* In post process, this data will be joined by LEAVE */
             FileWriter writer = new FileWriter(getWorldFile(), true);
             writer
-                    .append(timestamp).append(";")                          // timestamp
-                    .append("JOIN").append(";")                             // agent's interaction with the world
-                    .append(agent.AGENT_ID).append(";")                     // agent identifier
-                    .append(agent.AGENT_NAME).append(";")                   // name
-                    .append("START:").append(agent.START.key).append(";")   // source
-                    .append("DEST:").append(agent.DEST.key).append(";")     // destination
-                    .append(agent.path.toString()).append(";")              // initial planned path
-                    .append(String.valueOf(agent.path.size())).append(";")  // initial planned path length
+                    .append(timestamp).append(";")              // timestamp
+                    .append(String.format(
+                            "{\"name\":\"%s\",\"agent_id\":\"%s\",\"agent_name\":\"%s\",\"start\":\"%s\",\"dest\":\"%s\",\"path\":\"%s\",\"path_len\":\"%s\"}",
+                            "AGENT_JOIN",
+                            agent.AGENT_ID,                     // agent identifier
+                            agent.AGENT_NAME,                   // name
+                            agent.START.key,                    // source
+                            agent.DEST.key,                     // destination
+                            agent.path.toString(),              // initial planned path
+                            agent.path.size()                   // initial planned path length
+                    ))
                     // TODO initial token count
                     .append(System.lineSeparator());
             writer.close();
@@ -268,13 +279,16 @@ public class FileLogger {
             FileWriter writer = new FileWriter(getWorldFile(), true);
             writer
                     .append(timestamp).append(";")                          // timestamp
-                    .append("LEAVE").append(";")                            // agent's interaction with the world
-                    .append(agent.AGENT_ID).append(";")                     // agent identifier
-                    .append(agent.path.toString()).append(";")              // @LEAVE this is the path taken
-                    .append(String.valueOf(agent.path.size())).append(";")  // @LEAVE this is the taken path length
-                    // TODO nego count
-                    .append(String.valueOf(agent.winC)).append(";")         // sum win
-                    .append(String.valueOf(agent.loseC)).append(";")        // sum lose
+                    .append(String.format(
+                            "{\"name\":\"%s\",\"agent_id\":\"%s\",\"path\":\"%s\",\"negoC\":\"%s\",\"winC\":\"%s\",\"loseC\":\"%s\"}",
+                            "LEAVE",                    // agent's interaction with the world
+                            agent.AGENT_ID,             // agent identifier
+                            agent.path.toString(),      // @LEAVE this is the path taken
+                            agent.path.size(),          // @LEAVE this is the taken path length
+                            (agent.winC + agent.loseC), // sum w&l
+                            agent.winC,                 // sum win
+                            agent.loseC                 // sum lose
+                    ))
                     .append(System.lineSeparator());
             writer.close();
         } catch (IOException ex) {
@@ -304,7 +318,120 @@ public class FileLogger {
         }
     }
 
-    public void logWorldCreate() {
-        // TODO log world configuration
+    public void logWorldCreate(HashMap<String, Object> payload) {
+        String timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date());
+
+        try {
+            FileWriter writer = new FileWriter(getWorldFile(), true);
+            writer
+                    .append(timestamp).append(";")
+                    .append(String.format(
+                            "{\"name\":\"%s\", \"world_id\":\"%s\", \"dimensions\":\"%s\"}",
+                            "CREATE",
+                            payload.get("world_id"),
+                            payload.get("dimensions")
+                    ))
+                    .append(System.lineSeparator());
+            writer.close();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    public void LogWorldJoin(Map<String, String> data) {
+        String timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date());
+
+        try {
+            FileWriter writer = new FileWriter(getWorldFile(), true);
+            writer
+                    .append(timestamp).append(";")
+                    .append(String.format(
+                            "{\"name\":\"%s\", \"player_count\":\"%s\", \"time_tick\":\"%s\"}",
+                            "JOIN",
+                            data.get("player_count"),
+                            data.get("time_tick")
+                    ))
+                    .append(System.lineSeparator());
+            writer.close();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    public void LogWorldDone(Map<String, String> data, double sim_time_diff) {
+        String timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date());
+
+        try {
+            FileWriter writer = new FileWriter(getWorldFile(), true);
+            writer
+                    .append(timestamp).append(";")
+                    .append(String.format(
+                            "{\"name\":\"%s\", \"duration\":\"%s\"}",
+                            "DONE",
+                            sim_time_diff
+                    ))
+                    .append(System.lineSeparator());
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void LogWorldStateBroadcast(Map<String, String> data, Timestamp t)
+    {
+        String timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(t);
+
+        try {
+            FileWriter writer = new FileWriter(getWorldFile(), true);
+            writer
+                    .append(timestamp).append(";")
+                    .append(String.format(
+                            "{\"name\":\"%s\"}",
+                            Globals.WorldState.BROADCAST
+                    ))
+                    .append(System.lineSeparator());
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void LogWorldStateNegotiate(Map<String, String> data, Timestamp t, String state)
+    {
+        String timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(t);
+
+        try {
+            FileWriter writer = new FileWriter(getWorldFile(), true);
+            writer
+                    .append(timestamp).append(";")
+                    .append(String.format(
+                            "{\"name\":\"%s\", \"state\":\"%s\"}",
+                            Globals.WorldState.NEGOTIATE,
+                            state
+                    ))
+                    .append(System.lineSeparator());
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void LogWorldStateMove(Map<String, String> data, Timestamp t)
+    {
+        String timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(t);
+
+        try {
+            FileWriter writer = new FileWriter(getWorldFile(), true);
+            writer
+                    .append(timestamp).append(";")
+                    .append(String.format(
+                            "{\"name\":\"%s\"}",
+                            Globals.WorldState.MOVE
+                    ))
+                    .append(System.lineSeparator());
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
