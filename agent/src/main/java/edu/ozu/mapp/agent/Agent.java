@@ -1,9 +1,9 @@
 package edu.ozu.mapp.agent;
 
 import edu.ozu.mapp.agent.client.NegotiationSession;
-import edu.ozu.mapp.agent.client.handlers.FileLogger;
-import edu.ozu.mapp.agent.client.handlers.Negotiation;
-import edu.ozu.mapp.agent.client.handlers.WorldHandler;
+import edu.ozu.mapp.agent.client.helpers.FileLogger;
+import edu.ozu.mapp.agent.client.helpers.Negotiation;
+import edu.ozu.mapp.agent.client.helpers.WorldHandler;
 import edu.ozu.mapp.agent.client.models.Contract;
 import edu.ozu.mapp.keys.AgentKeys;
 import edu.ozu.mapp.keys.KeyHandler;

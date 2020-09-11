@@ -2,7 +2,7 @@ package edu.ozu.mapp.agent.client.models;
 
 import edu.ozu.mapp.agent.Agent;
 import edu.ozu.mapp.agent.client.NegotiationSession;
-import edu.ozu.mapp.agent.client.handlers.JedisConnection;
+import edu.ozu.mapp.agent.client.helpers.JedisConnection;
 import edu.ozu.mapp.keys.KeyHandler;
 import org.springframework.util.Assert;
 import redis.clients.jedis.Jedis;

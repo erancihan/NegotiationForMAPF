@@ -1,4 +1,4 @@
-package edu.ozu.mapp.agent.client.handlers;
+package edu.ozu.mapp.agent.client.helpers;
 
 import com.google.gson.Gson;
 import edu.ozu.mapp.utils.Globals;

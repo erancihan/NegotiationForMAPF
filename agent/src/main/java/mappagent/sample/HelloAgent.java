@@ -2,7 +2,7 @@ package mappagent.sample;
 
 import edu.ozu.mapp.agent.Agent;
 import edu.ozu.mapp.agent.client.AgentClient;
-import edu.ozu.mapp.agent.client.handlers.WorldHandler;
+import edu.ozu.mapp.agent.client.helpers.WorldHandler;
 import edu.ozu.mapp.utils.AStar;
 import edu.ozu.mapp.utils.Action;
 import edu.ozu.mapp.utils.ActionType;

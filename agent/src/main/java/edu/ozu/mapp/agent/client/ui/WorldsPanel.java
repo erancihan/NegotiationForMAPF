@@ -6,7 +6,7 @@
 package edu.ozu.mapp.agent.client.ui;
 
 import edu.ozu.mapp.agent.client.AgentHandler;
-import edu.ozu.mapp.agent.client.handlers.WorldHandler;
+import edu.ozu.mapp.agent.client.helpers.WorldHandler;
 
 import javax.swing.*;
 

@@ -2,7 +2,7 @@ package edu.ozu.mapp.agent.client;
 
 import com.google.gson.Gson;
 import edu.ozu.mapp.agent.Agent;
-import edu.ozu.mapp.agent.client.handlers.*;
+import edu.ozu.mapp.agent.client.helpers.*;
 import edu.ozu.mapp.utils.Globals;
 import edu.ozu.mapp.utils.JSONWorldWatch;
 import edu.ozu.mapp.utils.Utils;

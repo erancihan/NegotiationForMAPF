@@ -1,4 +1,4 @@
-package edu.ozu.mapp.agent.client.handlers;
+package edu.ozu.mapp.agent.client.helpers;
 
 import edu.ozu.mapp.utils.Globals;
 import redis.clients.jedis.Jedis;

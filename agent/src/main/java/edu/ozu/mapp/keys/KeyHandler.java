@@ -1,7 +1,7 @@
 package edu.ozu.mapp.keys;
 
 import edu.ozu.mapp.agent.Agent;
-import edu.ozu.mapp.agent.client.handlers.JedisConnection;
+import edu.ozu.mapp.agent.client.helpers.JedisConnection;
 import org.springframework.util.Assert;
 
 import javax.crypto.Cipher;
