@@ -149,18 +149,21 @@ public class FileLogger {
         }
     }
 
-    public void logAgentPreNego(String sessID, Agent agent) {
+    public void logAgentPreNego(String SessID, Agent agent) {
         String timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date());
 
         try {
             FileWriter writer = new FileWriter(getFile(String.valueOf(SHEETS.AGENT.NEGOTIATIONS)), true);
             writer
-                    .append(timestamp).append(";")                      // timestamp
-                    .append("PRE" ).append(";")                         // state
-                    .append(sessID).append(";")                         // negotiation session id
-                    .append(agent.path.toString()).append(";")          // agents path before negotiation session
-                    .append(agent.GetCurrentTokenC()).append(";")       // print token count
-                    .append(agent.GetConflictLocation()).append(";")    // conflict location
+                    .append(timestamp).append(";")      // timestamp
+                    .append(String.format(
+                            "{\"name\":\"%s\", \"session_id\":\"%s\", \"path\":\"%s\", \"token\":\"%s\", \"conflict_location\":\"%s\"}",
+                            "PRE",
+                            SessID,                     // negotiation session id
+                            agent.path.toString(),      // agents path before negotiation session
+                            agent.GetCurrentTokenC(),   // print token count
+                            agent.GetConflictLocation() // conflict location
+                    ))
                     .append(System.lineSeparator());
             writer.close();
         } catch (IOException e) {
@@ -185,18 +188,49 @@ public class FileLogger {
         }
     }
 
-    public void logAgentPostNego(String sessID, Agent agent) {
+    public void LogAgentNegotiationState(String prev_bidding_agent, Agent agent)
+    {
+        LogAgentNegotiationState(prev_bidding_agent, agent, false);
+    }
+
+    public void LogAgentNegotiationState(String prev_bidding_agent, Agent agent, boolean IsAccept)
+    {
+        String timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date());
+        String name = IsAccept ? "ACCEPT" : "OFFER";
+
+        try {
+            FileWriter writer = new FileWriter(getFile(String.valueOf(SHEETS.AGENT.NEGOTIATIONS)), true);
+            writer
+                    .append(timestamp).append(";")
+                    .append(String.format(
+                            "{\"name\":\"%s\", \"turn\": \"%s\", \"contract\": \"%s\"}",
+                            name,                                       // ACCEPT or OFFER
+                            prev_bidding_agent,                         // whose turn it is
+                            Negotiation.getContract(agent).toString()   // contract
+                    ))
+                    .append(System.lineSeparator())
+            ;
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void logAgentPostNego(String SessID, Agent agent) {
         String timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date());
 
         try {
             FileWriter writer = new FileWriter(getFile(String.valueOf(SHEETS.AGENT.NEGOTIATIONS)), true);
             writer
-                    .append(timestamp).append(";")                      // timestamp
-                    .append("POST").append(";")                         // state
-                    .append(sessID).append(";")                         // negotiation session id
-                    .append(agent.path.toString()).append(";")          // agents path after negotiation session
-                    .append(agent.GetCurrentTokenC()).append(";")       // print token count
-                    .append("").append(";")                             // print win or lose
+                    .append(timestamp).append(";")      // timestamp
+                    .append(String.format(
+                            "{\"name\":\"%s\", \"session_id\":\"%s\", \"path\":\"%s\", \"token\":\"%s\", \"is_win\":\"%s\"}",
+                            "POST",
+                            SessID,                     // negotiation session id
+                            agent.path.toString(),      // agents path after negotiation session
+                            agent.GetCurrentTokenC(),   // print token count
+                            agent.negotiation_result    // print win or lose
+                    ))
                     .append(System.lineSeparator());
             writer.close();
         } catch (IOException e) {

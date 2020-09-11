@@ -20,6 +20,8 @@ public class NegotiationSession
     private String world_id;
     private String session_id;
     private String active_state = "";
+    private String bidding_agent = "";
+
     boolean didJoin = false;
     boolean didBid = false;
         int _didBid = -1;
@@ -135,6 +137,7 @@ public class NegotiationSession
         didBid = false;
         didJoin = false;
         active_state = "";
+        bidding_agent = "";
 
         Assert.notNull(session_id, "Session ID cannot be null!");
 
@@ -175,18 +178,28 @@ public class NegotiationSession
                         break;
                     case "run":
                         logger.info(client.AGENT_ID + " : session=" + session_id + " : state=run : turn=" + json.turn );
+
                         if (json.turn.equals("agent:" + client.AGENT_ID))
                         {   // own turn to bid
                             if (didBid) break;
+                            didBid = true;  // don't make me do this again...
+
+                            // bidding agent is empty in the first bid
+                            if (!bidding_agent.isEmpty())
+                            {   // no need to log it if first bid does not exist yet
+                                client.LogNegotiationState(bidding_agent);
+                            }
 
                             edu.ozu.mapp.utils.Action action = client.onMakeAction();
                             logger.debug(action.toString());
-                            client.logNegoAct(action);
                             action.bid.apply(this); //TODO change behaviour
                             websocket.sendMessage(action.toWSMSGString());
 
-                            didBid = true;
+                            // bidding agent is me, and i made my bid
+                            bidding_agent = json.turn;
+                            client.LogNegotiationState(bidding_agent, action);
                         } else {
+                            bidding_agent = json.turn;
                             didBid = false;
                         }
                         break;
@@ -202,7 +215,7 @@ public class NegotiationSession
                         }
                         //</editor-fold>
                         client.postNegotiation();
-                        client.logNegoPost(session_id);
+                        client.LogNegotiationOver(bidding_agent, session_id);
                         break;
                     default:
                         logger.error("unexpected state, contact DEVs");

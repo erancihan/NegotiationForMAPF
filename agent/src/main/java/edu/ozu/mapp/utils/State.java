@@ -17,4 +17,8 @@ public class State {
         bids = json.bids;
         turn = json.turn;
     }
+
+    public String getTurn() {
+        return turn;
+    }
 }
