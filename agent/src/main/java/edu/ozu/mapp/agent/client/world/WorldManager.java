@@ -6,7 +6,6 @@
 package edu.ozu.mapp.agent.client.world;
 
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import edu.ozu.mapp.agent.client.WorldWatchSocketIO;
 import edu.ozu.mapp.utils.Globals;
 import edu.ozu.mapp.utils.Save;
@@ -16,8 +15,6 @@ import redis.clients.jedis.Jedis;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ItemEvent;
-import java.util.ArrayList;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -28,7 +25,6 @@ public class WorldManager extends javax.swing.JFrame {
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(WorldManager.class);
     private Gson gson = new Gson();
     private WorldWatchSocketIO WorldListener = null;
-    private java.lang.reflect.Type messageMapType = new TypeToken<Map<String, String>>() {}.getType();
 
     private String WID;
     private redis.clients.jedis.Jedis jedis;
@@ -44,6 +40,7 @@ public class WorldManager extends javax.swing.JFrame {
     {
         logger.info("init");
         world = new World();
+        world.SetOnLoopingStop(() -> cycle_states_toggle_btn.setSelected(false));
 
         initComponents();
         onComponentsDidMount();
@@ -257,12 +254,12 @@ public class WorldManager extends javax.swing.JFrame {
         CardLayout cl = (CardLayout) cards_container.getLayout();
         cl.show(cards_container, "controller");
 
-        jedis_create_world();
+        create_world();
     }//GEN-LAST:event_create_btnActionPerformed
 
     private void formWindowClosing(java.awt.event.WindowEvent event)
     {//GEN-FIRST:event_formWindowClosing
-        jedis_delete_world();
+        delete_world();
     }//GEN-LAST:event_formWindowClosing
 
     private void join_state_btnActionPerformed(java.awt.event.ActionEvent evt)
@@ -303,14 +300,12 @@ public class WorldManager extends javax.swing.JFrame {
 
         if (state == ItemEvent.SELECTED)
         {
-            sim_start_time = System.nanoTime();
-            logger.debug("SIM_START_TIME="+sim_start_time);
-            jedis.hset(WID, "time_tick", "0");
-            state_log.add(new Object[]{"- SIM_START", new java.sql.Timestamp(System.currentTimeMillis())});
+            world.Loop();
             loop = true;
         }
         if (state == ItemEvent.DESELECTED)
         {
+            world.Stop();
             loop = false;
         }
         logger.info("loop -> " + loop);
@@ -354,10 +349,6 @@ public class WorldManager extends javax.swing.JFrame {
     private javax.swing.JTextField world_id;
     // End of variables declaration//GEN-END:variables
 
-    private long sim_start_time;
-    private long sim_finish_time;
-    private long sim_time_diff;
-
     private void onComponentsDidMount()
     {
         world_id.setText(String.valueOf(System.currentTimeMillis()));
@@ -373,17 +364,20 @@ public class WorldManager extends javax.swing.JFrame {
         }
     }
 
-    void jedis_create_world()
+    /**
+     * Very first function that is invoked before all the
+     * world functionality becomes available
+     * */
+    void create_world()
     {
         if (!isJedisOK) { return; }
 
         WID = "world:" + world_id.getText() + ":";
-        WorldListener = new World().Create(
+        WorldListener = world.Create(
             WID,
-            (message) -> {
+            (data, log) -> {
                 // update canvas
                 try {
-                    Map<String, String> data = gson.fromJson(message, messageMapType);
                     text_view.setText(
                         data
                             .keySet()
@@ -391,15 +385,11 @@ public class WorldManager extends javax.swing.JFrame {
                             .map(key -> key + ": " + data.get(key))
                             .collect(Collectors.joining("\n")) +
                         "\n-------------\n" +
-                        state_log
+                        log
                             .stream()
                             .map(item -> String.format("%-23s", item[1].toString()) + " " + item[0].toString())
                             .collect(Collectors.joining("\n"))
                     );
-                    if (loop)
-                    {
-                        jedis_on_state_update(data);
-                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                     System.exit(1);
@@ -409,100 +399,11 @@ public class WorldManager extends javax.swing.JFrame {
         Assert.notNull(WorldListener, "World Listener cannot be null!");
     }
 
-    void jedis_delete_world()
+    void delete_world()
     {
         if (!isJedisOK || WID == null) { return; }
 
         if (WorldListener != null) WorldListener.close();
-        World.Delete(WID);
-    }
-
-    private int prev_state_id = -1;
-    private int notify_await_cycle = 0;
-    private ArrayList<Object[]> state_log = new ArrayList<>();
-    void jedis_on_state_update(Map<String, String> data)
-    {
-        int curr_state_id = Integer.parseInt(data.get("world_state"));
-
-        if (prev_state_id == curr_state_id) {
-            return; // handle only once
-        }
-
-        if (data.get("player_count").equals("0")) {
-            return; // do nothing if there are no players
-        }
-
-        if (data.get("active_agent_count").equals("0")) {
-            // do nothing if there are no active agents
-            if (loop) {
-                loop = false;
-                sim_finish_time = System.nanoTime();
-                cycle_states_toggle_btn.setSelected(false);
-
-                sim_time_diff = sim_finish_time - sim_start_time;
-
-                logger.debug("SIM_FINISH_TIME="+sim_finish_time);
-                logger.debug("SIM_DURATION_TIME:" + (sim_time_diff / 1E9));
-                long _t = System.currentTimeMillis();
-                state_log.add(new Object[]{"- SIM_FINISH", new java.sql.Timestamp(_t)});
-                state_log.add(new Object[]{"- SIM_DURATION: " + (sim_time_diff / 1E9) + " seconds", new java.sql.Timestamp(_t)});
-            }
-            return;
-        }
-
-        switch (curr_state_id)
-        {
-            case 0:
-                state_log.add(new Object[]{"- end of join state", new java.sql.Timestamp(System.currentTimeMillis())});
-                logger.info("- end of join state");
-                // join state, begin loop
-                jedis.hset(WID, "world_state", "1");
-                break;
-            case 1:
-                // collision check state, await 2 cycles for collision updates
-                if (notify_await_cycle < 2) {
-                    notify_await_cycle += 1;
-                    jedis.hincrBy(WID, "time_tick", 1);
-                    return; // return else
-                }
-
-                prev_state_id = curr_state_id; // update state
-
-                state_log.add(new Object[]{"- collision check done", new java.sql.Timestamp(System.currentTimeMillis())});
-                logger.info("- collision check done");
-                // move to next state: 1 -> 2
-                jedis.hset(WID, "world_state", "2");
-                break;
-            case 2:
-                // clear notify await
-                notify_await_cycle = 0;
-
-                // negotiation state, do nothing until active negotiation_count is 0
-                if (data.get("negotiation_count").equals("0"))
-                {
-                    prev_state_id = curr_state_id;
-
-                    state_log.add(new Object[]{"- negotiations done", new java.sql.Timestamp(System.currentTimeMillis())});
-                    logger.info("- negotiations done");
-                    // move to next state: 2 -> 3
-                    jedis.hset(WID, "world_state", "3");
-                }
-                break;
-            case 3:
-                // move state, wait for move_action_count
-                // to match agent count, will indicate all agents took action
-                if (data.get("move_action_count").equals(data.get("player_count")))
-                {
-                    prev_state_id = curr_state_id;
-
-                    state_log.add(new Object[]{"- movement complete", new java.sql.Timestamp(System.currentTimeMillis())});
-                    logger.info("- movement complete");
-                    // clear move_action_count
-                    jedis.hset(WID, "move_action_count", "0");
-                    // move to next state: 3 -> 1
-                    jedis.hset(WID, "world_state", "1");
-                }
-                break;
-        }
+        world.Delete();
     }
 }

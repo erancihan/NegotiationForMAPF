@@ -1,30 +1,175 @@
 package edu.ozu.mapp.agent.client.world;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import edu.ozu.mapp.agent.client.WorldWatchSocketIO;
+import edu.ozu.mapp.agent.client.helpers.JedisConnection;
+import edu.ozu.mapp.utils.Globals;
 import edu.ozu.mapp.utils.Utils;
+import org.apache.commons.math3.analysis.function.Exp;
+import redis.clients.jedis.Jedis;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public class World
 {
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(World.class);
     private static redis.clients.jedis.Jedis jedis;
+    private Gson gson = new Gson();
 
-    public static void Delete(String WID)
-    {
-        logger.info("Deleting " + WID + " ...");
+    private java.lang.reflect.Type messageMapType = new TypeToken<Map<String, String>>() {}.getType();
 
-        HashMap<String, Object> payload = new HashMap<>();
-        payload.put("world_id", WID);
+    private String WorldID;
+    private boolean IsJedisOK = true;
+    private boolean IsLooping = false;
+    private Runnable OnLoopingStop;
+    private long sim_start_time;
+    private long sim_finish_time;
+    private long sim_time_diff;
 
-        Utils.post("http://localhost:5000/world/delete", payload);
+    private int prev_state_id = -1;
+    private int notify_await_cycle = 0;
+    private ArrayList<Object[]> state_log = new ArrayList<>();
+
+    public World() {
+        jedis = new Jedis(Globals.REDIS_HOST);
+
+        try {
+            jedis.connect();
+        } catch (Exception ex) {
+            logger.error("«can't connect to Redis»");
+            IsJedisOK = false;
+
+            ex.printStackTrace();
+        }
     }
 
-    public WorldWatchSocketIO Create(String WID, Consumer<String> callback)
+    public void Loop()
     {
+        sim_start_time = System.nanoTime();
+        logger.debug("SIM_START_TIME="+sim_start_time);
+        jedis.hset(WorldID, "time_tick", "0");
+        state_log.add(new Object[]{"- SIM_START", new java.sql.Timestamp(System.currentTimeMillis())});
+
+        IsLooping = true;
+    }
+
+    public void Stop()
+    {
+        IsLooping = false;
+    }
+
+    public void SetOnLoopingStop(Runnable func)
+    {
+        OnLoopingStop = func;
+    }
+
+    private void OnStateUpdate(Map<String, String> data)
+    {
+        int curr_state_id = Integer.parseInt(data.get("world_state"));
+
+        if (prev_state_id == curr_state_id) {
+            return; // handle only once
+        }
+
+        if (data.get("player_count").equals("0")) {
+            return; // do nothing if there are no players
+        }
+
+        if (data.get("active_agent_count").equals("0")) {
+            // do nothing if there are no active agents
+            if (IsLooping) {
+                IsLooping = false;
+                sim_finish_time = System.nanoTime();
+
+                if (OnLoopingStop != null)
+                {
+                    OnLoopingStop.run();
+                }
+
+                sim_time_diff = sim_finish_time - sim_start_time;
+
+                logger.debug("SIM_FINISH_TIME="+sim_finish_time);
+                logger.debug("SIM_DURATION_TIME:" + (sim_time_diff / 1E9));
+                long _t = System.currentTimeMillis();
+                state_log.add(new Object[]{"- SIM_FINISH", new java.sql.Timestamp(_t)});
+                state_log.add(new Object[]{"- SIM_DURATION: " + (sim_time_diff / 1E9) + " seconds", new java.sql.Timestamp(_t)});
+            }
+            return;
+        }
+
+        switch (curr_state_id)
+        {
+            case 0:
+                state_log.add(new Object[]{"- end of join state", new java.sql.Timestamp(System.currentTimeMillis())});
+                logger.info("- end of join state");
+                // join state, begin loop
+                jedis.hset(WorldID, "world_state", "1");
+                break;
+            case 1:
+                // collision check state, await 2 cycles for collision updates
+                if (notify_await_cycle < 2) {
+                    notify_await_cycle += 1;
+                    jedis.hincrBy(WorldID, "time_tick", 1);
+                    return; // return else
+                }
+
+                prev_state_id = curr_state_id; // update state
+
+                state_log.add(new Object[]{"- collision check done", new java.sql.Timestamp(System.currentTimeMillis())});
+                logger.info("- collision check done");
+                // move to next state: 1 -> 2
+                jedis.hset(WorldID, "world_state", "2");
+                break;
+            case 2:
+                // clear notify await
+                notify_await_cycle = 0;
+
+                // negotiation state, do nothing until active negotiation_count is 0
+                if (data.get("negotiation_count").equals("0"))
+                {
+                    prev_state_id = curr_state_id;
+
+                    state_log.add(new Object[]{"- negotiations done", new java.sql.Timestamp(System.currentTimeMillis())});
+                    logger.info("- negotiations done");
+                    // move to next state: 2 -> 3
+                    jedis.hset(WorldID, "world_state", "3");
+                }
+                break;
+            case 3:
+                // move state, wait for move_action_count
+                // to match agent count, will indicate all agents took action
+                if (data.get("move_action_count").equals(data.get("player_count")))
+                {
+                    prev_state_id = curr_state_id;
+
+                    state_log.add(new Object[]{"- movement complete", new java.sql.Timestamp(System.currentTimeMillis())});
+                    logger.info("- movement complete");
+                    // clear move_action_count
+                    jedis.hset(WorldID, "move_action_count", "0");
+                    // move to next state: 3 -> 1
+                    jedis.hset(WorldID, "world_state", "1");
+                }
+                break;
+        }
+    }
+
+    public WorldWatchSocketIO Create(String WorldID, BiConsumer<Map<String, String>, ArrayList<Object[]>> callback)
+    {
+        if (!IsJedisOK)
+        {
+            logger.error("JEDIS connection is not OK!");
+            return null;
+        }
+
+        this.WorldID = WorldID;
+
         HashMap<String, Object> payload = new HashMap<>();
-        payload.put("world_id", WID);
+        payload.put("world_id", WorldID);
         payload.put("player_count", "0");
         payload.put("world_state", "0");
         payload.put("negotiation_count", "0");
@@ -33,6 +178,32 @@ public class World
 
         Utils.post("http://localhost:5000/world/create", payload);
 
-        return new WorldWatchSocketIO(WID, callback);
+        return new WorldWatchSocketIO(
+                WorldID,
+                (message) -> {
+                    Map<String, String> data = gson.fromJson(message, messageMapType);
+
+                    callback.accept(data, state_log);
+
+                    if (IsLooping) {
+                        OnStateUpdate(data);
+                    }
+                }
+        );
+    }
+
+    public void Delete()
+    {
+        Delete(WorldID);
+    }
+
+    public static void Delete(String WorldID)
+    {
+        logger.info("Deleting " + WorldID + " ...");
+
+        HashMap<String, Object> payload = new HashMap<>();
+        payload.put("world_id", WorldID);
+
+        Utils.post("http://localhost:5000/world/delete", payload);
     }
 }
