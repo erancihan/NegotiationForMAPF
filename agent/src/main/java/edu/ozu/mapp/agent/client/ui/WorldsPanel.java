@@ -6,7 +6,7 @@
 package edu.ozu.mapp.agent.client.ui;
 
 import edu.ozu.mapp.agent.client.AgentHandler;
-import edu.ozu.mapp.agent.client.handlers.World;
+import edu.ozu.mapp.agent.client.handlers.WorldHandler;
 
 import javax.swing.*;
 
@@ -194,7 +194,7 @@ public class WorldsPanel extends javax.swing.JPanel {
 
     private void getWorldList()
     {// fetch worlds list
-        worlds_list.setListData(World.list());
+        worlds_list.setListData(WorldHandler.list());
     }
 
     private void join()

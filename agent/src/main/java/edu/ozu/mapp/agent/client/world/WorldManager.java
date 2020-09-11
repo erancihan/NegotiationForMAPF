@@ -375,7 +375,7 @@ public class WorldManager extends javax.swing.JFrame {
         if (!isJedisOK) { return; }
 
         WID = "world:" + world_id.getText() + ":";
-        WorldListener = new WorldHandler().CreateWorld(
+        WorldListener = new World().CreateWorld(
             WID,
             (message) -> {
                 // update canvas
@@ -411,7 +411,7 @@ public class WorldManager extends javax.swing.JFrame {
         if (!isJedisOK || WID == null) { return; }
 
         if (WorldListener != null) WorldListener.close();
-        WorldHandler.DeleteWorld(WID);
+        World.DeleteWorld(WID);
     }
 
     private int prev_state_id = -1;

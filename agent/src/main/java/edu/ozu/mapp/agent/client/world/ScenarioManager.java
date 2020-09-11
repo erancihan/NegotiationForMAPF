@@ -270,7 +270,7 @@ public class ScenarioManager extends javax.swing.JFrame
         }
 
         listener.close();
-        WorldHandler.DeleteWorld(worldID);
+        World.DeleteWorld(worldID);
     }
 
     private WorldWatchSocketIO listener = null;
@@ -284,7 +284,7 @@ public class ScenarioManager extends javax.swing.JFrame
 
         // initialize world
         worldID = "world:" + System.currentTimeMillis() + ":";
-        listener = new WorldHandler().CreateWorld(worldID, (message) -> {}); // TODO set bounds
+        listener = new World().CreateWorld(worldID, (message) -> {}); // TODO set bounds
 
         Assert.notNull(listener, "redis listener cannot be null!");
 

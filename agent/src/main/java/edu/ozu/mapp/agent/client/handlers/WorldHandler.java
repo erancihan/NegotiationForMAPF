@@ -8,8 +8,8 @@ import redis.clients.jedis.ScanResult;
 
 import java.util.ArrayList;
 
-public class World {
-    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(World.class);
+public class WorldHandler {
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(WorldHandler.class);
     private static redis.clients.jedis.Jedis jedis = JedisConnection.getInstance();
 
     public static String[] list()

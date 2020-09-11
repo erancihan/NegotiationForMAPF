@@ -3,7 +3,7 @@ package edu.ozu.mapp.agent;
 import edu.ozu.mapp.agent.client.NegotiationSession;
 import edu.ozu.mapp.agent.client.handlers.FileLogger;
 import edu.ozu.mapp.agent.client.handlers.Negotiation;
-import edu.ozu.mapp.agent.client.handlers.World;
+import edu.ozu.mapp.agent.client.handlers.WorldHandler;
 import edu.ozu.mapp.agent.client.models.Contract;
 import edu.ozu.mapp.keys.AgentKeys;
 import edu.ozu.mapp.keys.KeyHandler;
@@ -221,7 +221,7 @@ public abstract class Agent {
         this.path = new_path;
         logger.debug(this.AGENT_ID + "{path:" + this.path + "}");
 
-        World.doBroadcast(WORLD_ID, AGENT_ID, getBroadcastArray());
+        WorldHandler.doBroadcast(WORLD_ID, AGENT_ID, getBroadcastArray());
     }
     //</editor-fold>
 
@@ -284,7 +284,7 @@ public abstract class Agent {
             return Globals.INITIAL_TOKEN_BALANCE;
         }
 
-        return World.getTokenBalance(WORLD_ID, AGENT_ID);
+        return WorldHandler.getTokenBalance(WORLD_ID, AGENT_ID);
     }
 
     public HashSet<String> getOwnBidHistory() {
@@ -367,7 +367,7 @@ public abstract class Agent {
     }
 
     public String GetCurrentTokenC() {
-        return String.valueOf(World.getTokenBalance(WORLD_ID, AGENT_ID));
+        return String.valueOf(WorldHandler.getTokenBalance(WORLD_ID, AGENT_ID));
     }
 
     public void LogNegotiationState(String prev_bidding_agent)

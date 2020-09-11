@@ -273,7 +273,7 @@ public class AgentHandler {
             is_moving = 0;
 
             // let the world know that you are done with it!
-            World.leave(WORLD_ID, clientRef.AGENT_ID);
+            WorldHandler.leave(WORLD_ID, clientRef.AGENT_ID);
         }
         fl.LogAgentInfo(clientRef, "MOVE");  // LOG AGENT INFO ON MOVE CALL
     }
@@ -314,7 +314,7 @@ public class AgentHandler {
             }
             fl.LogAgentInfo(clientRef, "LEAVE");  // LOG AGENT INFO ON LEAVE
             fl.logAgentWorldLeave(clientRef);           // LOG AGENT LEAVING
-            World.leave(WORLD_ID, clientRef.AGENT_ID);
+            WorldHandler.leave(WORLD_ID, clientRef.AGENT_ID);
         } catch (IOException e) {
             e.printStackTrace();
         }

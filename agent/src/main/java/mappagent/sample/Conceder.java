@@ -2,7 +2,7 @@ package mappagent.sample;
 
 import edu.ozu.mapp.agent.Agent;
 import edu.ozu.mapp.agent.client.AgentClient;
-import edu.ozu.mapp.agent.client.handlers.World;
+import edu.ozu.mapp.agent.client.handlers.WorldHandler;
 import edu.ozu.mapp.utils.*;
 
 import java.util.ArrayList;
@@ -29,7 +29,7 @@ public class Conceder extends Agent {
         // add current broadcast as it is the BEST outcome
 //        bids.add(getBroadcastArray());
 
-        String[][] fov = World.getFieldOfView(this.WORLD_ID, this.AGENT_ID);
+        String[][] fov = WorldHandler.getFieldOfView(this.WORLD_ID, this.AGENT_ID);
         // calculate next best possible given everything is a constraint
         ArrayList<String[]> constraints = new ArrayList<>();
         for (String[] broadcast_data : fov)
@@ -59,7 +59,7 @@ public class Conceder extends Agent {
     @Override
     public Action onMakeAction()
     {
-        int current_tokens = World.getTokenBalance(WORLD_ID, AGENT_ID);
+        int current_tokens = WorldHandler.getTokenBalance(WORLD_ID, AGENT_ID);
 
         // [getToken == 0 || conflicted path and first bid is same]
         // -> if opponent insists to stay on their path

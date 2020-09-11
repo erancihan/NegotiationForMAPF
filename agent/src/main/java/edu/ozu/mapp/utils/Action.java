@@ -2,7 +2,7 @@ package edu.ozu.mapp.utils;
 
 import edu.ozu.mapp.agent.Agent;
 import edu.ozu.mapp.agent.client.handlers.Negotiation;
-import edu.ozu.mapp.agent.client.handlers.World;
+import edu.ozu.mapp.agent.client.handlers.WorldHandler;
 import edu.ozu.mapp.agent.client.models.Contract;
 
 public class Action
@@ -44,7 +44,7 @@ public class Action
 
     private Contract makeOffer(Agent agent, ActionType type, String bid)
     {
-        int owned_tokens = World.getTokenBalance(agent.WORLD_ID, agent.AGENT_ID);   // get own token balance
+        int owned_tokens = WorldHandler.getTokenBalance(agent.WORLD_ID, agent.AGENT_ID);   // get own token balance
         logger.debug("owned tokens: " + owned_tokens);
 
         Contract contract = Negotiation.getContract(agent);

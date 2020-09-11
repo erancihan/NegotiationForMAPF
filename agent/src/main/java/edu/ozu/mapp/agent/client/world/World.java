@@ -6,9 +6,9 @@ import edu.ozu.mapp.utils.Utils;
 import java.util.HashMap;
 import java.util.function.Consumer;
 
-public class WorldHandler
+public class World
 {
-    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(WorldHandler.class);
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(World.class);
     private static redis.clients.jedis.Jedis jedis;
 
     public static void DeleteWorld(String WID)
