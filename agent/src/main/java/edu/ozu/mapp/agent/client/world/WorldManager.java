@@ -39,8 +39,6 @@ public class WorldManager extends javax.swing.JFrame {
     public WorldManager()
     {
         logger.info("init");
-        world = new World();
-        world.SetOnLoopingStop(() -> cycle_states_toggle_btn.setSelected(false));
 
         initComponents();
         onComponentsDidMount();
@@ -353,6 +351,9 @@ public class WorldManager extends javax.swing.JFrame {
     {
         world_id.setText(String.valueOf(System.currentTimeMillis()));
 
+        world = new World();
+        world.SetOnLoopingStop(() -> cycle_states_toggle_btn.setSelected(false));
+
         jedis = new Jedis(Globals.REDIS_HOST);
         try {
             jedis.connect();
@@ -374,7 +375,7 @@ public class WorldManager extends javax.swing.JFrame {
 
         WID = "world:" + world_id.getText() + ":";
         WorldListener = world.Create(
-            WID,
+            world_id.getText(),
             (data, log) -> {
                 // update canvas
                 try {
