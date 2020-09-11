@@ -3,21 +3,21 @@ package edu.ozu.mapp.agent.client.world;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import edu.ozu.mapp.agent.client.WorldWatchSocketIO;
-import edu.ozu.mapp.agent.client.helpers.JedisConnection;
+import edu.ozu.mapp.agent.client.helpers.FileLogger;
 import edu.ozu.mapp.utils.Globals;
 import edu.ozu.mapp.utils.Utils;
-import org.apache.commons.math3.analysis.function.Exp;
 import redis.clients.jedis.Jedis;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
 public class World
 {
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(World.class);
+    private static FileLogger fl;
     private static redis.clients.jedis.Jedis jedis;
     private Gson gson = new Gson();
 
@@ -36,6 +36,8 @@ public class World
 
     private int prev_state_id = -1;
     private int notify_await_cycle = 0;
+    private int negotiation_state_clock = 0;
+
     private ArrayList<Object[]> state_log = new ArrayList<>();
 
     public World(boolean DeleteOnFinish)
@@ -103,6 +105,8 @@ public class World
 
                 logger.debug("SIM_FINISH_TIME="+sim_finish_time);
                 logger.debug("SIM_DURATION_TIME:" + (sim_time_diff / 1E9));
+                fl.LogWorldDone(data, (sim_time_diff / 1E9));
+
                 long _t = System.currentTimeMillis();
                 state_log.add(new Object[]{"- SIM_FINISH", new java.sql.Timestamp(_t)});
                 state_log.add(new Object[]{"- SIM_DURATION: " + (sim_time_diff / 1E9) + " seconds", new java.sql.Timestamp(_t)});
@@ -110,11 +114,15 @@ public class World
             return;
         }
 
+        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
         switch (curr_state_id)
         {
             case 0:
                 state_log.add(new Object[]{"- end of join state", new java.sql.Timestamp(System.currentTimeMillis())});
+
                 logger.info("- end of join state");
+                fl.LogWorldJoin(data);
+
                 // join state, begin loop
                 jedis.hset(WorldID, "world_state", "1");
                 break;
@@ -128,8 +136,11 @@ public class World
 
                 prev_state_id = curr_state_id; // update state
 
-                state_log.add(new Object[]{"- collision check done", new java.sql.Timestamp(System.currentTimeMillis())});
+                state_log.add(new Object[]{"- collision check done", timestamp});
+
                 logger.info("- collision check done");
+                fl.LogWorldStateBroadcast(data, timestamp);
+
                 // move to next state: 1 -> 2
                 jedis.hset(WorldID, "world_state", "2");
                 break;
@@ -137,18 +148,31 @@ public class World
                 // clear notify await
                 notify_await_cycle = 0;
 
+                if (negotiation_state_clock == 0)
+                {
+                    fl.LogWorldStateNegotiate(data, timestamp, "BEGIN");
+                }
+
                 // negotiation state, do nothing until active negotiation_count is 0
                 if (data.get("negotiation_count").equals("0"))
                 {
                     prev_state_id = curr_state_id;
 
-                    state_log.add(new Object[]{"- negotiations done", new java.sql.Timestamp(System.currentTimeMillis())});
+                    state_log.add(new Object[]{"- negotiations done", timestamp});
+
                     logger.info("- negotiations done");
+                    fl.LogWorldStateNegotiate(data, timestamp, "DONE");
+
                     // move to next state: 2 -> 3
                     jedis.hset(WorldID, "world_state", "3");
                 }
+
+                negotiation_state_clock++;
                 break;
             case 3:
+                // clear negotiation_state_clock
+                negotiation_state_clock = 0;
+
                 // move state, wait for move_action_count
                 // to match agent count, will indicate all agents took action
                 if (data.get("move_action_count").equals(data.get("player_count")))
@@ -156,7 +180,10 @@ public class World
                     prev_state_id = curr_state_id;
 
                     state_log.add(new Object[]{"- movement complete", new java.sql.Timestamp(System.currentTimeMillis())});
+
                     logger.info("- movement complete");
+                    fl.LogWorldStateMove(data, timestamp);
+
                     // clear move_action_count
                     jedis.hset(WorldID, "move_action_count", "0");
                     // move to next state: 3 -> 1
@@ -174,10 +201,13 @@ public class World
             return null;
         }
 
-        this.WorldID = WorldID;
+        this.WorldID = "world:" + WorldID + ":";
+        fl = FileLogger.CreateWorldLogger(WorldID);
 
         HashMap<String, Object> payload = new HashMap<>();
-        payload.put("world_id", WorldID);
+        payload.put("world_id", this.WorldID);
+        payload.put("dimensions", "0x0");
+
         payload.put("player_count", "0");
         payload.put("world_state", "0");
         payload.put("negotiation_count", "0");
@@ -185,9 +215,10 @@ public class World
         payload.put("time_tick", 0);
 
         Utils.post("http://localhost:5000/world/create", payload);
+        fl.logWorldCreate(payload);
 
         return new WorldWatchSocketIO(
-                WorldID,
+                this.WorldID,
                 (message) -> {
                     Map<String, String> data = gson.fromJson(message, messageMapType);
 
