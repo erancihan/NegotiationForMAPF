@@ -280,7 +280,7 @@ public class FileLogger {
             writer
                     .append(timestamp).append(";")                          // timestamp
                     .append(String.format(
-                            "{\"name\":\"%s\",\"agent_id\":\"%s\",\"path\":\"%s\",\"negoC\":\"%s\",\"winC\":\"%s\",\"loseC\":\"%s\"}",
+                            "{\"name\":\"%s\",\"agent_id\":\"%s\",\"path\":\"%s\",\"path_len\":\"%s\",\"negoC\":\"%s\",\"winC\":\"%s\",\"loseC\":\"%s\"}",
                             "LEAVE",                    // agent's interaction with the world
                             agent.AGENT_ID,             // agent identifier
                             agent.path.toString(),      // @LEAVE this is the path taken
