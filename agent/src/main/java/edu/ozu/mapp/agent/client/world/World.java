@@ -24,9 +24,12 @@ public class World
     private java.lang.reflect.Type messageMapType = new TypeToken<Map<String, String>>() {}.getType();
 
     private String WorldID;
+    private Runnable OnLoopingStop;
+
     private boolean IsJedisOK = true;
     private boolean IsLooping = false;
-    private Runnable OnLoopingStop;
+    private boolean ShouldDeleteOnFinish = false;
+
     private long sim_start_time;
     private long sim_finish_time;
     private long sim_time_diff;
@@ -34,6 +37,11 @@ public class World
     private int prev_state_id = -1;
     private int notify_await_cycle = 0;
     private ArrayList<Object[]> state_log = new ArrayList<>();
+
+    public World(boolean DeleteOnFinish)
+    {
+        ShouldDeleteOnFinish = DeleteOnFinish;
+    }
 
     public World() {
         jedis = new Jedis(Globals.REDIS_HOST);
