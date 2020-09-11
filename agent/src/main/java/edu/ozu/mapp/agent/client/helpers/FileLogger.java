@@ -307,10 +307,13 @@ public class FileLogger {
             FileWriter writer = new FileWriter(getFile("INFO"), true);
             writer
                     .append(timestamp).append(";")                  // timestamp
-                    .append(agent.GetCurrentTokenC()).append(";")   // current token count
-                    .append(String.valueOf(agent.time)).append(";") // agent's internal time step counter
-                    .append(agent.POS.key).append(";")              // current pos of agent
-                    .append(step).append(";")                       // step name
+                    .append(String.format(
+                            "{\"token_count\":\"%s\",\"time\":\"%s\",\"agent_pos\":\"%s\",,\"step\":\"%s\"}",
+                            agent.GetCurrentTokenC(),   // current token count
+                            agent.time,                 // agent's internal time step counter
+                            agent.POS.key,              // current pos of agent
+                            step                        // step name
+                    ))
                     .append(System.lineSeparator());
             writer.close();
         } catch (IOException ex) {

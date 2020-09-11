@@ -344,10 +344,6 @@ public abstract class Agent {
         fl.logAgentPostNego(session_id, this);
     }
 
-    public void logNegoAct(Action action) {
-        fl.logAgentActNego(action, this);
-    }
-
     public void SetConflictLocation(String conflictLocation) {
         this.conflictLocation = conflictLocation;
     }
