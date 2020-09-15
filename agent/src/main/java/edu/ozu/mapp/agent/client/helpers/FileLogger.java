@@ -211,10 +211,10 @@ public class FileLogger {
             writer
                     .append(timestamp).append(";")
                     .append(String.format(
-                            "{\"name\":\"%s\", \"turn\":\"%s\", \"contract\":\"%s\"}",
+                            "{\"name\":\"%s\", \"turn\":\"%s\", \"contract\":%s}",
                             name,                                       // ACCEPT or OFFER
                             prev_bidding_agent,                         // whose turn it is
-                            Negotiation.getContract(agent).toString()   // contract
+                            Negotiation.getContract(agent).getJSON()    // contract
                     ))
                     .append(System.lineSeparator())
             ;
@@ -308,7 +308,7 @@ public class FileLogger {
             writer
                     .append(timestamp).append(";")                  // timestamp
                     .append(String.format(
-                            "{\"token_count\":\"%s\",\"time\":\"%s\",\"agent_pos\":\"%s\",,\"step\":\"%s\"}",
+                            "{\"token_count\":\"%s\",\"time\":\"%s\",\"agent_pos\":\"%s\",\"step\":\"%s\"}",
                             agent.GetCurrentTokenC(),   // current token count
                             agent.time,                 // agent's internal time step counter
                             agent.POS.key,              // current pos of agent

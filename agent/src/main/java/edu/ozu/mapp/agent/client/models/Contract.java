@@ -200,4 +200,8 @@ public class Contract {
     {
         return String.format("Contract{Ox:'%s', x:'%s', ETa:'%s', A:'%s', ETb:'%s', B:'%s', sess_id:'%s'}", Ox, x, ETa, A, ETb, B, sess_id);
     }
+
+    public Object getJSON() {
+        return String.format("{\"Ox\":\"%s\", \"x\":\"%s\", \"ETa\":\"%s\", \"A\":\"%s\", \"ETb\":\"%s\", \"B\":\"%s\", \"sess_id\":\"%s\"}", Ox, x, ETa, A, ETb, B, sess_id);
+    }
 }
