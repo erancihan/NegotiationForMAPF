@@ -59,6 +59,13 @@ public class WorldManager extends javax.swing.JFrame {
         world_id = new javax.swing.JTextField();
         javax.swing.JButton create_btn = new javax.swing.JButton();
         javax.swing.JLabel jLabel1 = new javax.swing.JLabel();
+        javax.swing.JLabel jLabel2 = new javax.swing.JLabel();
+        javax.swing.JPanel jPanel1 = new javax.swing.JPanel();
+        world_width = new javax.swing.JTextField();
+        world_height = new javax.swing.JTextField();
+        javax.swing.JLabel jLabel3 = new javax.swing.JLabel();
+        javax.swing.JLabel jLabel5 = new javax.swing.JLabel();
+        javax.swing.Box.Filler filler1 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 12), new java.awt.Dimension(0, 12), new java.awt.Dimension(32767, 12));
         javax.swing.JPanel controller = new javax.swing.JPanel();
         javax.swing.JPanel text_view_container = new javax.swing.JPanel();
         javax.swing.JScrollPane jScrollPane2 = new javax.swing.JScrollPane();
@@ -88,7 +95,7 @@ public class WorldManager extends javax.swing.JFrame {
         create.setPreferredSize(new java.awt.Dimension(600, 300));
         java.awt.GridBagLayout createLayout = new java.awt.GridBagLayout();
         createLayout.columnWidths = new int[] {0, 5, 0, 5, 0};
-        createLayout.rowHeights = new int[] {0, 5, 0, 5, 0};
+        createLayout.rowHeights = new int[] {0, 5, 0, 5, 0, 5, 0, 5, 0, 5, 0};
         create.setLayout(createLayout);
 
         world_id.setHorizontalAlignment(javax.swing.JTextField.CENTER);
@@ -113,7 +120,7 @@ public class WorldManager extends javax.swing.JFrame {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 10;
         create.add(create_btn, gridBagConstraints);
 
         jLabel1.setText("World ID");
@@ -121,6 +128,58 @@ public class WorldManager extends javax.swing.JFrame {
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 0;
         create.add(jLabel1, gridBagConstraints);
+
+        jLabel2.setText("World Dimensions");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 6;
+        create.add(jLabel2, gridBagConstraints);
+
+        jPanel1.setLayout(new java.awt.GridBagLayout());
+
+        world_width.setHorizontalAlignment(javax.swing.JTextField.CENTER);
+        world_width.setText("0");
+        world_width.setPreferredSize(new java.awt.Dimension(60, 25));
+        world_width.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                world_widthActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        jPanel1.add(world_width, gridBagConstraints);
+
+        world_height.setHorizontalAlignment(javax.swing.JTextField.CENTER);
+        world_height.setText("0");
+        world_height.setPreferredSize(new java.awt.Dimension(60, 25));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        jPanel1.add(world_height, gridBagConstraints);
+
+        jLabel3.setText("Width");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        jPanel1.add(jLabel3, gridBagConstraints);
+
+        jLabel5.setText("Height");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        jPanel1.add(jLabel5, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        jPanel1.add(filler1, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 8;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        create.add(jPanel1, gridBagConstraints);
 
         cards_container.add(create, "create");
 
@@ -249,6 +308,13 @@ public class WorldManager extends javax.swing.JFrame {
 
     private void create_btnActionPerformed(java.awt.event.ActionEvent event)
     {//GEN-FIRST:event_create_btnActionPerformed
+        try {
+            Integer.parseInt(world_height.getText());
+            Integer.parseInt(world_width.getText());
+        } catch (NumberFormatException nfe) {
+            return;
+        }
+
         CardLayout cl = (CardLayout) cards_container.getLayout();
         cl.show(cards_container, "controller");
 
@@ -314,6 +380,10 @@ public class WorldManager extends javax.swing.JFrame {
         Save.stringToFile(text_view.getText(), world_id.getText() + "-world-log.txt");
     }//GEN-LAST:event_save_logs_btnActionPerformed
 
+    private void world_widthActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_world_widthActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_world_widthActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -344,7 +414,9 @@ public class WorldManager extends javax.swing.JFrame {
     private javax.swing.JPanel cards_container;
     private javax.swing.JToggleButton cycle_states_toggle_btn;
     private javax.swing.JTextPane text_view;
+    private javax.swing.JTextField world_height;
     private javax.swing.JTextField world_id;
+    private javax.swing.JTextField world_width;
     // End of variables declaration//GEN-END:variables
 
     private void onComponentsDidMount()
@@ -376,6 +448,7 @@ public class WorldManager extends javax.swing.JFrame {
         WID = "world:" + world_id.getText() + ":";
         WorldListener = world.Create(
             world_id.getText(),
+            world_width.getText() + "x" + world_height.getText(),
             (data, log) -> {
                 // update canvas
                 try {

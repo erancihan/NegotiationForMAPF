@@ -195,6 +195,11 @@ public class World
 
     public WorldWatchSocketIO Create(String WorldID, BiConsumer<Map<String, String>, ArrayList<Object[]>> callback)
     {
+        return Create(WorldID, "0x0", callback);
+    }
+
+    public WorldWatchSocketIO Create(String WorldID, String Dimensions, BiConsumer<Map<String, String>, ArrayList<Object[]>> callback)
+    {
         if (!IsJedisOK)
         {
             logger.error("JEDIS connection is not OK!");
@@ -206,7 +211,7 @@ public class World
 
         HashMap<String, Object> payload = new HashMap<>();
         payload.put("world_id", this.WorldID);
-        payload.put("dimensions", "0x0");
+        payload.put("dimensions", Dimensions);
 
         payload.put("player_count", "0");
         payload.put("world_state", "0");

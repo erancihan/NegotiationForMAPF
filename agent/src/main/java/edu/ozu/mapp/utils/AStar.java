@@ -40,13 +40,27 @@ public class AStar {
 
     public static List<String> calculate(Point start, Point dest)
     {
-        return new AStar().run(start, dest, new HashMap<>());
+        return new AStar().run(start, dest, new HashMap<>(), "");
+    }
+
+    public static List<String> calculate(Point start, Point dest, String Dimensions)
+    {
+        return new AStar().run(start, dest, new HashMap<>(), Dimensions);
+    }
+
+    private List<String> run(Point start, Point goal, HashMap<String, ArrayList<String>> occupiedList)
+    {
+        return run(start, goal, occupiedList, "");
     }
 
     //<editor-fold defaultstate="collapsed" desc="A-Star implementation">
-    private List<String> run(Point start, Point goal, HashMap<String, ArrayList<String>> occupiedList) {
+    private List<String> run(Point start, Point goal, HashMap<String, ArrayList<String>> occupiedList, String Dimensions) {
         int T = 0;
         double inf = Double.MAX_VALUE;
+
+        String[] ds = Dimensions.split("x");
+        int width  = (ds.length == 2 && !ds[0].isEmpty()) ? Integer.parseInt(ds[0]) : Integer.MAX_VALUE;
+        int height = (ds.length == 2 && !ds[1].isEmpty()) ? Integer.parseInt(ds[1]) : Integer.MAX_VALUE;
 
         HashMap<String, String> links = new HashMap<>();
 
@@ -72,7 +86,7 @@ public class AStar {
                 return constructPath(links, start, goal);
             }
 
-            List<Point> neighbours = getNeighbours(current, T, occupiedList);
+            List<Point> neighbours = getNeighbours(current, T, occupiedList, width, height);
             for (Point neighbour : neighbours) {
                 if (closed.contains(neighbour)) {
                     continue;
@@ -94,7 +108,7 @@ public class AStar {
     }
 
     // todo retrieve env dims
-    private List<Point> getNeighbours(Point point, int t, HashMap<String, ArrayList<String>> occupiedList) {
+    private List<Point> getNeighbours(Point point, int t, HashMap<String, ArrayList<String>> occupiedList, int width, int height) {
         List<Point> nodes = new ArrayList<>();
 
         for (int i = 0; i < 9; i++) { // position of point
@@ -105,10 +119,10 @@ public class AStar {
             int x = point.x + (i % 3) - 1;
             int y = point.y + (i / 3) - 1;
 
-            if (x < 0 /*|| x >= env.width*/) { // x out of bounds
+            if (x < 0 || x >= width) { // x out of bounds
                 continue;
             }
-            if (y < 0 /*|| y >= env.height*/) { // y out of bounds
+            if (y < 0 || y >= height) { // y out of bounds
                 continue;
             }
 

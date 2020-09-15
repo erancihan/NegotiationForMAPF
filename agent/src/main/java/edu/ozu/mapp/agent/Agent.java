@@ -42,6 +42,7 @@ public abstract class Agent {
      *  1 | won
      * */
     public int negotiation_result = -1;
+    private String dimensions = "";
 
     public Agent(String agentName, String agentID, Point start, Point dest)
     {
@@ -102,13 +103,23 @@ public abstract class Agent {
         return calculatePath(START, DEST);
     }
 
-    public List<String> calculatePath(Point start, Point dest) {
-        return AStar.calculate(start, dest);
+    public List<String> calculatePath(Point start, Point dest)
+    {
+        return AStar.calculate(start, dest, dimensions);
     }
 
     public List<Bid> GetBidSpace(Point From, Point To)
     {
-        BFS search = new BFS(From, To, Globals.FIELD_OF_VIEW_SIZE).init();
+        BFS search;
+        if (this.dimensions.isEmpty()) {
+            search = new BFS(From, To, Globals.FIELD_OF_VIEW_SIZE).init();
+        } else {
+            String[] ds = dimensions.split("x");
+            int width = Integer.parseInt(ds[0]);
+            int height = Integer.parseInt(ds[1]);
+
+            search = new BFS(From, To, Globals.FIELD_OF_VIEW_SIZE, width, height).init();
+        }
 
         PriorityQueue<Bid> bids = new PriorityQueue<>();
         for (Path path : search.paths)
@@ -384,5 +395,11 @@ public abstract class Agent {
         } else {
             fl.LogAgentNegotiationState(prev_bidding_agent, this, false);
         }
+    }
+
+    public void join(String world_id)
+    {
+        setWORLD_ID(world_id);
+        dimensions = WorldHandler.GetDimensions(world_id);
     }
 }

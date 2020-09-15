@@ -99,4 +99,15 @@ public class WorldHandler {
             e.printStackTrace();
         }
     }
+
+    public static String GetDimensions(String WorldID)
+    {
+        try {
+            return jedis.hget("world:"+WorldID+":", "dimensions");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return "0x0";
+    }
 }

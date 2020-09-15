@@ -7,6 +7,7 @@ public class BFS
     @SuppressWarnings("Duplicates")
     public static void main(String[] args)
     {
+        /*
         // TODO get Utility function in BFS to cut off search on a branch once utility is 0
         // TODO dont spawn after 0
         Point to = new Point(5, 5);
@@ -38,6 +39,7 @@ public class BFS
         } catch (Exception e) {
             e.printStackTrace();
         }
+         */
     }
 
     public int Max = Integer.MIN_VALUE;
@@ -50,8 +52,10 @@ public class BFS
     private int FoV = -1;
     private boolean DEBUG = false;
     private int deadline;
+    private int Width = Integer.MAX_VALUE;
+    private int Height = Integer.MAX_VALUE;
 
-    public BFS(Point From, Point To, int FieldOfView, int deadline, boolean IsDebug)
+    public BFS(Point From, Point To, int FieldOfView, int deadline, boolean IsDebug, int Width, int Height)
     {
         _f = From;
         _t = To;
@@ -61,16 +65,28 @@ public class BFS
         DEBUG = IsDebug;
         FoV = FieldOfView;
         this.deadline = deadline;
+        this.Width = Width == 0 ? Integer.MAX_VALUE : Width;
+        this.Height = Height == 0 ? Integer.MAX_VALUE : Height;
+    }
+
+    public BFS(Point From, Point To, int FieldOfView, int deadline, int Width, int Height)
+    {
+        this(From, To, FieldOfView, deadline, false, Width, Height);
     }
 
     public BFS(Point From, Point To, int FieldOfView, int deadline)
     {
-        this(From, To, FieldOfView, deadline, false);
+        this(From, To, FieldOfView, deadline, false, Integer.MAX_VALUE, Integer.MAX_VALUE);
+    }
+
+    public BFS(Point From, Point To, int FieldOfView, int Width, int Height)
+    {
+        this(From, To, FieldOfView, (int) (From.ManhattanDistTo(To)*2), false, Width, Height);
     }
 
     public BFS(Point From, Point To, int FieldOfView)
     {
-        this(From, To, FieldOfView, (int) (From.ManhattanDistTo(To)*2), false);
+        this(From, To, FieldOfView, (int) (From.ManhattanDistTo(To)*2), false, Integer.MAX_VALUE, Integer.MAX_VALUE);
     }
 
     public BFS init()
@@ -133,10 +149,10 @@ public class BFS
         if (curr.y > 0 && curr.y - 1 >= _f.y - FoV) {
             hood.add(new Point(curr.x, curr.y - 1));
         }
-        if (curr.x + 1 <= _f.y + FoV) {
+        if (curr.x < Width && curr.x + 1 <= _f.y + FoV) {
             hood.add(new Point(curr.x + 1, curr.y));
         }
-        if (curr.y + 1 <= _f.y + FoV) {
+        if (curr.y < Height && curr.y + 1 <= _f.y + FoV) {
             hood.add(new Point(curr.x, curr.y + 1));
         }
         hood.add(curr);  // we are in the hood too
