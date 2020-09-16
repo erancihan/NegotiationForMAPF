@@ -458,11 +458,11 @@ public class WorldManager extends javax.swing.JFrame {
                             .stream()
                             .map(key -> key + ": " + data.get(key))
                             .collect(Collectors.joining("\n")) +
-                        "\n-------------\n" +
-                        log
-                            .stream()
-                            .map(item -> String.format("%-23s", item[1].toString()) + " " + item[0].toString())
-                            .collect(Collectors.joining("\n"))
+                            "\n-------------\n" +
+                            log
+                                .stream()
+                                .map(item -> String.format("%-23s", item[1].toString()) + " " + item[0].toString())
+                                .collect(Collectors.joining("\n"))
                     );
                 } catch (Exception e) {
                     e.printStackTrace();
