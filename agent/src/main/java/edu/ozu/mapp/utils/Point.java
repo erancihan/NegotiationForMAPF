@@ -10,6 +10,8 @@ public class Point implements Comparable<Point> {
         this.x = x;
         this.y = y;
 
+        Assert.isTrue((x >= 0 && y >= 0), "x & y should be non-negative");
+
         this.key = x + "-" + y;
     }
 
@@ -24,6 +26,8 @@ public class Point implements Comparable<Point> {
 
         x = Integer.parseInt(split[0]);
         y = Integer.parseInt(split[1]);
+
+        Assert.isTrue((x >= 0 && y >= 0), "x & y should be non-negative");
 
         key = x + "-" + y;
     }
