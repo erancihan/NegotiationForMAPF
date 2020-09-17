@@ -17,7 +17,7 @@ import java.util.*;
 
 public abstract class Agent {
     public static final Logger logger = LoggerFactory.getLogger(Agent.class);
-    private static FileLogger fl;
+    private FileLogger fl;
 
     public String AGENT_NAME, AGENT_ID;
     public Point START, DEST;
@@ -52,7 +52,7 @@ public abstract class Agent {
         this.DEST       = dest;
 
         this.isHeadless = true; // unless client says so
-        fl = FileLogger.CreateAgentLogger(AGENT_ID);
+        fl = new FileLogger().CreateAgentLogger(AGENT_ID);
 
         history = new HashMap<String, HashSet<String>>();
         // create and store agent keys

@@ -23,15 +23,7 @@ public class FileLogger {
     private String AgentID;
     private boolean IsAgent;
 
-    public FileLogger(boolean IsAgent) {
-        this.IsAgent = IsAgent;
-    }
-
-    public FileLogger(String AgentID, boolean IsAgent) {
-        this(IsAgent);
-
-        this.AgentID = AgentID;
-    }
+    public FileLogger() { }
 
     private static class SHEETS {
         enum AGENT {
@@ -57,14 +49,20 @@ public class FileLogger {
         }
     }
 
-    public static FileLogger CreateAgentLogger(String AgentID)
+    public FileLogger CreateAgentLogger(String AgentID)
     {
-        return new FileLogger(AgentID, true);
+        this.IsAgent = true;
+        this.AgentID = AgentID;
+
+        return this;
     }
 
-    public static FileLogger CreateWorldLogger(String WorldID)
+    public FileLogger CreateWorldLogger(String WorldID)
     {
-        return new FileLogger(false).setWorldID(WorldID);
+        this.IsAgent = false;
+        this.WorldID = WorldID;
+
+        return this;
     }
 
     public FileLogger setAgentID(String agentID) {

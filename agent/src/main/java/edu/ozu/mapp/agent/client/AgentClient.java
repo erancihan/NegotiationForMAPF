@@ -13,6 +13,7 @@ public class AgentClient {
     public AgentClient(Agent agent)
     {
         this(new String[0], agent);
+        logger.debug("agent hash:" + agent.hashCode() + " client hash:" + this.hashCode());
     }
 
     public AgentClient(String[] args, Agent agent)

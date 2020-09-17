@@ -19,7 +19,7 @@ import java.util.function.BiConsumer;
 
 public class AgentHandler {
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(AgentHandler.class);
-    private static FileLogger fl;
+    private FileLogger fl;
 
     private String AGENT_NAME;
     private String WORLD_ID = "";
@@ -39,7 +39,7 @@ public class AgentHandler {
         clientRef = client;
 
         // init file logger
-        fl = FileLogger.CreateAgentLogger(clientRef.AGENT_ID);
+        fl = new FileLogger().CreateAgentLogger(clientRef.AGENT_ID);
 
         AGENT_NAME = client.AGENT_NAME;
 

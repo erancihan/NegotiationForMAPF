@@ -17,8 +17,8 @@ import java.util.function.BiConsumer;
 public class World
 {
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(World.class);
-    private static FileLogger fl;
     private static redis.clients.jedis.Jedis jedis;
+    private FileLogger fl;
     private Gson gson = new Gson();
 
     private java.lang.reflect.Type messageMapType = new TypeToken<Map<String, String>>() {}.getType();
@@ -175,7 +175,7 @@ public class World
 
                 // move state, wait for move_action_count
                 // to match agent count, will indicate all agents took action
-                if (data.get("move_action_count").equals(data.get("player_count")))
+                if (data.get("move_action_count").equals(data.get("active_agent_count")))
                 {
                     prev_state_id = curr_state_id;
 
@@ -207,7 +207,7 @@ public class World
         }
 
         this.WorldID = "world:" + WorldID + ":";
-        fl = FileLogger.CreateWorldLogger(WorldID);
+        fl = new FileLogger().CreateWorldLogger(WorldID);
 
         HashMap<String, Object> payload = new HashMap<>();
         payload.put("world_id", this.WorldID);

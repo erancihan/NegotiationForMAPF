@@ -63,6 +63,9 @@ public class ScenarioManager extends javax.swing.JFrame
         javax.swing.JLabel jLabel1 = new javax.swing.JLabel();
         javax.swing.Box.Filler filler1 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 10), new java.awt.Dimension(0, 10), new java.awt.Dimension(32767, 10));
         javax.swing.JLabel label_height = new javax.swing.JLabel();
+        javax.swing.Box.Filler filler2 = new javax.swing.Box.Filler(new java.awt.Dimension(5, 0), new java.awt.Dimension(5, 0), new java.awt.Dimension(5, 32767));
+        min_dist_bw_agents = new javax.swing.JTextField();
+        javax.swing.JLabel jLabel2 = new javax.swing.JLabel();
         javax.swing.JPanel scenario_info_container = new javax.swing.JPanel();
         javax.swing.JScrollPane jScrollPane1 = new javax.swing.JScrollPane();
         scenario_info_pane = new javax.swing.JTextPane();
@@ -115,11 +118,13 @@ public class ScenarioManager extends javax.swing.JFrame
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 3;
         jPanel1.add(path_length_input, gridBagConstraints);
 
+        label_width.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         label_width.setText("Width");
+        label_width.setPreferredSize(new java.awt.Dimension(80, 14));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -129,7 +134,7 @@ public class ScenarioManager extends javax.swing.JFrame
         height_input.setMinimumSize(new java.awt.Dimension(80, 26));
         height_input.setPreferredSize(new java.awt.Dimension(80, 26));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 2;
         jPanel1.add(height_input, gridBagConstraints);
 
@@ -138,25 +143,48 @@ public class ScenarioManager extends javax.swing.JFrame
         width_input.setMinimumSize(new java.awt.Dimension(80, 26));
         width_input.setPreferredSize(new java.awt.Dimension(80, 26));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
         jPanel1.add(width_input, gridBagConstraints);
 
+        jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel1.setText("Path Len. >=");
+        jLabel1.setPreferredSize(new java.awt.Dimension(80, 14));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
         jPanel1.add(jLabel1, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 5;
         jPanel1.add(filler1, gridBagConstraints);
 
+        label_height.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         label_height.setText("Height");
+        label_height.setPreferredSize(new java.awt.Dimension(80, 14));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         jPanel1.add(label_height, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 5;
+        jPanel1.add(filler2, gridBagConstraints);
+
+        min_dist_bw_agents.setHorizontalAlignment(javax.swing.JTextField.CENTER);
+        min_dist_bw_agents.setPreferredSize(new java.awt.Dimension(80, 26));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 4;
+        jPanel1.add(min_dist_bw_agents, gridBagConstraints);
+
+        jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel2.setText("min dist b/w");
+        jLabel2.setPreferredSize(new java.awt.Dimension(80, 14));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        jPanel1.add(jLabel2, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -279,9 +307,10 @@ public class ScenarioManager extends javax.swing.JFrame
     private javax.swing.JTable agents_table;
     private javax.swing.JPanel cards_container;
     private javax.swing.JTextField height_input;
+    private javax.swing.JTextField min_dist_bw_agents;
     private javax.swing.JTextField path_length_input;
-    private javax.swing.JTextField width_input;
     private javax.swing.JTextPane scenario_info_pane;
+    private javax.swing.JTextField width_input;
     // End of variables declaration//GEN-END:variables
 
     private HashMap<String, Class<? extends Agent>> agents_map;
@@ -313,25 +342,34 @@ public class ScenarioManager extends javax.swing.JFrame
     private int agent_count = 0; // track number of agents there should be
     private void GenerateScenario()
     {
+        String wid = String.valueOf(System.currentTimeMillis());
+        WorldID = "world:" + wid + ":";
+
         // fetch scenario information
-        int width   = Integer.parseInt(width_input.getText());
-        int height  = Integer.parseInt(height_input.getText());
-        int N       = Integer.parseInt(path_length_input.getText());
+        int width, height, min_path_len, min_d;
+        try {
+            width        = Integer.parseInt(width_input.getText());
+            height       = Integer.parseInt(height_input.getText());
+            min_path_len = path_length_input.getText().isEmpty() ? 0 : Integer.parseInt(path_length_input.getText());
+            min_d        = min_dist_bw_agents.getText().isEmpty() ? 0 : Integer.parseInt(min_dist_bw_agents.getText());
+        } catch (NumberFormatException ex) {
+            logger.error("Encountered following error, stopping Scenario Generation");
+            ex.printStackTrace();
+            return;
+        }
 
         // initialize agents
-        generateAgentStartLocations(width, height, N);
-        generateAgentDestinations(width, height, N);
-        initializeAgents();
+        GenerateAgentStartLocations(width, height, min_d);
 
         if (agent_count == 0) return;
 
-        // initialize world
-        WorldID = "world:" + System.currentTimeMillis() + ":";
+        GenerateAgentLocationData(width, height, min_path_len);
 
+        // initialize world
         world = new World();
         world.SetOnLoopingStop(() -> { });
         world_listener = world.Create(
-            WorldID,
+            wid,
             width + "x" + height,
             (data, log) -> {
                 // update canvas
@@ -355,13 +393,17 @@ public class ScenarioManager extends javax.swing.JFrame
             });
 
         Assert.notNull(world_listener, "redis listener cannot be null!");
+        InitializeAgents();
     }
 
     private HashSet<String> AgentStartLocations = new HashSet<>();
-    private void generateAgentStartLocations(int width, int height, int n)
+    private HashSet<String> AgentDestinations = new HashSet<>();
+    private ArrayList<Point[]> AgentLocationData = new ArrayList<>();
+
+    private void GenerateAgentStartLocations(int width, int height, int min_d)
     {
         for (int row = 0; row < agents_table.getRowCount(); row++)
-        {   // for each row
+        {   // for each row in AGENTS table | foreach agent class present
             int ac = Integer.parseInt((String) agents_table.getValueAt(row, 1));
             for (int i = 0; i < ac; i++)
             {   // for the amount of agents that there is
@@ -370,7 +412,7 @@ public class ScenarioManager extends javax.swing.JFrame
                 do {
                     x = rng.nextInt(width);
                     y = rng.nextInt(height);
-                } while (!isPremisesClear(x, y, n) || AgentStartLocations.contains(x+":"+y));
+                } while (!isPremisesClear(x, y, min_d) || AgentStartLocations.contains(x+":"+y));
 
                 // assert x & y >= 0
                 Assert.isTrue((x >= 0 && y >= 0), "P_t:(x, y) cannot be negative");
@@ -382,77 +424,80 @@ public class ScenarioManager extends javax.swing.JFrame
         }
     }
 
-    private boolean isPremisesClear(int _x, int _y, int _N)
+    private boolean isPremisesClear(int _x, int _y, int _d)
     {
-        // TODO search the premises
+        // search the premises
+        for (int i = 0; i < _d; i++) {
+            for (int j = 0; j < _d; j++) {
+                if (i == 0 && j == 0) continue; // self
+
+                boolean is_occupied =
+                        AgentStartLocations.contains((_x + i) + ":" + (_y + j)) ||
+                        AgentStartLocations.contains((_x + i) + ":" + (_y - j)) ||
+                        AgentStartLocations.contains((_x - i) + ":" + (_y + j)) ||
+                        AgentStartLocations.contains((_x - i) + ":" + (_y - j));
+
+                if (is_occupied) {
+                    // Premise NOT Clear
+                    return false;
+                }
+            }
+        }
+
         return true;
     }
 
-    private HashSet<String> AgentDestinations = new HashSet<>();
-    private void generateAgentDestinations(int width, int height, int n)
+    private void GenerateAgentLocationData(int width, int height, int n)
     {
-        for (int row = 0; row < agents_table.getRowCount(); row++)
-        {   // for each row
-            int ac = Integer.parseInt((String) agents_table.getValueAt(row, 1));
-            for (int i = 0; i < ac; i++)
-            {   // for the amount of agents that there is
-                int x = -1;
-                int y = -1;
-                do {
-                    x = rng.nextInt(width);
-                    y = rng.nextInt(height);
-                } while (AgentDestinations.contains(x+":"+y));
+        Iterator<String> StartLocIter = AgentStartLocations.iterator();
+        while (StartLocIter.hasNext()) {
+            // for each start point
+            Point start = new Point(StartLocIter.next().split(":"));
+            Point dest;
+            do {
+                dest = new Point(rng.nextInt(width), rng.nextInt(height));
+            } while (AgentDestinations.contains(dest.key) || dest.ManhattanDistTo(start) < n);
 
-                // assert x & y >= 0
-                Assert.isTrue((x >= 0 && y >= 0), "P_d:(x, y) cannot be negative");
-                // register to AgentDestinations
-                AgentDestinations.add(x+":"+y);
-            }
+            AgentLocationData.add(new Point[]{start, dest});
         }
     }
 
-    private void initializeAgents()
+    private void InitializeAgents()
     {
-        Iterator<String> StartLocIter = AgentStartLocations.iterator();
-
+        Iterator<Point[]> AgentLocationDataIterator = AgentLocationData.iterator();
         for (int row = 0; row < agents_table.getRowCount(); row++)
-        {   // for each agent class
-            String agentName = (String) agents_table.getValueAt(row, 0);
-            int ac = Integer.parseInt((String) agents_table.getValueAt(row, 1));
-            this.agent_count += ac;
+        {
+            String agent_class_name = (String) agents_table.getValueAt(row, 0);
+            int agent_count = Integer.parseInt((String) agents_table.getValueAt(row, 1));
 
-            for (int i = 0; i < ac; i++)
-            {   // for the amount of agents that there is
-                Iterator<String> DestLocIter = AgentDestinations.iterator();
-                Assert.isTrue(StartLocIter.hasNext() && DestLocIter.hasNext(), "Ran out of locations!");
+            for (int i = 0; i < agent_count; i++)
+            {
+                if (!AgentLocationDataIterator.hasNext()) {
+                    // error
+                    logger.error("NOT ENOUGH LOCATIONS WERE GENERATED");
+                    System.exit(1);
+                }
+                Point[] locPair = AgentLocationDataIterator.next();
 
-                String StartLoc = StartLocIter.next();
-                String DestLoc;
-                do {
-                     DestLoc = DestLocIter.next();
-                } while (StartLoc.equals(DestLoc));
+                Point start = locPair[0];
+                Point dest = locPair[1];
 
-                StartLocIter.remove();  // unregister location
-                DestLocIter.remove();   // unregister location
+                logger.info("generating agent with ID: " + agent_class_name + row + "" + i + "|" + start + "->" + dest);
 
-                logger.info("generating agent with ID: " + agentName + row + "" + i + "|" + StartLoc + "->" + DestLoc);
                 try {
-                    AgentClient client = new AgentClient(
-                            agents_map.get(agentName)
-                            .getDeclaredConstructor(String.class, String.class, Point.class, Point.class)
-                            .newInstance(
-                                "Agent" + row + "" + i,
-                                "Agent" + row + "" + i,
-                                new Point(StartLoc.split(":")), // randomise
-                                new Point(DestLoc.split(":"))  // randomise
-                            ));
-                    client.join(WorldID);
-                } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+                    new AgentClient(
+                            agents_map
+                                    .get(agent_class_name)
+                                    .getDeclaredConstructor(String.class, String.class, Point.class, Point.class)
+                                    .newInstance("Agent" + row + "" + i, "Agent" + row + "" + i, start, dest)
+                    ).join(WorldID);
+                } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+                    logger.error("An error occurred while trying to generate a client");
                     e.printStackTrace();
                     System.exit(1);
                 }
             }
-        } // end loop over agents
+        }
     }
 
     private void RunScenario()
