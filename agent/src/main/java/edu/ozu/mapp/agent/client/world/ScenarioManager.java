@@ -314,7 +314,7 @@ public class ScenarioManager extends javax.swing.JFrame
     private javax.swing.JTextField width_input;
     // End of variables declaration//GEN-END:variables
 
-    private HashMap<String, Class<? extends Agent>> agents_map = new HashMap<>();
+    private LinkedHashMap<String, Class<? extends Agent>> agents_map = new LinkedHashMap<>();
     private void onComponentsDidMount()
     {
         logger.debug("searching classes");
@@ -328,12 +328,14 @@ public class ScenarioManager extends javax.swing.JFrame
 
     private void FindClasses()
     {
+        HashMap<String, Class<? extends Agent>> agents = new HashMap<>();
+
         ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(true);
         scanner.addIncludeFilter(new AnnotationTypeFilter(MAPPAgent.class));
 
         try {
             for (BeanDefinition bd : scanner.findCandidateComponents("mappagent.sample")) {
-                agents_map.put(
+                agents.put(
                         Objects.requireNonNull(bd.getBeanClassName()).split("\\.", 3)[2],
                         (Class<? extends Agent>) Class.forName(bd.getBeanClassName())
                 );
@@ -341,6 +343,8 @@ public class ScenarioManager extends javax.swing.JFrame
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
+
+        agents_map = agents.entrySet().stream().sorted(Map.Entry.comparingByKey()).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (o, n) -> o, LinkedHashMap::new));
     }
 
     private void onClose()
