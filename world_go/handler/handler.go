@@ -63,6 +63,15 @@ func (h *Handler) PlayerUnregister(ctx echo.Context, p *WorldPool) (err error) {
 	rds := h.Pool.Get()
 	defer rds.Close()
 
+	exists, err := redis.Bool(rds.Do("EXISTS", wid, wid+"map"))
+	if err != nil {
+		ctx.Echo().Logger.Fatal(err)
+	}
+	if !exists {
+		// world does not exist, it has already been cleaned up
+		return err
+	}
+
 	loc, err := redis.String(rds.Do("HGET", wid+"map", aid))
 	if err != nil {
 		ctx.Echo().Logger.Fatal(err)
