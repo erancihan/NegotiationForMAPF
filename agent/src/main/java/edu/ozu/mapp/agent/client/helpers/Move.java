@@ -32,6 +32,7 @@ public class Move {
         payload.put("direction", direction);
         payload.put("broadcast", next_broadcast);
 
+        logger.debug("move payload:" + payload);
         JSONAgent response = gson.fromJson(Utils.post("http://" + Globals.SERVER + "/move", payload), JSONAgent.class);
 
         // response should match with next path point in line
