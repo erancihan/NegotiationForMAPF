@@ -6,12 +6,13 @@
 package edu.ozu.mapp.agent.client.world;
 
 import edu.ozu.mapp.agent.Agent;
+import edu.ozu.mapp.agent.MAPPAgent;
 import edu.ozu.mapp.agent.client.AgentClient;
 import edu.ozu.mapp.agent.client.WorldWatchSocketIO;
 import edu.ozu.mapp.utils.Point;
-import mappagent.sample.Conceder;
-import mappagent.sample.Greedy;
-import mappagent.sample.HelloAgent;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
+import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.util.Assert;
 
 import javax.swing.*;
@@ -313,17 +314,33 @@ public class ScenarioManager extends javax.swing.JFrame
     private javax.swing.JTextField width_input;
     // End of variables declaration//GEN-END:variables
 
-    private HashMap<String, Class<? extends Agent>> agents_map;
+    private HashMap<String, Class<? extends Agent>> agents_map = new HashMap<>();
     private void onComponentsDidMount()
     {
-        agents_map = new HashMap<>();
-        // add agent classes by hand
-        agents_map.put(HelloAgent.class.getSimpleName(), HelloAgent.class);
-        agents_map.put(Greedy.class.getSimpleName(), Greedy.class);
-        agents_map.put(Conceder.class.getSimpleName(), Conceder.class);
+        logger.debug("searching classes");
+        FindClasses();
+        logger.debug("classes found are");
+        logger.debug(agents_map.toString());
 
         AgentsTableModel table = new AgentsTableModel(agents_map.keySet().toArray(new String[0]));
         agents_table.setModel(table);
+    }
+
+    private void FindClasses()
+    {
+        ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(true);
+        scanner.addIncludeFilter(new AnnotationTypeFilter(MAPPAgent.class));
+
+        try {
+            for (BeanDefinition bd : scanner.findCandidateComponents("mappagent.sample")) {
+                agents_map.put(
+                        Objects.requireNonNull(bd.getBeanClassName()).split("\\.", 3)[2],
+                        (Class<? extends Agent>) Class.forName(bd.getBeanClassName())
+                );
+            }
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 
     private void onClose()
