@@ -480,6 +480,7 @@ public class ScenarioManager extends javax.swing.JFrame
             return;
         }
         world_data = new JSONWorldData(wid, width, height, min_path_len, min_d);
+        if (world == null) InitWorld();
 
         // initialize agents
         GenerateAgentStartLocations(width, height, min_d);
@@ -583,6 +584,7 @@ public class ScenarioManager extends javax.swing.JFrame
                 String agent_name = agent_class_name + row + "" + i;
 
                 logger.info("Creating config for " + agent_name + " | " + start + "->" + dest);
+                if (world != null) world.Log(String.format("generated %s %s -> %s", agent_name, start.key, dest.key));
 
                 agents_data.add(new JSONAgentData(agent_name, agent_class_name, start, dest));
             }
