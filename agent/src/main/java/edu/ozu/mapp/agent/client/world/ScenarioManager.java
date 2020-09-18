@@ -23,7 +23,10 @@ import org.springframework.util.Assert;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.AbstractTableModel;
-import java.io.*;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -207,6 +210,7 @@ public class ScenarioManager extends javax.swing.JFrame
         scenario_info_container.setLayout(new java.awt.BorderLayout());
 
         scenario_info_pane.setBackground(new java.awt.Color(250, 250, 250));
+        scenario_info_pane.setFont(new java.awt.Font("Trebuchet MS", 0, 12)); // NOI18N
         jScrollPane1.setViewportView(scenario_info_pane);
 
         scenario_info_container.add(jScrollPane1, java.awt.BorderLayout.CENTER);
@@ -585,20 +589,11 @@ public class ScenarioManager extends javax.swing.JFrame
         }
     }
 
-    private void RunScenario()
+    private void InitWorld()
     {
-        run_scenario_btn.setEnabled(false);
-
-        WorldID = "world:" + world_data.wid + ":";
-
-        // initialize world
         world = new World();
-        world.SetOnLoopingStop(() -> {
-            run_scenario_btn.setEnabled(true);
-        });
-        world_listener = world.Create(
-            world_data.wid,
-            world_data.width + "x" + world_data.height,
+        world.SetOnLoopingStop(() -> run_scenario_btn.setEnabled(true));
+        world.SetLogDrawCallback(
             (data, log) -> {
                 // update canvas
                 try {
@@ -619,11 +614,23 @@ public class ScenarioManager extends javax.swing.JFrame
                     System.exit(1);
                 }
             });
+    }
+
+    private void RunScenario()
+    {
+        run_scenario_btn.setEnabled(false);
+
+        WorldID = "world:" + world_data.wid + ":";
+
+        // initialize world
+        if (world == null) InitWorld();
+        world_listener = world.Create(world_data.wid, world_data.width + "x" + world_data.height);
 
         Assert.notNull(world_listener, "redis listener cannot be null!");
 
-        agents_data.forEach(data -> {
+        for (JSONAgentData data : agents_data) {
             try {
+                world.Log(String.format("initializing %s %s -> %s", data.agent_name, data.start, data.dest));
                 new AgentClient(
                     agents_map
                         .get(data.agent_class_name)
@@ -635,7 +642,7 @@ public class ScenarioManager extends javax.swing.JFrame
                 e.printStackTrace();
                 System.exit(1);
             }
-        });
+        }
 
         if (world != null) {
             world.Loop();
@@ -648,9 +655,12 @@ public class ScenarioManager extends javax.swing.JFrame
         path_length_input.setText(String.valueOf(world_data.min_path_len));
         min_dist_bw_agents.setText(String.valueOf(world_data.min_d));
 
+        if (world == null) InitWorld();
+
         HashMap<String, Integer> agent_counts = new HashMap<>();
         for (JSONAgentData data : agents_data) {
             agent_counts.put(data.agent_class_name, agent_counts.getOrDefault(data.agent_class_name, 0) + 1);
+            if (world != null) world.Log(String.format("imported %s %s -> %s", data.agent_name, data.start, data.dest));
         }
 
         AgentsTableModel model = (AgentsTableModel) agents_table.getModel();
@@ -661,6 +671,9 @@ public class ScenarioManager extends javax.swing.JFrame
                 model.setValueAt(String.valueOf(agent_counts.get(agent_class_name)), row, 1);
             }
         }
+
+        ReadyToRun = true;
+        run_scenario_btn.setText("Run");
     }
 }
 
