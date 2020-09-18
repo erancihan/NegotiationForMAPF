@@ -23,9 +23,7 @@ import org.springframework.util.Assert;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.AbstractTableModel;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -311,6 +309,26 @@ public class ScenarioManager extends javax.swing.JFrame
         int return_val = file_chooser.showOpenDialog(this);
         if (return_val == JFileChooser.APPROVE_OPTION) {
             // open & import file
+            File import_file = file_chooser.getSelectedFile();
+
+            // do not open if it is not a json file
+            if (!import_file.getAbsolutePath().endsWith(".json")) return;
+
+            try {
+                FileReader reader = new FileReader(import_file);
+                Gson gson = new Gson();
+
+                JSONSessionConfig config = gson.fromJson(reader, JSONSessionConfig.class);
+                reader.close();
+
+                world_data = config.world;
+                agents_data = new ArrayList<>();
+                Collections.addAll(agents_data, config.agents);
+
+                DisplayImportedData();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }//GEN-LAST:event_import_btnActionPerformed
 
@@ -590,11 +608,11 @@ public class ScenarioManager extends javax.swing.JFrame
                             .stream()
                             .map(key -> key + ": " + data.get(key))
                             .collect(Collectors.joining("\n")) +
-                            "\n-------------\n" +
-                            log
-                                .stream()
-                                .map(item -> String.format("%-23s", item[1].toString()) + " " + item[0].toString())
-                                .collect(Collectors.joining("\n"))
+                        "\n-------------\n" +
+                        log
+                            .stream()
+                            .map(item -> String.format("%-23s", item[1].toString()) + " " + item[0].toString())
+                            .collect(Collectors.joining("\n"))
                     );
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -621,6 +639,27 @@ public class ScenarioManager extends javax.swing.JFrame
 
         if (world != null) {
             world.Loop();
+        }
+    }
+
+    private void DisplayImportedData() {
+        width_input.setText(String.valueOf(world_data.width));
+        height_input.setText(String.valueOf(world_data.height));
+        path_length_input.setText(String.valueOf(world_data.min_path_len));
+        min_dist_bw_agents.setText(String.valueOf(world_data.min_d));
+
+        HashMap<String, Integer> agent_counts = new HashMap<>();
+        for (JSONAgentData data : agents_data) {
+            agent_counts.put(data.agent_class_name, agent_counts.getOrDefault(data.agent_class_name, 0) + 1);
+        }
+
+        AgentsTableModel model = (AgentsTableModel) agents_table.getModel();
+        for (int row = 0; row < agents_table.getRowCount(); row++) {
+            String agent_class_name = (String) agents_table.getValueAt(row, 0);
+
+            if (agent_counts.containsKey(agent_class_name)) {
+                model.setValueAt(String.valueOf(agent_counts.get(agent_class_name)), row, 1);
+            }
         }
     }
 }
