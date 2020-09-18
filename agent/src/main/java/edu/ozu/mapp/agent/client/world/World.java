@@ -39,6 +39,7 @@ public class World
     private int negotiation_state_clock = 0;
 
     private ArrayList<Object[]> state_log = new ArrayList<>();
+    private BiConsumer<Map<String, String>, ArrayList<Object[]>> LogDrawCallback;
 
     public World(boolean DeleteOnFinish)
     {
@@ -118,7 +119,7 @@ public class World
         switch (curr_state_id)
         {
             case 0:
-                state_log.add(new Object[]{"- end of join state", new java.sql.Timestamp(System.currentTimeMillis())});
+                state_log.add(new Object[]{"- end of join state", timestamp});
 
                 logger.info("- end of join state");
                 fl.LogWorldJoin(data);
@@ -200,6 +201,13 @@ public class World
 
     public WorldWatchSocketIO Create(String WorldID, String Dimensions, BiConsumer<Map<String, String>, ArrayList<Object[]>> callback)
     {
+        LogDrawCallback = callback;
+
+        return Create(WorldID, Dimensions);
+    }
+
+    public WorldWatchSocketIO Create(String WorldID, String Dimensions)
+    {
         if (!IsJedisOK)
         {
             logger.error("JEDIS connection is not OK!");
@@ -227,7 +235,7 @@ public class World
                 (message) -> {
                     Map<String, String> data = gson.fromJson(message, messageMapType);
 
-                    callback.accept(data, state_log);
+                    LogDrawCallback.accept(data, state_log);
 
                     if (IsLooping) {
                         OnStateUpdate(data);
@@ -249,5 +257,15 @@ public class World
         payload.put("world_id", WorldID);
 
         Utils.post("http://localhost:5000/world/delete", payload);
+    }
+
+    public void SetLogDrawCallback(BiConsumer<Map<String, String>, ArrayList<Object[]>> callback) {
+        this.LogDrawCallback = callback;
+    }
+
+    public void Log(String str) {
+        state_log.add(new Object[]{str, new java.sql.Timestamp(System.currentTimeMillis())});
+
+        LogDrawCallback.accept(new HashMap<>(), state_log);
     }
 }
