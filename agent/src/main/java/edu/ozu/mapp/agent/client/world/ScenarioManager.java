@@ -359,11 +359,16 @@ public class ScenarioManager extends javax.swing.JFrame
          * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html
          */
         try {
+            boolean isLookAndFeelSet = false;
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
+                if ("Windows".equals(info.getName())) {
                     javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    isLookAndFeelSet = true;
                     break;
                 }
+            }
+            if (!isLookAndFeelSet) {
+                logger.error("Unable to set LookAndFeel");
             }
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
             java.util.logging.Logger.getLogger(ScenarioManager.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
