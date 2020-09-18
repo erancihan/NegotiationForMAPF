@@ -480,7 +480,7 @@ public class ScenarioManager extends javax.swing.JFrame
             return;
         }
         world_data = new JSONWorldData(wid, width, height, min_path_len, min_d);
-        if (world == null) InitWorld();
+        if (world == null) InitializeWorld();
 
         // initialize agents
         GenerateAgentStartLocations(width, height, min_d);
@@ -591,7 +591,7 @@ public class ScenarioManager extends javax.swing.JFrame
         }
     }
 
-    private void InitWorld()
+    private void InitializeWorld()
     {
         world = new World();
         world.SetOnLoopingStop(() -> run_scenario_btn.setEnabled(true));
@@ -625,7 +625,7 @@ public class ScenarioManager extends javax.swing.JFrame
         WorldID = "world:" + world_data.wid + ":";
 
         // initialize world
-        if (world == null) InitWorld();
+        if (world == null) InitializeWorld();
         world_listener = world.Create(world_data.wid, world_data.width + "x" + world_data.height);
 
         Assert.notNull(world_listener, "redis listener cannot be null!");
@@ -657,7 +657,7 @@ public class ScenarioManager extends javax.swing.JFrame
         path_length_input.setText(String.valueOf(world_data.min_path_len));
         min_dist_bw_agents.setText(String.valueOf(world_data.min_d));
 
-        if (world == null) InitWorld();
+        if (world == null) InitializeWorld();
 
         HashMap<String, Integer> agent_counts = new HashMap<>();
         for (JSONAgentData data : agents_data) {
