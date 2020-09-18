@@ -5,10 +5,15 @@
  */
 package edu.ozu.mapp.agent.client.world;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import edu.ozu.mapp.agent.Agent;
 import edu.ozu.mapp.agent.MAPPAgent;
 import edu.ozu.mapp.agent.client.AgentClient;
 import edu.ozu.mapp.agent.client.WorldWatchSocketIO;
+import edu.ozu.mapp.utils.JSONAgentData;
+import edu.ozu.mapp.utils.JSONSessionConfig;
+import edu.ozu.mapp.utils.JSONWorldData;
 import edu.ozu.mapp.utils.Point;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
@@ -16,7 +21,11 @@ import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.util.Assert;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.AbstractTableModel;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -31,6 +40,7 @@ public class ScenarioManager extends javax.swing.JFrame
     private Random rng = new Random();
 
     private String WorldID = null;
+    private boolean ReadyToRun = false;
 
     /**
      * Creates new form ScenarioManager
@@ -51,11 +61,12 @@ public class ScenarioManager extends javax.swing.JFrame
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
+        file_chooser = new javax.swing.JFileChooser();
         cards_container = new javax.swing.JPanel();
         javax.swing.JPanel create_scenario = new javax.swing.JPanel();
         javax.swing.JPanel panel_upper = new javax.swing.JPanel();
         javax.swing.JPanel inputs_container = new javax.swing.JPanel();
-        javax.swing.JButton run_scenario_btn = new javax.swing.JButton();
+        run_scenario_btn = new javax.swing.JButton();
         javax.swing.JPanel jPanel1 = new javax.swing.JPanel();
         path_length_input = new javax.swing.JTextField();
         javax.swing.JLabel label_width = new javax.swing.JLabel();
@@ -74,6 +85,10 @@ public class ScenarioManager extends javax.swing.JFrame
         javax.swing.JScrollPane jScrollPane2 = new javax.swing.JScrollPane();
         agents_table = new javax.swing.JTable();
         javax.swing.JPanel run_scenario = new javax.swing.JPanel();
+        javax.swing.JMenuBar jMenuBar1 = new javax.swing.JMenuBar();
+        javax.swing.JMenu jMenu1 = new javax.swing.JMenu();
+        javax.swing.JMenuItem export_btn = new javax.swing.JMenuItem();
+        javax.swing.JMenuItem import_btn = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setMinimumSize(new java.awt.Dimension(600, 300));
@@ -83,6 +98,7 @@ public class ScenarioManager extends javax.swing.JFrame
                 formWindowClosing(evt);
             }
         });
+        getContentPane().setLayout(new java.awt.GridBagLayout());
 
         cards_container.setLayout(new java.awt.CardLayout());
 
@@ -113,11 +129,6 @@ public class ScenarioManager extends javax.swing.JFrame
 
         path_length_input.setHorizontalAlignment(javax.swing.JTextField.CENTER);
         path_length_input.setPreferredSize(new java.awt.Dimension(80, 26));
-        path_length_input.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                path_length_inputActionPerformed(evt);
-            }
-        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 3;
@@ -245,16 +256,32 @@ public class ScenarioManager extends javax.swing.JFrame
 
         cards_container.add(run_scenario, "run");
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
-        getContentPane().setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(cards_container, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(cards_container, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-        );
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        getContentPane().add(cards_container, gridBagConstraints);
+
+        jMenu1.setText("Options");
+
+        export_btn.setText("Export");
+        export_btn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                export_btnActionPerformed(evt);
+            }
+        });
+        jMenu1.add(export_btn);
+
+        import_btn.setText("Import");
+        import_btn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                import_btnActionPerformed(evt);
+            }
+        });
+        jMenu1.add(import_btn);
+
+        jMenuBar1.add(jMenu1);
+
+        setJMenuBar(jMenuBar1);
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -271,13 +298,56 @@ public class ScenarioManager extends javax.swing.JFrame
 //        CardLayout cl = (CardLayout) cards_container.getLayout();
 //        cl.show(cards_container, "run");
         // start scenario
-        GenerateScenario();
-        RunScenario();
+        if (ReadyToRun) {
+            RunScenario();
+        } else {
+            GenerateScenario();
+        }
     }//GEN-LAST:event_run_scenario_btnActionPerformed
 
-    private void path_length_inputActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_path_length_inputActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_path_length_inputActionPerformed
+    private void import_btnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_import_btnActionPerformed
+        // open file picker and select .json file to import scenario config from
+        file_chooser.setFileFilter(new FileNameExtensionFilter("JSON", "json"));
+        int return_val = file_chooser.showOpenDialog(this);
+        if (return_val == JFileChooser.APPROVE_OPTION) {
+            // open & import file
+        }
+    }//GEN-LAST:event_import_btnActionPerformed
+
+    private void export_btnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_export_btnActionPerformed
+        // open file picker and select .json file to export scenario config to
+        String wid = String.valueOf(System.currentTimeMillis());
+
+        file_chooser.setSelectedFile(new File("world-scenario-"+wid+".json"));
+        int return_val = file_chooser.showSaveDialog(this);
+        if (return_val == JFileChooser.APPROVE_OPTION) {
+            // open & write to file
+            File export_file;
+            if (file_chooser.getSelectedFile().getPath().endsWith(".json")) {
+                export_file = file_chooser.getSelectedFile();
+            } else {
+                export_file = new File(file_chooser.getSelectedFile().getPath() + ".json");
+            }
+            JSONSessionConfig config = new JSONSessionConfig();
+            config.agents = agents_data.toArray(new JSONAgentData[0]);
+            config.world  = world_data;
+
+            try {
+                logger.debug("Writing config");
+                logger.debug(config.toString());
+                logger.debug("To file " + export_file);
+
+                FileWriter writer = new FileWriter(export_file);
+                Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                gson.toJson(config, writer);
+                writer.append("\n");
+                writer.flush();
+                writer.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }//GEN-LAST:event_export_btnActionPerformed
 
     /**
      * @param args the command line arguments
@@ -307,9 +377,11 @@ public class ScenarioManager extends javax.swing.JFrame
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTable agents_table;
     private javax.swing.JPanel cards_container;
+    private javax.swing.JFileChooser file_chooser;
     private javax.swing.JTextField height_input;
     private javax.swing.JTextField min_dist_bw_agents;
     private javax.swing.JTextField path_length_input;
+    private javax.swing.JButton run_scenario_btn;
     private javax.swing.JTextPane scenario_info_pane;
     private javax.swing.JTextField width_input;
     // End of variables declaration//GEN-END:variables
@@ -324,6 +396,8 @@ public class ScenarioManager extends javax.swing.JFrame
 
         AgentsTableModel table = new AgentsTableModel(agents_map.keySet().toArray(new String[0]));
         agents_table.setModel(table);
+
+        if (ReadyToRun) run_scenario_btn.setText("Run");
     }
 
     private void FindClasses()
@@ -359,12 +433,12 @@ public class ScenarioManager extends javax.swing.JFrame
     }
 
     private World world;
+    private JSONWorldData world_data;
     private WorldWatchSocketIO world_listener = null;
     private int agent_count = 0; // track number of agents there should be
     private void GenerateScenario()
     {
         String wid = String.valueOf(System.currentTimeMillis());
-        WorldID = "world:" + wid + ":";
 
         // fetch scenario information
         int width, height, min_path_len, min_d;
@@ -378,6 +452,7 @@ public class ScenarioManager extends javax.swing.JFrame
             ex.printStackTrace();
             return;
         }
+        world_data = new JSONWorldData(wid, width, height, min_path_len, min_d);
 
         // initialize agents
         GenerateAgentStartLocations(width, height, min_d);
@@ -385,41 +460,16 @@ public class ScenarioManager extends javax.swing.JFrame
         if (agent_count == 0) return;
 
         GenerateAgentLocationData(width, height, min_path_len);
-
-        // initialize world
-        world = new World();
-        world.SetOnLoopingStop(() -> { });
-        world_listener = world.Create(
-            wid,
-            width + "x" + height,
-            (data, log) -> {
-                // update canvas
-                try {
-                    scenario_info_pane.setText(
-                        data
-                            .keySet()
-                            .stream()
-                            .map(key -> key + ": " + data.get(key))
-                            .collect(Collectors.joining("\n")) +
-                            "\n-------------\n" +
-                            log
-                                .stream()
-                                .map(item -> String.format("%-23s", item[1].toString()) + " " + item[0].toString())
-                                .collect(Collectors.joining("\n"))
-                    );
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    System.exit(1);
-                }
-            });
-
-        Assert.notNull(world_listener, "redis listener cannot be null!");
         InitializeAgents();
+
+        ReadyToRun = true;
+        run_scenario_btn.setText("Run");
     }
 
     private HashSet<String> AgentStartLocations = new HashSet<>();
     private HashSet<String> AgentDestinations = new HashSet<>();
     private ArrayList<Point[]> AgentLocationData = new ArrayList<>();
+    private ArrayList<JSONAgentData> agents_data = new ArrayList<>();
 
     private void GenerateAgentStartLocations(int width, int height, int min_d)
     {
@@ -503,26 +553,67 @@ public class ScenarioManager extends javax.swing.JFrame
                 Point start = locPair[0];
                 Point dest = locPair[1];
 
-                logger.info("generating agent with ID: " + agent_class_name + row + "" + i + "|" + start + "->" + dest);
+                String agent_name = agent_class_name + row + "" + i;
 
-                try {
-                    new AgentClient(
-                            agents_map
-                                    .get(agent_class_name)
-                                    .getDeclaredConstructor(String.class, String.class, Point.class, Point.class)
-                                    .newInstance("Agent" + row + "" + i, "Agent" + row + "" + i, start, dest)
-                    ).join(WorldID);
-                } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-                    logger.error("An error occurred while trying to generate a client");
-                    e.printStackTrace();
-                    System.exit(1);
-                }
+                logger.info("Creating config for " + agent_name + " | " + start + "->" + dest);
+
+                agents_data.add(new JSONAgentData(agent_name, agent_class_name, start, dest));
             }
         }
     }
 
     private void RunScenario()
     {
+        run_scenario_btn.setEnabled(false);
+
+        WorldID = "world:" + world_data.wid + ":";
+
+        // initialize world
+        world = new World();
+        world.SetOnLoopingStop(() -> {
+            run_scenario_btn.setEnabled(true);
+        });
+        world_listener = world.Create(
+            world_data.wid,
+            world_data.width + "x" + world_data.height,
+            (data, log) -> {
+                // update canvas
+                try {
+                    scenario_info_pane.setText(
+                        data
+                            .keySet()
+                            .stream()
+                            .map(key -> key + ": " + data.get(key))
+                            .collect(Collectors.joining("\n")) +
+                            "\n-------------\n" +
+                            log
+                                .stream()
+                                .map(item -> String.format("%-23s", item[1].toString()) + " " + item[0].toString())
+                                .collect(Collectors.joining("\n"))
+                    );
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    System.exit(1);
+                }
+            });
+
+        Assert.notNull(world_listener, "redis listener cannot be null!");
+
+        agents_data.forEach(data -> {
+            try {
+                new AgentClient(
+                    agents_map
+                        .get(data.agent_class_name)
+                        .getDeclaredConstructor(String.class, String.class, Point.class, Point.class)
+                        .newInstance(data.agent_name, data.agent_name, new Point(data.start, "-"), new Point(data.dest, "-"))
+                ).join(WorldID);
+            } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+                logger.error("An error occurred while trying to generate a client");
+                e.printStackTrace();
+                System.exit(1);
+            }
+        });
+
         if (world != null) {
             world.Loop();
         }
