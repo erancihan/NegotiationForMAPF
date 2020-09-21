@@ -22,6 +22,8 @@ public class Move {
     @SuppressWarnings("Duplicates")
     public static JSONAgent __postMove(String worldID, String agentID, Point point, String direction, String next_broadcast)
     {
+        int try_count = 0;
+
         // post localhost:3001/move payload:
         // direction -> {N, W, E, S}
         HashMap<String, Object> payload = new HashMap<>();
@@ -33,7 +35,24 @@ public class Move {
         payload.put("broadcast", next_broadcast);
 
         logger.debug("move payload:" + payload);
-        JSONAgent response = gson.fromJson(Utils.post("http://" + Globals.SERVER + "/move", payload), JSONAgent.class);
+
+        JSONAgent response = null;
+        try {
+            String _resp = null;
+            while (_resp == null && try_count < 2)
+            {
+                _resp = Utils.post("http://" + Globals.SERVER + "/move", payload);
+                try_count++;
+
+                if (_resp == null)
+                {
+                    Thread.sleep(100);
+                }
+            }
+            response = gson.fromJson(_resp, JSONAgent.class);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
         // response should match with next path point in line
         logger.info("__postMove:" + response);
