@@ -186,7 +186,7 @@ public class AgentHandler {
                 if (path[i].equals(own_path[i]))
                 {
                     agent_ids.add(broadcast[0]);
-                    logger.info("found a Vertex Conflict at " + path[i] + "|" + Arrays.toString(broadcast));
+                    logger.info("found Vertex Conflict at " + path[i] + " | " + Arrays.toString(broadcast));
 
                     // TODO
                     // since first Vertex Conflict found is immediately returned
@@ -195,24 +195,22 @@ public class AgentHandler {
                     return agent_ids.toArray(new String[0]);
                 }
             }
-            /* disable swap conflict for now
             // check Swap Conflict
-            // get reverse of path
-            String[] path_reverse = new String[path.length];
-            for (int i = 0; i < path.length; i++)
-                path_reverse[i] = path[path.length - 1 - i];
-            // check match
-            for (int i = 0; i < path_reverse.length; i++)
+            for (int t = 0; t + 1 < own_path.length && t < path.length; t++)
             {
-                if (path_reverse[i].equals(own_path[i]))
+                // does my next equals other's current
+                if (own_path[t + 1].equals(path[t]))
                 {
                     agent_ids.add(broadcast[0]);
-                    logger.info("found a Swap Conflict at " + path_reverse[i] + "|" + Arrays.toString(broadcast));
+                    logger.info("found Swap Conflict when " + own_path[t] + " -> " + own_path[t + 1] + " | " + Arrays.toString(broadcast));
 
+                    // TODO
+                    // since first Swap Conflict found is immediately returned
+                    // logging the conflict location here should pose no issue
+                    conflict_location = own_path[t] + " -> " + own_path[t + 1];
                     return agent_ids.toArray(new String[0]);
                 }
             }
-            */
         }
 
         conflict_location = "";
