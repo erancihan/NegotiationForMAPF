@@ -25,7 +25,15 @@ func (h *Handler) Move(ctx echo.Context) (err error) {
 	agent := move.Agent
 	x, err := strconv.Atoi(agent.X)
 	y, err := strconv.Atoi(agent.Y)
+
 	wid := move.WorldID
+
+	_aid := "agent:"+agent.Id
+	_wid := "world:"+wid+":"
+	_map := _wid+"map"
+	_path := _wid+"path"
+	_curr := agent.X+":"+agent.Y
+
 	dir := move.Direction
 	dir = strings.ToUpper(dir)
 
@@ -33,18 +41,12 @@ func (h *Handler) Move(ctx echo.Context) (err error) {
 	defer rds.Close()
 
 	// check if move state
-	worldState, err := redis.Int(rds.Do("HGET", "world:"+wid+":", "world_state"))
+	worldState, err := redis.Int(rds.Do("HGET", _wid, "world_state"))
 	if err != nil {
 		ctx.Logger().Fatal(err)
 	}
 	if worldState == 0 {
 		return ctx.NoContent(http.StatusForbidden)
-	}
-
-	// DEL world:{wid}:map x:y
-	_, err = rds.Do("HDEL", "world:"+wid+":map", agent.X+":"+agent.Y)
-	if err != nil {
-		ctx.Logger().Fatal(err)
 	}
 
 	switch dir {
@@ -68,10 +70,18 @@ func (h *Handler) Move(ctx echo.Context) (err error) {
 	xs := strconv.Itoa(x)
 	ys := strconv.Itoa(y)
 
-	// check if x:y is occupied
-	dest, _ := redis.String(rds.Do("HGET", "world:"+wid+":map", xs+":"+ys))
+	_next := xs+":"+ys
+
+	// check if next x:y is occupied
+	dest, _ := redis.String(rds.Do("HGET", _map, _next))
 	if len(dest) > 0 {
 		return ctx.NoContent(http.StatusForbidden)
+	}
+
+	// DEL world:{wid}:map x:y
+	_, err = rds.Do("HDEL", _map, _curr)
+	if err != nil {
+		ctx.Logger().Fatal(err)
 	}
 
 	// update data
@@ -79,20 +89,20 @@ func (h *Handler) Move(ctx echo.Context) (err error) {
 	agent.Y = ys
 
 	// update REDIS position
-	_, err = rds.Do("HSET", "world:"+wid+":map", "agent:"+agent.Id, agent.X+":"+agent.Y)
-	_, err = rds.Do("HSET", "world:"+wid+":map", agent.X+":"+agent.Y, "agent:"+agent.Id)
+	_, err = rds.Do("HSET", _map, _aid, _next)
+	_, err = rds.Do("HSET", _map, _next, _aid)
 	if err != nil {
 		ctx.Logger().Fatal(err)
 	}
 
 	// update REDIS move
-	_, err = rds.Do("HSET", "world:"+wid+":path", "agent:"+agent.Id, move.Broadcast)
+	_, err = rds.Do("HSET", _path, _aid, move.Broadcast)
 	if err != nil {
 		ctx.Logger().Fatal(err)
 	}
 
 	// increment REDIS move action count
-	_, err = rds.Do("HINCRBY", "world:"+wid+":", "move_action_count", "1")
+	_, err = rds.Do("HINCRBY", _wid, "move_action_count", "1")
 	if err != nil {
 		ctx.Logger().Error("Move: HINCRBY move_action_count 1 > ", err)
 	}
