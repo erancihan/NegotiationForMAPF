@@ -1,7 +1,6 @@
 package edu.ozu.mapp.agent.client;
 
 import com.google.gson.Gson;
-import edu.ozu.mapp.agent.Agent;
 import edu.ozu.mapp.utils.Globals;
 import edu.ozu.mapp.utils.JSONNegotiationSession;
 import edu.ozu.mapp.utils.State;
@@ -16,7 +15,7 @@ public class NegotiationSession
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(NegotiationSession.class);
     private Gson gson;
 
-    private Agent client;
+    private AgentHandler handler;
     private String world_id;
     private String session_id;
     private String active_state = "";
@@ -27,18 +26,18 @@ public class NegotiationSession
         int _didBid = -1;
     boolean didDone = false;
 
-    NegotiationSession(String world_id, String session_id, Agent client)
+    NegotiationSession(String world_id, String session_id, AgentHandler handler)
     {
         this.world_id = world_id;
         this.session_id = session_id;
-        this.client = client;
+        this.handler = handler;
 
         gson = new Gson();
     }
 
     void connect()
     {
-        logger.info("connecting to " + session_id + " as " + client.AGENT_ID);
+        logger.info("connecting to " + session_id + " as " + handler.GetAgentID());
 //        connectSocketIO();
         connectWS();
     }
@@ -51,26 +50,26 @@ public class NegotiationSession
 
         try
         {
-            NegotiationSocketIO sess = new NegotiationSocketIO(world_id, client.AGENT_ID, session_id);
+            NegotiationSocketIO sess = new NegotiationSocketIO(world_id, handler.GetAgentID(), session_id);
 
             //<editor-fold defaultstate="collapsed" desc="Set On Sync Handler">
             sess.setOnSyncHandler(message -> {
                 JSONNegotiationSession json = gson.fromJson(message, JSONNegotiationSession.class);
-                client.onReceiveState(new State(json));
+                handler.OnReceiveState(new State(json));
 
                 active_state = json.state;
 
                 switch (json.state)
                 {
                     case "run":
-                        logger.info(client.AGENT_ID + " : session=" + session_id + " : state=run : turn=" + json.turn );
-                        if (json.turn.equals("agent:"+client.AGENT_ID))
+                        logger.info(handler.GetAgentID() + " : session=" + session_id + " : state=run : turn=" + json.turn );
+                        if (json.turn.equals("agent:"+ handler.GetAgentID()))
                         {
-                            logger.info(client.AGENT_ID + " : sess ");
+                            logger.info(handler.GetAgentID() + " : sess ");
                             if (_didBid < json.turn_count) break;
                             _didBid = json.turn_count;
 
-                            edu.ozu.mapp.utils.Action action = client.onMakeAction();
+                            edu.ozu.mapp.utils.Action action = handler.OnMakeAction();
                             action.bid.apply(this); // TODO change behaviour
 
                             sess.emitTakeAction(action.toString());
@@ -81,18 +80,18 @@ public class NegotiationSession
 
                         if (didDone) break;
 
-                        client.acceptLastBids(json);
+                        handler.AcceptLastBids(json);
 
                         //<editor-fold defaultstate="collapsed" desc="close socket when negotiation done">
                         try { sess.close(); }
                         catch (IOException e) { e.printStackTrace(); }
                         //</editor-fold>
 
-                        client.postNegotiation();
+                        handler.PostNegotiation();
 
                         didDone = true;
 
-                        logger.info(client.AGENT_ID + " : session=" + session_id + " : state=done" );
+                        logger.info(handler.GetAgentID() + " : session=" + session_id + " : state=done" );
                         break;
                 }
             });
@@ -102,20 +101,20 @@ public class NegotiationSession
                 if (didJoin) return;
                 logger.debug(message);
 
-                client.PrepareContract(this);
+                handler.PrepareContract(this);
 
                 sess.emitReady();
                 didJoin = true;
-                logger.info(client.AGENT_ID + " : session=" + session_id + " : will join" );
+                logger.info(handler.GetAgentID() + " : session=" + session_id + " : will join" );
             });
             //</editor-fold>
             //<editor-fold defaultstate="collapsed" desc="Set On Joined Handler">
             sess.setOnJoinedHandler(message -> {
                 logger.debug(message);
 
-                client.preNegotiation();
+                handler.PreNegotiation();
 
-                logger.info(client.AGENT_ID + " : session=" + session_id + " : joined" );
+                logger.info(handler.GetAgentID() + " : session=" + session_id + " : joined" );
             });
             //</editor-fold>
             //<editor-fold defaultstate="collapsed" desc="Set On Joined Handler">
@@ -123,7 +122,7 @@ public class NegotiationSession
                 // This should be invoked only once
                 logger.debug(message);
 
-                logger.info(client.AGENT_ID + " : session=" + session_id + " : done");
+                logger.info(handler.GetAgentID() + " : session=" + session_id + " : done");
             });
             //</editor-fold>
 
@@ -143,7 +142,7 @@ public class NegotiationSession
 
         try {
             //!!! sessions contain only one session id for now
-            String ws = "ws://" + Globals.SERVER + "/negotiation/" + world_id + "/" + session_id + "/" + client.AGENT_ID;
+            String ws = "ws://" + Globals.SERVER + "/negotiation/" + world_id + "/" + session_id + "/" + handler.GetAgentID();
             NegotiationWS websocket = new NegotiationWS(new URI(ws));
 //             * add handler
 //             * Message format:
@@ -155,7 +154,7 @@ public class NegotiationSession
 //             *
             websocket.setHandler(message -> {
                 JSONNegotiationSession json = gson.fromJson(message, JSONNegotiationSession.class);
-                client.onReceiveState(new State(json));                // pass session data to agent -> onReceiveState
+                handler.OnReceiveState(new State(json));                // pass session data to agent -> onReceiveState
 
                 active_state = json.state;
 
@@ -164,22 +163,22 @@ public class NegotiationSession
                     case "join":
                         if (didJoin) break;
 
-                        client.PrepareContract(this);
+                        handler.PrepareContract(this);
 
                         logger.info("joining to negotiation session");
                         // join negotiation session WS
                         // send ready message to socket
-                        client.preNegotiation();
-                        client.logNegoPre(session_id);
+                        handler.PreNegotiation();
+                        handler.LogPreNegotiation(session_id);
 
-                        websocket.sendMessage("agent:" + client.AGENT_ID + "-ready");
+                        websocket.sendMessage("agent:" + handler.GetAgentID() + "-ready");
                         didJoin = true;
 
                         break;
                     case "run":
-                        logger.info(client.AGENT_ID + " : session=" + session_id + " : state=run : turn=" + json.turn );
+                        logger.info(handler.GetAgentID() + " : session=" + session_id + " : state=run : turn=" + json.turn );
 
-                        if (json.turn.equals("agent:" + client.AGENT_ID))
+                        if (json.turn.equals("agent:" + handler.GetAgentID()))
                         {   // own turn to bid
                             if (didBid) break;
                             didBid = true;  // don't make me do this again...
@@ -187,17 +186,17 @@ public class NegotiationSession
                             // bidding agent is empty in the first bid
                             if (!bidding_agent.isEmpty())
                             {   // no need to log it if first bid does not exist yet
-                                client.LogNegotiationState(bidding_agent);
+                                handler.LogNegotiationState(bidding_agent);
                             }
 
-                            edu.ozu.mapp.utils.Action action = client.onMakeAction();
+                            edu.ozu.mapp.utils.Action action = handler.OnMakeAction();
                             logger.debug(action.toString());
                             action.bid.apply(this); //TODO change behaviour
                             websocket.sendMessage(action.toWSMSGString());
 
                             // bidding agent is me, and i made my bid
                             bidding_agent = json.turn;
-                            client.LogNegotiationState(bidding_agent, action);
+                            handler.LogNegotiationState(bidding_agent, action);
                         } else {
                             bidding_agent = json.turn;
                             didBid = false;
@@ -206,7 +205,7 @@ public class NegotiationSession
                     case "done":
                         logger.info("negotiation session is done");
                         logger.info("accepted -> " + message.trim());
-                        client.acceptLastBids(json);
+                        handler.AcceptLastBids(json);
                         //<editor-fold defaultstate="collapsed" desc="close socket when negotiation done">
                         try {
                             websocket.close();
@@ -214,8 +213,8 @@ public class NegotiationSession
                             e.printStackTrace();
                         }
                         //</editor-fold>
-                        client.postNegotiation();
-                        client.LogNegotiationOver(bidding_agent, session_id);
+                        handler.PostNegotiation();
+                        handler.LogNegotiationOver(bidding_agent, session_id);
                         break;
                     default:
                         logger.error("unexpected state, contact DEVs");

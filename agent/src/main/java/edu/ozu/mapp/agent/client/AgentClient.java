@@ -20,14 +20,9 @@ public class AgentClient {
     {
         Assert.notNull(agent, "agent cannot be null");
 
-        // AgentExtender ae = new AgentExtender(agent);
-        // ae.init();
-        // ae.run();
-
         agent.init();
         agent.run();
 
-        // handler = new AgentHandler(ae);
         handler = new AgentHandler(agent);
 
         if (!agent.isHeadless)

@@ -3,18 +3,14 @@ package edu.ozu.mapp.agent.client;
 import com.google.gson.Gson;
 import edu.ozu.mapp.agent.Agent;
 import edu.ozu.mapp.agent.client.helpers.*;
-import edu.ozu.mapp.utils.Globals;
-import edu.ozu.mapp.utils.JSONWorldWatch;
-import edu.ozu.mapp.utils.Utils;
+import edu.ozu.mapp.agent.client.models.Contract;
+import edu.ozu.mapp.utils.*;
 import org.springframework.util.Assert;
 
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.function.BiConsumer;
 
 public class AgentHandler {
@@ -71,7 +67,8 @@ public class AgentHandler {
         WORLD_ID = world_id.split(":")[1];
         logger.info("joining " + WORLD_ID);
 
-        agent.join(WORLD_ID);
+        agent.setWORLD_ID(WORLD_ID);
+        agent.dimensions = WorldHandler.GetDimensions(WORLD_ID);
 
         Join.join(WORLD_ID, agent.AGENT_ID, agent.START, agent.getBroadcast());
 
@@ -244,7 +241,7 @@ public class AgentHandler {
                 if (sid.isEmpty()) { continue; }
 
                 agent.SetConflictLocation(conflict_location);
-                NegotiationSession session = new NegotiationSession(WORLD_ID, sid, agent);
+                NegotiationSession session = new NegotiationSession(WORLD_ID, sid, this);
                 session.connect();
             }
         }
@@ -265,7 +262,24 @@ public class AgentHandler {
             String direction = direction(curr, next);
             Assert.isTrue((direction.length() > 0), "«DIRECTION cannot be empty»");
 
-            agent.move(Move.move(WORLD_ID, agent.AGENT_ID, agent.POS, direction, agent.getNextBroadcast()));
+            // make Agent move
+            JSONAgent response = Move.move(WORLD_ID, agent.AGENT_ID, agent.POS, direction, agent.getNextBroadcast());
+
+            // update internal clock
+            agent.time = agent.time + 1;
+
+            // get next point
+            Point next_point = new Point(agent.path.get(Math.min(agent.time, agent.path.size() - 1)).split("-"));
+
+            // validate next location
+            Assert.isTrue(
+                    (response.agent_x + "-" + response.agent_y).equals(next_point.key), "next point and move action does not match! \n" + response.agent_x + "-" + response.agent_y + " != " + next_point.key + "\n PATH:" + agent.path + "\n"
+            );
+
+            // update current position
+            agent.POS = next_point;
+
+            agent.OnMove(response);
         } else {
             // no more moves left, agent should stop
             is_moving = 0;
@@ -330,5 +344,191 @@ public class AgentHandler {
 
     public String getStart() {
         return agent.START.key;
+    }
+
+    public String GetAgentID() {
+        return agent.AGENT_ID;
+    }
+
+    public void OnReceiveState(State state) {
+        // update current state info
+        // TODO WTF!?
+        /*
+        for (String[] bid : state.bids) {   // [agentID, path:tokens]
+            ArrayList<BidStruct> hist = history.getOrDefault(bid[0], new ArrayList<>());
+
+            String[] b = bid[1].split(":");
+            BidStruct bidStruct = new BidStruct(bid[0], b[0], Integer.parseInt(b[1]));
+
+            if (hist.size() > 0) { // if there are elements
+                if (!hist.get(hist.size()-1).equals(bidStruct)) { // and the last one is different
+                    hist.add(bidStruct);
+                }
+            } else { // if there are no elements
+                hist.add(bidStruct);
+            }
+
+            history.put(bid[0], hist);
+        }
+         */
+        agent.onReceiveState(state);
+    }
+
+    /**
+     * Invoked only when negotiation is initiated, and agent
+     * is about to join. (Before {@link #PreNegotiation()})
+     *
+     * Negotiation session status should be "join" for this
+     * function to be invoked
+     *
+     * Fills the empty contract with necessary information.
+     *
+     * Mark that a new session has started
+     * */
+    @SuppressWarnings("UnusedReturnValue")
+    public Contract PrepareContract(NegotiationSession session)
+    {
+        // clear negotiation result checker
+        // todo better handle
+        // current setup assumes that there will be only single instance of
+        // negotiation that agent participates at any given time
+        agent.negotiation_result = -1;
+        return Contract.Create(agent, session);
+    }
+
+    public void PreNegotiation()
+    {
+        agent.preNegotiation();
+    }
+
+    public void LogPreNegotiation(String session_id)
+    {
+        // todo it should be possible to merge this function with another
+        agent.logNegoPre(session_id);
+    }
+
+    public void LogNegotiationState(String bidding_agent)
+    {
+        agent.LogNegotiationState(bidding_agent);
+    }
+
+    public void LogNegotiationState(String prev_bidding_agent, Action action)
+    {
+        agent.LogNegotiationState(prev_bidding_agent, action);
+    }
+
+    public Action OnMakeAction() {
+        return agent.onMakeAction();
+    }
+
+    @SuppressWarnings("Duplicates")
+    //<editor-fold defaultstate="collapsed" desc="Accept Last Bids">
+    public void AcceptLastBids(JSONNegotiationSession json) {
+        // get contract
+        Contract contract = Negotiation.getContract(agent);
+        logger.debug("AcceptLastBids:"+contract);
+        logger.debug("          json:"+json);
+
+        List<String> new_path = new ArrayList<>();
+
+        // use contract to apply select paths
+        // if 'x' is self, update planned path
+        if (contract.x.equals(agent.AGENT_ID)) {
+            // WIN condition
+            logger.debug("x is self | {contract.x:"+contract.x + " == a_id:" + agent.AGENT_ID + "}");
+
+            String[] Ox = contract.Ox.replaceAll("([\\[\\]]*)", "").split(",");
+
+            logger.debug("{current POS:" + agent.POS + " == Ox[0]:" + Ox[0] + "}");
+            Assert.isTrue(agent.POS.equals(new Point(Ox[0].split("-"))), "");
+
+            // acknowledge negotiation result and calculate from its last point to the goal
+            Point end = new Point(Ox[Ox.length - 1].split("-"));
+            // recalculate path starting from the end point of agreed path
+            logger.debug("{accepted_path:" + Arrays.toString(Ox) + "}");
+            List<String> rest = agent.calculatePath(end, agent.DEST);
+
+            // ...glue them together
+            new_path = new ArrayList<>();
+            for (int idx = 0; idx < agent.path.size() && !agent.path.get(idx).equals(agent.POS.key); idx++)
+            {   // prepend path so far until current POS
+                // for history purposes
+                new_path.add(agent.path.get(idx));
+            }
+            new_path.add(agent.POS.key); // add current POS
+            for (int idx = 0; idx < Ox.length; idx++)
+            {   // add accepted paths
+                if (idx == 0 && Ox[idx].equals(agent.POS.key))
+                {   // skip if first index is current POS, as it is already added
+                    continue;
+                }
+                new_path.add(Ox[idx]);
+            }
+
+            // ensure that connection points match
+            Assert.isTrue(
+                    new_path.get(new_path.size() - 1).equals(rest.get(0)),
+                    "Something went wrong while accepting last bids!"
+            );
+
+            // merge...
+            for (int idx = 1; idx < rest.size(); idx++)
+            {
+                new_path.add(rest.get(idx));
+            }
+            agent.winC++;
+        } else {
+            // else use 'Ox' & others as constraint & re-calculate path
+            // LOSE condition
+            logger.debug("x is not self | {contract.x:"+contract.x + " != a_id:" + agent.AGENT_ID + "}");
+
+            String[] Ox = contract.Ox.replaceAll("([\\[\\]]*)", "").split(",");
+
+            // create constraints
+            ArrayList<String[]> constraints = new ArrayList<>();
+            for (int i = 0; i < Ox.length; i++)
+            {   // Add Ox as constraint
+                constraints.add(new String[]{Ox[i], String.valueOf(agent.time + i)});
+            }
+            // TODO add from FoV
+
+            List<String> rest = AStar.calculateWithConstraints(agent.POS, agent.DEST, constraints.toArray(new String[0][0]));
+
+            new_path = new ArrayList<>();
+            for (int idx = 0; idx < agent.path.size() && !agent.path.get(idx).equals(agent.POS.key); idx++)
+            {   // prepend path so far until current POS
+                // for history purposes
+                new_path.add(agent.path.get(idx));
+            }
+
+            // ensure that connection points match
+            Assert.isTrue(agent.POS.key.equals(rest.get(0)), "Something went wrong while accepting last bids!");
+            Assert.isTrue(agent.DEST.key.equals(rest.get(rest.size() - 1)), "Something went wrong while accepting last bids!");
+
+            // merge...
+            // since current POS is already in 'rest'@0, we can just add it
+            new_path.addAll(rest);
+            agent.loseC++;
+        }
+
+        // update global path
+        logger.debug(agent.AGENT_ID + "{path:" + agent.path + "}");
+        agent.path = new_path;
+        logger.debug(agent.AGENT_ID + "{path:" + agent.path + "}");
+
+        WorldHandler.doBroadcast(WORLD_ID, agent.AGENT_ID, agent.getBroadcastArray());
+        agent.OnAcceptLastBids(json);
+    }
+    //</editor-fold>
+
+    public void PostNegotiation()
+    {
+        agent.postNegotiation();
+    }
+
+    public void LogNegotiationOver(String bidding_agent, String session_id)
+    {
+        // todo it should be possible to merge this function with another
+        agent.LogNegotiationOver(bidding_agent, session_id);
     }
 }
