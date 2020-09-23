@@ -1,16 +1,12 @@
 package edu.ozu.mapp.agent;
 
-import edu.ozu.mapp.agent.client.NegotiationSession;
 import edu.ozu.mapp.agent.client.helpers.FileLogger;
-import edu.ozu.mapp.agent.client.helpers.Negotiation;
 import edu.ozu.mapp.agent.client.helpers.WorldHandler;
-import edu.ozu.mapp.agent.client.models.Contract;
 import edu.ozu.mapp.keys.AgentKeys;
 import edu.ozu.mapp.keys.KeyHandler;
 import edu.ozu.mapp.utils.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.Assert;
 
 import java.security.PublicKey;
 import java.util.*;
