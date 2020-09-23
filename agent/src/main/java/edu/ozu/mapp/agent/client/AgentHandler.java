@@ -23,7 +23,7 @@ public class AgentHandler {
 
     private String AGENT_NAME;
     private String WORLD_ID = "";
-    private Agent clientRef;
+    private Agent agent;
     private WorldWatchWS websocket;
 
     private Gson gson;
@@ -36,10 +36,10 @@ public class AgentHandler {
         Assert.notNull(client.START, "«START cannot be null»");
         Assert.notNull(client.AGENT_ID, "«AGENT_ID cannot be null»");
 
-        clientRef = client;
+        agent = client;
 
         // init file logger
-        fl = new FileLogger().CreateAgentLogger(clientRef.AGENT_ID);
+        fl = new FileLogger().CreateAgentLogger(agent.AGENT_ID);
 
         AGENT_NAME = client.AGENT_NAME;
 
@@ -53,7 +53,7 @@ public class AgentHandler {
 
     public String getID()
     {
-        return clientRef.AGENT_ID;
+        return agent.AGENT_ID;
     }
 
     /**
@@ -71,13 +71,13 @@ public class AgentHandler {
         WORLD_ID = world_id.split(":")[1];
         logger.info("joining " + WORLD_ID);
 
-        clientRef.join(WORLD_ID);
+        agent.join(WORLD_ID);
 
-        Join.join(WORLD_ID, clientRef.AGENT_ID, clientRef.START, clientRef.getBroadcast());
+        Join.join(WORLD_ID, agent.AGENT_ID, agent.START, agent.getBroadcast());
 
         fl.setWorldID(WORLD_ID);            // SET AGENT WORLD INFO ON LOGGER
-        fl.LogAgentInfo(clientRef, "JOIN");     // LOG AGENT INFO ON JOIN
-        fl.logAgentWorldJoin(clientRef);    // LOG AGENT JOIN
+        fl.LogAgentInfo(agent, "JOIN");     // LOG AGENT INFO ON JOIN
+        fl.logAgentWorldJoin(agent);    // LOG AGENT JOIN
 
         __watch(draw);
     }
@@ -89,14 +89,14 @@ public class AgentHandler {
 
         try {
             // open websocket
-            String ws = "ws://" + Globals.SERVER + "/world/" + WORLD_ID + "/" + clientRef.AGENT_ID;
+            String ws = "ws://" + Globals.SERVER + "/world/" + WORLD_ID + "/" + agent.AGENT_ID;
             websocket = new WorldWatchWS(new URI(ws));
 
             // add handler
             websocket.setMessageHandler(message -> {
                 JSONWorldWatch watch = gson.fromJson(message, JSONWorldWatch.class);
 
-                draw.accept(watch, clientRef.getBroadcastArray());
+                draw.accept(watch, agent.getBroadcastArray());
                 handleState(watch);
             });
 
@@ -169,9 +169,9 @@ public class AgentHandler {
     private String[] getCollidingAgents(String[][] broadcasts)
     {
         Set<String> agent_ids = new HashSet<>();
-        String[] own_path = clientRef.getBroadcastArray();
+        String[] own_path = agent.getBroadcastArray();
 
-        agent_ids.add("agent:"+clientRef.AGENT_ID); // add own data
+        agent_ids.add("agent:"+ agent.AGENT_ID); // add own data
         for (String[] broadcast : broadcasts)
         {
             if (broadcast[2].equals("-"))
@@ -224,7 +224,7 @@ public class AgentHandler {
         // TODO ?? what else is there
         HashMap<String, Object> payload = new HashMap<>();
         payload.put("world_id", WORLD_ID);
-        payload.put("agent_id", clientRef.AGENT_ID);
+        payload.put("agent_id", agent.AGENT_ID);
         payload.put("agents", agent_ids);
 
         String response = Utils.post("http://localhost:5000/negotiation/notify", payload);
@@ -235,7 +235,7 @@ public class AgentHandler {
 
     private void negotiate()
     {
-        String[] sessions = Negotiation.getSessions(WORLD_ID, clientRef.AGENT_ID); // retrieve sessions list
+        String[] sessions = Negotiation.getSessions(WORLD_ID, agent.AGENT_ID); // retrieve sessions list
         logger.debug("negotiate state > " + Arrays.toString(sessions));
         if (sessions.length > 0)
         {
@@ -243,8 +243,8 @@ public class AgentHandler {
             {
                 if (sid.isEmpty()) { continue; }
 
-                clientRef.SetConflictLocation(conflict_location);
-                NegotiationSession session = new NegotiationSession(WORLD_ID, sid, clientRef);
+                agent.SetConflictLocation(conflict_location);
+                NegotiationSession session = new NegotiationSession(WORLD_ID, sid, agent);
                 session.connect();
             }
         }
@@ -256,24 +256,24 @@ public class AgentHandler {
         // 1: can move | has moves to move
         if (is_moving == 0) return;
 
-        String[] curr = clientRef.path.get(clientRef.time).split("-");
+        String[] curr = agent.path.get(agent.time).split("-");
         // if next time equals to path size
         // current location is the destination
-        if (clientRef.time + 1 < clientRef.path.size()) {
-            String[] next = clientRef.path.get(clientRef.time + 1).split("-");
+        if (agent.time + 1 < agent.path.size()) {
+            String[] next = agent.path.get(agent.time + 1).split("-");
 
             String direction = direction(curr, next);
             Assert.isTrue((direction.length() > 0), "«DIRECTION cannot be empty»");
 
-            clientRef.move(Move.move(WORLD_ID, clientRef.AGENT_ID, clientRef.POS, direction, clientRef.getNextBroadcast()));
+            agent.move(Move.move(WORLD_ID, agent.AGENT_ID, agent.POS, direction, agent.getNextBroadcast()));
         } else {
             // no more moves left, agent should stop
             is_moving = 0;
 
             // let the world know that you are done with it!
-            WorldHandler.leave(WORLD_ID, clientRef.AGENT_ID);
+            WorldHandler.leave(WORLD_ID, agent.AGENT_ID);
         }
-        fl.LogAgentInfo(clientRef, "MOVE");  // LOG AGENT INFO ON MOVE CALL
+        fl.LogAgentInfo(agent, "MOVE");  // LOG AGENT INFO ON MOVE CALL
     }
 
     //<editor-fold defaultstate="collapsed" desc="Get Direction of next point">
@@ -310,9 +310,9 @@ public class AgentHandler {
             if (websocket != null) {
                 websocket.close();
             }
-            fl.LogAgentInfo(clientRef, "LEAVE");  // LOG AGENT INFO ON LEAVE
-            fl.logAgentWorldLeave(clientRef);           // LOG AGENT LEAVING
-            WorldHandler.leave(WORLD_ID, clientRef.AGENT_ID);
+            fl.LogAgentInfo(agent, "LEAVE");  // LOG AGENT INFO ON LEAVE
+            fl.logAgentWorldLeave(agent);           // LOG AGENT LEAVING
+            WorldHandler.leave(WORLD_ID, agent.AGENT_ID);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -325,10 +325,10 @@ public class AgentHandler {
     }
 
     public String getDest() {
-        return clientRef.DEST.key;
+        return agent.DEST.key;
     }
 
     public String getStart() {
-        return clientRef.START.key;
+        return agent.START.key;
     }
 }
