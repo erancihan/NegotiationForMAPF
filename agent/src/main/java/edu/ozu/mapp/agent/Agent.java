@@ -116,24 +116,24 @@ public abstract class Agent {
 
     //<editor-fold defaultstate="collapsed" desc="Get Broadcast">
     public String getBroadcast() {
-        return Utils.toString(getBroadcastArray(this.time), ",");
+        return Utils.toString(GetOwnBroadcastPath(this.time), ",");
     }
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Get Next Broadcast">
     public String getNextBroadcast() {
-        return Utils.toString(getBroadcastArray(this.time + 1), ",");
+        return Utils.toString(GetOwnBroadcastPath(this.time + 1), ",");
     }
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Get Broadcast Array">
-    public String[] getBroadcastArray() {
-        return getBroadcastArray(time);
+    public String[] GetOwnBroadcastPath() {
+        return GetOwnBroadcastPath(time);
     }
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Get Broadcast Array (int time) ">
-    public String[] getBroadcastArray(int time) {
+    public String[] GetOwnBroadcastPath(int time) {
         List<String> broadcast = new ArrayList<>();
         for (int i = 0; (i < Globals.BROADCAST_SIZE) && (i + time < path.size()); i++) {
             broadcast.add(path.get(i + time));

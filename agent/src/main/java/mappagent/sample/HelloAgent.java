@@ -30,7 +30,7 @@ public class HelloAgent extends Agent
     }
 
     @Override
-    public void preNegotiation() {
+    public void PreNegotiation() {
 
     }
 
@@ -63,7 +63,7 @@ public class HelloAgent extends Agent
     }
 
     @Override
-    public void postNegotiation() {
+    public void PostNegotiation() {
         logger.debug("history:" + history);
     }
 

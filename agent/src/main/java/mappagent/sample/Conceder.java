@@ -26,7 +26,7 @@ public class Conceder extends Agent {
     private ArrayList<String[]> bids = new ArrayList<>();
 
     @Override
-    public void preNegotiation()
+    public void PreNegotiation()
     {
         // add current broadcast as it is the BEST outcome
 //        bids.add(getBroadcastArray());
@@ -85,7 +85,7 @@ public class Conceder extends Agent {
         } else {
             // give best bid
             // -> current path
-            return new Action(this, ActionType.OFFER, getBroadcastArray());
+            return new Action(this, ActionType.OFFER, GetOwnBroadcastPath());
         }
     }
 

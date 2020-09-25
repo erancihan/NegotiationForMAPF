@@ -27,7 +27,7 @@ public class HelloAgent2 extends Agent
     }
 
     @Override
-    public void preNegotiation() {
+    public void PreNegotiation() {
 
     }
 

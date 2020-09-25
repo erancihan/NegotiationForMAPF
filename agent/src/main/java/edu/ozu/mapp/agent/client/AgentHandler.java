@@ -93,7 +93,7 @@ public class AgentHandler {
             websocket.setMessageHandler(message -> {
                 JSONWorldWatch watch = gson.fromJson(message, JSONWorldWatch.class);
 
-                draw.accept(watch, agent.getBroadcastArray());
+                draw.accept(watch, agent.GetOwnBroadcastPath());
                 handleState(watch);
             });
 
@@ -166,7 +166,7 @@ public class AgentHandler {
     private String[] getCollidingAgents(String[][] broadcasts)
     {
         Set<String> agent_ids = new HashSet<>();
-        String[] own_path = agent.getBroadcastArray();
+        String[] own_path = agent.GetOwnBroadcastPath();
 
         agent_ids.add("agent:"+ agent.AGENT_ID); // add own data
         for (String[] broadcast : broadcasts)
@@ -398,7 +398,7 @@ public class AgentHandler {
 
     public void PreNegotiation()
     {
-        agent.preNegotiation();
+        agent.PreNegotiation();
     }
 
     public void LogPreNegotiation(String session_id)
@@ -516,14 +516,14 @@ public class AgentHandler {
         agent.path = new_path;
         logger.debug(agent.AGENT_ID + "{path:" + agent.path + "}");
 
-        WorldHandler.doBroadcast(WORLD_ID, agent.AGENT_ID, agent.getBroadcastArray());
+        WorldHandler.doBroadcast(WORLD_ID, agent.AGENT_ID, agent.GetOwnBroadcastPath());
         agent.OnAcceptLastBids(json);
     }
     //</editor-fold>
 
     public void PostNegotiation()
     {
-        agent.postNegotiation();
+        agent.PostNegotiation();
     }
 
     public void LogNegotiationOver(String bidding_agent, String session_id)

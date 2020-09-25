@@ -27,7 +27,7 @@ public class Greedy extends Agent
     private ArrayList<String[]> bids = new ArrayList<>();
 
     @Override
-    public void preNegotiation()
+    public void PreNegotiation()
     {
         // add current broadcast as it is the BEST outcome
 //        bids.add(getBroadcastArray());
@@ -66,7 +66,7 @@ public class Greedy extends Agent
 
         if (current_tokens > 0) {
             // give best bid, which is the current available path
-            return new Action(this, ActionType.OFFER, getBroadcastArray());
+            return new Action(this, ActionType.OFFER, GetOwnBroadcastPath());
         } else {
             // give second best bid or accept opponent's offer
             // or accept
@@ -83,7 +83,7 @@ public class Greedy extends Agent
             if (lastBid != null) {
                 // if last bid of opponent does not collide with my path
                 // accept it
-                String[] broadcast = getBroadcastArray();
+                String[] broadcast = GetOwnBroadcastPath();
                 String[] bid_path = lastBid.path.toStringArray();
                 // if last bid does not collides
                 boolean willAccept = true;
