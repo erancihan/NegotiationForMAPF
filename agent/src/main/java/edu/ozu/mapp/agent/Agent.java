@@ -57,11 +57,11 @@ public abstract class Agent {
 
     public void init() { }
 
-    public void preNegotiation() { }
+    public void PreNegotiation() { }
 
     public abstract Action onMakeAction();
 
-    public void postNegotiation() { }
+    public void PostNegotiation() { }
 
     public void onReceiveState(State state) { }
 
