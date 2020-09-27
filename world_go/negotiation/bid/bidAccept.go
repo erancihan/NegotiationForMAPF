@@ -33,35 +33,35 @@ func (bid *Bid) Accept(ctx echo.Context, rds redis.Conn) (err error) {
 	if err != nil {
 		ctx.Logger().Fatal(err)
 	}
-/*
-	// decrypt
-	PKa_str, err := redis.String(rds.Do("HGET", "PubKeyVault", contract.A))
-	PKb_str, err := redis.String(rds.Do("HGET", "PubKeyVault", contract.B))
-	if err != nil {
-		ctx.Logger().Fatal(err)
-	}
+	/*
+		// decrypt
+		PKa_str, err := redis.String(rds.Do("HGET", "PubKeyVault", contract.A))
+		PKb_str, err := redis.String(rds.Do("HGET", "PubKeyVault", contract.B))
+		if err != nil {
+			ctx.Logger().Fatal(err)
+		}
 
-	PKa_b64, err := base64.StdEncoding.DecodeString(PKa_str)
-	PKb_b64, err := base64.StdEncoding.DecodeString(PKb_str)
-	if err != nil {
-		ctx.Logger().Fatal(err)
-	}
+		PKa_b64, err := base64.StdEncoding.DecodeString(PKa_str)
+		PKb_b64, err := base64.StdEncoding.DecodeString(PKb_str)
+		if err != nil {
+			ctx.Logger().Fatal(err)
+		}
 
-	PKa, err := x509.ParsePKCS1PrivateKey(PKa_b64)
-	PKb, err := x509.ParsePKCS1PrivateKey(PKb_b64)
-	if err != nil {
-		ctx.Logger().Fatal(err)
-	}
+		PKa, err := x509.ParsePKCS1PrivateKey(PKa_b64)
+		PKb, err := x509.ParsePKCS1PrivateKey(PKb_b64)
+		if err != nil {
+			ctx.Logger().Fatal(err)
+		}
 
-	Ta_b, err := rsa.DecryptPKCS1v15(crand.Reader, PKa, []byte(contract.ETa))
-	Tb_b, err := rsa.DecryptPKCS1v15(crand.Reader, PKb, []byte(contract.ETb))
-	if err != nil {
-		ctx.Logger().Fatal(err)
-	}
+		Ta_b, err := rsa.DecryptPKCS1v15(crand.Reader, PKa, []byte(contract.ETa))
+		Tb_b, err := rsa.DecryptPKCS1v15(crand.Reader, PKb, []byte(contract.ETb))
+		if err != nil {
+			ctx.Logger().Fatal(err)
+		}
 
-	Ta, err := strconv.Atoi(string(Ta_b))
-	Tb, err := strconv.Atoi(string(Tb_b))
-*/
+		Ta, err := strconv.Atoi(string(Ta_b))
+		Tb, err := strconv.Atoi(string(Tb_b))
+	*/
 	Ta, err := strconv.Atoi(contract.ETa)
 	Tb, err := strconv.Atoi(contract.ETb)
 	if err != nil {
@@ -97,17 +97,17 @@ func (bid *Bid) Accept(ctx echo.Context, rds redis.Conn) (err error) {
 
 	if bid.AgentID == contract.A {
 		// A accepted
-		d := math.Max(float64(Ta - Tb), 0)
+		d := math.Max(float64(Ta-Tb), 0)
 
-		_, err = rds.Do("HINCRBY", "world:"+wid+":bank", "agent:"+contract.A, d) 	// A receives D
+		_, err = rds.Do("HINCRBY", "world:"+wid+":bank", "agent:"+contract.A, d)    // A receives D
 		_, err = rds.Do("HINCRBY", "world:"+wid+":bank", "agent:"+contract.B, -1*d) // B pays D
 	}
 	if bid.AgentID == contract.B {
 		// B accepted
-		d := math.Max(float64(Ta - Tb), 0)
+		d := math.Max(float64(Ta-Tb), 0)
 
 		_, err = rds.Do("HINCRBY", "world:"+wid+":bank", "agent:"+contract.A, -1*d) // A pays D
-		_, err = rds.Do("HINCRBY", "world:"+wid+":bank", "agent:"+contract.B, d) 	// B receives D
+		_, err = rds.Do("HINCRBY", "world:"+wid+":bank", "agent:"+contract.B, d)    // B receives D
 	}
 	if err != nil {
 		fmt.Println("something went wrong")

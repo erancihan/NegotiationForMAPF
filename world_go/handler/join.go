@@ -16,7 +16,7 @@ import (
 
 type Join struct {
 	Agent
-	WorldID string   `json:"world_id" form:"world_id" query:"world_id"`
+	WorldID   string `json:"world_id" form:"world_id" query:"world_id"`
 	Broadcast string `json:"broadcast" form:"broadcast" query:"broadcast"`
 }
 

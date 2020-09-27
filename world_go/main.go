@@ -87,7 +87,7 @@ func main() {
 
 	// negotiation routes
 	e.GET("/negotiation/:world_id/:session_id/:agent_id", n.Socket)
- 	//e.GET("/negotiation/session/:key", n.Socket)
+	//e.GET("/negotiation/session/:key", n.Socket)
 	e.POST("/negotiation/sessions", n.Sessions) // has direct handler
 	e.POST("/negotiation/notify", n.Notify)
 

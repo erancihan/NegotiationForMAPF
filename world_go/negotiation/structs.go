@@ -9,18 +9,18 @@ import (
 
 type (
 	Status struct {
-		AgentCount 	int 		`json:"agent_count"`
-		BidOrder 	string		`json:"bid_order"`
-		Bids    	[][]string	`json:"bids"`
-		State		string		`json:"state"`
-		Turn		string		`json:"turn"`
+		AgentCount int        `json:"agent_count"`
+		BidOrder   string     `json:"bid_order"`
+		Bids       [][]string `json:"bids"`
+		State      string     `json:"state"`
+		Turn       string     `json:"turn"`
 	}
 	RdsStatus struct {
-		Agents      string  `redis:"agents"`
-		AgentCount 	int 	`redis:"agent_count"`
-		BidOrder 	string	`redis:"bid_order"`
-		State		string	`redis:"state"`
-		Turn		string	`redis:"turn"`
+		Agents     string `redis:"agents"`
+		AgentCount int    `redis:"agent_count"`
+		BidOrder   string `redis:"bid_order"`
+		State      string `redis:"state"`
+		Turn       string `redis:"turn"`
 	}
 	SessionClient struct {
 		conn    *websocket.Conn

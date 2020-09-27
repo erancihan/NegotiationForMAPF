@@ -28,7 +28,7 @@ func (n *Handler) Notify(ctx echo.Context) (err error) {
 		return ctx.NoContent(http.StatusBadRequest)
 	}
 
-	sort.Strings(r.Agents)                  	// sort
+	sort.Strings(r.Agents)                  // sort
 	agentIDs := strings.Join(r.Agents, ",") // join
 
 	// shuffle agent order

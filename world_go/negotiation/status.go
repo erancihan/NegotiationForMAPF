@@ -46,10 +46,14 @@ func (n *Handler) GetStatus(ctx echo.Context, rds redis.Conn, pool *SessionPool,
 	status := Status{}
 
 	session, err := redis.Values(rds.Do("HGETALL", "negotiation:"+sid))
-	if err != nil { return status, err }
+	if err != nil {
+		return status, err
+	}
 
 	err = redis.ScanStruct(session, &rdsStatus)
-	if err != nil { return status, err }
+	if err != nil {
+		return status, err
+	}
 
 	// get bids
 	var bids [][]string
@@ -65,10 +69,10 @@ func (n *Handler) GetStatus(ctx echo.Context, rds redis.Conn, pool *SessionPool,
 	}
 
 	status.AgentCount = rdsStatus.AgentCount
-	status.BidOrder   = rdsStatus.BidOrder
-	status.Bids       = bids
-	status.State      = rdsStatus.State
-	status.Turn       = rdsStatus.Turn
+	status.BidOrder = rdsStatus.BidOrder
+	status.Bids = bids
+	status.State = rdsStatus.State
+	status.Turn = rdsStatus.Turn
 
 	return status, nil
 }

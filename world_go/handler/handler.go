@@ -34,7 +34,7 @@ type (
 	}
 
 	World struct {
-		 WorldId string `json:"world_id" form:"world_id" query:"agent_id"`
+		WorldId string `json:"world_id" form:"world_id" query:"agent_id"`
 	}
 )
 
@@ -130,13 +130,17 @@ func (h *Handler) WorldList(ctx echo.Context) (err error) {
 	var worlds []string
 	for {
 		arr, err := redis.Values(rds.Do("SCAN", iter, "MATCH", "world:*:"))
-		if err != nil {ctx.Echo().Logger.Fatal(err) }
+		if err != nil {
+			ctx.Echo().Logger.Fatal(err)
+		}
 
 		iter, _ = redis.Int(arr[0], nil)
 		world, _ := redis.Strings(arr[1], nil)
 		worlds = append(worlds, world...)
 
-		if iter == 0 { break }
+		if iter == 0 {
+			break
+		}
 	}
 
 	if len(worlds) == 0 {

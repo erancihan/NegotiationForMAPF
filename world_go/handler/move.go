@@ -28,11 +28,11 @@ func (h *Handler) Move(ctx echo.Context) (err error) {
 
 	wid := move.WorldID
 
-	_aid := "agent:"+agent.Id
-	_wid := "world:"+wid+":"
-	_map := _wid+"map"
-	_path := _wid+"path"
-	_curr := agent.X+":"+agent.Y
+	_aid := "agent:" + agent.Id
+	_wid := "world:" + wid + ":"
+	_map := _wid + "map"
+	_path := _wid + "path"
+	_curr := agent.X + ":" + agent.Y
 
 	dir := move.Direction
 	dir = strings.ToUpper(dir)
@@ -70,7 +70,7 @@ func (h *Handler) Move(ctx echo.Context) (err error) {
 	xs := strconv.Itoa(x)
 	ys := strconv.Itoa(y)
 
-	_next := xs+":"+ys
+	_next := xs + ":" + ys
 
 	// check if next x:y is occupied
 	dest, _ := redis.String(rds.Do("HGET", _map, _next))
