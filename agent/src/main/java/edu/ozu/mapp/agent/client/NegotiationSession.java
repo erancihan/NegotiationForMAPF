@@ -42,6 +42,7 @@ public class NegotiationSession
         connectWS();
     }
 
+    //<editor-fold defaultstate="collapsed" desc="SocketIO Handler Func">
     void connectSocketIO()
     {
         _didBid = -1;
@@ -130,6 +131,7 @@ public class NegotiationSession
         }
         catch (Exception exception) { exception.printStackTrace(); }
     }
+    //</editor-fold>
 
     void connectWS()
     {
