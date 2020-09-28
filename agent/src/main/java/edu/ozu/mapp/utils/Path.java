@@ -6,7 +6,7 @@ import java.util.List;
 
 public class Path extends ArrayList<Point> implements Cloneable
 {
-    HashSet<Point> entries;
+    HashSet<String> entries;
 
     public Path()
     {
@@ -34,13 +34,16 @@ public class Path extends ArrayList<Point> implements Cloneable
     @Override
     public boolean add(Point point)
     {
-        entries.add(point);
+        entries.add(point.key);
         return super.add(point);
     }
 
     @Override
     public boolean contains(Object that)
     {
+        if (that instanceof Point) {
+            return entries.contains(((Point) that).key);
+        }
         return entries.contains(that);
     }
 
