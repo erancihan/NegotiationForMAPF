@@ -7,6 +7,7 @@ import edu.ozu.mapp.agent.client.helpers.WorldHandler;
 import edu.ozu.mapp.utils.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @SuppressWarnings("Duplicates")
@@ -23,7 +24,7 @@ public class Conceder extends Agent {
         super(agentName, agentID, start, dest);
     }
 
-    private ArrayList<String[]> bids = new ArrayList<>();
+    private List<Bid>bid_space = new ArrayList<>();
 
     @Override
     public void PreNegotiation()
@@ -47,15 +48,9 @@ public class Conceder extends Agent {
                 constraints.add(new String[]{broadcast[i], String.valueOf(i)});
             }
         }
-        // calculate the alternative optimal
-        List<String> path = AStar.calculateWithConstraints(POS, DEST, constraints.toArray(new String[0][3]));
-        // add second best, which is the one with constraints
-        String[] bid = new String[5];
-        for (int i = 0; i < bid.length; i++) {
-            bid[i] = path.get(i);
-        }
-        bids.add(bid);
-        // add them to bids list
+
+        // Get Current Bid Space
+        bid_space = GetCurrentBidSpace();
     }
 
     @Override
@@ -81,7 +76,7 @@ public class Conceder extends Agent {
         {   // if token count is > 0, it is a repeating offer
             // give second best bid
             // TODO ACCEPT CONDITION
-            return new Action(this, ActionType.OFFER, bids.get(0));
+            return new Action(this, ActionType.OFFER, bid_space.get(0).path.toStringArray());
         } else {
             // give best bid
             // -> current path

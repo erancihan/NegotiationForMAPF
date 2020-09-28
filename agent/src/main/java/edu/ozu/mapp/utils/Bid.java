@@ -38,6 +38,6 @@ public class Bid implements Comparable<Bid>
     @Override
     public int compareTo(Bid that)
     {
-        return 0;
+        return Double.compare(this.utility, that.utility);
     }
 }

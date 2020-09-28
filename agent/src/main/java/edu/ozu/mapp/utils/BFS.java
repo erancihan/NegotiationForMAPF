@@ -45,6 +45,7 @@ public class BFS
     public int Max = Integer.MIN_VALUE;
     public int Min = Integer.MAX_VALUE;
     public ArrayList<Path> paths;
+    public int max_paths = -1;
 
     private Point _f;
     private Point _t;
@@ -116,6 +117,8 @@ public class BFS
                 if (CurrentPath.size() > Max) Max = CurrentPath.size();
                 if (CurrentPath.size() < Min) Min = CurrentPath.size();
 
+                if (max_paths > 0 && paths.size() >= max_paths)
+                    return paths;
                 // get everything in field of view
 //                continue;
             }
@@ -159,5 +162,10 @@ public class BFS
         hood.add(curr);  // we are in the hood too
 
         return hood;
+    }
+
+    public void SetMinimumPathLength(int i)
+    {
+        deadline = i;
     }
 }

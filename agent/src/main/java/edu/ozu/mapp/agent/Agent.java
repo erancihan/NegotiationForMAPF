@@ -40,9 +40,16 @@ public abstract class Agent {
      * */
     public int negotiation_result = -1;
     public String dimensions = "";
+
     public Function<SearchInfo, Double> UtilityFunction =
             (SearchInfo search) -> {
-                return (1 - ((search.PathSize - search.MinPathSize) / (search.MaxPathSize - search.MinPathSize)));
+                // how far is the last point to destination
+                double offset = 0;
+                if (DEST != null) {
+                    offset = search.Path.getLast().ManhattanDistTo(DEST) * 1E-5;
+                }
+
+                return (1 - ((search.PathSize - search.MinPathSize) / (search.MaxPathSize - search.MinPathSize)) - offset);
             };
 
     public Agent(String agentName, String agentID, Point start, Point dest)
@@ -88,7 +95,7 @@ public abstract class Agent {
         return AStar.calculate(start, dest, dimensions);
     }
 
-    public List<Bid> GetBidSpace(Point From, Point To)
+    public List<Bid> GetBidSpace(Point From, Point To, int deadline)
     {
         BFS search;
         if (this.dimensions.isEmpty()) {
@@ -98,10 +105,12 @@ public abstract class Agent {
             int width = Integer.parseInt(ds[0]);
             int height = Integer.parseInt(ds[1]);
 
-            search = new BFS(From, To, Globals.FIELD_OF_VIEW_SIZE, width, height).init();
+            search = new BFS(From, To, Globals.FIELD_OF_VIEW_SIZE / 2, deadline, width, height);
+            search.SetMinimumPathLength(Globals.FIELD_OF_VIEW_SIZE / 2);
+            search.init();
         }
 
-        PriorityQueue<Bid> bids = new PriorityQueue<>();
+        PriorityQueue<Bid> bids = new PriorityQueue<>(Comparator.reverseOrder());
         for (Path path : search.paths)
         {
             bids.add(
@@ -109,13 +118,29 @@ public abstract class Agent {
             );
         }
 
-        return new ArrayList<>(bids);
+        List<Bid> results = new ArrayList<>();
+        while (!bids.isEmpty()) {
+            results.add(bids.poll());
+        }
+
+        return results;
+    }
+
+    public List<Bid> GetBidSpace(Point From, Point To)
+    {
+        return GetBidSpace(From, To, Globals.FIELD_OF_VIEW_SIZE);
+    }
+
+    public List<Bid> GetCurrentBidSpace(int minimum_path_size)
+    {
+        return GetBidSpace(POS, DEST, minimum_path_size);
     }
 
     public List<Bid> GetCurrentBidSpace()
     {
-        return GetBidSpace(POS, DEST);
+        return GetBidSpace(POS, DEST, Globals.FIELD_OF_VIEW_SIZE);
     }
+
 
     public void OnAcceptLastBids(JSONNegotiationSession json) { }
 
