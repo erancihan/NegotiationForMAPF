@@ -437,7 +437,7 @@ public class ScenarioManager extends javax.swing.JFrame
         try {
             for (BeanDefinition bd : scanner.findCandidateComponents("mappagent.sample")) {
                 agents.put(
-                        Objects.requireNonNull(bd.getBeanClassName()).split("\\.", 3)[2],
+                        Objects.requireNonNull(bd.getBeanClassName()),
                         (Class<? extends Agent>) Class.forName(bd.getBeanClassName())
                 );
             }
@@ -581,7 +581,8 @@ public class ScenarioManager extends javax.swing.JFrame
                 Point start = locPair[0];
                 Point dest = locPair[1];
 
-                String agent_name = agent_class_name + row + "" + i;
+                String[] class_name = agent_class_name.split("\\.");
+                String agent_name = class_name[class_name.length - 1] + "-" + row + "" + i;
 
                 logger.info("Creating config for " + agent_name + " | " + start + "->" + dest);
                 if (world != null) world.Log(String.format("generated %s %s -> %s", agent_name, start.key, dest.key));
