@@ -55,7 +55,7 @@ public class BFS
     private int Width = Integer.MAX_VALUE;
     private int Height = Integer.MAX_VALUE;
 
-    public BFS(Point From, Point To, int FieldOfView, int deadline, boolean IsDebug, int Width, int Height)
+    public BFS(Point From, Point To, int FieldOfViewRadius, int deadline, boolean IsDebug, int Width, int Height)
     {
         _f = From;
         _t = To;
@@ -63,7 +63,7 @@ public class BFS
         paths = new ArrayList<Path>();
 
         DEBUG = IsDebug;
-        FoV = FieldOfView;
+        FoV = FieldOfViewRadius;
         this.deadline = deadline;
         this.Width = Width == 0 ? Integer.MAX_VALUE : Width;
         this.Height = Height == 0 ? Integer.MAX_VALUE : Height;
@@ -116,7 +116,8 @@ public class BFS
                 if (CurrentPath.size() > Max) Max = CurrentPath.size();
                 if (CurrentPath.size() < Min) Min = CurrentPath.size();
 
-                continue;
+                // get everything in field of view
+//                continue;
             }
 
             Point CurrentNode = CurrentPath.getLast();
@@ -149,7 +150,7 @@ public class BFS
         if (curr.y > 0 && curr.y - 1 >= _f.y - FoV) {
             hood.add(new Point(curr.x, curr.y - 1));
         }
-        if (curr.x < Width && curr.x + 1 <= _f.y + FoV) {
+        if (curr.x < Width && curr.x + 1 <= _f.x + FoV) {
             hood.add(new Point(curr.x + 1, curr.y));
         }
         if (curr.y < Height && curr.y + 1 <= _f.y + FoV) {
