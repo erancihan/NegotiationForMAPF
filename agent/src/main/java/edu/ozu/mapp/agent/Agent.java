@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import java.security.PublicKey;
 import java.util.*;
+import java.util.function.Function;
 
 public abstract class Agent {
     public static final Logger logger = LoggerFactory.getLogger(Agent.class);
@@ -39,6 +40,10 @@ public abstract class Agent {
      * */
     public int negotiation_result = -1;
     public String dimensions = "";
+    public Function<SearchInfo, Double> UtilityFunction =
+            (SearchInfo search) -> {
+                return (1 - ((search.PathSize - search.MinPathSize) / (search.MaxPathSize - search.MinPathSize)));
+            };
 
     public Agent(String agentName, String agentID, Point start, Point dest)
     {
@@ -99,8 +104,8 @@ public abstract class Agent {
         PriorityQueue<Bid> bids = new PriorityQueue<>();
         for (Path path : search.paths)
         {
-            if (path.contains(To)) bids.add(
-                new Bid(AGENT_ID, path, (Double x) -> 1 - ((x - search.Min) / (search.Max - search.Min)))
+            bids.add(
+                    new Bid(AGENT_ID, path, UtilityFunction.apply(new SearchInfo(search.Max, search.Min, path)))
             );
         }
 
