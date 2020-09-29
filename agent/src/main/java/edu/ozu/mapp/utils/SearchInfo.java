@@ -1,5 +1,6 @@
 package edu.ozu.mapp.utils;
 
+// TODO use a better name, more generalizable
 public class SearchInfo {
     public Path Path;
     public Double MinPathSize;
