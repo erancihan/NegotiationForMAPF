@@ -71,13 +71,15 @@ public abstract class Agent {
 
     public void PreNegotiation() { }
 
+    public void onReceiveState(State state) { }
+
     public abstract Action onMakeAction();
+
+    public void OnAcceptLastBids(JSONNegotiationSession json) { }
 
     public void PostNegotiation() { }
 
-    public void onReceiveState(State state) { }
-
-    public void OnAcceptLastBids(JSONNegotiationSession json) { }
+    public void OnMove(JSONAgent response) { }
 
     public final void run()
     {
@@ -175,8 +177,6 @@ public abstract class Agent {
         return broadcast.toArray(new String[0]);
     }
     //</editor-fold>
-
-    public void OnMove(JSONAgent response) { }
 
     public final void setWORLD_ID(String WORLD_ID)
     {
