@@ -9,6 +9,7 @@ import redis.clients.jedis.Jedis;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 public class Contract {
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(Contract.class);
@@ -159,7 +160,7 @@ public class Contract {
             }
         }
         logger.debug("Cotract@Set{A:"+A+", B:"+B+", Ox:"+Ox+", x:"+agent.AGENT_ID+"}");
-        agent.OnContractUpdated(O);
+        agent.OnContractUpdated(this);
     }
 
     private void apply()
@@ -203,5 +204,24 @@ public class Contract {
 
     public Object getJSON() {
         return String.format("{\"Ox\":\"%s\", \"x\":\"%s\", \"ETa\":\"%s\", \"A\":\"%s\", \"ETb\":\"%s\", \"B\":\"%s\", \"sess_id\":\"%s\"}", Ox, x, ETa, A, ETb, B, sess_id);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Contract)) return false;
+        Contract contract = (Contract) o;
+        return Objects.equals(Ox, contract.Ox) &&
+                Objects.equals(x, contract.x) &&
+                Objects.equals(ETa, contract.ETa) &&
+                Objects.equals(A, contract.A) &&
+                Objects.equals(ETb, contract.ETb) &&
+                Objects.equals(B, contract.B) &&
+                Objects.equals(sess_id, contract.sess_id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(Ox, x, ETa, A, ETb, B, sess_id);
     }
 }
