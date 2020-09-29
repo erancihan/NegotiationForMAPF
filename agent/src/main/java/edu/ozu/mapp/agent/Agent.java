@@ -77,7 +77,9 @@ public abstract class Agent {
 
     public void onReceiveState(State state) { }
 
-    public void run()
+    public void OnAcceptLastBids(JSONNegotiationSession json) { }
+
+    public final void run()
     {
         logger.info("calculating path");
         path = calculatePath();
@@ -95,7 +97,7 @@ public abstract class Agent {
         return AStar.calculate(start, dest, dimensions);
     }
 
-    public List<Bid> GetBidSpace(Point From, Point To, int deadline)
+    public final List<Bid> GetBidSpace(Point From, Point To, int deadline)
     {
         BFS search;
         if (this.dimensions.isEmpty()) {
@@ -126,44 +128,45 @@ public abstract class Agent {
         return results;
     }
 
-    public List<Bid> GetBidSpace(Point From, Point To)
+    public final List<Bid> GetBidSpace(Point From, Point To)
     {
         return GetBidSpace(From, To, Globals.FIELD_OF_VIEW_SIZE);
     }
 
-    public List<Bid> GetCurrentBidSpace(int minimum_path_size)
+    public final List<Bid> GetCurrentBidSpace(int minimum_path_size)
     {
         return GetBidSpace(POS, DEST, minimum_path_size);
     }
 
-    public List<Bid> GetCurrentBidSpace()
+    public final List<Bid> GetCurrentBidSpace()
     {
         return GetBidSpace(POS, DEST, Globals.FIELD_OF_VIEW_SIZE);
     }
 
-
-    public void OnAcceptLastBids(JSONNegotiationSession json) { }
-
     //<editor-fold defaultstate="collapsed" desc="Get Broadcast">
-    public String getBroadcast() {
+    public final String getBroadcast()
+    {
         return Utils.toString(GetOwnBroadcastPath(this.time), ",");
     }
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Get Next Broadcast">
-    public String getNextBroadcast() {
+    public final String getNextBroadcast()
+    {
         return Utils.toString(GetOwnBroadcastPath(this.time + 1), ",");
     }
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Get Broadcast Array">
-    public String[] GetOwnBroadcastPath() {
+    public final String[] GetOwnBroadcastPath()
+    {
         return GetOwnBroadcastPath(time);
     }
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Get Broadcast Array (int time) ">
-    public String[] GetOwnBroadcastPath(int time) {
+    public final String[] GetOwnBroadcastPath(int time)
+    {
         List<String> broadcast = new ArrayList<>();
         for (int i = 0; (i < Globals.BROADCAST_SIZE) && (i + time < path.size()); i++) {
             broadcast.add(path.get(i + time));
@@ -175,7 +178,8 @@ public abstract class Agent {
 
     public void OnMove(JSONAgent response) { }
 
-    public void setWORLD_ID(String WORLD_ID) {
+    public final void setWORLD_ID(String WORLD_ID)
+    {
         fl.setWorldID(WORLD_ID);
         this.WORLD_ID = WORLD_ID;
     }
@@ -190,30 +194,31 @@ public abstract class Agent {
         return WorldHandler.getTokenBalance(WORLD_ID, AGENT_ID);
     }
 
-    public HashSet<String> getOwnBidHistory() {
+    public final HashSet<String> getOwnBidHistory()
+    {
         return history.containsKey(AGENT_ID) ? history.get(AGENT_ID) : new HashSet<String>();
     }
 
-    public String Encrypt(String text)
+    public final String Encrypt(String text)
     {
         return KeyHandler.encrypt(text, keys.GetPublicKey());
     }
 
-    public String Decrypt(String text)
+    public final String Decrypt(String text)
     {
         return KeyHandler.decrypt(text, keys.GetPrivateKey(this));
     }
 
-    public PublicKey GetPubKey()
+    public final PublicKey GetPubKey()
     {
         return keys.GetPublicKey();
     }
 
-    public void logNegoPre(String session_id) {
+    public final void logNegoPre(String session_id) {
         fl.logAgentPreNego(session_id, this);
     }
 
-    public void LogNegotiationOver(String prev_bidding_agent, String session_id)
+    public final void LogNegotiationOver(String prev_bidding_agent, String session_id)
     {
         /*
          * by the time this function is invoked,
@@ -230,15 +235,17 @@ public abstract class Agent {
         fl.logAgentPostNego(session_id, this);
     }
 
-    public void SetConflictLocation(String conflictLocation) {
+    public final void SetConflictLocation(String conflictLocation)
+    {
         this.conflictLocation = conflictLocation;
     }
 
-    public String GetConflictLocation() {
+    public final String GetConflictLocation()
+    {
         return conflictLocation;
     }
 
-    public void OnContractUpdated(String O)
+    public final void OnContractUpdated(String O)
     {
         if (!history.containsKey(AGENT_ID))
         {
@@ -248,11 +255,12 @@ public abstract class Agent {
         history.get(AGENT_ID).add(O);
     }
 
-    public String GetCurrentTokenC() {
+    public final String GetCurrentTokenC()
+    {
         return String.valueOf(WorldHandler.getTokenBalance(WORLD_ID, AGENT_ID));
     }
 
-    public void LogNegotiationState(String prev_bidding_agent)
+    public final void LogNegotiationState(String prev_bidding_agent)
     {
         fl.LogAgentNegotiationState(prev_bidding_agent, this);
     }
@@ -262,7 +270,7 @@ public abstract class Agent {
      * If action type is accept, that indicates Agent accepted
      * opponents bid & has LOST the negotiation.
      * */
-    public void LogNegotiationState(String prev_bidding_agent, Action action)
+    public final void LogNegotiationState(String prev_bidding_agent, Action action)
     {
         if (action.type == ActionType.ACCEPT) {
             negotiation_result = 0;
