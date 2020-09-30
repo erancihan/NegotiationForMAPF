@@ -3,10 +3,10 @@ package edu.ozu.mapp.utils;
 import java.util.Arrays;
 
 public class State {
-    int time_tick;
+    public int time_tick;
     public String[][] bids;
-    String turn;
-    String[] agents;
+    public String turn;
+    public String[] agents;
 
     public State(JSONNegotiationSession json)
     {
