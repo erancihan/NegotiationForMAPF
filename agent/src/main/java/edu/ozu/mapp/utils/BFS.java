@@ -110,7 +110,7 @@ public class BFS
         {
             Path CurrentPath = queue.remove(); // pop
             if (CurrentPath.contains(_t) || CurrentPath.size() >= deadline)
-            {   // Destination is reached || path length cap reached
+            {   // Destination is reached || min path length requirement satisfied
                 paths.add(CurrentPath);
 
                 // update max path length
