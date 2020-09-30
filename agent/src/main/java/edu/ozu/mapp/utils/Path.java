@@ -1,8 +1,10 @@
 package edu.ozu.mapp.utils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Path extends ArrayList<Point> implements Cloneable
 {
@@ -24,6 +26,13 @@ public class Path extends ArrayList<Point> implements Cloneable
     {
         super(path);
         entries = new HashSet<>(path.entries);
+    }
+
+    public Path(String str)
+    {
+        this(
+                Arrays.stream(str.replaceAll("([\\[\\]]*)", "").split(",")).map(p -> new Point(p, "-")).collect(Collectors.toList())
+        );
     }
 
     public Point getLast()
@@ -53,5 +62,19 @@ public class Path extends ArrayList<Point> implements Cloneable
         for (Point p: this) asStr.add(p.key);
 
         return asStr.toArray(new String[0]);
+    }
+
+    public boolean HasConflictWith(Path that) {
+        for (int i = 0; i < that.size() && i < this.size(); i++)
+        {   // Vertex Conflict
+            if (that.get(i).equals(this.get(i)))
+                return true;
+        }
+        for (int i = 0; i + 1 < this.size() && i < that.size(); i++)
+        {   // Swap conflict
+            if (this.get(i + 1).equals(that.get(i)))
+                return true;
+        }
+        return false;
     }
 }
