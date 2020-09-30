@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 @MAPPAgent
 public class Conceder extends Agent {
     private String current_opponent;
+    private List<Bid> bid_space = new ArrayList<>();
     private Iterator<Bid> bid_space_iterator;
 
     public Conceder()
@@ -30,8 +31,6 @@ public class Conceder extends Agent {
     {
         super(agentName, agentID, start, dest);
     }
-
-    private List<Bid>bid_space = new ArrayList<>();
 
     @Override
     public void init()
