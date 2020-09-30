@@ -59,8 +59,8 @@ public class AStar {
         double inf = Double.MAX_VALUE;
 
         String[] ds = Dimensions.split("x");
-        int width  = (ds.length == 2 && !ds[0].isEmpty()) ? Integer.parseInt(ds[0]) : Integer.MAX_VALUE;
-        int height = (ds.length == 2 && !ds[1].isEmpty()) ? Integer.parseInt(ds[1]) : Integer.MAX_VALUE;
+        int width  = (ds.length == 2 && !ds[0].isEmpty() && !ds[0].equals("0")) ? Integer.parseInt(ds[0]) : Integer.MAX_VALUE;
+        int height = (ds.length == 2 && !ds[1].isEmpty() && !ds[1].equals("0")) ? Integer.parseInt(ds[1]) : Integer.MAX_VALUE;
 
         HashMap<String, String> links = new HashMap<>();
 
