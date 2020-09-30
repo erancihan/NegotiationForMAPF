@@ -4,15 +4,22 @@ import edu.ozu.mapp.agent.Agent;
 import edu.ozu.mapp.agent.MAPPAgent;
 import edu.ozu.mapp.agent.client.AgentClient;
 import edu.ozu.mapp.agent.client.helpers.WorldHandler;
+import edu.ozu.mapp.agent.client.models.Contract;
 import edu.ozu.mapp.utils.*;
+import org.springframework.util.Assert;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @SuppressWarnings("Duplicates")
 @MAPPAgent
 public class Conceder extends Agent {
+    private String current_opponent;
+    private Iterator<Bid> bid_space_iterator;
+
     public Conceder()
     {
         this("Conceder 1", "CONCEDER1", new Point(2, 0), new Point(2, 10));
@@ -27,30 +34,28 @@ public class Conceder extends Agent {
     private List<Bid>bid_space = new ArrayList<>();
 
     @Override
-    public void PreNegotiation()
+    public void init()
     {
-        // add current broadcast as it is the BEST outcome
-//        bids.add(getBroadcastArray());
+        super.init();
 
-        String[][] fov = WorldHandler.getFieldOfView(this.WORLD_ID, this.AGENT_ID);
-        // calculate next best possible given everything is a constraint
-        ArrayList<String[]> constraints = new ArrayList<>();
-        for (String[] broadcast_data : fov)
-        {   // [AgentID, AgentPOS, AgentBroadcast]
-            // AgentID is in the format "agent:ID"
-            // do not add self as constraint
-            if (broadcast_data[0].equals("agent:"+AGENT_ID))
-                continue;
+        // get initial planned path and remember it forever
+    }
 
-            String[] broadcast = broadcast_data[2].replaceAll("([\\[\\]]*)", "").split(",");
-            for (int i = 0; i < broadcast.length; i++)
-            {
-                constraints.add(new String[]{broadcast[i], String.valueOf(i)});
-            }
-        }
-
+    @Override
+    public void PreNegotiation(State state)
+    {
         // Get Current Bid Space
         bid_space = GetCurrentBidSpace();
+        bid_space_iterator = bid_space.iterator();
+//        System.out.println(Arrays.toString(bid_space.toArray(new Bid[0])));
+//        System.exit(1);
+
+        // since this is a Bi-lateral negotiation, there should be only
+        // two participant in the negotiation
+        Assert.isTrue(state.agents.length == 2, "There are more agents than expected");
+
+        // filter matching out
+        current_opponent = Arrays.stream(state.agents).filter(a -> !a.equals(AGENT_ID)).collect(Collectors.toList()).get(0);
     }
 
     @Override
@@ -62,25 +67,47 @@ public class Conceder extends Agent {
         // -> if opponent insists to stay on their path
 
         // get opponent's bid
-        Bid lastBid = null;
-        for (String agentID : history.keySet()) { // get last bid of opponent
-            // AgentID is in format "agent:ID"
-            if (agentID.equals("agent:"+AGENT_ID))
-                continue;
-            // get the last bid
-            String[] opponentBids = history.get("agent:" + agentID).toArray(new String[0]);
-//            lastBid = new BidStruct()[opponentBids.length - 1];
-        }
+        Contract last_opponent_bid = history.GetLastOpponentBid(current_opponent);
+        Contract own_last_bid = history.GetLastOwnBid();
 
-        if (current_tokens == 0)
-        {   // if token count is > 0, it is a repeating offer
-            // give second best bid
-            // TODO ACCEPT CONDITION
-            return new Action(this, ActionType.OFFER, bid_space.get(0).path.toStringArray());
+        if (last_opponent_bid == null)
+        {
+            // I am the one doing the first bid of negotiation
+            // propose current path by default, as it is the
+            // current best possible bid
+            String[] path_to_bid = GetOwnBroadcastPath();
+            return new Action(this, ActionType.OFFER, path_to_bid);
         } else {
-            // give best bid
-            // -> current path
-            return new Action(this, ActionType.OFFER, GetOwnBroadcastPath());
+            if (current_tokens == 0)
+            {   // i can do nothing but accept
+                return new Action(this, ActionType.ACCEPT);
+            }
+
+            if (own_last_bid == null)
+            {   // I haven't made an offer before
+                String[] path_to_bid = GetOwnBroadcastPath();
+                return new Action(this, ActionType.OFFER, path_to_bid);
+            }
+
+            // opponent has bid
+            // check if it is viable for us
+            Path opponent_path = new Path(last_opponent_bid.Ox);
+            Path own_last_path = new Path(own_last_bid.Ox);
+            if (opponent_path.HasConflictWith(own_last_path))
+            {   // then propose the next possible option from
+                if (bid_space_iterator.hasNext()) {
+                    Bid bid = bid_space_iterator.next();
+                    return new Action(this, ActionType.OFFER, bid);
+                }
+            } else {
+                // there are no conflicts between my last bid & opponent's last
+                // i can accept
+                // todo I may recalculate a different path since i accepted
+                // opponents decision ...
+                return new Action(this, ActionType.ACCEPT);
+            }
+
+            return new Action(this, ActionType.OFFER, bid_space.get(0));
         }
     }
 
