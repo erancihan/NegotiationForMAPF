@@ -40,7 +40,9 @@ public class Contract {
 
     public static Contract Create(Map<String, String> sess)
     {
-        Assert.isTrue(!sess.get("x").isEmpty(), "<<Contract cannot be empty>>");
+//        Assert.isTrue(!sess.get("x").isEmpty(), "<<Contract cannot be empty>>");
+        if (sess.get("x").isEmpty())
+            return null;
 
         return new Contract(sess);
     }
