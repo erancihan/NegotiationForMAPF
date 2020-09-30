@@ -19,7 +19,7 @@ public class State {
 
         bids = json.bids;
         turn = json.turn;
-        agents = Arrays.stream(json.agents.split(",")).map(s -> s.replace("agents:", "")).toArray(String[]::new);
+        agents = Arrays.stream(json.agents.split(",")).map(s -> s.replace("agent:", "")).toArray(String[]::new);
     }
 
     public String getTurn() {
