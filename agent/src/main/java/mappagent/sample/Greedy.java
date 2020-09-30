@@ -4,15 +4,23 @@ import edu.ozu.mapp.agent.Agent;
 import edu.ozu.mapp.agent.MAPPAgent;
 import edu.ozu.mapp.agent.client.AgentClient;
 import edu.ozu.mapp.agent.client.helpers.WorldHandler;
+import edu.ozu.mapp.agent.client.models.Contract;
 import edu.ozu.mapp.utils.*;
+import org.springframework.util.Assert;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @SuppressWarnings("Duplicates")
 @MAPPAgent
-public class Greedy extends Agent
-{
+public class Greedy extends Agent {
+    private String current_opponent;
+    private List<Bid> bid_space = new ArrayList<>();
+    private Iterator<Bid> bid_space_iterator;
+
     public Greedy()
     {
         this("Greedy Agent 1", "GREEDY1", new Point(2, 0), new Point(2, 10));
@@ -27,36 +35,20 @@ public class Greedy extends Agent
     private ArrayList<String[]> bids = new ArrayList<>();
 
     @Override
-    public void PreNegotiation()
+    public void PreNegotiation(State state)
     {
-        // add current broadcast as it is the BEST outcome
-//        bids.add(getBroadcastArray());
+        // Get Current Bid Space
+        bid_space = GetCurrentBidSpace();
+        bid_space_iterator = bid_space.iterator();
+//        System.out.println(Arrays.toString(bid_space.toArray(new Bid[0])));
+//        System.exit(1);
 
-        String[][] fov = WorldHandler.getFieldOfView(this.WORLD_ID, this.AGENT_ID);
-        // calculate next best possible given everything is a constraint
-        ArrayList<String[]> constraints = new ArrayList<>();
-        for (String[] broadcast_data : fov)
-        {   // [AgentID, AgentPOS, AgentBroadcast]
-            // AgentID is in the format "agent:ID"
-            // do not add self as constraint
-            if (broadcast_data[0].equals("agent:"+AGENT_ID))
-                continue;
+        // since this is a Bi-lateral negotiation, there should be only
+        // two participant in the negotiation
+        Assert.isTrue(state.agents.length == 2, "There are more agents than expected");
 
-            String[] broadcast = broadcast_data[2].replaceAll("([\\[\\]]*)", "").split(",");
-            for (int i = 0; i < broadcast.length; i++)
-            {
-                constraints.add(new String[]{broadcast[i], String.valueOf(i)});
-            }
-        }
-        // calculate the alternative optimal
-        List<String> path = AStar.calculateWithConstraints(POS, DEST, constraints.toArray(new String[0][3]));
-        // add second best, which is the one with constraints
-        String[] bid = new String[5];
-        for (int i = 0; i < bid.length; i++) {
-            bid[i] = path.get(i);
-        }
-        bids.add(bid);
-        // add them to bids list
+        // filter matching out
+        current_opponent = Arrays.stream(state.agents).filter(a -> !a.equals(AGENT_ID)).collect(Collectors.toList()).get(0);
     }
 
     @Override
@@ -64,48 +56,62 @@ public class Greedy extends Agent
     {
         int current_tokens = WorldHandler.getTokenBalance(WORLD_ID, AGENT_ID);
 
-        if (current_tokens > 0) {
-            // give best bid, which is the current available path
-            return new Action(this, ActionType.OFFER, GetOwnBroadcastPath());
-        } else {
-            // give second best bid or accept opponent's offer
-            // or accept
-            // TODO BETTER HISTORY STRUCTURE - GET LAST BID BETTER
-            Bid lastBid = null;
-            for (String agentID : history.keySet()) { // get last bid
-                // AgentID is in format "agent:ID"
-                if (agentID.equals("agent:"+AGENT_ID))
-                    continue;
-                // get the last bid
-//                ArrayList<BidStruct> opponentBids = history.get("agent:"+agentID);
-//                lastBid = opponentBids.get(opponentBids.size()-1);
-            }
-            if (lastBid != null) {
-                // if last bid of opponent does not collide with my path
-                // accept it
-                String[] broadcast = GetOwnBroadcastPath();
-                String[] bid_path = lastBid.path.toStringArray();
-                // if last bid does not collides
-                boolean willAccept = true;
-                for (int i = 0; i < broadcast.length; i++) { // TODO PROVIDE BUILT IN FUNCTION
-                    if (broadcast[i].equals(bid_path[i]))
-                    {   // has collision
-                        willAccept = false;
-                        break;
-                    }
-                }
-                // accept if no collision
-                if (willAccept)
-                {
-                    return new Action(this, ActionType.ACCEPT);
-                }
-            }
-            return new Action(this, ActionType.OFFER, bids.get(0));
+        // get opponent's bid
+        Contract last_opponent_bid = history.GetLastOpponentBid(current_opponent);
+        Contract own_last_bid = history.GetLastOwnBid();
+
+        if (last_opponent_bid == null)
+        {
+            // I am the one doing the first bid of negotiation
+            // propose current path by default, as it is the
+            // current best possible bid
+            String[] path_to_bid = GetOwnBroadcastPath();
+            return new Action(this, ActionType.OFFER, path_to_bid);
         }
+
+        if (current_tokens == 0)
+        {   // i can do nothing but accept
+            return new Action(this, ActionType.ACCEPT);
+        }
+
+        if (own_last_bid == null)
+        {   // I haven't made an offer before
+            String[] path_to_bid = GetOwnBroadcastPath();
+            return new Action(this, ActionType.OFFER, path_to_bid);
+        }
+
+        // opponent has bid, but i don't care
+        // try to stay the course as long as possible
+        int last_own_bid_tc = Integer.parseInt(own_last_bid.getTokenCountOf(this));
+        if (last_own_bid_tc + 1 <= current_tokens)
+        {
+            String[] path_to_bid = GetOwnBroadcastPath();
+            return new Action(this, ActionType.OFFER, path_to_bid);
+        }
+
+        // i cant insist anymore, give up
+        return new Action(this, ActionType.ACCEPT);
     }
 
     public static void main(String[] args)
     {
-        new AgentClient(args, new Greedy());
+        String AgentName = "Greedy 1";
+        String AgentID   = "GREEDY1";
+        Point Start = new Point(0, 2);
+        Point Dest  = new Point(10, 2);
+        boolean IsHeadless = false;
+
+        for (String arg : args) {
+            if (arg.startsWith("NAME=")) AgentName = arg.replace("NAME=", "");
+            if (arg.startsWith("ID=")) AgentID = arg.replace("ID=", "");
+            if (arg.startsWith("START=")) Start = new Point(arg.replace("START=", ""), "-");
+            if (arg.startsWith("DEST=")) Dest = new Point(arg.replace("DEST=", ""), "-");
+            if (arg.equals("HEADLESS")) IsHeadless = true;
+        }
+
+        Greedy agent = new Greedy(AgentName, AgentID, Start, Dest);
+        agent.isHeadless = IsHeadless;
+
+        new AgentClient(args, agent);
     }
 }
