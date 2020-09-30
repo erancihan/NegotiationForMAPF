@@ -73,38 +73,38 @@ public class Conceder extends Agent {
             // current best possible bid
             String[] path_to_bid = GetOwnBroadcastPath();
             return new Action(this, ActionType.OFFER, path_to_bid);
-        } else {
-            if (current_tokens == 0)
-            {   // i can do nothing but accept
-                return new Action(this, ActionType.ACCEPT);
-            }
-
-            if (own_last_bid == null)
-            {   // I haven't made an offer before
-                String[] path_to_bid = GetOwnBroadcastPath();
-                return new Action(this, ActionType.OFFER, path_to_bid);
-            }
-
-            // opponent has bid
-            // check if it is viable for us
-            Path opponent_path = new Path(last_opponent_bid.Ox);
-            Path own_last_path = new Path(own_last_bid.Ox);
-            if (opponent_path.HasConflictWith(own_last_path))
-            {   // then propose the next possible option from
-                if (bid_space_iterator.hasNext()) {
-                    Bid bid = bid_space_iterator.next();
-                    return new Action(this, ActionType.OFFER, bid);
-                }
-            } else {
-                // there are no conflicts between my last bid & opponent's last
-                // i can accept
-                // todo I may recalculate a different path since i accepted
-                // opponents decision ...
-                return new Action(this, ActionType.ACCEPT);
-            }
-
-            return new Action(this, ActionType.OFFER, bid_space.get(0));
         }
+
+        if (current_tokens == 0)
+        {   // i can do nothing but accept
+            return new Action(this, ActionType.ACCEPT);
+        }
+
+        if (own_last_bid == null)
+        {   // I haven't made an offer before
+            String[] path_to_bid = GetOwnBroadcastPath();
+            return new Action(this, ActionType.OFFER, path_to_bid);
+        }
+
+        // opponent has bid
+        // check if it is viable for us
+        Path opponent_path = new Path(last_opponent_bid.Ox);
+        Path own_last_path = new Path(own_last_bid.Ox);
+        if (opponent_path.HasConflictWith(own_last_path))
+        {   // then propose the next possible option from
+            if (bid_space_iterator.hasNext()) {
+                Bid bid = bid_space_iterator.next();
+                return new Action(this, ActionType.OFFER, bid);
+            }
+        } else {
+            // there are no conflicts between my last bid & opponent's last
+            // i can accept
+            // todo I may recalculate a different path since i accepted
+            // opponents decision ...
+            return new Action(this, ActionType.ACCEPT);
+        }
+
+        return new Action(this, ActionType.OFFER, bid_space.get(0));
     }
 
     public static void main(String[] args)
