@@ -4,6 +4,7 @@ import edu.ozu.mapp.agent.Agent;
 import edu.ozu.mapp.agent.client.helpers.Negotiation;
 import edu.ozu.mapp.agent.client.helpers.WorldHandler;
 import edu.ozu.mapp.agent.client.models.Contract;
+import mappagent.sample.Conceder;
 
 public class Action
 {
@@ -40,6 +41,11 @@ public class Action
         this.type = type;
 
         logger.debug("taking action " + this.type + " - " + this.bid);
+    }
+
+    public Action(Agent agent, ActionType type, Bid bid)
+    {
+        this(agent, type, bid.path.toStringArray());
     }
 
     private Contract makeOffer(Agent agent, ActionType type, String bid)
