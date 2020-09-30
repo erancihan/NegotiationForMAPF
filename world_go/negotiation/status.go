@@ -68,6 +68,7 @@ func (n *Handler) GetStatus(ctx echo.Context, rds redis.Conn, pool *SessionPool,
 		bids = append(bids, []string{agent, bid})
 	}
 
+	status.Agents = rdsStatus.Agents
 	status.AgentCount = rdsStatus.AgentCount
 	status.BidOrder = rdsStatus.BidOrder
 	status.Bids = bids

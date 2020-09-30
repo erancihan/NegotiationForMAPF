@@ -9,6 +9,7 @@ import (
 
 type (
 	Status struct {
+		Agents     string     `json:"agents"`
 		AgentCount int        `json:"agent_count"`
 		BidOrder   string     `json:"bid_order"`
 		Bids       [][]string `json:"bids"`

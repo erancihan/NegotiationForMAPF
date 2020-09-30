@@ -6,6 +6,7 @@ import java.util.Arrays;
 
 public class JSONNegotiationSession {
     @SerializedName("agent_count") public int agent_count;
+    @SerializedName("agents") public String agents;
     @SerializedName("bid_order") public String bid_order;
     @SerializedName("bids") public String[][] bids;
     @SerializedName("state") public String state;
@@ -16,6 +17,7 @@ public class JSONNegotiationSession {
     public String toString() {
         return "JSONNegotiationSession{" +
                 "agent_count=" + agent_count +
+                ", agents='" + agents + '\'' +
                 ", bid_order='" + bid_order + '\'' +
                 ", bids=" + Arrays.deepToString(bids) +
                 ", state='" + state + '\'' +
