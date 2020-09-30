@@ -71,7 +71,7 @@ public abstract class Agent {
 
     public void init() { }
 
-    public void PreNegotiation() { }
+    public void PreNegotiation(State state) { }
 
     public void onReceiveState(State state) { }
 
@@ -112,7 +112,7 @@ public abstract class Agent {
             int height = Integer.parseInt(ds[1]);
 
             search = new BFS(From, To, Globals.FIELD_OF_VIEW_SIZE / 2, deadline, width, height);
-            search.SetMinimumPathLength(Globals.FIELD_OF_VIEW_SIZE / 2);
+            search.SetMinimumPathLength(Globals.BROADCAST_SIZE);
             search.init();
         }
 
