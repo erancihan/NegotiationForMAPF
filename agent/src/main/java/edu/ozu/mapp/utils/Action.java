@@ -4,7 +4,6 @@ import edu.ozu.mapp.agent.Agent;
 import edu.ozu.mapp.agent.client.helpers.Negotiation;
 import edu.ozu.mapp.agent.client.helpers.WorldHandler;
 import edu.ozu.mapp.agent.client.models.Contract;
-import mappagent.sample.Conceder;
 
 public class Action
 {
@@ -55,7 +54,7 @@ public class Action
 
         Contract contract = Negotiation.getContract(agent);
 
-        int own_token_offer = Integer.parseInt(contract.getTokenOf(agent)); // get own bid token count
+        int own_token_offer = Integer.parseInt(contract.getTokenCountOf(agent)); // get own bid token count
 
         boolean will_increase_tokens = false;
         // if current bid is in agents bid history

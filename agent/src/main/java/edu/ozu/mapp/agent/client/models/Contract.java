@@ -123,7 +123,7 @@ public class Contract {
         return HAS_ENCRYPTION ? agent.Decrypt(ETb) : ETb;
     }
 
-    public String getTokenOf(Agent agent)
+    public String getTokenCountOf(Agent agent)
     {
         if (A.equals(agent.AGENT_ID)) {
             return getETa(agent);
