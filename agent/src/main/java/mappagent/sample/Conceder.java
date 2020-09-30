@@ -86,6 +86,23 @@ public class Conceder extends Agent {
 
     public static void main(String[] args)
     {
-        new AgentClient(args, new Conceder());
+        String AgentName = "Conceder 1";
+        String AgentID   = "CONCEDER1";
+        Point Start = new Point(0, 2);
+        Point Dest  = new Point(10, 2);
+        boolean IsHeadless = false;
+
+        for (String arg : args) {
+            if (arg.startsWith("NAME=")) AgentName = arg.replace("NAME=", "");
+            if (arg.startsWith("ID=")) AgentID = arg.replace("ID=", "");
+            if (arg.startsWith("START=")) Start = new Point(arg.replace("START=", ""), "-");
+            if (arg.startsWith("DEST=")) Dest = new Point(arg.replace("DEST=", ""), "-");
+            if (arg.equals("HEADLESS")) IsHeadless = true;
+        }
+
+        Conceder agent = new Conceder(AgentName, AgentID, Start, Dest);
+        agent.isHeadless = IsHeadless;
+
+        new AgentClient(args, agent);
     }
 }
