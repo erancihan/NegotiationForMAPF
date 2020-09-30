@@ -62,9 +62,6 @@ public class Conceder extends Agent {
     {
         int current_tokens = WorldHandler.getTokenBalance(WORLD_ID, AGENT_ID);
 
-        // [getToken == 0 || conflicted path and first bid is same]
-        // -> if opponent insists to stay on their path
-
         // get opponent's bid
         Contract last_opponent_bid = history.GetLastOpponentBid(current_opponent);
         Contract own_last_bid = history.GetLastOwnBid();
