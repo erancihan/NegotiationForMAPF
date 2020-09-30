@@ -43,6 +43,7 @@ public class NegotiationSession
     }
 
     //<editor-fold defaultstate="collapsed" desc="SocketIO Handler Func">
+    /*
     void connectSocketIO()
     {
         _didBid = -1;
@@ -113,7 +114,7 @@ public class NegotiationSession
             sess.setOnJoinedHandler(message -> {
                 logger.debug(message);
 
-                handler.PreNegotiation();
+                handler.PreNegotiation(session_id);
 
                 logger.info(handler.GetAgentID() + " : session=" + session_id + " : joined" );
             });
@@ -131,6 +132,7 @@ public class NegotiationSession
         }
         catch (Exception exception) { exception.printStackTrace(); }
     }
+    */
     //</editor-fold>
 
     void connectWS()
@@ -170,7 +172,7 @@ public class NegotiationSession
                         logger.info("joining to negotiation session");
                         // join negotiation session WS
                         // send ready message to socket
-                        handler.PreNegotiation();
+                        handler.PreNegotiation(session_id, new State(json));
                         handler.LogPreNegotiation(session_id);
 
                         websocket.sendMessage("agent:" + handler.GetAgentID() + "-ready");

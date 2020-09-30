@@ -350,33 +350,20 @@ public class AgentHandler {
         return agent.AGENT_ID;
     }
 
-    public void OnReceiveState(State state) {
-        // update current state info
-        // TODO WTF!?
-        /*
-        for (String[] bid : state.bids) {   // [agentID, path:tokens]
-            ArrayList<BidStruct> hist = history.getOrDefault(bid[0], new ArrayList<>());
+    public void OnReceiveState(State state)
+    {
+        // New state received
+        // fetch current Contract
+        Contract contract = Negotiation.getContract(agent);
 
-            String[] b = bid[1].split(":");
-            BidStruct bidStruct = new BidStruct(bid[0], b[0], Integer.parseInt(b[1]));
+        if (contract != null) agent.history.put(contract);
 
-            if (hist.size() > 0) { // if there are elements
-                if (!hist.get(hist.size()-1).equals(bidStruct)) { // and the last one is different
-                    hist.add(bidStruct);
-                }
-            } else { // if there are no elements
-                hist.add(bidStruct);
-            }
-
-            history.put(bid[0], hist);
-        }
-         */
         agent.onReceiveState(state);
     }
 
     /**
      * Invoked only when negotiation is initiated, and agent
-     * is about to join. (Before {@link #PreNegotiation()})
+     * is about to join. (Before {@link #PrepareContract(NegotiationSession)})
      *
      * Negotiation session status should be "join" for this
      * function to be invoked
@@ -396,9 +383,10 @@ public class AgentHandler {
         return Contract.Create(agent, session);
     }
 
-    public void PreNegotiation()
+    public void PreNegotiation(String session_id, State state)
     {
-        agent.PreNegotiation();
+        agent.history.setCurrentNegotiationID(session_id);
+        agent.PreNegotiation(state);
     }
 
     public void LogPreNegotiation(String session_id)
@@ -446,7 +434,9 @@ public class AgentHandler {
             Point end = new Point(Ox[Ox.length - 1].split("-"));
             // recalculate path starting from the end point of agreed path
             logger.debug("{accepted_path:" + Arrays.toString(Ox) + "}");
+            logger.debug("{calculating path from:" + end + " to:" + agent.DEST + " }");
             List<String> rest = agent.calculatePath(end, agent.DEST);
+            logger.debug("{rest: " + Arrays.toString(rest.toArray()) + " }");
 
             // ...glue them together
             new_path = new ArrayList<>();
