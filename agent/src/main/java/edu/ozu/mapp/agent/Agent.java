@@ -2,6 +2,7 @@ package edu.ozu.mapp.agent;
 
 import edu.ozu.mapp.agent.client.helpers.FileLogger;
 import edu.ozu.mapp.agent.client.helpers.WorldHandler;
+import edu.ozu.mapp.agent.client.models.Contract;
 import edu.ozu.mapp.keys.AgentKeys;
 import edu.ozu.mapp.keys.KeyHandler;
 import edu.ozu.mapp.utils.*;
@@ -11,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import java.security.PublicKey;
 import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public abstract class Agent {
     public static final Logger logger = LoggerFactory.getLogger(Agent.class);
@@ -18,7 +20,7 @@ public abstract class Agent {
 
     public String AGENT_NAME, AGENT_ID;
     public Point START, DEST;
-    public HashMap<String, HashSet<String>> history = new HashMap<>();
+    public History history;
 
     public boolean isHeadless = false;
 
@@ -62,7 +64,7 @@ public abstract class Agent {
         this.isHeadless = true; // unless client says so
         fl = new FileLogger().CreateAgentLogger(AGENT_ID);
 
-        history = new HashMap<String, HashSet<String>>();
+        history = new History(AGENT_ID);
         // create and store agent keys
         keys = KeyHandler.create(this);
     }
@@ -87,7 +89,7 @@ public abstract class Agent {
         path = calculatePath();
 
         POS = new Point(path.get(0).split("-"));
-        history = new HashMap<>();
+        history = new History(AGENT_ID);
     }
 
     public List<String> calculatePath() {
@@ -196,7 +198,7 @@ public abstract class Agent {
 
     public final HashSet<String> getOwnBidHistory()
     {
-        return history.containsKey(AGENT_ID) ? history.get(AGENT_ID) : new HashSet<String>();
+        return history.get(AGENT_ID).stream().map(contract -> contract.Ox).collect(Collectors.toCollection(HashSet::new));
     }
 
     public final String Encrypt(String text)
@@ -245,14 +247,9 @@ public abstract class Agent {
         return conflictLocation;
     }
 
-    public final void OnContractUpdated(String O)
+    public final void OnContractUpdated(Contract contract)
     {
-        if (!history.containsKey(AGENT_ID))
-        {
-            history.put(AGENT_ID, new HashSet<String>());
-        }
-
-        history.get(AGENT_ID).add(O);
+        history.put(AGENT_ID, contract);
     }
 
     public final String GetCurrentTokenC()
