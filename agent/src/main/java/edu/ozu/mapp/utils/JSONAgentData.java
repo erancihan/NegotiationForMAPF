@@ -4,8 +4,8 @@ public class JSONAgentData {
     public int id;
     public String agent_name;
     public String agent_class_name;
-    public String start;
-    public String dest;
+    public JSONPointData start;
+    public JSONPointData dest;
 
     public JSONAgentData() {
     }
@@ -14,8 +14,8 @@ public class JSONAgentData {
         this.id = id;
         this.agent_name = agent_name;
         this.agent_class_name = agent_class_name;
-        this.start = start.key;
-        this.dest = dest.key;
+        this.start = new JSONPointData(start);
+        this.dest = new JSONPointData(dest);
     }
 
     @Override

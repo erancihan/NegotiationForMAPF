@@ -640,7 +640,7 @@ public class ScenarioManager extends javax.swing.JFrame
                     agents_map
                         .get(data.agent_class_name)
                         .getDeclaredConstructor(String.class, String.class, Point.class, Point.class)
-                        .newInstance(data.agent_name, data.agent_name, new Point(data.start, "-"), new Point(data.dest, "-"))
+                        .newInstance(data.agent_name, data.agent_name, new Point(data.start.get(), "-"), new Point(data.dest.get(), "-"))
                 ).join(WorldID);
             } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
                 logger.error("An error occurred while trying to generate a client");
