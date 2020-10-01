@@ -1,31 +1,31 @@
 package edu.ozu.mapp.utils;
 
 public class JSONWorldData {
-    public String wid;
+    public String world_id;
     public int width;
     public int height;
     public int min_path_len;
-    public int min_d;
+    public int min_distance_between_agents;
 
     public JSONWorldData() {
     }
 
-    public JSONWorldData(String wid, int width, int height, int min_path_len, int min_d) {
-        this.wid = wid;
+    public JSONWorldData(String world_id, int width, int height, int min_path_len, int min_distance_between_agents) {
+        this.world_id = world_id;
         this.width = width;
         this.height = height;
         this.min_path_len = min_path_len;
-        this.min_d = min_d;
+        this.min_distance_between_agents = min_distance_between_agents;
     }
 
     @Override
     public String toString() {
         return "JSONWorldData{" +
-                "wid='" + wid + '\'' +
+                "wid='" + world_id + '\'' +
                 ", width=" + width +
                 ", height=" + height +
                 ", min_path_len=" + min_path_len +
-                ", min_d=" + min_d +
+                ", min_distance_between_agents=" + min_distance_between_agents +
                 '}';
     }
 }

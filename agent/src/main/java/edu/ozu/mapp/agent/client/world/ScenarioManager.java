@@ -623,11 +623,11 @@ public class ScenarioManager extends javax.swing.JFrame
     {
         run_scenario_btn.setEnabled(false);
 
-        WorldID = "world:" + world_data.wid + ":";
+        WorldID = "world:" + world_data.world_id + ":";
 
         // initialize world
         if (world == null) InitializeWorld();
-        world_listener = world.Create(world_data.wid, world_data.width + "x" + world_data.height);
+        world_listener = world.Create(world_data.world_id, world_data.width + "x" + world_data.height);
 
         Assert.notNull(world_listener, "redis listener cannot be null!");
 
@@ -656,7 +656,7 @@ public class ScenarioManager extends javax.swing.JFrame
         width_input.setText(String.valueOf(world_data.width));
         height_input.setText(String.valueOf(world_data.height));
         path_length_input.setText(String.valueOf(world_data.min_path_len));
-        min_dist_bw_agents.setText(String.valueOf(world_data.min_d));
+        min_dist_bw_agents.setText(String.valueOf(world_data.min_distance_between_agents));
 
         if (world == null) InitializeWorld();
 
