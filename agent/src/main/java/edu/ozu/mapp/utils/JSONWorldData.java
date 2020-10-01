@@ -6,6 +6,7 @@ public class JSONWorldData {
     public int height;
     public int min_path_len;
     public int min_distance_between_agents;
+    public int agent_count = 0;
 
     public JSONWorldData() {
     }

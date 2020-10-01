@@ -1,6 +1,7 @@
 package edu.ozu.mapp.utils;
 
 public class JSONAgentData {
+    public int id;
     public String agent_name;
     public String agent_class_name;
     public String start;
@@ -9,7 +10,8 @@ public class JSONAgentData {
     public JSONAgentData() {
     }
 
-    public JSONAgentData(String agent_name, String agent_class_name, Point start, Point dest) {
+    public JSONAgentData(int id, String agent_name, String agent_class_name, Point start, Point dest) {
+        this.id = id;
         this.agent_name = agent_name;
         this.agent_class_name = agent_class_name;
         this.start = start.key;

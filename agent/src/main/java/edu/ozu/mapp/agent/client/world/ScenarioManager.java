@@ -486,6 +486,7 @@ public class ScenarioManager extends javax.swing.JFrame
         GenerateAgentStartLocations(width, height, min_d);
 
         if (agent_count == 0) return;
+        world_data.agent_count = agent_count;
 
         GenerateAgentLocationData(width, height, min_path_len);
         InitializeAgentData();
@@ -563,6 +564,7 @@ public class ScenarioManager extends javax.swing.JFrame
 
     private void InitializeAgentData()
     {
+        int id_count = 0;
         Iterator<Point[]> AgentLocationDataIterator = AgentLocationData.iterator();
         for (int row = 0; row < agents_table.getRowCount(); row++)
         {
@@ -587,7 +589,7 @@ public class ScenarioManager extends javax.swing.JFrame
                 logger.info("Creating config for " + agent_name + " | " + start + "->" + dest);
                 if (world != null) world.Log(String.format("generated %s %s -> %s", agent_name, start.key, dest.key));
 
-                agents_data.add(new JSONAgentData(agent_name, agent_class_name, start, dest));
+                agents_data.add(new JSONAgentData(id_count++, agent_name, agent_class_name, start, dest));
             }
         }
     }
