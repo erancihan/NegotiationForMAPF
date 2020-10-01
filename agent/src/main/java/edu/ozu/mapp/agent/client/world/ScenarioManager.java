@@ -488,7 +488,7 @@ public class ScenarioManager extends javax.swing.JFrame
         if (agent_count == 0) return;
 
         GenerateAgentLocationData(width, height, min_path_len);
-        InitializeAgents();
+        InitializeAgentData();
 
         ReadyToRun = true;
         run_scenario_btn.setText("Run");
@@ -561,7 +561,7 @@ public class ScenarioManager extends javax.swing.JFrame
         }
     }
 
-    private void InitializeAgents()
+    private void InitializeAgentData()
     {
         Iterator<Point[]> AgentLocationDataIterator = AgentLocationData.iterator();
         for (int row = 0; row < agents_table.getRowCount(); row++)
