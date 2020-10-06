@@ -142,8 +142,35 @@ public abstract class Agent {
         return GetBidSpace(POS, DEST, minimum_path_size);
     }
 
+    public final List<Bid> GetCurrentBidSpace(Point To)
+    {
+        return GetBidSpace(POS, To, Globals.FIELD_OF_VIEW_SIZE);
+    }
+
     public final List<Bid> GetCurrentBidSpace()
     {
+        // Set exit point of bid space search
+        // as the last point of broadcast that is within FoV
+
+        // Get current broadcast path
+        String[] broadcast = GetOwnBroadcastPath();
+
+        // find the last point that is within FoV
+        Point to = null;
+        for (int i = broadcast.length-1; i >= 0; i--) {
+            // iterate in reverse
+            Point point = new Point(broadcast[i], "-");
+            if (point.x <= (POS.x + Globals.FIELD_OF_VIEW_SIZE / 2) && point.y <= (POS.y + Globals.FIELD_OF_VIEW_SIZE / 2)) {
+                to = point;
+                break;
+            }
+        }
+
+        if (to != null) {
+            return GetBidSpace(POS, to, Globals.FIELD_OF_VIEW_SIZE);
+        }
+
+        logger.debug("selecting DEST for exit point");
         return GetBidSpace(POS, DEST, Globals.FIELD_OF_VIEW_SIZE);
     }
 
