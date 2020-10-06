@@ -93,7 +93,8 @@ public class ScenarioManager extends javax.swing.JFrame
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setMinimumSize(new java.awt.Dimension(600, 300));
-        setSize(new java.awt.Dimension(600, 300));
+        setPreferredSize(new java.awt.Dimension(600, 340));
+        setSize(new java.awt.Dimension(600, 340));
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosing(java.awt.event.WindowEvent evt) {
                 formWindowClosing(evt);
