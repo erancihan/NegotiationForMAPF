@@ -23,6 +23,7 @@ import org.springframework.util.Assert;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.AbstractTableModel;
+import java.awt.*;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -63,149 +64,37 @@ public class ScenarioManager extends javax.swing.JFrame
         java.awt.GridBagConstraints gridBagConstraints;
 
         file_chooser = new javax.swing.JFileChooser();
+        javax.swing.JPanel scenario_info_container = new javax.swing.JPanel();
+        javax.swing.JScrollPane jScrollPane1 = new javax.swing.JScrollPane();
+        scenario_info_pane = new javax.swing.JTextPane();
+        javax.swing.JPanel panel_upper = new javax.swing.JPanel();
         cards_container = new javax.swing.JPanel();
         javax.swing.JPanel create_scenario = new javax.swing.JPanel();
-        javax.swing.JPanel panel_upper = new javax.swing.JPanel();
         javax.swing.JPanel inputs_container = new javax.swing.JPanel();
-        run_scenario_btn = new javax.swing.JButton();
-        javax.swing.JPanel jPanel1 = new javax.swing.JPanel();
         path_length_input = new javax.swing.JTextField();
         javax.swing.JLabel label_width = new javax.swing.JLabel();
         height_input = new javax.swing.JTextField();
         width_input = new javax.swing.JTextField();
         javax.swing.JLabel jLabel1 = new javax.swing.JLabel();
-        javax.swing.Box.Filler filler1 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 10), new java.awt.Dimension(0, 10), new java.awt.Dimension(32767, 10));
+        javax.swing.Box.Filler filler1 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 5), new java.awt.Dimension(0, 5), new java.awt.Dimension(32767, 10));
         javax.swing.JLabel label_height = new javax.swing.JLabel();
         javax.swing.Box.Filler filler2 = new javax.swing.Box.Filler(new java.awt.Dimension(5, 0), new java.awt.Dimension(5, 0), new java.awt.Dimension(5, 32767));
         min_dist_bw_agents = new javax.swing.JTextField();
         javax.swing.JLabel jLabel2 = new javax.swing.JLabel();
-        javax.swing.JPanel scenario_info_container = new javax.swing.JPanel();
-        javax.swing.JScrollPane jScrollPane1 = new javax.swing.JScrollPane();
-        scenario_info_pane = new javax.swing.JTextPane();
+        javax.swing.Box.Filler filler4 = new javax.swing.Box.Filler(new java.awt.Dimension(25, 0), new java.awt.Dimension(25, 0), new java.awt.Dimension(25, 32767));
+        javax.swing.Box.Filler filler3 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 10), new java.awt.Dimension(0, 10), new java.awt.Dimension(32767, 10));
+        javax.swing.Box.Filler filler5 = new javax.swing.Box.Filler(new java.awt.Dimension(200, 0), new java.awt.Dimension(200, 0), new java.awt.Dimension(200, 32767));
         javax.swing.JPanel agent_list_container = new javax.swing.JPanel();
         javax.swing.JScrollPane jScrollPane2 = new javax.swing.JScrollPane();
         agents_table = new javax.swing.JTable();
+        create_scenario_controls = new javax.swing.JPanel();
+        generate_scenario_btn = new javax.swing.JButton();
+        overview_scenario = new javax.swing.JPanel();
         javax.swing.JPanel run_scenario = new javax.swing.JPanel();
         javax.swing.JMenuBar jMenuBar1 = new javax.swing.JMenuBar();
         javax.swing.JMenu jMenu1 = new javax.swing.JMenu();
         javax.swing.JMenuItem export_btn = new javax.swing.JMenuItem();
         javax.swing.JMenuItem import_btn = new javax.swing.JMenuItem();
-
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setMinimumSize(new java.awt.Dimension(600, 300));
-        setPreferredSize(new java.awt.Dimension(600, 340));
-        setSize(new java.awt.Dimension(600, 340));
-        addWindowListener(new java.awt.event.WindowAdapter() {
-            public void windowClosing(java.awt.event.WindowEvent evt) {
-                formWindowClosing(evt);
-            }
-        });
-        getContentPane().setLayout(new java.awt.GridBagLayout());
-
-        cards_container.setLayout(new java.awt.CardLayout());
-
-        create_scenario.setBackground(new java.awt.Color(230, 230, 230));
-        create_scenario.setMaximumSize(new java.awt.Dimension(600, 300));
-        create_scenario.setLayout(new java.awt.GridBagLayout());
-
-        panel_upper.setLayout(new javax.swing.BoxLayout(panel_upper, javax.swing.BoxLayout.LINE_AXIS));
-
-        inputs_container.setMaximumSize(new java.awt.Dimension(600, 300));
-        inputs_container.setMinimumSize(new java.awt.Dimension(100, 26));
-        inputs_container.setPreferredSize(new java.awt.Dimension(200, 100));
-        inputs_container.setLayout(new java.awt.GridBagLayout());
-
-        run_scenario_btn.setText("Generate");
-        run_scenario_btn.setPreferredSize(new java.awt.Dimension(100, 30));
-        run_scenario_btn.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                run_scenario_btnActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        inputs_container.add(run_scenario_btn, gridBagConstraints);
-
-        jPanel1.setLayout(new java.awt.GridBagLayout());
-
-        path_length_input.setHorizontalAlignment(javax.swing.JTextField.CENTER);
-        path_length_input.setPreferredSize(new java.awt.Dimension(80, 26));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 3;
-        jPanel1.add(path_length_input, gridBagConstraints);
-
-        label_width.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        label_width.setText("Width");
-        label_width.setPreferredSize(new java.awt.Dimension(80, 14));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        jPanel1.add(label_width, gridBagConstraints);
-
-        height_input.setHorizontalAlignment(javax.swing.JTextField.CENTER);
-        height_input.setMinimumSize(new java.awt.Dimension(80, 26));
-        height_input.setPreferredSize(new java.awt.Dimension(80, 26));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 2;
-        jPanel1.add(height_input, gridBagConstraints);
-
-        width_input.setHorizontalAlignment(javax.swing.JTextField.CENTER);
-        width_input.setToolTipText("");
-        width_input.setMinimumSize(new java.awt.Dimension(80, 26));
-        width_input.setPreferredSize(new java.awt.Dimension(80, 26));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 1;
-        jPanel1.add(width_input, gridBagConstraints);
-
-        jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel1.setText("Path Len. >=");
-        jLabel1.setPreferredSize(new java.awt.Dimension(80, 14));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        jPanel1.add(jLabel1, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 5;
-        jPanel1.add(filler1, gridBagConstraints);
-
-        label_height.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        label_height.setText("Height");
-        label_height.setPreferredSize(new java.awt.Dimension(80, 14));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        jPanel1.add(label_height, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 5;
-        jPanel1.add(filler2, gridBagConstraints);
-
-        min_dist_bw_agents.setHorizontalAlignment(javax.swing.JTextField.CENTER);
-        min_dist_bw_agents.setPreferredSize(new java.awt.Dimension(80, 26));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 4;
-        jPanel1.add(min_dist_bw_agents, gridBagConstraints);
-
-        jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel2.setText("min dist b/w");
-        jLabel2.setPreferredSize(new java.awt.Dimension(80, 14));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
-        jPanel1.add(jLabel2, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        inputs_container.add(jPanel1, gridBagConstraints);
-
-        panel_upper.add(inputs_container);
 
         scenario_info_container.setPreferredSize(new java.awt.Dimension(400, 150));
         scenario_info_container.setLayout(new java.awt.BorderLayout());
@@ -216,14 +105,136 @@ public class ScenarioManager extends javax.swing.JFrame
 
         scenario_info_container.add(jScrollPane1, java.awt.BorderLayout.CENTER);
 
-        panel_upper.add(scenario_info_container);
+        panel_upper.setLayout(new javax.swing.BoxLayout(panel_upper, javax.swing.BoxLayout.LINE_AXIS));
 
-        create_scenario.add(panel_upper, new java.awt.GridBagConstraints());
+        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setMinimumSize(new java.awt.Dimension(600, 450));
+        setPreferredSize(new java.awt.Dimension(600, 450));
+        setSize(new java.awt.Dimension(600, 450));
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowClosing(java.awt.event.WindowEvent evt) {
+                formWindowClosing(evt);
+            }
+        });
+
+        cards_container.setLayout(new java.awt.CardLayout());
+
+        create_scenario.setBackground(new java.awt.Color(230, 230, 230));
+        create_scenario.setMaximumSize(new java.awt.Dimension(600, 300));
+        create_scenario.setMinimumSize(new java.awt.Dimension(600, 300));
+        java.awt.GridBagLayout create_scenarioLayout = new java.awt.GridBagLayout();
+        create_scenarioLayout.columnWeights = new double[] {1.0, 1.0, 1.0};
+        create_scenarioLayout.rowWeights = new double[] {0.0, 1.0, 0.0};
+        create_scenario.setLayout(create_scenarioLayout);
+
+        inputs_container.setLayout(new java.awt.GridBagLayout());
+
+        path_length_input.setHorizontalAlignment(javax.swing.JTextField.CENTER);
+        path_length_input.setPreferredSize(new java.awt.Dimension(80, 26));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 4;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        inputs_container.add(path_length_input, gridBagConstraints);
+
+        label_width.setFont(new java.awt.Font("Ubuntu", 0, 14)); // NOI18N
+        label_width.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        label_width.setText("Width");
+        label_width.setPreferredSize(new java.awt.Dimension(80, 16));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        inputs_container.add(label_width, gridBagConstraints);
+
+        height_input.setHorizontalAlignment(javax.swing.JTextField.CENTER);
+        height_input.setMinimumSize(new java.awt.Dimension(80, 26));
+        height_input.setPreferredSize(new java.awt.Dimension(80, 26));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 6;
+        inputs_container.add(height_input, gridBagConstraints);
+
+        width_input.setHorizontalAlignment(javax.swing.JTextField.CENTER);
+        width_input.setToolTipText("");
+        width_input.setMinimumSize(new java.awt.Dimension(80, 26));
+        width_input.setPreferredSize(new java.awt.Dimension(80, 26));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 3;
+        inputs_container.add(width_input, gridBagConstraints);
+
+        jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        jLabel1.setText("min Path length");
+        jLabel1.setMaximumSize(new java.awt.Dimension(200, 18));
+        jLabel1.setMinimumSize(new java.awt.Dimension(200, 18));
+        jLabel1.setPreferredSize(new java.awt.Dimension(200, 16));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 4;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = 3;
+        inputs_container.add(jLabel1, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 8;
+        inputs_container.add(filler1, gridBagConstraints);
+
+        label_height.setFont(new java.awt.Font("Ubuntu", 0, 14)); // NOI18N
+        label_height.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        label_height.setText("Height");
+        label_height.setPreferredSize(new java.awt.Dimension(80, 16));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 6;
+        inputs_container.add(label_height, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 6;
+        inputs_container.add(filler2, gridBagConstraints);
+
+        min_dist_bw_agents.setHorizontalAlignment(javax.swing.JTextField.CENTER);
+        min_dist_bw_agents.setPreferredSize(new java.awt.Dimension(80, 26));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 4;
+        gridBagConstraints.gridy = 7;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        inputs_container.add(min_dist_bw_agents, gridBagConstraints);
+
+        jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        jLabel2.setText("min dist b/w agents");
+        jLabel2.setMaximumSize(new java.awt.Dimension(200, 18));
+        jLabel2.setMinimumSize(new java.awt.Dimension(200, 18));
+        jLabel2.setPreferredSize(new java.awt.Dimension(200, 16));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 4;
+        gridBagConstraints.gridy = 6;
+        inputs_container.add(jLabel2, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 0;
+        inputs_container.add(filler4, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 1;
+        inputs_container.add(filler3, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 4;
+        gridBagConstraints.gridy = 1;
+        inputs_container.add(filler5, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        create_scenario.add(inputs_container, gridBagConstraints);
 
         agent_list_container.setBackground(new java.awt.Color(238, 238, 230));
         agent_list_container.setPreferredSize(new java.awt.Dimension(600, 150));
         agent_list_container.setLayout(new java.awt.BorderLayout());
 
+        jScrollPane2.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
+        jScrollPane2.setToolTipText("");
+
+        agents_table.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         agents_table.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {null, null, null, null},
@@ -242,9 +253,42 @@ public class ScenarioManager extends javax.swing.JFrame
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         create_scenario.add(agent_list_container, gridBagConstraints);
 
+        create_scenario_controls.setMinimumSize(new java.awt.Dimension(100, 40));
+        create_scenario_controls.setPreferredSize(new java.awt.Dimension(600, 40));
+        create_scenario_controls.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT));
+
+        generate_scenario_btn.setText("Generate");
+        generate_scenario_btn.setPreferredSize(new java.awt.Dimension(100, 30));
+        generate_scenario_btn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                generate_scenario_btnActionPerformed(evt);
+            }
+        });
+        create_scenario_controls.add(generate_scenario_btn);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        create_scenario.add(create_scenario_controls, gridBagConstraints);
+
         cards_container.add(create_scenario, "create");
+
+        javax.swing.GroupLayout overview_scenarioLayout = new javax.swing.GroupLayout(overview_scenario);
+        overview_scenario.setLayout(overview_scenarioLayout);
+        overview_scenarioLayout.setHorizontalGroup(
+            overview_scenarioLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 600, Short.MAX_VALUE)
+        );
+        overview_scenarioLayout.setVerticalGroup(
+            overview_scenarioLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 415, Short.MAX_VALUE)
+        );
+
+        cards_container.add(overview_scenario, "overview");
 
         javax.swing.GroupLayout run_scenarioLayout = new javax.swing.GroupLayout(run_scenario);
         run_scenario.setLayout(run_scenarioLayout);
@@ -254,15 +298,12 @@ public class ScenarioManager extends javax.swing.JFrame
         );
         run_scenarioLayout.setVerticalGroup(
             run_scenarioLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 300, Short.MAX_VALUE)
+            .addGap(0, 415, Short.MAX_VALUE)
         );
 
         cards_container.add(run_scenario, "run");
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        getContentPane().add(cards_container, gridBagConstraints);
+        getContentPane().add(cards_container, java.awt.BorderLayout.CENTER);
 
         jMenu1.setText("Options");
 
@@ -294,18 +335,10 @@ public class ScenarioManager extends javax.swing.JFrame
         onClose();
     }//GEN-LAST:event_formWindowClosing
 
-    private void run_scenario_btnActionPerformed(java.awt.event.ActionEvent evt)
+    private void generate_scenario_btnActionPerformed(java.awt.event.ActionEvent evt)
     {//GEN-FIRST:event_run_scenario_btnActionPerformed
-        // TODO add your handling code here:
         // switch card to run
-//        CardLayout cl = (CardLayout) cards_container.getLayout();
-//        cl.show(cards_container, "run");
-        // start scenario
-        if (ReadyToRun) {
-            RunScenario();
-        } else {
-            GenerateScenario();
-        }
+        GenerateScenario();
     }//GEN-LAST:event_run_scenario_btnActionPerformed
 
     private void import_btnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_import_btnActionPerformed
@@ -410,11 +443,13 @@ public class ScenarioManager extends javax.swing.JFrame
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTable agents_table;
     private javax.swing.JPanel cards_container;
+    private javax.swing.JPanel create_scenario_controls;
     private javax.swing.JFileChooser file_chooser;
+    private javax.swing.JButton generate_scenario_btn;
     private javax.swing.JTextField height_input;
     private javax.swing.JTextField min_dist_bw_agents;
+    private javax.swing.JPanel overview_scenario;
     private javax.swing.JTextField path_length_input;
-    private javax.swing.JButton run_scenario_btn;
     private javax.swing.JTextPane scenario_info_pane;
     private javax.swing.JTextField width_input;
     // End of variables declaration//GEN-END:variables
@@ -429,8 +464,6 @@ public class ScenarioManager extends javax.swing.JFrame
 
         AgentsTableModel table = new AgentsTableModel(agents_map.keySet().toArray(new String[0]));
         agents_table.setModel(table);
-
-        if (ReadyToRun) run_scenario_btn.setText("Run");
     }
 
     private void FindClasses()
@@ -497,8 +530,7 @@ public class ScenarioManager extends javax.swing.JFrame
         GenerateAgentLocationData(width, height, min_path_len);
         InitializeAgentData();
 
-        ReadyToRun = true;
-        run_scenario_btn.setText("Run");
+        ((CardLayout) cards_container.getLayout()).show(cards_container, "overview");
     }
 
     private HashSet<String> AgentStartLocations = new HashSet<>();
@@ -603,7 +635,7 @@ public class ScenarioManager extends javax.swing.JFrame
     private void InitializeWorld()
     {
         world = new World();
-        world.SetOnLoopingStop(() -> run_scenario_btn.setEnabled(true));
+        world.SetOnLoopingStop(() -> generate_scenario_btn.setEnabled(true));
         world.SetLogDrawCallback(
             (data, log) -> {
                 // update canvas
@@ -629,7 +661,7 @@ public class ScenarioManager extends javax.swing.JFrame
 
     private void RunScenario()
     {
-        run_scenario_btn.setEnabled(false);
+        generate_scenario_btn.setEnabled(false);
 
         WorldID = "world:" + world_data.world_id + ":";
 
@@ -684,7 +716,7 @@ public class ScenarioManager extends javax.swing.JFrame
         }
 
         ReadyToRun = true;
-        run_scenario_btn.setText("Run");
+        generate_scenario_btn.setText("Run");
     }
 }
 
