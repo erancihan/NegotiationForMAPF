@@ -388,6 +388,11 @@ public class ScenarioManager extends javax.swing.JFrame
                     isLookAndFeelSet = true;
                     break;
                 }
+                if ("GTK+".equals(info.getName())) {
+                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    isLookAndFeelSet = true;
+                    break;
+                }
             }
             if (!isLookAndFeelSet) {
                 logger.error("Unable to set LookAndFeel");
