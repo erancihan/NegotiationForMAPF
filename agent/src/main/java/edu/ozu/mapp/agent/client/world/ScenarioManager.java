@@ -71,25 +71,47 @@ public class ScenarioManager extends javax.swing.JFrame
         cards_container = new javax.swing.JPanel();
         javax.swing.JPanel create_scenario = new javax.swing.JPanel();
         javax.swing.JPanel inputs_container = new javax.swing.JPanel();
-        path_length_input = new javax.swing.JTextField();
         javax.swing.JLabel label_width = new javax.swing.JLabel();
+        javax.swing.JLabel label_height = new javax.swing.JLabel();
+        javax.swing.JLabel label_MinPathLength = new javax.swing.JLabel();
+        javax.swing.JLabel label_MaxPathLength = new javax.swing.JLabel();
+        javax.swing.JLabel label_min_dist_bw_agents = new javax.swing.JLabel();
+        javax.swing.JLabel label_initial_tokens_per_agent = new javax.swing.JLabel();
+        min_path_length_input = new javax.swing.JTextField();
         height_input = new javax.swing.JTextField();
         width_input = new javax.swing.JTextField();
-        javax.swing.JLabel jLabel1 = new javax.swing.JLabel();
-        javax.swing.Box.Filler filler1 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 5), new java.awt.Dimension(0, 5), new java.awt.Dimension(32767, 10));
-        javax.swing.JLabel label_height = new javax.swing.JLabel();
-        javax.swing.Box.Filler filler2 = new javax.swing.Box.Filler(new java.awt.Dimension(5, 0), new java.awt.Dimension(5, 0), new java.awt.Dimension(5, 32767));
         min_dist_bw_agents = new javax.swing.JTextField();
-        javax.swing.JLabel jLabel2 = new javax.swing.JLabel();
+        max_path_length_input = new javax.swing.JTextField();
+        input_initial_token_count_per_agent = new javax.swing.JTextField();
+        javax.swing.Box.Filler filler1 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 5), new java.awt.Dimension(0, 5), new java.awt.Dimension(32767, 10));
+        javax.swing.Box.Filler filler2 = new javax.swing.Box.Filler(new java.awt.Dimension(5, 0), new java.awt.Dimension(5, 0), new java.awt.Dimension(5, 32767));
         javax.swing.Box.Filler filler4 = new javax.swing.Box.Filler(new java.awt.Dimension(25, 0), new java.awt.Dimension(25, 0), new java.awt.Dimension(25, 32767));
         javax.swing.Box.Filler filler3 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 10), new java.awt.Dimension(0, 10), new java.awt.Dimension(32767, 10));
-        javax.swing.Box.Filler filler5 = new javax.swing.Box.Filler(new java.awt.Dimension(200, 0), new java.awt.Dimension(200, 0), new java.awt.Dimension(200, 32767));
+        javax.swing.Box.Filler filler6 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 26), new java.awt.Dimension(0, 26), new java.awt.Dimension(0, 26));
+        javax.swing.Box.Filler filler5 = new javax.swing.Box.Filler(new java.awt.Dimension(26, 26), new java.awt.Dimension(26, 26), new java.awt.Dimension(26, 26));
         javax.swing.JPanel agent_list_container = new javax.swing.JPanel();
         javax.swing.JScrollPane jScrollPane2 = new javax.swing.JScrollPane();
         agents_table = new javax.swing.JTable();
-        create_scenario_controls = new javax.swing.JPanel();
+        javax.swing.JPanel create_scenario_controls = new javax.swing.JPanel();
         generate_scenario_btn = new javax.swing.JButton();
         overview_scenario = new javax.swing.JPanel();
+        javax.swing.JPanel scenario_summary_container = new javax.swing.JPanel();
+        javax.swing.JLabel no_of_conflicts_label = new javax.swing.JLabel();
+        number_of_conflicts_label = new javax.swing.JLabel();
+        javax.swing.JLabel no_of_agents_label = new javax.swing.JLabel();
+        number_of_agents_label = new javax.swing.JLabel();
+        javax.swing.JLabel maxPathLenLabel = new javax.swing.JLabel();
+        max_path_length_label = new javax.swing.JLabel();
+        javax.swing.JLabel minPathLenLabel = new javax.swing.JLabel();
+        min_path_length_label = new javax.swing.JLabel();
+        javax.swing.JPanel agents_detail_list = new javax.swing.JPanel();
+        javax.swing.JScrollPane jScrollPane3 = new javax.swing.JScrollPane();
+        agent_detail_table = new javax.swing.JTable();
+        javax.swing.JPanel overview_controls = new javax.swing.JPanel();
+        javax.swing.JPanel previous_btn_container = new javax.swing.JPanel();
+        javax.swing.JButton previous_btn = new javax.swing.JButton();
+        javax.swing.JPanel run_btn_container = new javax.swing.JPanel();
+        javax.swing.JButton run_btn = new javax.swing.JButton();
         javax.swing.JPanel run_scenario = new javax.swing.JPanel();
         javax.swing.JMenuBar jMenuBar1 = new javax.swing.JMenuBar();
         javax.swing.JMenu jMenu1 = new javax.swing.JMenu();
@@ -123,19 +145,11 @@ public class ScenarioManager extends javax.swing.JFrame
         create_scenario.setMaximumSize(new java.awt.Dimension(600, 300));
         create_scenario.setMinimumSize(new java.awt.Dimension(600, 300));
         java.awt.GridBagLayout create_scenarioLayout = new java.awt.GridBagLayout();
-        create_scenarioLayout.columnWeights = new double[] {1.0, 1.0, 1.0};
+        create_scenarioLayout.columnWeights = new double[] {1.0};
         create_scenarioLayout.rowWeights = new double[] {0.0, 1.0, 0.0};
         create_scenario.setLayout(create_scenarioLayout);
 
         inputs_container.setLayout(new java.awt.GridBagLayout());
-
-        path_length_input.setHorizontalAlignment(javax.swing.JTextField.CENTER);
-        path_length_input.setPreferredSize(new java.awt.Dimension(80, 26));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 4;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        inputs_container.add(path_length_input, gridBagConstraints);
 
         label_width.setFont(new java.awt.Font("Ubuntu", 0, 14)); // NOI18N
         label_width.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
@@ -146,38 +160,6 @@ public class ScenarioManager extends javax.swing.JFrame
         gridBagConstraints.gridy = 3;
         inputs_container.add(label_width, gridBagConstraints);
 
-        height_input.setHorizontalAlignment(javax.swing.JTextField.CENTER);
-        height_input.setMinimumSize(new java.awt.Dimension(80, 26));
-        height_input.setPreferredSize(new java.awt.Dimension(80, 26));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 6;
-        inputs_container.add(height_input, gridBagConstraints);
-
-        width_input.setHorizontalAlignment(javax.swing.JTextField.CENTER);
-        width_input.setToolTipText("");
-        width_input.setMinimumSize(new java.awt.Dimension(80, 26));
-        width_input.setPreferredSize(new java.awt.Dimension(80, 26));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 3;
-        inputs_container.add(width_input, gridBagConstraints);
-
-        jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-        jLabel1.setText("min Path length");
-        jLabel1.setMaximumSize(new java.awt.Dimension(200, 18));
-        jLabel1.setMinimumSize(new java.awt.Dimension(200, 18));
-        jLabel1.setPreferredSize(new java.awt.Dimension(200, 16));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 4;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = 3;
-        inputs_container.add(jLabel1, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 8;
-        inputs_container.add(filler1, gridBagConstraints);
-
         label_height.setFont(new java.awt.Font("Ubuntu", 0, 14)); // NOI18N
         label_height.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         label_height.setText("Height");
@@ -186,28 +168,106 @@ public class ScenarioManager extends javax.swing.JFrame
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 6;
         inputs_container.add(label_height, gridBagConstraints);
+
+        label_MinPathLength.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        label_MinPathLength.setText("Min Path Length");
+        label_MinPathLength.setMaximumSize(new java.awt.Dimension(165, 18));
+        label_MinPathLength.setMinimumSize(new java.awt.Dimension(165, 18));
+        label_MinPathLength.setPreferredSize(new java.awt.Dimension(165, 16));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridx = 4;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        inputs_container.add(label_MinPathLength, gridBagConstraints);
+
+        label_MaxPathLength.setText("Max Path Length");
+        label_MaxPathLength.setMaximumSize(new java.awt.Dimension(165, 18));
+        label_MaxPathLength.setMinimumSize(new java.awt.Dimension(165, 18));
+        label_MaxPathLength.setPreferredSize(new java.awt.Dimension(165, 18));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 8;
+        gridBagConstraints.gridy = 2;
+        inputs_container.add(label_MaxPathLength, gridBagConstraints);
+
+        label_min_dist_bw_agents.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        label_min_dist_bw_agents.setText("min dist b/w agents");
+        label_min_dist_bw_agents.setMaximumSize(new java.awt.Dimension(165, 18));
+        label_min_dist_bw_agents.setMinimumSize(new java.awt.Dimension(165, 18));
+        label_min_dist_bw_agents.setPreferredSize(new java.awt.Dimension(165, 16));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 6;
-        inputs_container.add(filler2, gridBagConstraints);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        inputs_container.add(label_min_dist_bw_agents, gridBagConstraints);
+
+        label_initial_tokens_per_agent.setText("Initial Tokens per Agent");
+        label_initial_tokens_per_agent.setMaximumSize(new java.awt.Dimension(165, 18));
+        label_initial_tokens_per_agent.setMinimumSize(new java.awt.Dimension(165, 18));
+        label_initial_tokens_per_agent.setPreferredSize(new java.awt.Dimension(165, 18));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 8;
+        gridBagConstraints.gridy = 6;
+        inputs_container.add(label_initial_tokens_per_agent, gridBagConstraints);
+
+        min_path_length_input.setHorizontalAlignment(javax.swing.JTextField.CENTER);
+        min_path_length_input.setMinimumSize(new java.awt.Dimension(80, 35));
+        min_path_length_input.setPreferredSize(new java.awt.Dimension(80, 35));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 4;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        inputs_container.add(min_path_length_input, gridBagConstraints);
+
+        height_input.setHorizontalAlignment(javax.swing.JTextField.CENTER);
+        height_input.setMinimumSize(new java.awt.Dimension(80, 35));
+        height_input.setPreferredSize(new java.awt.Dimension(80, 35));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 6;
+        inputs_container.add(height_input, gridBagConstraints);
+
+        width_input.setHorizontalAlignment(javax.swing.JTextField.CENTER);
+        width_input.setToolTipText("");
+        width_input.setMinimumSize(new java.awt.Dimension(80, 35));
+        width_input.setPreferredSize(new java.awt.Dimension(80, 35));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 3;
+        inputs_container.add(width_input, gridBagConstraints);
 
         min_dist_bw_agents.setHorizontalAlignment(javax.swing.JTextField.CENTER);
-        min_dist_bw_agents.setPreferredSize(new java.awt.Dimension(80, 26));
+        min_dist_bw_agents.setMinimumSize(new java.awt.Dimension(80, 35));
+        min_dist_bw_agents.setPreferredSize(new java.awt.Dimension(80, 35));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 7;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         inputs_container.add(min_dist_bw_agents, gridBagConstraints);
 
-        jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-        jLabel2.setText("min dist b/w agents");
-        jLabel2.setMaximumSize(new java.awt.Dimension(200, 18));
-        jLabel2.setMinimumSize(new java.awt.Dimension(200, 18));
-        jLabel2.setPreferredSize(new java.awt.Dimension(200, 16));
+        max_path_length_input.setMinimumSize(new java.awt.Dimension(80, 35));
+        max_path_length_input.setPreferredSize(new java.awt.Dimension(80, 35));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 4;
+        gridBagConstraints.gridx = 8;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        inputs_container.add(max_path_length_input, gridBagConstraints);
+
+        input_initial_token_count_per_agent.setMinimumSize(new java.awt.Dimension(80, 35));
+        input_initial_token_count_per_agent.setPreferredSize(new java.awt.Dimension(80, 35));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 8;
+        gridBagConstraints.gridy = 7;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        inputs_container.add(input_initial_token_count_per_agent, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 8;
+        inputs_container.add(filler1, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 6;
-        inputs_container.add(jLabel2, gridBagConstraints);
+        inputs_container.add(filler2, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 0;
@@ -217,8 +277,12 @@ public class ScenarioManager extends javax.swing.JFrame
         gridBagConstraints.gridy = 1;
         inputs_container.add(filler3, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 4;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 2;
+        inputs_container.add(filler6, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 7;
+        gridBagConstraints.gridy = 2;
         inputs_container.add(filler5, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -277,16 +341,158 @@ public class ScenarioManager extends javax.swing.JFrame
 
         cards_container.add(create_scenario, "create");
 
-        javax.swing.GroupLayout overview_scenarioLayout = new javax.swing.GroupLayout(overview_scenario);
+        java.awt.GridBagLayout overview_scenarioLayout = new java.awt.GridBagLayout();
+        overview_scenarioLayout.columnWeights = new double[] {1.0};
+        overview_scenarioLayout.rowWeights = new double[] {0.0, 1.0, 0.0};
         overview_scenario.setLayout(overview_scenarioLayout);
-        overview_scenarioLayout.setHorizontalGroup(
-            overview_scenarioLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 600, Short.MAX_VALUE)
-        );
-        overview_scenarioLayout.setVerticalGroup(
-            overview_scenarioLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 415, Short.MAX_VALUE)
-        );
+
+        scenario_summary_container.setMinimumSize(new java.awt.Dimension(600, 110));
+        scenario_summary_container.setPreferredSize(new java.awt.Dimension(600, 110));
+        java.awt.GridBagLayout scenario_summary_containerLayout = new java.awt.GridBagLayout();
+        scenario_summary_containerLayout.columnWidths = new int[] {0, 5, 0, 5, 0, 5, 0, 5, 0};
+        scenario_summary_containerLayout.rowHeights = new int[] {0, 5, 0, 5, 0};
+        scenario_summary_container.setLayout(scenario_summary_containerLayout);
+
+        no_of_conflicts_label.setText("Number of Conflicts");
+        no_of_conflicts_label.setMaximumSize(new java.awt.Dimension(150, 18));
+        no_of_conflicts_label.setMinimumSize(new java.awt.Dimension(150, 18));
+        no_of_conflicts_label.setPreferredSize(new java.awt.Dimension(150, 18));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        scenario_summary_container.add(no_of_conflicts_label, gridBagConstraints);
+
+        number_of_conflicts_label.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        number_of_conflicts_label.setText("#");
+        number_of_conflicts_label.setMaximumSize(new java.awt.Dimension(50, 18));
+        number_of_conflicts_label.setMinimumSize(new java.awt.Dimension(50, 18));
+        number_of_conflicts_label.setPreferredSize(new java.awt.Dimension(50, 18));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 0;
+        scenario_summary_container.add(number_of_conflicts_label, gridBagConstraints);
+
+        no_of_agents_label.setText("Number of Agents");
+        no_of_agents_label.setMaximumSize(new java.awt.Dimension(150, 18));
+        no_of_agents_label.setMinimumSize(new java.awt.Dimension(150, 18));
+        no_of_agents_label.setPreferredSize(new java.awt.Dimension(150, 18));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        scenario_summary_container.add(no_of_agents_label, gridBagConstraints);
+
+        number_of_agents_label.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        number_of_agents_label.setText("#");
+        number_of_agents_label.setMaximumSize(new java.awt.Dimension(50, 18));
+        number_of_agents_label.setMinimumSize(new java.awt.Dimension(50, 18));
+        number_of_agents_label.setPreferredSize(new java.awt.Dimension(50, 18));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 2;
+        scenario_summary_container.add(number_of_agents_label, gridBagConstraints);
+
+        maxPathLenLabel.setText("Max Path Length");
+        maxPathLenLabel.setToolTipText("");
+        maxPathLenLabel.setMaximumSize(new java.awt.Dimension(150, 18));
+        maxPathLenLabel.setMinimumSize(new java.awt.Dimension(150, 18));
+        maxPathLenLabel.setPreferredSize(new java.awt.Dimension(150, 18));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        scenario_summary_container.add(maxPathLenLabel, gridBagConstraints);
+
+        max_path_length_label.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        max_path_length_label.setText("#");
+        max_path_length_label.setMaximumSize(new java.awt.Dimension(50, 18));
+        max_path_length_label.setMinimumSize(new java.awt.Dimension(50, 18));
+        max_path_length_label.setPreferredSize(new java.awt.Dimension(50, 18));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 4;
+        scenario_summary_container.add(max_path_length_label, gridBagConstraints);
+
+        minPathLenLabel.setText("Min Path Length");
+        minPathLenLabel.setMaximumSize(new java.awt.Dimension(150, 18));
+        minPathLenLabel.setMinimumSize(new java.awt.Dimension(150, 18));
+        minPathLenLabel.setPreferredSize(new java.awt.Dimension(150, 18));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 6;
+        gridBagConstraints.gridy = 4;
+        scenario_summary_container.add(minPathLenLabel, gridBagConstraints);
+
+        min_path_length_label.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        min_path_length_label.setText("#");
+        min_path_length_label.setMaximumSize(new java.awt.Dimension(50, 18));
+        min_path_length_label.setMinimumSize(new java.awt.Dimension(50, 18));
+        min_path_length_label.setPreferredSize(new java.awt.Dimension(50, 18));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 8;
+        gridBagConstraints.gridy = 4;
+        scenario_summary_container.add(min_path_length_label, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        overview_scenario.add(scenario_summary_container, gridBagConstraints);
+
+        agents_detail_list.setLayout(new java.awt.BorderLayout());
+
+        agent_detail_table.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String [] {
+                "Title 1", "Title 2", "Title 3", "Title 4"
+            }
+        ));
+        jScrollPane3.setViewportView(agent_detail_table);
+
+        agents_detail_list.add(jScrollPane3, java.awt.BorderLayout.CENTER);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        overview_scenario.add(agents_detail_list, gridBagConstraints);
+
+        overview_controls.setMinimumSize(new java.awt.Dimension(100, 40));
+        overview_controls.setPreferredSize(new java.awt.Dimension(600, 40));
+        overview_controls.setLayout(new javax.swing.BoxLayout(overview_controls, javax.swing.BoxLayout.LINE_AXIS));
+
+        previous_btn_container.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
+
+        previous_btn.setText("Previous");
+        previous_btn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                previous_btnActionPerformed(evt);
+            }
+        });
+        previous_btn_container.add(previous_btn);
+
+        overview_controls.add(previous_btn_container);
+
+        run_btn_container.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT));
+
+        run_btn.setText("Run");
+        run_btn.setMaximumSize(new java.awt.Dimension(80, 28));
+        run_btn.setMinimumSize(new java.awt.Dimension(80, 28));
+        run_btn.setPreferredSize(new java.awt.Dimension(80, 28));
+        run_btn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                run_btnActionPerformed(evt);
+            }
+        });
+        run_btn_container.add(run_btn);
+
+        overview_controls.add(run_btn_container);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        overview_scenario.add(overview_controls, gridBagConstraints);
 
         cards_container.add(overview_scenario, "overview");
 
@@ -298,7 +504,7 @@ public class ScenarioManager extends javax.swing.JFrame
         );
         run_scenarioLayout.setVerticalGroup(
             run_scenarioLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 415, Short.MAX_VALUE)
+            .addGap(0, 468, Short.MAX_VALUE)
         );
 
         cards_container.add(run_scenario, "run");
@@ -330,18 +536,23 @@ public class ScenarioManager extends javax.swing.JFrame
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void formWindowClosing(java.awt.event.WindowEvent evt)
-    {//GEN-FIRST:event_formWindowClosing
-        onClose();
+    //<editor-fold defaultstate="collapsed" desc="On Window Closing">
+    private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
+        OnClose();
     }//GEN-LAST:event_formWindowClosing
+    //</editor-fold>
 
-    private void generate_scenario_btnActionPerformed(java.awt.event.ActionEvent evt)
-    {//GEN-FIRST:event_run_scenario_btnActionPerformed
-        // switch card to run
+    private void generate_scenario_btnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_run_scenario_btnActionPerformed
         GenerateScenario();
     }//GEN-LAST:event_run_scenario_btnActionPerformed
 
+    //<editor-fold defaultstate="collapsed" desc="Import BTN Action Performed">
     private void import_btnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_import_btnActionPerformed
+        // TODO flush data
+
+        // switch to first page
+        ((CardLayout) cards_container.getLayout()).show(cards_container, "create");
+
         // open file picker and select .json file to import scenario config from
         file_chooser.setFileFilter(new FileNameExtensionFilter("JSON", "json"));
         int return_val = file_chooser.showOpenDialog(this);
@@ -369,7 +580,9 @@ public class ScenarioManager extends javax.swing.JFrame
             }
         }
     }//GEN-LAST:event_import_btnActionPerformed
+    //</editor-fold>
 
+    //<editor-fold defaultstate="collapsed" desc="Export BTN Action Performed">
     private void export_btnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_export_btnActionPerformed
         // open file picker and select .json file to export scenario config to
         String wid = String.valueOf(System.currentTimeMillis());
@@ -404,6 +617,15 @@ public class ScenarioManager extends javax.swing.JFrame
             }
         }
     }//GEN-LAST:event_export_btnActionPerformed
+    //</editor-fold >
+
+    private void run_btnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_run_btnActionPerformed
+        RunScenario();
+    }//GEN-LAST:event_run_btnActionPerformed
+
+    private void previous_btnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_previous_btnActionPerformed
+        ((CardLayout) cards_container.getLayout()).show(cards_container, "create");
+    }//GEN-LAST:event_previous_btnActionPerformed
 
     /**
      * @param args the command line arguments
@@ -441,15 +663,21 @@ public class ScenarioManager extends javax.swing.JFrame
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JTable agent_detail_table;
     private javax.swing.JTable agents_table;
     private javax.swing.JPanel cards_container;
-    private javax.swing.JPanel create_scenario_controls;
     private javax.swing.JFileChooser file_chooser;
     private javax.swing.JButton generate_scenario_btn;
     private javax.swing.JTextField height_input;
+    private javax.swing.JTextField input_initial_token_count_per_agent;
+    private javax.swing.JTextField max_path_length_input;
+    private javax.swing.JLabel max_path_length_label;
     private javax.swing.JTextField min_dist_bw_agents;
+    private javax.swing.JTextField min_path_length_input;
+    private javax.swing.JLabel min_path_length_label;
+    private javax.swing.JLabel number_of_agents_label;
+    private javax.swing.JLabel number_of_conflicts_label;
     private javax.swing.JPanel overview_scenario;
-    private javax.swing.JTextField path_length_input;
     private javax.swing.JTextPane scenario_info_pane;
     private javax.swing.JTextField width_input;
     // End of variables declaration//GEN-END:variables
@@ -466,6 +694,7 @@ public class ScenarioManager extends javax.swing.JFrame
         agents_table.setModel(table);
     }
 
+    //<editor-fold defaultstate="collapsed" desc="Find Agent Classes">
     private void FindClasses()
     {
         HashMap<String, Class<? extends Agent>> agents = new HashMap<>();
@@ -486,8 +715,9 @@ public class ScenarioManager extends javax.swing.JFrame
 
         agents_map = agents.entrySet().stream().sorted(Map.Entry.comparingByKey()).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (o, n) -> o, LinkedHashMap::new));
     }
+    //</editor-fold>
 
-    private void onClose()
+    private void OnClose()
     {
         if (world_listener == null || WorldID == null)
         {
@@ -502,42 +732,51 @@ public class ScenarioManager extends javax.swing.JFrame
     private JSONWorldData world_data;
     private WorldWatchSocketIO world_listener = null;
     private int agent_count = 0; // track number of agents there should be
-    private void GenerateScenario()
-    {
-        String wid = String.valueOf(System.currentTimeMillis());
-
-        // fetch scenario information
-        int width, height, min_path_len, min_d;
-        try {
-            width        = Integer.parseInt(width_input.getText());
-            height       = Integer.parseInt(height_input.getText());
-            min_path_len = path_length_input.getText().isEmpty() ? 0 : Integer.parseInt(path_length_input.getText());
-            min_d        = min_dist_bw_agents.getText().isEmpty() ? 0 : Integer.parseInt(min_dist_bw_agents.getText());
-        } catch (NumberFormatException ex) {
-            logger.error("Encountered following error, stopping Scenario Generation");
-            ex.printStackTrace();
-            return;
-        }
-        world_data = new JSONWorldData(wid, width, height, min_path_len, min_d);
-        if (world == null) InitializeWorld();
-
-        // initialize agents
-        GenerateAgentStartLocations(width, height, min_d);
-
-        if (agent_count == 0) return;
-        world_data.agent_count = agent_count;
-
-        GenerateAgentLocationData(width, height, min_path_len);
-        InitializeAgentData();
-
-        ((CardLayout) cards_container.getLayout()).show(cards_container, "overview");
-    }
-
     private HashSet<String> AgentStartLocations = new HashSet<>();
     private HashSet<String> AgentDestinations = new HashSet<>();
     private ArrayList<Point[]> AgentLocationData = new ArrayList<>();
     private ArrayList<JSONAgentData> agents_data = new ArrayList<>();
 
+    private void GenerateScenario()
+    {
+        String wid = String.valueOf(System.currentTimeMillis());
+
+        // fetch scenario information
+        int width, height, min_path_len, max_path_len, min_dist_bw, initial_token_c;
+        try {
+            width        = Integer.parseInt(width_input.getText());
+            height       = Integer.parseInt(height_input.getText());
+            min_path_len = min_path_length_input.getText().isEmpty() ? 0 : Integer.parseInt(min_path_length_input.getText());
+            max_path_len = max_path_length_input.getText().isEmpty() ? 0 : Integer.parseInt(max_path_length_input.getText());
+            min_dist_bw  = min_dist_bw_agents.getText().isEmpty() ? 0 : Integer.parseInt(min_dist_bw_agents.getText());
+            initial_token_c = input_initial_token_count_per_agent.getText().isEmpty() ? 5 : Integer.parseInt(input_initial_token_count_per_agent.getText());
+        } catch (NumberFormatException ex) {
+            logger.error("Encountered following error, stopping Scenario Generation");
+            ex.printStackTrace();
+            return;
+        }
+        world_data = new JSONWorldData(wid, width, height, min_path_len, min_dist_bw);
+        world_data.max_path_len = max_path_len;
+        world_data.initial_token_c = initial_token_c;
+        if (world == null) InitializeWorld();
+
+        // initialize agents
+        GenerateAgentStartLocations(width, height, min_dist_bw);
+
+        if (agent_count == 0) return;
+        world_data.agent_count = agent_count;
+
+        GenerateAgentLocationData(width, height);
+        InitializeAgentData();
+
+        // switch card to run
+        ((CardLayout) cards_container.getLayout()).show(cards_container, "overview");
+        // prepare overview
+        AgentDetailsTableModel table = new AgentDetailsTableModel(agents_data.toArray(new JSONAgentData[0]));
+        agent_detail_table.setModel(table);
+    }
+
+    //<editor-fold defaultstate="collapsed" desc="Generate Scenario functions">
     private void GenerateAgentStartLocations(int width, int height, int min_d)
     {
         for (int row = 0; row < agents_table.getRowCount(); row++)
@@ -585,16 +824,23 @@ public class ScenarioManager extends javax.swing.JFrame
         return true;
     }
 
-    private void GenerateAgentLocationData(int width, int height, int n)
+    private void GenerateAgentLocationData(int width, int height)
     {
         Iterator<String> StartLocIter = AgentStartLocations.iterator();
         while (StartLocIter.hasNext()) {
             // for each start point
             Point start = new Point(StartLocIter.next().split(":"));
             Point dest;
+            double dist;
             do {
                 dest = new Point(rng.nextInt(width), rng.nextInt(height));
-            } while (AgentDestinations.contains(dest.key) || dest.ManhattanDistTo(start) < n);
+
+                dist = dest.ManhattanDistTo(start);
+            } while (
+                    AgentDestinations.contains(dest.key) ||
+                    (world_data.max_path_len > 0 && dist <= world_data.min_path_len) ||
+                    (world_data.max_path_len > 0 && dist >= world_data.max_path_len)
+            );
 
             AgentLocationData.add(new Point[]{start, dest});
         }
@@ -627,7 +873,9 @@ public class ScenarioManager extends javax.swing.JFrame
                 logger.info("Creating config for " + agent_name + " | " + start + "->" + dest);
                 if (world != null) world.Log(String.format("generated %s %s -> %s", agent_name, start.key, dest.key));
 
-                agents_data.add(new JSONAgentData(id_count++, agent_name, agent_class_name, start, dest));
+                JSONAgentData data = new JSONAgentData(id_count++, agent_name, agent_class_name, start, dest);
+                data.token_c = world_data.initial_token_c;
+                agents_data.add(data);
             }
         }
     }
@@ -658,6 +906,7 @@ public class ScenarioManager extends javax.swing.JFrame
                 }
             });
     }
+    //</editor-fold>
 
     private void RunScenario()
     {
@@ -692,11 +941,14 @@ public class ScenarioManager extends javax.swing.JFrame
         }
     }
 
+    //<editor-fold defaultstate="collapsed" desc="Update Create Card info for Import">
     private void DisplayImportedData() {
         width_input.setText(String.valueOf(world_data.width));
         height_input.setText(String.valueOf(world_data.height));
-        path_length_input.setText(String.valueOf(world_data.min_path_len));
+        min_path_length_input.setText(String.valueOf(world_data.min_path_len));
+        max_path_length_input.setText(String.valueOf(world_data.max_path_len));
         min_dist_bw_agents.setText(String.valueOf(world_data.min_distance_between_agents));
+        input_initial_token_count_per_agent.setText(String.valueOf(world_data.initial_token_c));
 
         if (world == null) InitializeWorld();
 
@@ -714,10 +966,8 @@ public class ScenarioManager extends javax.swing.JFrame
                 model.setValueAt(String.valueOf(agent_counts.get(agent_class_name)), row, 1);
             }
         }
-
-        ReadyToRun = true;
-        generate_scenario_btn.setText("Run");
     }
+    //</editor-fold>
 }
 
 class AgentsTableModel extends AbstractTableModel
@@ -776,5 +1026,60 @@ class AgentsTableModel extends AbstractTableModel
     public boolean isCellEditable(int row, int column)
     {
         return this.editable_cells[row][column];
+    }
+}
+
+class AgentDetailsTableModel extends AbstractTableModel
+{
+    private boolean[][] editable_cells;
+    private String[] columns = new String[]{"Agent Name", "Start", "Dest", "Path len", "# of Tokens"};
+    private ArrayList<Object[]> rows = new ArrayList<>();
+
+    AgentDetailsTableModel(JSONAgentData[] agents)
+    {
+        editable_cells = new boolean[agents.length][columns.length];
+
+        for (int i = 0; i < agents.length; i++)
+        {
+            double dist = new Point(agents[i].start.x, agents[i].start.y).ManhattanDistTo(new Point(agents[i].dest.x, agents[i].dest.y));
+            rows.add(new Object[]{
+                    agents[i].agent_name,
+                    String.format("%s,%s", agents[i].start.x, agents[i].start.y),
+                    String.format("%s,%s", agents[i].dest.x, agents[i].dest.y),
+                    String.valueOf(dist),
+                    0
+            });
+            editable_cells[i][0] = false;   // Agent Name
+            editable_cells[i][1] = true;    // Start
+            editable_cells[i][2] = true;    // Dest
+            editable_cells[i][3] = false;   // Path length
+            editable_cells[i][4] = true;    // # of Tokens
+        }
+    }
+
+    @Override
+    public int getRowCount() {
+        return rows.size();
+    }
+
+    @Override
+    public int getColumnCount() {
+        return columns.length;
+    }
+
+    @Override
+    public Object getValueAt(int row, int col) {
+        return rows.get(row)[col].toString();
+    }
+
+    @Override
+    public void setValueAt(Object o, int row, int col)
+    {
+        if (o instanceof String)
+        {
+            rows.get(row)[col] = String.valueOf(o);
+        }
+
+        this.fireTableCellUpdated(row, col);
     }
 }
