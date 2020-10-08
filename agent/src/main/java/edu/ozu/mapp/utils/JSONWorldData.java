@@ -4,7 +4,8 @@ public class JSONWorldData {
     public String world_id;
     public int width;
     public int height;
-    public int min_path_len;
+    public int min_path_len = 0;
+    public int max_path_len = 0;
     public int min_distance_between_agents;
     public int agent_count = 0;
 
@@ -26,6 +27,7 @@ public class JSONWorldData {
                 ", width=" + width +
                 ", height=" + height +
                 ", min_path_len=" + min_path_len +
+                ", max_path_len=" + max_path_len +
                 ", min_distance_between_agents=" + min_distance_between_agents +
                 '}';
     }
