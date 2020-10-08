@@ -1,10 +1,14 @@
 package edu.ozu.mapp.utils;
 
+import com.google.gson.annotations.SerializedName;
+
 public class JSONWorldData {
     public String world_id;
     public int width;
     public int height;
+    @SerializedName("min_allowed_path_length")
     public int min_path_len = 0;
+    @SerializedName("max_allowed_path_length")
     public int max_path_len = 0;
     public int min_distance_between_agents;
     public int agent_count = 0;
