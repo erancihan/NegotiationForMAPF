@@ -7,6 +7,7 @@ public class JSONAgentData {
     public String initial_token_count;
     public JSONPointData start;
     public JSONPointData dest;
+    public int token_c = 0;
 
     public JSONAgentData() {
     }
