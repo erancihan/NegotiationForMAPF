@@ -774,6 +774,7 @@ public class ScenarioManager extends javax.swing.JFrame
         // prepare overview
         AgentDetailsTableModel table = new AgentDetailsTableModel(agents_data.toArray(new JSONAgentData[0]));
         agent_detail_table.setModel(table);
+        PopulateOverviewCard();
     }
 
     //<editor-fold defaultstate="collapsed" desc="Generate Scenario functions">
@@ -907,6 +908,14 @@ public class ScenarioManager extends javax.swing.JFrame
             });
     }
     //</editor-fold>
+
+    private void PopulateOverviewCard()
+    {
+        // todo populate number of agents
+        // todo populate conflict counter
+        // todo populate max agent path length
+        // todo populate min agent path length
+    }
 
     private void RunScenario()
     {
@@ -1047,7 +1056,7 @@ class AgentDetailsTableModel extends AbstractTableModel
                     String.format("%s,%s", agents[i].start.x, agents[i].start.y),
                     String.format("%s,%s", agents[i].dest.x, agents[i].dest.y),
                     String.valueOf(dist),
-                    0
+                    String.valueOf(agents[i].token_c),
             });
             editable_cells[i][0] = false;   // Agent Name
             editable_cells[i][1] = true;    // Start
@@ -1068,6 +1077,11 @@ class AgentDetailsTableModel extends AbstractTableModel
     }
 
     @Override
+    public String getColumnName(int column) {
+        return columns[column];
+    }
+
+    @Override
     public Object getValueAt(int row, int col) {
         return rows.get(row)[col].toString();
     }
@@ -1081,5 +1095,16 @@ class AgentDetailsTableModel extends AbstractTableModel
         }
 
         this.fireTableCellUpdated(row, col);
+    }
+
+    public void setCellEditable(int row, int col, boolean value) {
+        this.rows.get(row)[col] = value;
+        this.fireTableCellUpdated(row, col);
+    }
+
+    @Override
+    public boolean isCellEditable(int row, int column)
+    {
+        return this.editable_cells[row][column];
     }
 }
