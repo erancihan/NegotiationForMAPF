@@ -177,36 +177,22 @@ public class AgentHandler {
             }
 
             String[] path = broadcast[2].replaceAll("[\\[\\]]", "").split(",");
-            // check Vertex Conflict
-            for (int i = 0; i < path.length && i < own_path.length; i++)
-            {
-                if (path[i].equals(own_path[i]))
-                {
-                    agent_ids.add(broadcast[0]);
-                    logger.info("found Vertex Conflict at " + path[i] + " | " + Arrays.toString(broadcast));
 
-                    // TODO
-                    // since first Vertex Conflict found is immediately returned
-                    // logging the conflict location here should pose no issue
-                    conflict_location = path[i];
-                    return agent_ids.toArray(new String[0]);
-                }
-            }
-            // check Swap Conflict
-            for (int t = 0; t + 1 < own_path.length && t < path.length; t++)
+            ConflictInfo conflict_info = new ConflictCheck().check(own_path, path);
+            if (conflict_info.hasConflict)
             {
-                // does my next equals other's current
-                if (own_path[t + 1].equals(path[t]))
-                {
-                    agent_ids.add(broadcast[0]);
-                    logger.info("found Swap Conflict when " + own_path[t] + " -> " + own_path[t + 1] + " | " + Arrays.toString(broadcast));
+                // TODO
+                // since first Vertex Conflict or Swap Conflict found
+                // is immediately returned
+                // logging the conflict location here should pose no issue
+                if (conflict_info.type == ConflictCheck.ConflictType.SwapConflict)
+                    conflict_location = own_path[conflict_info.index] + " -> " + own_path[conflict_info.index + 1];
+                else
+                    conflict_location = own_path[conflict_info.index];
 
-                    // TODO
-                    // since first Swap Conflict found is immediately returned
-                    // logging the conflict location here should pose no issue
-                    conflict_location = own_path[t] + " -> " + own_path[t + 1];
-                    return agent_ids.toArray(new String[0]);
-                }
+                logger.info("found " + conflict_info.type + " at " + conflict_location + " | " + Arrays.toString(broadcast));
+
+                return agent_ids.toArray(new String[0]);
             }
         }
 
