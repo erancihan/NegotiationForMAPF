@@ -749,7 +749,7 @@ public class ScenarioManager extends javax.swing.JFrame
             min_path_len = min_path_length_input.getText().isEmpty() ? 0 : Integer.parseInt(min_path_length_input.getText());
             max_path_len = max_path_length_input.getText().isEmpty() ? 0 : Integer.parseInt(max_path_length_input.getText());
             min_dist_bw  = min_dist_bw_agents.getText().isEmpty() ? 0 : Integer.parseInt(min_dist_bw_agents.getText());
-            initial_token_c = input_initial_token_count_per_agent.getText().isEmpty() ? 5 : Integer.parseInt(input_initial_token_count_per_agent.getText());
+            initial_token_c = input_initial_token_count_per_agent.getText().isEmpty() ? Globals.INITIAL_TOKEN_BALANCE : Integer.parseInt(input_initial_token_count_per_agent.getText());
         } catch (NumberFormatException ex) {
             logger.error("Encountered following error, stopping Scenario Generation");
             ex.printStackTrace();
