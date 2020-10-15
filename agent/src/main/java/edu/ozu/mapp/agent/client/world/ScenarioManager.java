@@ -11,10 +11,10 @@ import edu.ozu.mapp.agent.Agent;
 import edu.ozu.mapp.agent.MAPPAgent;
 import edu.ozu.mapp.agent.client.AgentClient;
 import edu.ozu.mapp.agent.client.WorldWatchSocketIO;
-import edu.ozu.mapp.utils.JSONAgentData;
-import edu.ozu.mapp.utils.JSONSessionConfig;
-import edu.ozu.mapp.utils.JSONWorldData;
+import edu.ozu.mapp.agent.client.helpers.ConflictCheck;
+import edu.ozu.mapp.agent.client.helpers.ConflictInfo;
 import edu.ozu.mapp.utils.Point;
+import edu.ozu.mapp.utils.*;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
@@ -771,10 +771,11 @@ public class ScenarioManager extends javax.swing.JFrame
 
         // switch card to run
         ((CardLayout) cards_container.getLayout()).show(cards_container, "overview");
+
         // prepare overview
+        PopulateOverviewCard();
         AgentDetailsTableModel table = new AgentDetailsTableModel(agents_data.toArray(new JSONAgentData[0]));
         agent_detail_table.setModel(table);
-        PopulateOverviewCard();
     }
 
     //<editor-fold defaultstate="collapsed" desc="Generate Scenario functions">
@@ -874,8 +875,7 @@ public class ScenarioManager extends javax.swing.JFrame
                 logger.info("Creating config for " + agent_name + " | " + start + "->" + dest);
                 if (world != null) world.Log(String.format("generated %s %s -> %s", agent_name, start.key, dest.key));
 
-                JSONAgentData data = new JSONAgentData(id_count++, agent_name, agent_class_name, start, dest);
-                data.token_c = world_data.initial_token_c;
+                JSONAgentData data = new JSONAgentData(id_count++, agent_name, agent_class_name, world_data.initial_token_c, start, dest);
                 agents_data.add(data);
             }
         }
@@ -909,12 +909,67 @@ public class ScenarioManager extends javax.swing.JFrame
     }
     //</editor-fold>
 
+    @SuppressWarnings("Duplicates")
     private void PopulateOverviewCard()
     {
-        // todo populate number of agents
-        // todo populate conflict counter
-        // todo populate max agent path length
-        // todo populate min agent path length
+        // populate number of agents
+        number_of_agents_label.setText(String.valueOf(world_data.agent_count));
+
+        int conflict_counter = 0;
+        int max_path_len = Integer.MIN_VALUE;
+        int min_path_len = Integer.MAX_VALUE;
+
+        // TODO
+        // we can manually calculate each path as we now are
+        // sure that their path calcs are done by A*
+        // however, if in the feature an agent overrides its impl
+        // this approach will be wrong
+        // then it would also mean to allocate agents BEFORE event
+        // starting the sim.... and other stuff.... lord...
+        HashMap<Integer, String[]> agent_paths = new HashMap<>();
+        for (int i = 0; i < agents_data.size(); i++)
+        {
+            JSONAgentData a = agents_data.get(i);
+            String[] a_path;
+            if (agent_paths.containsKey(a.id)) {
+                a_path = agent_paths.get(a.id);
+            } else {
+                a_path = AStar.calculate(a.start.toPoint(), a.dest.toPoint(), world_data.width+"x"+world_data.height).toArray(new String[0]);
+                agent_paths.put(a.id, a_path);
+            }
+            agents_data.get(i).path_length = a_path.length;
+
+            // check for max
+            if (a_path.length > max_path_len) {
+                max_path_len = a_path.length;
+            }
+            // check for min
+            if (a_path.length < min_path_len) {
+                min_path_len = a_path.length;
+            }
+
+            for (int j = i + 1; j < agents_data.size(); j++)
+            {
+                JSONAgentData b = agents_data.get(j);
+                String[] b_path;
+                if (agent_paths.containsKey(b.id)) {
+                    b_path = agent_paths.get(b.id);
+                } else {
+                    b_path = AStar.calculate(b.start.toPoint(), b.dest.toPoint(), world_data.width+"x"+world_data.height).toArray(new String[0]);
+                    agent_paths.put(b.id, b_path);
+                }
+
+                ConflictInfo info = new ConflictCheck().check(a_path, b_path);
+                if (info.hasConflict) conflict_counter++;
+            }
+        }
+
+        // populate conflict counter
+        number_of_conflicts_label.setText(String.valueOf(conflict_counter));
+        // populate max agent path length
+        max_path_length_label.setText(String.valueOf(max_path_len));
+        // populate min agent path length
+        min_path_length_label.setText(String.valueOf(min_path_len));
     }
 
     private void RunScenario()
@@ -935,8 +990,8 @@ public class ScenarioManager extends javax.swing.JFrame
                 new AgentClient(
                     agents_map
                         .get(data.agent_class_name)
-                        .getDeclaredConstructor(String.class, String.class, Point.class, Point.class)
-                        .newInstance(data.agent_name, data.agent_name, new Point(data.start.get(), "-"), new Point(data.dest.get(), "-"))
+                        .getDeclaredConstructor(String.class, String.class, Point.class, Point.class, int.class)
+                        .newInstance(data.agent_name, data.agent_name, new Point(data.start.get(), "-"), new Point(data.dest.get(), "-"), data.token_c)
                 ).join(WorldID);
             } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
                 logger.error("An error occurred while trying to generate a client");
@@ -1050,7 +1105,7 @@ class AgentDetailsTableModel extends AbstractTableModel
 
         for (int i = 0; i < agents.length; i++)
         {
-            double dist = new Point(agents[i].start.x, agents[i].start.y).ManhattanDistTo(new Point(agents[i].dest.x, agents[i].dest.y));
+            double dist = agents[i].start.toPoint().ManhattanDistTo(agents[i].dest.toPoint());
             rows.add(new Object[]{
                     agents[i].agent_name,
                     String.format("%s,%s", agents[i].start.x, agents[i].start.y),
@@ -1091,6 +1146,7 @@ class AgentDetailsTableModel extends AbstractTableModel
     {
         if (o instanceof String)
         {
+            // todo handle start & dest change
             rows.get(row)[col] = String.valueOf(o);
         }
 
