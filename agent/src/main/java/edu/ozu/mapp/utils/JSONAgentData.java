@@ -4,7 +4,6 @@ public class JSONAgentData {
     public int id;
     public String agent_name;
     public String agent_class_name;
-    public String initial_token_count;
     public JSONPointData start;
     public JSONPointData dest;
     public int token_c = -1;        // un-initialized
@@ -13,14 +12,14 @@ public class JSONAgentData {
     public JSONAgentData() {
     }
     public JSONAgentData(int id, String agent_name, String agent_class_name, Point start, Point dest) {
-        this(id, agent_name, agent_class_name, "", start, dest);
+        this(id, agent_name, agent_class_name, Globals.INITIAL_TOKEN_BALANCE, start, dest);
     }
 
-    public JSONAgentData(int id, String agent_name, String agent_class_name, String initial_token_count, Point start, Point dest) {
+    public JSONAgentData(int id, String agent_name, String agent_class_name, int initial_token_count, Point start, Point dest) {
         this.id                     = id;
         this.agent_name             = agent_name;
         this.agent_class_name       = agent_class_name;
-        this.initial_token_count    = initial_token_count;
+        this.token_c                = initial_token_count;
         this.start                  = new JSONPointData(start);
         this.dest                   = new JSONPointData(dest);
     }
