@@ -12,4 +12,8 @@ public class JSONPointData {
     public String get() {
         return x+"-"+y;
     }
+
+    public Point toPoint() {
+        return new Point(x, y);
+    }
 }
