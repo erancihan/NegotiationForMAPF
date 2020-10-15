@@ -30,6 +30,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
+import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
 /**
@@ -774,7 +775,12 @@ public class ScenarioManager extends javax.swing.JFrame
 
         // prepare overview
         PopulateOverviewCard();
-        AgentDetailsTableModel table = new AgentDetailsTableModel(agents_data.toArray(new JSONAgentData[0]));
+        AgentDetailsTableModel table = new AgentDetailsTableModel(agents_data.toArray(new JSONAgentData[0]), (index, data) -> {
+            agents_data.get(index).agent_name   = data.agent_name;
+            agents_data.get(index).start        = data.start;
+            agents_data.get(index).dest         = data.dest;
+            agents_data.get(index).token_c      = data.token_c;
+        });
         agent_detail_table.setModel(table);
     }
 
@@ -1095,12 +1101,17 @@ class AgentsTableModel extends AbstractTableModel
 
 class AgentDetailsTableModel extends AbstractTableModel
 {
+    private final JSONAgentData[] agents;
     private boolean[][] editable_cells;
     private String[] columns = new String[]{"Agent Name", "Start", "Dest", "Path len", "# of Tokens"};
     private ArrayList<Object[]> rows = new ArrayList<>();
 
-    AgentDetailsTableModel(JSONAgentData[] agents)
+    private BiConsumer<Integer, JSONAgentData> update_callback;
+
+    AgentDetailsTableModel(JSONAgentData[] agents, BiConsumer<Integer, JSONAgentData> callback)
     {
+        this.agents = agents;
+        update_callback = callback;
         editable_cells = new boolean[agents.length][columns.length];
 
         for (int i = 0; i < agents.length; i++)
@@ -1113,7 +1124,7 @@ class AgentDetailsTableModel extends AbstractTableModel
                     String.valueOf(dist),
                     String.valueOf(agents[i].token_c),
             });
-            editable_cells[i][0] = false;   // Agent Name
+            editable_cells[i][0] = true;    // Agent Name
             editable_cells[i][1] = true;    // Start
             editable_cells[i][2] = true;    // Dest
             editable_cells[i][3] = false;   // Path length
@@ -1146,8 +1157,19 @@ class AgentDetailsTableModel extends AbstractTableModel
     {
         if (o instanceof String)
         {
-            // todo handle start & dest change
-            rows.get(row)[col] = String.valueOf(o);
+            String val = String.valueOf(o);
+            // handle start & dest change
+            rows.get(row)[col] = val;
+
+            if (col == 0) agents[row].agent_name = val;
+            if (col == 1) agents[row].update_start(val);
+            if (col == 2) agents[row].update_dest(val);
+            // cant edit path name
+            if (col == 4) agents[row].token_c = Integer.parseInt(val);
+
+            rows.get(row)[3] = agents[row].path_length;
+
+            update_callback.accept(row, agents[row]);
         }
 
         this.fireTableCellUpdated(row, col);
