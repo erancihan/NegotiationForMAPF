@@ -70,7 +70,7 @@ public class AgentHandler {
         agent.setWORLD_ID(WORLD_ID);
         agent.dimensions = WorldHandler.GetDimensions(WORLD_ID);
 
-        Join.join(WORLD_ID, agent.AGENT_ID, agent.START, agent.getBroadcast());
+        new Join(agent).join(WORLD_ID);
 
         fl.setWorldID(WORLD_ID);            // SET AGENT WORLD INFO ON LOGGER
         fl.LogAgentInfo(agent, "JOIN");     // LOG AGENT INFO ON JOIN
