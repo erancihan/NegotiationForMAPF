@@ -37,12 +37,12 @@ public class JSONAgentData {
     public void update_start(String val) {
         start.update(val);
 
-        path_length = (int) start.toPoint().ManhattanDistTo(dest.toPoint());
+        path_length = (int) start.toPoint().ManhattanDistTo(dest.toPoint()) + 1;
     }
 
     public void update_dest(String val) {
         dest.update(val);
 
-        path_length = (int) start.toPoint().ManhattanDistTo(dest.toPoint());
+        path_length = (int) start.toPoint().ManhattanDistTo(dest.toPoint()) + 1;
     }
 }
