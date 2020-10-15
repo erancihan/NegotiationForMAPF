@@ -774,13 +774,18 @@ public class ScenarioManager extends javax.swing.JFrame
         ((CardLayout) cards_container.getLayout()).show(cards_container, "overview");
 
         // prepare overview
+        // todo do async
         PopulateOverviewCard();
-        AgentDetailsTableModel table = new AgentDetailsTableModel(agents_data.toArray(new JSONAgentData[0]), (index, data) -> {
-            agents_data.get(index).agent_name   = data.agent_name;
-            agents_data.get(index).start        = data.start;
-            agents_data.get(index).dest         = data.dest;
-            agents_data.get(index).token_c      = data.token_c;
-        });
+        AgentDetailsTableModel table = new AgentDetailsTableModel(
+                agents_data.toArray(new JSONAgentData[0]),
+                (index, data) -> {
+                    agents_data.get(index).agent_name   = data.agent_name;
+                    agents_data.get(index).start        = data.start;
+                    agents_data.get(index).dest         = data.dest;
+                    agents_data.get(index).token_c      = data.token_c;
+
+                    PopulateOverviewCard();
+                });
         agent_detail_table.setModel(table);
     }
 
