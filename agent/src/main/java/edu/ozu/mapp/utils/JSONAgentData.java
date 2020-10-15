@@ -33,4 +33,16 @@ public class JSONAgentData {
                 ", dest='" + dest + '\'' +
                 '}';
     }
+
+    public void update_start(String val) {
+        start.update(val);
+
+        path_length = (int) start.toPoint().ManhattanDistTo(dest.toPoint());
+    }
+
+    public void update_dest(String val) {
+        dest.update(val);
+
+        path_length = (int) start.toPoint().ManhattanDistTo(dest.toPoint());
+    }
 }
