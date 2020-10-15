@@ -12,6 +12,7 @@ public class JSONWorldData {
     public int max_path_len = 0;
     public int min_distance_between_agents;
     public int agent_count = 0;
+    public int initial_token_c = 5;
 
     public JSONWorldData() {
     }
