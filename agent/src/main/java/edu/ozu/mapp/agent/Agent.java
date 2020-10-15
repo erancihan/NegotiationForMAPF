@@ -21,6 +21,7 @@ public abstract class Agent {
     public String AGENT_NAME, AGENT_ID;
     public Point START, DEST;
     public History history;
+    public int initial_tokens = Globals.INITIAL_TOKEN_BALANCE;
 
     public boolean isHeadless = false;
 
@@ -56,10 +57,16 @@ public abstract class Agent {
 
     public Agent(String agentName, String agentID, Point start, Point dest)
     {
-        this.AGENT_NAME = agentName;
-        this.AGENT_ID   = agentID;
-        this.START      = start;
-        this.DEST       = dest;
+        this(agentName, agentID, start, dest, Globals.INITIAL_TOKEN_BALANCE);
+    }
+
+    public Agent(String agentName, String agentID, Point start, Point dest, int initial_tokens)
+    {
+        this.AGENT_NAME     = agentName;
+        this.AGENT_ID       = agentID;
+        this.START          = start;
+        this.DEST           = dest;
+        this.initial_tokens = initial_tokens;
 
         this.isHeadless = true; // unless client says so
         fl = new FileLogger().CreateAgentLogger(AGENT_ID);
