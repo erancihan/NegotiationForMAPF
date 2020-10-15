@@ -1,5 +1,6 @@
 package edu.ozu.mapp.agent.client.helpers;
 
+import edu.ozu.mapp.agent.Agent;
 import edu.ozu.mapp.utils.Globals;
 import edu.ozu.mapp.utils.Point;
 import edu.ozu.mapp.utils.Utils;
@@ -10,8 +11,20 @@ public class Join {
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(Join.class);
     private static redis.clients.jedis.Jedis jedis = JedisConnection.getInstance();
 
-    public static void join(String worldID, String agentID, Point start, String broadcast)
+    private Agent agent;
+
+    public Join(Agent agent)
     {
+        this.agent = agent;
+    }
+
+    public void join(String worldID)
+    {
+        String agentID = agent.AGENT_ID;
+        String broadcast = agent.getBroadcast();
+        Point start = agent.START;
+        String init_token_c = String.valueOf(agent.initial_tokens);
+
         try {
             // set map data
             jedis.hset("world:" + worldID + ":map", "agent:" + agentID, start.x + ":" + start.y);
@@ -21,7 +34,8 @@ public class Join {
             jedis.hset("world:" + worldID + ":path", "agent:" + agentID, broadcast);
 
             // set bank data
-            jedis.hset("world:" + worldID + ":bank", "agent:" + agentID, String.valueOf(Globals.INITIAL_TOKEN_BALANCE));
+            // set TOKEN for agent
+            jedis.hset("world:" + worldID + ":bank", "agent:" + agentID, init_token_c);
 
             // register agent as ACTIVE
             jedis.sadd("world:" + worldID + ":active_agents", "agent:" + agentID);
