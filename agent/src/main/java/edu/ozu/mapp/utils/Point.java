@@ -2,6 +2,8 @@ package edu.ozu.mapp.utils;
 
 import org.springframework.util.Assert;
 
+import java.util.Arrays;
+
 public class Point implements Comparable<Point> {
     public int x, y;
     public String key;
@@ -22,7 +24,7 @@ public class Point implements Comparable<Point> {
 
     public Point(String[] split)
     {
-        Assert.isTrue(split.length == 2, "Split size for Point construct should be 2");
+        Assert.isTrue(split.length == 2, "Split size for Point construct should be 2" + Arrays.toString(split));
 
         x = Integer.parseInt(split[0]);
         y = Integer.parseInt(split[1]);
