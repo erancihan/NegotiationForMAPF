@@ -22,22 +22,37 @@ class Point:
     def __str__(self):
         return "Point({}, {})".format(self.x, self.y)
 
+    def __repr__(self):
+        return self.__str__()
+
 
 class Agent:
-    def __init__(self, start: Union[Point, str], dest: Union[Point, str], agent_name: str = None, agent_class_name: str = None):
-        self.start = Point(*start.split("-")) if isinstance(start, str) else start
-        self.dest = Point(*dest.split("-")) if isinstance(dest, str) else dest
+    def __init__(self, start: Point, dest: Point, agent_name: str = None, agent_class_name: str = None, path: str = None, id: int = None, token_c: int = None, path_length: int = None):
+        self.start = Point(**start) if isinstance(start, dict) else start
+        self.dest = Point(**dest) if isinstance(dest, dict) else dest
         self.agent_name = agent_name
         self.agent_class_name = agent_class_name
+        self.id = id
+        self.token_count = token_c
+        self.path_length = path_length
+
+        self.path = []
+        _tmp = path.replace("[", "").replace("]", "").split(",")
+        for p in _tmp:
+            _xy = p.split("-")
+            self.path.append(Point(int(_xy[0]), int(_xy[1])))
 
 
 class World:
-    def __init__(self, width: int, height: int, min_path_len: int = None, min_d: int = None, wid: str = None):
+    def __init__(self, width: int, height: int, min_allowed_path_length: int = None, max_allowed_path_length: int = None, min_distance_between_agents: int = None, world_id: str = None, agent_count: int = None, initial_token_c: int = None):
         self.width = width
         self.height = height
-        self.min_path_len = min_path_len
-        self.min_d = min_d
-        self.wid = wid
+        self.min_allowed_path_length = min_allowed_path_length
+        self.max_allowed_path_length = max_allowed_path_length
+        self.min_distance_between_agents = min_distance_between_agents
+        self.world_id = world_id
+        self.agent_count = agent_count
+        self.initial_token_c = initial_token_c
 
 
 class Scenario:
@@ -119,15 +134,7 @@ def a_star(start: Point, dest: Point, config: Scenario, constraints: Dict[str, S
                 _links[neighbour.key()] = _current.key()
 
 
-def ca_star(config: Scenario):
-    constraints = {}
-    
-    bb = a_star(Point(0, 0), Point(5, 5), config, constraints)
-    print(bb)
-    pass
-
-
 if __name__ == '__main__':
-    scenario = Scenario(json_file=join(dirname(__file__), '..', 'logs', 'world-scenario.json'))
+    scenario = Scenario(json_file=join(dirname(__file__), '..', 'logs', 'world-scenario-1602872756746.json'))
+    print(scenario.agents[0].path)
 
-    print()
