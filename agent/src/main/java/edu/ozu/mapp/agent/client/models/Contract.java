@@ -2,8 +2,8 @@ package edu.ozu.mapp.agent.client.models;
 
 import edu.ozu.mapp.agent.Agent;
 import edu.ozu.mapp.agent.client.NegotiationSession;
-import edu.ozu.mapp.agent.client.helpers.JedisConnection;
 import edu.ozu.mapp.keys.KeyHandler;
+import edu.ozu.mapp.utils.Globals;
 import org.springframework.util.Assert;
 import redis.clients.jedis.Jedis;
 
@@ -17,9 +17,9 @@ public class Contract {
 
     public String Ox;
     public String x;
-    private String ETa = "";
+    private String ETa = "0";
     public String A = ""; // id of agent A
-    private String ETb = "";
+    private String ETb = "0";
     public String B = ""; // id of agent B
     private String sess_id = "";
 
@@ -31,8 +31,8 @@ public class Contract {
         A = sess.get("A");
         B = sess.get("B");
 
-        ETa = sess.getOrDefault("ETa", "");
-        ETb = sess.getOrDefault("ETb", "");
+        ETa = sess.getOrDefault("ETa", "0");
+        ETb = sess.getOrDefault("ETb", "0");
 
         sess_id = sess.get("_session_id");
         Assert.isTrue(!sess_id.isEmpty(), "Session ID cannot be null");
@@ -49,7 +49,7 @@ public class Contract {
 
     public static Contract Create(Agent agent, NegotiationSession session)
     {
-        Jedis jedis = JedisConnection.getInstance();
+        Jedis jedis = new Jedis(Globals.REDIS_HOST, Globals.REDIS_PORT);
 
         // Session ID is privately available in the
         // Negotiation Session class. Let's keep it that way
@@ -110,6 +110,8 @@ public class Contract {
 
         logger.info("created contract for " + s_id + " with " + agent.AGENT_ID);
 
+        jedis.close();
+
         return contract;
     }
 
@@ -125,6 +127,7 @@ public class Contract {
 
     public String getTokenCountOf(Agent agent)
     {
+        System.out.println(A + " " + B + " " + agent.AGENT_ID);
         if (A.equals(agent.AGENT_ID)) {
             return getETa(agent);
         }
@@ -132,7 +135,7 @@ public class Contract {
             return getETb(agent);
         }
 
-        return "";
+        return null;
     }
 
     public void set(Agent agent, String O, int next)
@@ -168,7 +171,7 @@ public class Contract {
     private void apply()
     {
         logger.debug("apply:{Ox:"+Ox+", session_id:"+sess_id+"}");
-        redis.clients.jedis.Jedis jedis = JedisConnection.getInstance();
+        redis.clients.jedis.Jedis jedis = new Jedis(Globals.REDIS_HOST, Globals.REDIS_PORT);
 
         jedis.hset("negotiation:"+sess_id, "Ox", Ox);
         jedis.hset("negotiation:"+sess_id, "x", x);
@@ -176,6 +179,8 @@ public class Contract {
         jedis.hset("negotiation:"+sess_id, "A", A);
         jedis.hset("negotiation:"+sess_id, "ETb", ETb);
         jedis.hset("negotiation:"+sess_id, "B", B);
+
+        jedis.close();
     }
 
     public void apply(NegotiationSession session)

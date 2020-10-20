@@ -194,7 +194,7 @@ public class WorldsPanel extends javax.swing.JPanel {
 
     private void getWorldList()
     {// fetch worlds list
-        worlds_list.setListData(WorldHandler.list());
+        worlds_list.setListData(new WorldHandler().list());
     }
 
     private void join()

@@ -227,7 +227,7 @@ public abstract class Agent {
             return Globals.INITIAL_TOKEN_BALANCE;
         }
 
-        return WorldHandler.getTokenBalance(WORLD_ID, AGENT_ID);
+        return new WorldHandler().getTokenBalance(WORLD_ID, AGENT_ID);
     }
 
     public final HashSet<String> getOwnBidHistory()
@@ -288,7 +288,7 @@ public abstract class Agent {
 
     public final String GetCurrentTokenC()
     {
-        return String.valueOf(WorldHandler.getTokenBalance(WORLD_ID, AGENT_ID));
+        return String.valueOf(new WorldHandler().getTokenBalance(WORLD_ID, AGENT_ID));
     }
 
     public final void LogNegotiationState(String prev_bidding_agent)

@@ -212,7 +212,7 @@ public class FileLogger {
                             "{\"name\":\"%s\", \"turn\":\"%s\", \"contract\":%s}",
                             name,                                       // ACCEPT or OFFER
                             prev_bidding_agent,                         // whose turn it is
-                            Negotiation.getContract(agent).getJSON()    // contract
+                            new Negotiation().getContract(agent).getJSON()    // contract
                     ))
                     .append(System.lineSeparator())
             ;

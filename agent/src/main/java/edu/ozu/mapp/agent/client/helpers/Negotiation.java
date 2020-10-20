@@ -2,22 +2,25 @@ package edu.ozu.mapp.agent.client.helpers;
 
 import edu.ozu.mapp.agent.Agent;
 import edu.ozu.mapp.agent.client.models.Contract;
+import edu.ozu.mapp.utils.Globals;
+import redis.clients.jedis.Jedis;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class Negotiation {
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(Negotiation.class);
-    private static redis.clients.jedis.Jedis jedis = JedisConnection.getInstance();
 
     /**
      * Retrieves list of negotiation session IDs that agent will attend
      */
-    public static String[] getSessions(String worldID, String agentID)
+    public String[] getSessions(String worldID, String agentID)
     {
         try
         {
+            Jedis jedis = new Jedis(Globals.REDIS_HOST, Globals.REDIS_PORT);
             String session_list = jedis.hget("world:"+worldID+":notify", "agent:"+agentID);
+            jedis.close();
             if (session_list == null)
                 return new String[0];
 
@@ -29,11 +32,13 @@ public class Negotiation {
         return new String[0];
     }
 
-    public static Contract getContract(String WORLD_ID, String AGENT_ID)
+    public Contract getContract(String WORLD_ID, String AGENT_ID)
     {
         Map<String, String> sess = new HashMap<>();
         try
         {
+            Jedis jedis = new Jedis(Globals.REDIS_HOST, Globals.REDIS_PORT);
+
             String session_id = jedis.hget("world:"+WORLD_ID+":notify", "agent:"+AGENT_ID);
             if (session_id.split(",").length > 1)
             {
@@ -45,6 +50,8 @@ public class Negotiation {
 
             logger.debug("{session_id:"+session_id+"}");
             logger.debug(sess.toString());
+
+            jedis.close();
         } catch (Exception e) {
             logger.error("Could not get contract " + WORLD_ID + " | " + AGENT_ID);
             e.printStackTrace();
@@ -54,7 +61,7 @@ public class Negotiation {
         return Contract.Create(sess);
     }
 
-    public static Contract getContract(Agent agent)
+    public Contract getContract(Agent agent)
     {
         return getContract(agent.WORLD_ID, agent.AGENT_ID);
     }

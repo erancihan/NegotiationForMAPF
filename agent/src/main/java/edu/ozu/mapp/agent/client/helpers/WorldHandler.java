@@ -3,6 +3,7 @@ package edu.ozu.mapp.agent.client.helpers;
 import edu.ozu.mapp.utils.Globals;
 import edu.ozu.mapp.utils.Point;
 import edu.ozu.mapp.utils.Utils;
+import redis.clients.jedis.Jedis;
 import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
 
@@ -12,9 +13,11 @@ public class WorldHandler {
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(WorldHandler.class);
     private static redis.clients.jedis.Jedis jedis = JedisConnection.getInstance();
 
-    public static String[] list()
+    public String[] list()
     {
         try {
+            Jedis jedis = new Jedis(Globals.REDIS_HOST, Globals.REDIS_PORT);
+
             ArrayList<String> worlds = new ArrayList<>();
             ScanParams params = new ScanParams().match("world:*:");
             String cursor = ScanParams.SCAN_POINTER_START;
@@ -32,6 +35,8 @@ public class WorldHandler {
                 }
             }
 
+            jedis.close();
+
             return worlds.toArray(new String[0]);
         } catch (Exception e) {
             e.printStackTrace();
@@ -40,9 +45,10 @@ public class WorldHandler {
         return new String[0];
     }
 
-    public static String[][] getFieldOfView(String worldID, String agentID)
+    public String[][] getFieldOfView(String worldID, String agentID)
     {
 //        logger.info("get fov for: "+ worldID + " - " + agentID);
+        Jedis jedis = new Jedis(Globals.REDIS_HOST, Globals.REDIS_PORT);
         ArrayList<String[]> agents = new ArrayList<>();
         Point loc = new Point(jedis.hget("world:" + worldID + ":map", "agent:" + agentID).split(":"));
 
@@ -62,14 +68,17 @@ public class WorldHandler {
                 }
             }
         }
+        jedis.close();
 
         return agents.toArray(new String[0][3]);
     }
 
-    public static int getTokenBalance(String worldID, String agentID)
+    public int getTokenBalance(String worldID, String agentID)
     {
         try {
+            Jedis jedis = new Jedis(Globals.REDIS_HOST, Globals.REDIS_PORT);
             String balance = jedis.hget("world:" + worldID + ":bank", "agent:" + agentID);
+            jedis.close();
 
             if (balance == null || balance.isEmpty()) return 0;
 
@@ -81,29 +90,37 @@ public class WorldHandler {
         return 0;
     }
 
-    public static void doBroadcast(String wordlID, String agentID, String[] broadcast)
+    public void doBroadcast(String wordlID, String agentID, String[] broadcast)
     {
         try {
+            Jedis jedis = new Jedis(Globals.REDIS_HOST, Globals.REDIS_PORT);
             jedis.hset("world:" + wordlID + ":path", "agent:" + agentID, Utils.toString(broadcast, ","));
+            jedis.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public static void leave(String WorldID, String AgentID)
+    public void leave(String WorldID, String AgentID)
     {
         try {
+            Jedis jedis = new Jedis(Globals.REDIS_HOST, Globals.REDIS_PORT);
             jedis.srem("world:"+WorldID+":active_agents", "agent:"+AgentID);
+            jedis.close();
             logger.debug("World@leave{world:"+WorldID+": , agent:"+AgentID+"}");
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public static String GetDimensions(String WorldID)
+    public String GetDimensions(String WorldID)
     {
         try {
-            return jedis.hget("world:"+WorldID+":", "dimensions");
+            Jedis jedis = new Jedis(Globals.REDIS_HOST, Globals.REDIS_PORT);
+            String str = jedis.hget("world:"+WorldID+":", "dimensions");
+            jedis.close();
+
+            return str;
         } catch (Exception e) {
             e.printStackTrace();
         }
