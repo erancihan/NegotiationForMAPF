@@ -65,9 +65,6 @@ public class ScenarioManager extends javax.swing.JFrame
         java.awt.GridBagConstraints gridBagConstraints;
 
         file_chooser = new javax.swing.JFileChooser();
-        javax.swing.JPanel scenario_info_container = new javax.swing.JPanel();
-        javax.swing.JScrollPane jScrollPane1 = new javax.swing.JScrollPane();
-        scenario_info_pane = new javax.swing.JTextPane();
         javax.swing.JPanel panel_upper = new javax.swing.JPanel();
         cards_container = new javax.swing.JPanel();
         javax.swing.JPanel create_scenario = new javax.swing.JPanel();
@@ -114,19 +111,15 @@ public class ScenarioManager extends javax.swing.JFrame
         javax.swing.JPanel run_btn_container = new javax.swing.JPanel();
         javax.swing.JButton run_btn = new javax.swing.JButton();
         javax.swing.JPanel run_scenario = new javax.swing.JPanel();
+        javax.swing.JPanel scenario_info_container = new javax.swing.JPanel();
+        javax.swing.JScrollPane jScrollPane1 = new javax.swing.JScrollPane();
+        scenario_info_pane = new javax.swing.JTextPane();
+        javax.swing.JPanel run_controls = new javax.swing.JPanel();
+        javax.swing.JButton back_to_overview_btn = new javax.swing.JButton();
         javax.swing.JMenuBar jMenuBar1 = new javax.swing.JMenuBar();
         javax.swing.JMenu jMenu1 = new javax.swing.JMenu();
         javax.swing.JMenuItem export_btn = new javax.swing.JMenuItem();
         javax.swing.JMenuItem import_btn = new javax.swing.JMenuItem();
-
-        scenario_info_container.setPreferredSize(new java.awt.Dimension(400, 150));
-        scenario_info_container.setLayout(new java.awt.BorderLayout());
-
-        scenario_info_pane.setBackground(new java.awt.Color(250, 250, 250));
-        scenario_info_pane.setFont(new java.awt.Font("Trebuchet MS", 0, 12)); // NOI18N
-        jScrollPane1.setViewportView(scenario_info_pane);
-
-        scenario_info_container.add(jScrollPane1, java.awt.BorderLayout.CENTER);
 
         panel_upper.setLayout(new javax.swing.BoxLayout(panel_upper, javax.swing.BoxLayout.LINE_AXIS));
 
@@ -497,16 +490,41 @@ public class ScenarioManager extends javax.swing.JFrame
 
         cards_container.add(overview_scenario, "overview");
 
-        javax.swing.GroupLayout run_scenarioLayout = new javax.swing.GroupLayout(run_scenario);
+        java.awt.GridBagLayout run_scenarioLayout = new java.awt.GridBagLayout();
+        run_scenarioLayout.columnWeights = new double[] {1.0};
+        run_scenarioLayout.rowWeights = new double[] {1.0, 0.0};
         run_scenario.setLayout(run_scenarioLayout);
-        run_scenarioLayout.setHorizontalGroup(
-            run_scenarioLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 600, Short.MAX_VALUE)
-        );
-        run_scenarioLayout.setVerticalGroup(
-            run_scenarioLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 468, Short.MAX_VALUE)
-        );
+
+        scenario_info_container.setPreferredSize(new java.awt.Dimension(400, 150));
+        scenario_info_container.setLayout(new java.awt.BorderLayout());
+
+        scenario_info_pane.setBackground(new java.awt.Color(250, 250, 250));
+        scenario_info_pane.setFont(new java.awt.Font("Trebuchet MS", 0, 12)); // NOI18N
+        jScrollPane1.setViewportView(scenario_info_pane);
+
+        scenario_info_container.add(jScrollPane1, java.awt.BorderLayout.CENTER);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        run_scenario.add(scenario_info_container, gridBagConstraints);
+
+        run_controls.setMinimumSize(new java.awt.Dimension(100, 40));
+        run_controls.setPreferredSize(new java.awt.Dimension(600, 40));
+        run_controls.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
+
+        back_to_overview_btn.setText("Back");
+        back_to_overview_btn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                back_to_overview_btnActionPerformed(evt);
+            }
+        });
+        run_controls.add(back_to_overview_btn);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        run_scenario.add(run_controls, gridBagConstraints);
 
         cards_container.add(run_scenario, "run");
 
@@ -573,6 +591,11 @@ public class ScenarioManager extends javax.swing.JFrame
 
                 world_data = config.world;
                 agents_data = new ArrayList<>();
+
+                for (int i = 0; i < config.agents.length; i++) {
+                    config.agents[i].agent_name = config.agents[i].agent_name.replaceAll("-", "_");
+                }
+
                 Collections.addAll(agents_data, config.agents);
 
                 DisplayImportedData();
@@ -599,7 +622,7 @@ public class ScenarioManager extends javax.swing.JFrame
                 export_file = new File(file_chooser.getSelectedFile().getPath() + ".json");
             }
             JSONSessionConfig config = new JSONSessionConfig();
-            config.agents = agents_data.toArray(new JSONAgentData[0]);
+            config.agents = agents_data.stream().peek(JSONAgentData::gen_path).toArray(JSONAgentData[]::new);
             config.world  = world_data;
 
             try {
@@ -621,12 +644,18 @@ public class ScenarioManager extends javax.swing.JFrame
     //</editor-fold >
 
     private void run_btnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_run_btnActionPerformed
+        ((CardLayout) cards_container.getLayout()).show(cards_container, "run");
         RunScenario();
     }//GEN-LAST:event_run_btnActionPerformed
 
     private void previous_btnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_previous_btnActionPerformed
         ((CardLayout) cards_container.getLayout()).show(cards_container, "create");
     }//GEN-LAST:event_previous_btnActionPerformed
+
+    private void back_to_overview_btnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_back_to_overview_btnActionPerformed
+        ((CardLayout) cards_container.getLayout()).show(cards_container, "overview");
+        // todo flush
+    }//GEN-LAST:event_back_to_overview_btnActionPerformed
 
     /**
      * @param args the command line arguments
@@ -770,7 +799,12 @@ public class ScenarioManager extends javax.swing.JFrame
         GenerateAgentLocationData(width, height);
         InitializeAgentData();
 
-        // switch card to run
+        ShowOverviewCard();
+    }
+
+    private void ShowOverviewCard()
+    {
+        // switch card to overview
         ((CardLayout) cards_container.getLayout()).show(cards_container, "overview");
 
         // prepare overview
@@ -881,7 +915,7 @@ public class ScenarioManager extends javax.swing.JFrame
                 Point dest = locPair[1];
 
                 String[] class_name = agent_class_name.split("\\.");
-                String agent_name = class_name[class_name.length - 1] + "-" + row + "" + i;
+                String agent_name = class_name[class_name.length - 1] + "_" + row + "" + i;
 
                 logger.info("Creating config for " + agent_name + " | " + start + "->" + dest);
                 if (world != null) world.Log(String.format("generated %s %s -> %s", agent_name, start.key, dest.key));
@@ -1041,6 +1075,8 @@ public class ScenarioManager extends javax.swing.JFrame
                 model.setValueAt(String.valueOf(agent_counts.get(agent_class_name)), row, 1);
             }
         }
+
+        ShowOverviewCard();
     }
     //</editor-fold>
 }
@@ -1121,12 +1157,12 @@ class AgentDetailsTableModel extends AbstractTableModel
 
         for (int i = 0; i < agents.length; i++)
         {
-            double dist = agents[i].start.toPoint().ManhattanDistTo(agents[i].dest.toPoint());
+            double dist = agents[i].start.toPoint().ManhattanDistTo(agents[i].dest.toPoint()) + 1; // +1 to include initial location
             rows.add(new Object[]{
                     agents[i].agent_name,
                     String.format("%s,%s", agents[i].start.x, agents[i].start.y),
                     String.format("%s,%s", agents[i].dest.x, agents[i].dest.y),
-                    String.valueOf(dist),
+                    String.valueOf((int) dist),
                     String.valueOf(agents[i].token_c),
             });
             editable_cells[i][0] = true;    // Agent Name
