@@ -87,6 +87,8 @@ public class ScenarioManager extends javax.swing.JFrame
         javax.swing.Box.Filler filler3 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 10), new java.awt.Dimension(0, 10), new java.awt.Dimension(32767, 10));
         javax.swing.Box.Filler filler6 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 26), new java.awt.Dimension(0, 26), new java.awt.Dimension(0, 26));
         javax.swing.Box.Filler filler5 = new javax.swing.Box.Filler(new java.awt.Dimension(26, 26), new java.awt.Dimension(26, 26), new java.awt.Dimension(26, 26));
+        javax.swing.JLabel label_number_of_expected_conflicts = new javax.swing.JLabel();
+        input_number_of_expected_conflicts = new javax.swing.JTextField();
         javax.swing.JPanel agent_list_container = new javax.swing.JPanel();
         javax.swing.JScrollPane jScrollPane2 = new javax.swing.JScrollPane();
         agents_table = new javax.swing.JTable();
@@ -125,7 +127,7 @@ public class ScenarioManager extends javax.swing.JFrame
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setMinimumSize(new java.awt.Dimension(600, 450));
-        setPreferredSize(new java.awt.Dimension(600, 450));
+        setPreferredSize(new java.awt.Dimension(800, 450));
         setSize(new java.awt.Dimension(600, 450));
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosing(java.awt.event.WindowEvent evt) {
@@ -180,8 +182,8 @@ public class ScenarioManager extends javax.swing.JFrame
         label_MaxPathLength.setMinimumSize(new java.awt.Dimension(165, 18));
         label_MaxPathLength.setPreferredSize(new java.awt.Dimension(165, 18));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 8;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridx = 4;
+        gridBagConstraints.gridy = 6;
         inputs_container.add(label_MaxPathLength, gridBagConstraints);
 
         label_min_dist_bw_agents.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
@@ -191,7 +193,7 @@ public class ScenarioManager extends javax.swing.JFrame
         label_min_dist_bw_agents.setPreferredSize(new java.awt.Dimension(165, 16));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         inputs_container.add(label_min_dist_bw_agents, gridBagConstraints);
 
@@ -200,16 +202,16 @@ public class ScenarioManager extends javax.swing.JFrame
         label_initial_tokens_per_agent.setMinimumSize(new java.awt.Dimension(165, 18));
         label_initial_tokens_per_agent.setPreferredSize(new java.awt.Dimension(165, 18));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 8;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridx = 4;
+        gridBagConstraints.gridy = 7;
         inputs_container.add(label_initial_tokens_per_agent, gridBagConstraints);
 
         min_path_length_input.setHorizontalAlignment(javax.swing.JTextField.CENTER);
         min_path_length_input.setMinimumSize(new java.awt.Dimension(80, 35));
         min_path_length_input.setPreferredSize(new java.awt.Dimension(80, 35));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 4;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridx = 5;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         inputs_container.add(min_path_length_input, gridBagConstraints);
 
@@ -234,23 +236,25 @@ public class ScenarioManager extends javax.swing.JFrame
         min_dist_bw_agents.setMinimumSize(new java.awt.Dimension(80, 35));
         min_dist_bw_agents.setPreferredSize(new java.awt.Dimension(80, 35));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 4;
-        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridx = 5;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         inputs_container.add(min_dist_bw_agents, gridBagConstraints);
 
+        max_path_length_input.setHorizontalAlignment(javax.swing.JTextField.CENTER);
         max_path_length_input.setMinimumSize(new java.awt.Dimension(80, 35));
         max_path_length_input.setPreferredSize(new java.awt.Dimension(80, 35));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 8;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridx = 5;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         inputs_container.add(max_path_length_input, gridBagConstraints);
 
+        input_initial_token_count_per_agent.setHorizontalAlignment(javax.swing.JTextField.CENTER);
         input_initial_token_count_per_agent.setMinimumSize(new java.awt.Dimension(80, 35));
         input_initial_token_count_per_agent.setPreferredSize(new java.awt.Dimension(80, 35));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 8;
+        gridBagConstraints.gridx = 5;
         gridBagConstraints.gridy = 7;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         inputs_container.add(input_initial_token_count_per_agent, gridBagConstraints);
@@ -278,6 +282,23 @@ public class ScenarioManager extends javax.swing.JFrame
         gridBagConstraints.gridx = 7;
         gridBagConstraints.gridy = 2;
         inputs_container.add(filler5, gridBagConstraints);
+
+        label_number_of_expected_conflicts.setText("no of expected conflicts");
+        label_number_of_expected_conflicts.setMaximumSize(new java.awt.Dimension(165, 18));
+        label_number_of_expected_conflicts.setMinimumSize(new java.awt.Dimension(165, 18));
+        label_number_of_expected_conflicts.setPreferredSize(new java.awt.Dimension(165, 18));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 8;
+        gridBagConstraints.gridy = 2;
+        inputs_container.add(label_number_of_expected_conflicts, gridBagConstraints);
+
+        input_number_of_expected_conflicts.setHorizontalAlignment(javax.swing.JTextField.CENTER);
+        input_number_of_expected_conflicts.setMinimumSize(new java.awt.Dimension(80, 35));
+        input_number_of_expected_conflicts.setPreferredSize(new java.awt.Dimension(80, 35));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 9;
+        gridBagConstraints.gridy = 2;
+        inputs_container.add(input_number_of_expected_conflicts, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -700,6 +721,7 @@ public class ScenarioManager extends javax.swing.JFrame
     private javax.swing.JButton generate_scenario_btn;
     private javax.swing.JTextField height_input;
     private javax.swing.JTextField input_initial_token_count_per_agent;
+    private javax.swing.JTextField input_number_of_expected_conflicts;
     private javax.swing.JTextField max_path_length_input;
     private javax.swing.JLabel max_path_length_label;
     private javax.swing.JTextField min_dist_bw_agents;
