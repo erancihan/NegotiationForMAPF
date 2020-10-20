@@ -1,6 +1,9 @@
 package edu.ozu.mapp.utils;
 
+import java.util.Arrays;
+
 public class JSONAgentData {
+    private String path;
     public int id;
     public String agent_name;
     public String agent_class_name;
@@ -15,13 +18,14 @@ public class JSONAgentData {
         this(id, agent_name, agent_class_name, Globals.INITIAL_TOKEN_BALANCE, start, dest);
     }
 
-    public JSONAgentData(int id, String agent_name, String agent_class_name, int initial_token_count, Point start, Point dest) {
-        this.id                     = id;
-        this.agent_name             = agent_name;
-        this.agent_class_name       = agent_class_name;
-        this.token_c                = initial_token_count;
-        this.start                  = new JSONPointData(start);
-        this.dest                   = new JSONPointData(dest);
+    public JSONAgentData(int id, String agent_name, String agent_class_name, int initial_token_count, Point start, Point dest)
+    {
+        this.id                 = id;
+        this.agent_name         = agent_name;
+        this.agent_class_name   = agent_class_name;
+        this.token_c            = initial_token_count;
+        this.start              = new JSONPointData(start);
+        this.dest               = new JSONPointData(dest);
     }
 
     @Override
@@ -32,6 +36,11 @@ public class JSONAgentData {
                 ", start='" + start + '\'' +
                 ", dest='" + dest + '\'' +
                 '}';
+    }
+
+    public void gen_path()
+    {
+        path = Arrays.toString(AStar.calculate(start.toPoint(), dest.toPoint()).toArray(new String[0]));
     }
 
     public void update_start(String val) {
