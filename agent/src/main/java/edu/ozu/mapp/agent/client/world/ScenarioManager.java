@@ -789,6 +789,11 @@ public class ScenarioManager extends javax.swing.JFrame
     private ArrayList<Point[]> AgentLocationData = new ArrayList<>();
     private ArrayList<JSONAgentData> agents_data = new ArrayList<>();
 
+    /**
+     * Invoked before switching to overview card.
+     * Only input values are present when this function
+     * is first invoked
+     * */
     private void GenerateScenario()
     {
         String wid = String.valueOf(System.currentTimeMillis());
@@ -824,27 +829,6 @@ public class ScenarioManager extends javax.swing.JFrame
         ShowOverviewCard();
     }
 
-    private void ShowOverviewCard()
-    {
-        // switch card to overview
-        ((CardLayout) cards_container.getLayout()).show(cards_container, "overview");
-
-        // prepare overview
-        // todo do async
-        PopulateOverviewCard();
-        AgentDetailsTableModel table = new AgentDetailsTableModel(
-                agents_data.toArray(new JSONAgentData[0]),
-                (index, data) -> {
-                    agents_data.get(index).agent_name   = data.agent_name;
-                    agents_data.get(index).start        = data.start;
-                    agents_data.get(index).dest         = data.dest;
-                    agents_data.get(index).token_c      = data.token_c;
-
-                    PopulateOverviewCard();
-                });
-        agent_detail_table.setModel(table);
-    }
-
     //<editor-fold defaultstate="collapsed" desc="Generate Scenario functions">
     private void GenerateAgentStartLocations(int width, int height, int min_d)
     {
@@ -870,11 +854,11 @@ public class ScenarioManager extends javax.swing.JFrame
         }
     }
 
-    private boolean isPremisesClear(int _x, int _y, int _d)
+    private boolean isPremisesClear(int _x, int _y, int min_distance_between_agents)
     {
         // search the premises
-        for (int i = 0; i < _d; i++) {
-            for (int j = 0; j < _d; j++) {
+        for (int i = 0; i < min_distance_between_agents; i++) {
+            for (int j = 0; j < min_distance_between_agents; j++) {
                 if (i == 0 && j == 0) continue; // self
 
                 boolean is_occupied =
@@ -975,6 +959,27 @@ public class ScenarioManager extends javax.swing.JFrame
             });
     }
     //</editor-fold>
+
+    private void ShowOverviewCard()
+    {
+        // switch card to overview
+        ((CardLayout) cards_container.getLayout()).show(cards_container, "overview");
+
+        // prepare overview
+        // todo do async
+        PopulateOverviewCard();
+        AgentDetailsTableModel table = new AgentDetailsTableModel(
+                agents_data.toArray(new JSONAgentData[0]),
+                (index, data) -> {
+                    agents_data.get(index).agent_name   = data.agent_name;
+                    agents_data.get(index).start        = data.start;
+                    agents_data.get(index).dest         = data.dest;
+                    agents_data.get(index).token_c      = data.token_c;
+
+                    PopulateOverviewCard();
+                });
+        agent_detail_table.setModel(table);
+    }
 
     @SuppressWarnings("Duplicates")
     private void PopulateOverviewCard()
