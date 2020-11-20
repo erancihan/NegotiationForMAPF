@@ -13,4 +13,19 @@ public class ConflictInfo {
 
         hasConflict = index >= 0;
     }
+
+    public ConflictInfo(ConflictCheck.ConflictType type)
+    {
+        if (type == ConflictCheck.ConflictType.NONE)
+        {
+            this.index = -1;
+            this.type = type;
+            this.hasConflict = false;
+        }
+    }
+
+    @Override
+    public String toString() {
+        return "ConflictInfo{type=" + type + ", index=" + index + '}';
+    }
 }
