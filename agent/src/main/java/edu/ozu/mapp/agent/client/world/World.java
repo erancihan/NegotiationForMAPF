@@ -87,9 +87,9 @@ public class World
             return; // handle only once
         }
 
-        if (data.get("player_count").equals("0")) {
-            return; // do nothing if there are no players
-        }
+//        if (data.get("player_count").equals("0")) {
+//            return; // do nothing if there are no players
+//        }
 
         if (data.get("active_agent_count").equals("0")) {
             // do nothing if there are no active agents
