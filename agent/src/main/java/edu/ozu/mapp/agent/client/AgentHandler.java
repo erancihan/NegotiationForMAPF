@@ -6,6 +6,7 @@ import edu.ozu.mapp.agent.client.helpers.*;
 import edu.ozu.mapp.agent.client.models.Contract;
 import edu.ozu.mapp.utils.*;
 import org.springframework.util.Assert;
+import redis.clients.jedis.Jedis;
 
 import java.io.IOException;
 import java.net.URI;
@@ -68,7 +69,7 @@ public class AgentHandler {
         logger.info("joining " + WORLD_ID);
 
         agent.setWORLD_ID(WORLD_ID);
-        agent.dimensions = WorldHandler.GetDimensions(WORLD_ID);
+        agent.dimensions = new WorldHandler().GetDimensions(WORLD_ID);
 
         new Join(agent).join(WORLD_ID);
 
@@ -181,6 +182,7 @@ public class AgentHandler {
             ConflictInfo conflict_info = new ConflictCheck().check(own_path, path);
             if (conflict_info.hasConflict)
             {
+                agent_ids.add(broadcast[0]);
                 // TODO
                 // since first Vertex Conflict or Swap Conflict found
                 // is immediately returned
@@ -218,7 +220,7 @@ public class AgentHandler {
 
     private void negotiate()
     {
-        String[] sessions = Negotiation.getSessions(WORLD_ID, agent.AGENT_ID); // retrieve sessions list
+        String[] sessions = new Negotiation().getSessions(WORLD_ID, agent.AGENT_ID); // retrieve sessions list
         logger.debug("negotiate state > " + Arrays.toString(sessions));
         if (sessions.length > 0)
         {
@@ -271,7 +273,7 @@ public class AgentHandler {
             is_moving = 0;
 
             // let the world know that you are done with it!
-            WorldHandler.leave(WORLD_ID, agent.AGENT_ID);
+            leave();
         }
         fl.LogAgentInfo(agent, "MOVE");  // LOG AGENT INFO ON MOVE CALL
     }
@@ -312,7 +314,11 @@ public class AgentHandler {
             }
             fl.LogAgentInfo(agent, "LEAVE");  // LOG AGENT INFO ON LEAVE
             fl.logAgentWorldLeave(agent);           // LOG AGENT LEAVING
-            WorldHandler.leave(WORLD_ID, agent.AGENT_ID);
+//            new WorldHandler().leave(WORLD_ID, agent.AGENT_ID);
+            Jedis jedis = new Jedis(Globals.REDIS_HOST, Globals.REDIS_PORT);
+            jedis.srem("world:"+WORLD_ID+":active_agents", "agent:"+agent.AGENT_ID);
+            jedis.close();
+            logger.debug("World@leave{world:"+WORLD_ID+": , agent:"+agent.AGENT_ID+"}");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -340,7 +346,7 @@ public class AgentHandler {
     {
         // New state received
         // fetch current Contract
-        Contract contract = Negotiation.getContract(agent);
+        Contract contract = new Negotiation().getContract(agent);
 
         if (contract != null) agent.history.put(contract);
 
@@ -399,7 +405,7 @@ public class AgentHandler {
     //<editor-fold defaultstate="collapsed" desc="Accept Last Bids">
     public void AcceptLastBids(JSONNegotiationSession json) {
         // get contract
-        Contract contract = Negotiation.getContract(agent);
+        Contract contract = new Negotiation().getContract(agent);
         logger.debug("AcceptLastBids:"+contract);
         logger.debug("          json:"+json);
 
@@ -419,10 +425,10 @@ public class AgentHandler {
             // acknowledge negotiation result and calculate from its last point to the goal
             Point end = new Point(Ox[Ox.length - 1].split("-"));
             // recalculate path starting from the end point of agreed path
-            logger.debug("{accepted_path:" + Arrays.toString(Ox) + "}");
-            logger.debug("{calculating path from:" + end + " to:" + agent.DEST + " }");
+            logger.debug(agent.AGENT_ID + "{accepted_path:" + Arrays.toString(Ox) + "}");
+            logger.debug(agent.AGENT_ID + "{calculating path from:" + end + " to:" + agent.DEST + " }");
             List<String> rest = agent.calculatePath(end, agent.DEST);
-            logger.debug("{rest: " + Arrays.toString(rest.toArray()) + " }");
+            logger.debug(agent.AGENT_ID + "{rest: " + Arrays.toString(rest.toArray()) + " }");
 
             // ...glue them together
             new_path = new ArrayList<>();
@@ -441,16 +447,19 @@ public class AgentHandler {
                 new_path.add(Ox[idx]);
             }
 
-            // ensure that connection points match
-            Assert.isTrue(
-                    new_path.get(new_path.size() - 1).equals(rest.get(0)),
-                    "Something went wrong while accepting last bids!"
-            );
-
-            // merge...
-            for (int idx = 1; idx < rest.size(); idx++)
+            if (rest.size() > 0)
             {
-                new_path.add(rest.get(idx));
+                // ensure that connection points match
+                Assert.isTrue(
+                        new_path.get(new_path.size() - 1).equals(rest.get(0)),
+                        "Something went wrong while accepting last bids!"
+                );
+
+                // merge...
+                for (int idx = 1; idx < rest.size(); idx++)
+                {
+                    new_path.add(rest.get(idx));
+                }
             }
             agent.winC++;
         } else {
@@ -492,7 +501,14 @@ public class AgentHandler {
         agent.path = new_path;
         logger.debug(agent.AGENT_ID + "{path:" + agent.path + "}");
 
-        WorldHandler.doBroadcast(WORLD_ID, agent.AGENT_ID, agent.GetOwnBroadcastPath());
+//        WorldHandler.doBroadcast(WORLD_ID, agent.AGENT_ID, agent.GetOwnBroadcastPath());
+        try {
+            Jedis jedis = new Jedis(Globals.REDIS_HOST, Globals.REDIS_PORT);
+            jedis.hset("world:" + WORLD_ID + ":path", "agent:" + agent.AGENT_ID, Utils.toString(agent.GetOwnBroadcastPath(), ","));
+            jedis.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         agent.OnAcceptLastBids(json);
     }
     //</editor-fold>
