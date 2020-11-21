@@ -169,12 +169,13 @@ public class NegotiationSession
 
                         handler.PrepareContract(this);
 
-                        logger.info("joining to negotiation session");
+                        logger.info("joining to negotiation session " + session_id);
                         // join negotiation session WS
                         // send ready message to socket
                         handler.PreNegotiation(session_id, new State(json));
                         handler.LogPreNegotiation(session_id);
 
+                        logger.info("prepared for session " + session_id);
                         websocket.sendMessage("agent:" + handler.GetAgentID() + "-ready");
                         didJoin = true;
 
