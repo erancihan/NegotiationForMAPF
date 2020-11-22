@@ -30,6 +30,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
@@ -37,7 +39,7 @@ import java.util.stream.Collectors;
  *
  * @author freedrone
  */
-@SuppressWarnings({"FieldMayBeFinal", "unused"})
+@SuppressWarnings({"FieldMayBeFinal"})
 public class ScenarioManager extends javax.swing.JFrame
 {
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ScenarioManager.class);
@@ -66,7 +68,8 @@ public class ScenarioManager extends javax.swing.JFrame
         java.awt.GridBagConstraints gridBagConstraints;
 
         file_chooser = new javax.swing.JFileChooser();
-        javax.swing.JPanel panel_upper = new javax.swing.JPanel();
+        popup_generating = new javax.swing.JDialog();
+        javax.swing.JLabel jLabel1 = new javax.swing.JLabel();
         cards_container = new javax.swing.JPanel();
         javax.swing.JPanel create_scenario = new javax.swing.JPanel();
         javax.swing.JPanel inputs_container = new javax.swing.JPanel();
@@ -115,6 +118,16 @@ public class ScenarioManager extends javax.swing.JFrame
         javax.swing.JButton run_btn = new javax.swing.JButton();
         javax.swing.JPanel run_scenario = new javax.swing.JPanel();
         javax.swing.JPanel scenario_info_container = new javax.swing.JPanel();
+        javax.swing.JTabbedPane tab_container = new javax.swing.JTabbedPane();
+        world_view_tab = new javax.swing.JPanel();
+        canvas1 = new java.awt.Canvas();
+        javax.swing.JPanel world_controls = new javax.swing.JPanel();
+        javax.swing.JPanel jPanel1 = new javax.swing.JPanel();
+        btn_cycle_states = new javax.swing.JButton();
+        javax.swing.JPanel jPanel2 = new javax.swing.JPanel();
+        label_current_state = new javax.swing.JLabel();
+        btn_next_state = new javax.swing.JButton();
+        javax.swing.JPanel world_logs = new javax.swing.JPanel();
         javax.swing.JScrollPane jScrollPane1 = new javax.swing.JScrollPane();
         scenario_info_pane = new javax.swing.JTextPane();
         javax.swing.JPanel run_controls = new javax.swing.JPanel();
@@ -124,7 +137,15 @@ public class ScenarioManager extends javax.swing.JFrame
         javax.swing.JMenuItem export_btn = new javax.swing.JMenuItem();
         javax.swing.JMenuItem import_btn = new javax.swing.JMenuItem();
 
-        panel_upper.setLayout(new javax.swing.BoxLayout(panel_upper, javax.swing.BoxLayout.LINE_AXIS));
+        popup_generating.setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
+        popup_generating.setTitle(" ");
+        popup_generating.setAlwaysOnTop(true);
+        popup_generating.setBounds(new java.awt.Rectangle(0, 0, 200, 80));
+
+        jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel1.setText("Generating...");
+        jLabel1.setPreferredSize(new java.awt.Dimension(120, 40));
+        popup_generating.getContentPane().add(jLabel1, java.awt.BorderLayout.CENTER);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setMinimumSize(new java.awt.Dimension(600, 450));
@@ -234,6 +255,7 @@ public class ScenarioManager extends javax.swing.JFrame
         inputs_container.add(width_input, gridBagConstraints);
 
         min_dist_bw_agents.setHorizontalAlignment(javax.swing.JTextField.CENTER);
+        min_dist_bw_agents.setText("1");
         min_dist_bw_agents.setMinimumSize(new java.awt.Dimension(80, 35));
         min_dist_bw_agents.setPreferredSize(new java.awt.Dimension(80, 35));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -520,11 +542,57 @@ public class ScenarioManager extends javax.swing.JFrame
         scenario_info_container.setPreferredSize(new java.awt.Dimension(400, 150));
         scenario_info_container.setLayout(new java.awt.BorderLayout());
 
+        java.awt.GridBagLayout world_view_tabLayout = new java.awt.GridBagLayout();
+        world_view_tabLayout.columnWeights = new double[] {1.0};
+        world_view_tabLayout.rowWeights = new double[] {2.0, 1.0};
+        world_view_tab.setLayout(world_view_tabLayout);
+
+        canvas1.setBackground(new java.awt.Color(238, 0, 255));
+        canvas1.setPreferredSize(new java.awt.Dimension(100, 350));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        world_view_tab.add(canvas1, gridBagConstraints);
+
+        world_controls.setMinimumSize(new java.awt.Dimension(80, 80));
+        world_controls.setPreferredSize(new java.awt.Dimension(80, 40));
+        world_controls.setLayout(new java.awt.BorderLayout());
+
+        btn_cycle_states.setText("Cycle");
+        jPanel1.add(btn_cycle_states);
+
+        world_controls.add(jPanel1, java.awt.BorderLayout.WEST);
+
+        label_current_state.setText("-current-state-");
+        jPanel2.add(label_current_state);
+
+        btn_next_state.setText("Next State");
+        jPanel2.add(btn_next_state);
+
+        world_controls.add(jPanel2, java.awt.BorderLayout.EAST);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
+        world_view_tab.add(world_controls, gridBagConstraints);
+
+        tab_container.addTab("World View", world_view_tab);
+
+        world_logs.setLayout(new java.awt.BorderLayout());
+
         scenario_info_pane.setBackground(new java.awt.Color(250, 250, 250));
         scenario_info_pane.setFont(new java.awt.Font("Trebuchet MS", 0, 12)); // NOI18N
         jScrollPane1.setViewportView(scenario_info_pane);
 
-        scenario_info_container.add(jScrollPane1, java.awt.BorderLayout.CENTER);
+        world_logs.add(jScrollPane1, java.awt.BorderLayout.CENTER);
+
+        tab_container.addTab("Logs", world_logs);
+
+        scenario_info_container.add(tab_container, java.awt.BorderLayout.CENTER);
+        tab_container.getAccessibleContext().setAccessibleName("World Info");
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
@@ -717,12 +785,16 @@ public class ScenarioManager extends javax.swing.JFrame
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTable agent_detail_table;
     private javax.swing.JTable agents_table;
+    private javax.swing.JButton btn_cycle_states;
+    private javax.swing.JButton btn_next_state;
+    private java.awt.Canvas canvas1;
     private javax.swing.JPanel cards_container;
     private javax.swing.JFileChooser file_chooser;
     private javax.swing.JButton generate_scenario_btn;
     private javax.swing.JTextField height_input;
     private javax.swing.JTextField input_initial_token_count_per_agent;
     private javax.swing.JTextField input_number_of_expected_conflicts;
+    private javax.swing.JLabel label_current_state;
     private javax.swing.JTextField max_path_length_input;
     private javax.swing.JLabel max_path_length_label;
     private javax.swing.JTextField min_dist_bw_agents;
@@ -731,8 +803,10 @@ public class ScenarioManager extends javax.swing.JFrame
     private javax.swing.JLabel number_of_agents_label;
     private javax.swing.JLabel number_of_conflicts_label;
     private javax.swing.JPanel overview_scenario;
+    private javax.swing.JDialog popup_generating;
     private javax.swing.JTextPane scenario_info_pane;
     private javax.swing.JTextField width_input;
+    private javax.swing.JPanel world_view_tab;
     // End of variables declaration//GEN-END:variables
 
     private LinkedHashMap<String, Class<? extends Agent>> agents_map = new LinkedHashMap<>();
@@ -785,6 +859,7 @@ public class ScenarioManager extends javax.swing.JFrame
     private JSONWorldData world_data;
     private WorldWatchSocketIO world_listener = null;
     private int agent_count = 0; // track number of agents there should be
+    private int number_of_expected_conflicts = 0;
     private HashSet<String> AgentStartLocations = new HashSet<>();
     private HashSet<String> AgentDestinations = new HashSet<>();
     private ArrayList<Point[]> AgentLocationData = new ArrayList<>();
@@ -818,42 +893,55 @@ public class ScenarioManager extends javax.swing.JFrame
         world_data.initial_token_c = initial_token_c;
         if (world == null) InitializeWorld();
 
-        // initialize agents
-        GenerateAgentStartLocations(width, height, min_dist_bw);
+        GetAgentCount();
 
         if (agent_count == 0) return;
         world_data.agent_count = agent_count;
 
-        GenerateAgentLocationData(width, height);
-        InitializeAgentData();
+        // Get number of possible initial conflicts
+        int max_number_of_possible_conflicts = (agent_count * (agent_count - 1)) / 2;
+        number_of_expected_conflicts = input_number_of_expected_conflicts.getText().isEmpty() ? 0 : Integer.parseInt(input_number_of_expected_conflicts.getText());
 
-        ShowOverviewCard();
+        if (number_of_expected_conflicts > max_number_of_possible_conflicts)
+        {
+            number_of_expected_conflicts = max_number_of_possible_conflicts;
+        }
+
+        // display loading
+        popup_generating.setLocationRelativeTo(this);
+        popup_generating.setVisible(true);
+
+        CompletableFuture
+            .supplyAsync(() -> {
+                boolean isOk;
+
+                isOk = GenerateAgentLocationData(width, height);
+                System.out.println("> " + isOk);
+                if (isOk) InitializeAgentData();
+
+                return isOk;
+            })
+            .thenAccept(isOk -> {
+                if (isOk) { ShowOverviewCard(); }
+                // todo do not switch if not ok
+            });
     }
 
     //<editor-fold defaultstate="collapsed" desc="Generate Scenario functions">
-    @SuppressWarnings({"ConstantConditions", "UnusedAssignment"})
-    private void GenerateAgentStartLocations(int width, int height, int min_d)
+    private void GetAgentCount()
     {
+        int _ac = 0;
         for (int row = 0; row < agents_table.getRowCount(); row++)
-        {   // for each row in AGENTS table | foreach agent class present
-            int ac = Integer.parseInt((String) agents_table.getValueAt(row, 1));
-            for (int i = 0; i < ac; i++)
-            {   // for the amount of agents that there is
-                int x = -1;
-                int y = -1;
-                do {
-                    x = rng.nextInt(width);
-                    y = rng.nextInt(height);
-                } while (!isPremisesClear(x, y, min_d) || AgentStartLocations.contains(x+":"+y));
-
-                // assert x & y >= 0
-                Assert.isTrue((x >= 0 && y >= 0), "P_t:(x, y) cannot be negative");
-                // register to AgentStartLocations
-                AgentStartLocations.add(x+":"+y);
-
-                agent_count++;
-            }
+        {
+            int __ac = Integer.parseInt((String) agents_table.getValueAt(row, 1));
+            _ac += __ac;
         }
+        agent_count = _ac;
+    }
+
+    private boolean isPremisesClear(int _x, int _y)
+    {
+        return isPremisesClear(_x, _y, world_data.min_distance_between_agents);
     }
 
     private boolean isPremisesClear(int _x, int _y, int min_distance_between_agents)
@@ -879,27 +967,115 @@ public class ScenarioManager extends javax.swing.JFrame
         return true;
     }
 
-    @SuppressWarnings("WhileLoopReplaceableByForEach")
-    private void GenerateAgentLocationData(int width, int height)
+    @SuppressWarnings("DuplicatedCode")
+    private boolean GenerateAgentLocationData(int width, int height)
     {
-        Iterator<String> StartLocIter = AgentStartLocations.iterator();
-        while (StartLocIter.hasNext()) {
-            // for each start point
-            Point start = new Point(StartLocIter.next().split(":"));
-            Point dest;
-            double dist;
-            do {
-                dest = new Point(rng.nextInt(width), rng.nextInt(height));
+        logger.debug("Generating Agent Locations...");
+        AgentLocationData = new ArrayList<>();
 
-                dist = dest.ManhattanDistTo(start);
-            } while (
-                    AgentDestinations.contains(dest.key) ||
-                    (world_data.max_path_len > 0 && dist <= world_data.min_path_len) ||
-                    (world_data.max_path_len > 0 && dist >= world_data.max_path_len)
-            );
+        int number_of_conflicts_remaining;
+        ArrayList<Point[]> data;
 
-            AgentLocationData.add(new Point[]{start, dest});
-        }
+        do {
+            number_of_conflicts_remaining = number_of_expected_conflicts;
+            data = new ArrayList<>();
+            AgentStartLocations = new HashSet<>();  // flush
+            AgentDestinations   = new HashSet<>();  // flush
+
+            for (int index = 0; index < agent_count; index++)
+            {
+                boolean is_horizontal = rng.nextBoolean();
+                int x_tresh = is_horizontal ? (int) Math.ceil(width * 0.3) : width;
+                int y_tresh = is_horizontal ? height : (int) Math.ceil(height * 0.3);
+
+                Point start;
+                Point destination;
+
+                do {
+                    // pick a start
+                    start = new Point(rng.nextInt(x_tresh), rng.nextInt(y_tresh));
+                    // todo assert value is ok
+                } while (
+                    // there are agents starting from this point
+                    AgentStartLocations.contains(start.key) ||
+                    // there are agents within immediate close proximity for start | Premises Clear
+                    !isPremisesClear(start.x, start.y)
+                );
+                AgentStartLocations.add(start.key);
+
+                do {
+                    // pick destination
+                    destination = new Point(rng.nextInt(x_tresh) + (width - x_tresh), rng.nextInt(y_tresh) + (height - y_tresh));
+                    // todo assert value is ok
+                } while (
+                    // there are agents going to this location
+                    AgentDestinations.contains(destination.key) ||
+                    // path length is not acceptable
+                    !isPathLengthOk(start, destination)
+                );
+                AgentDestinations.add(destination.key);
+
+                data.add(new Point[]{start, destination});
+            }
+
+            // get number of conflicts
+            HashMap<String, String[]> paths = new HashMap<>();
+            for (int i = 0; i < data.size() && number_of_conflicts_remaining > 0; i++)
+            {
+                Point[] a = data.get(i);
+                String a_key = a[0].key + "-" + a[1].key;
+                String[] a_path;
+
+                if (paths.containsKey(a_key)) {
+                    a_path = paths.get(a_key);
+                } else {
+                    a_path = AStar.calculate(a[0], a[1]).toArray(new String[0]);
+                    paths.put(a_key, a_path);
+                }
+
+                for (int j = i + 1; j < data.size() && number_of_conflicts_remaining > 0; j++)
+                {
+                    Point[] b = data.get(j);
+                    String b_key = b[0].key + "-" + b[1].key;
+                    String[] b_path;
+
+                    if (paths.containsKey(b_key)) {
+                        b_path = paths.get(b_key);
+                    } else {
+                        b_path = AStar.calculate(b[0], b[1]).toArray(new String[0]);
+                        paths.put(b_key, b_path);
+                    }
+
+                    ConflictInfo[] info = new ConflictCheck().GetAllConflicts(a_path, b_path);
+                    if (info.length > 0)
+                    {   // there are conflicts
+                        logger.debug(String.format("Found %s conflict(s) between %s - %s", info.length, i, j));
+                        number_of_conflicts_remaining -= info.length;
+                    }
+                }
+            }
+            logger.debug("# of conflicts left " + number_of_conflicts_remaining);
+        } while (number_of_conflicts_remaining > 0);
+
+        // append to Agent Location Data
+        AgentLocationData.addAll(data);
+
+        return data.size() > 0;
+    }
+
+    private boolean isPathLengthOk(Point start, Point destination)
+    {
+        double dist = destination.ManhattanDistTo(start);
+
+        // todo is min smaller than max????????
+
+        return (
+                // distance is less than max
+                (world_data.max_path_len <= 0 || dist <= world_data.max_path_len)
+                &&
+                // distance is greater than min length
+                (dist >= world_data.min_path_len)
+        );
     }
 
     private void InitializeAgentData()
@@ -969,7 +1145,6 @@ public class ScenarioManager extends javax.swing.JFrame
         ((CardLayout) cards_container.getLayout()).show(cards_container, "overview");
 
         // prepare overview
-        // todo do async
         PopulateOverviewCard();
         AgentDetailsTableModel table = new AgentDetailsTableModel(
                 agents_data.toArray(new JSONAgentData[0]),
@@ -982,11 +1157,16 @@ public class ScenarioManager extends javax.swing.JFrame
                     PopulateOverviewCard();
                 });
         agent_detail_table.setModel(table);
+
+        // clear loading indicator
+        popup_generating.setVisible(false);
     }
 
     @SuppressWarnings("Duplicates")
     private void PopulateOverviewCard()
     {
+        logger.debug("Populating Overview Card");
+
         // populate number of agents
         number_of_agents_label.setText(String.valueOf(world_data.agent_count));
 
@@ -1033,6 +1213,8 @@ public class ScenarioManager extends javax.swing.JFrame
                     b_path = AStar.calculate(b.start.toPoint(), b.dest.toPoint(), world_data.width+"x"+world_data.height).toArray(new String[0]);
                     agent_paths.put(b.id, b_path);
                 }
+
+                logger.debug(String.format("Processing %s and %s", i, j));
 
                 ConflictInfo info = new ConflictCheck().check(a_path, b_path);
                 if (info.hasConflict) conflict_counter++;
