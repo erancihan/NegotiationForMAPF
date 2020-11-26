@@ -31,7 +31,6 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
@@ -120,7 +119,7 @@ public class ScenarioManager extends javax.swing.JFrame
         javax.swing.JPanel scenario_info_container = new javax.swing.JPanel();
         javax.swing.JTabbedPane tab_container = new javax.swing.JTabbedPane();
         world_view_tab = new javax.swing.JPanel();
-        canvas1 = new java.awt.Canvas();
+        scenario_canvas = new edu.ozu.mapp.agent.client.world.ScenarioCanvas();
         javax.swing.JPanel world_controls = new javax.swing.JPanel();
         javax.swing.JPanel jPanel1 = new javax.swing.JPanel();
         btn_cycle_states = new javax.swing.JButton();
@@ -151,6 +150,11 @@ public class ScenarioManager extends javax.swing.JFrame
         setMinimumSize(new java.awt.Dimension(600, 450));
         setPreferredSize(new java.awt.Dimension(800, 450));
         setSize(new java.awt.Dimension(600, 450));
+        addComponentListener(new java.awt.event.ComponentAdapter() {
+            public void componentResized(java.awt.event.ComponentEvent evt) {
+                formComponentResized(evt);
+            }
+        });
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosing(java.awt.event.WindowEvent evt) {
                 formWindowClosing(evt);
@@ -544,22 +548,24 @@ public class ScenarioManager extends javax.swing.JFrame
 
         java.awt.GridBagLayout world_view_tabLayout = new java.awt.GridBagLayout();
         world_view_tabLayout.columnWeights = new double[] {1.0};
-        world_view_tabLayout.rowWeights = new double[] {2.0, 1.0};
+        world_view_tabLayout.rowWeights = new double[] {1.0, 0.0};
         world_view_tab.setLayout(world_view_tabLayout);
-
-        canvas1.setBackground(new java.awt.Color(238, 0, 255));
-        canvas1.setPreferredSize(new java.awt.Dimension(100, 350));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        world_view_tab.add(canvas1, gridBagConstraints);
+        world_view_tab.add(scenario_canvas, gridBagConstraints);
 
         world_controls.setMinimumSize(new java.awt.Dimension(80, 80));
         world_controls.setPreferredSize(new java.awt.Dimension(80, 40));
         world_controls.setLayout(new java.awt.BorderLayout());
 
         btn_cycle_states.setText("Cycle");
+        btn_cycle_states.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btn_cycle_statesActionPerformed(evt);
+            }
+        });
         jPanel1.add(btn_cycle_states);
 
         world_controls.add(jPanel1, java.awt.BorderLayout.WEST);
@@ -568,6 +574,11 @@ public class ScenarioManager extends javax.swing.JFrame
         jPanel2.add(label_current_state);
 
         btn_next_state.setText("Next State");
+        btn_next_state.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btn_next_stateActionPerformed(evt);
+            }
+        });
         jPanel2.add(btn_next_state);
 
         world_controls.add(jPanel2, java.awt.BorderLayout.EAST);
@@ -747,6 +758,24 @@ public class ScenarioManager extends javax.swing.JFrame
         // todo flush
     }//GEN-LAST:event_back_to_overview_btnActionPerformed
 
+    private void btn_cycle_statesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_cycle_statesActionPerformed
+        if (world != null)
+        {
+            world.Loop();
+        }
+    }//GEN-LAST:event_btn_cycle_statesActionPerformed
+
+    private void btn_next_stateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_next_stateActionPerformed
+        if (world != null)
+        {
+            world.Step();
+        }
+    }//GEN-LAST:event_btn_next_stateActionPerformed
+
+    private void formComponentResized(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_formComponentResized
+        if (scenario_canvas != null) scenario_canvas.Resize();
+    }//GEN-LAST:event_formComponentResized
+
     /**
      * @param args the command line arguments
      */
@@ -787,7 +816,6 @@ public class ScenarioManager extends javax.swing.JFrame
     private javax.swing.JTable agents_table;
     private javax.swing.JButton btn_cycle_states;
     private javax.swing.JButton btn_next_state;
-    private java.awt.Canvas canvas1;
     private javax.swing.JPanel cards_container;
     private javax.swing.JFileChooser file_chooser;
     private javax.swing.JButton generate_scenario_btn;
@@ -804,6 +832,7 @@ public class ScenarioManager extends javax.swing.JFrame
     private javax.swing.JLabel number_of_conflicts_label;
     private javax.swing.JPanel overview_scenario;
     private javax.swing.JDialog popup_generating;
+    private edu.ozu.mapp.agent.client.world.ScenarioCanvas scenario_canvas;
     private javax.swing.JTextPane scenario_info_pane;
     private javax.swing.JTextField width_input;
     private javax.swing.JPanel world_view_tab;
@@ -846,13 +875,9 @@ public class ScenarioManager extends javax.swing.JFrame
 
     private void OnClose()
     {
-        if (world_listener == null || WorldID == null)
-        {
-            return;
-        }
-
-        world_listener.close();
-        World.Delete(WorldID);
+        if (world_listener != null)  world_listener.close();
+        if (scenario_canvas != null) scenario_canvas.Destroy();
+        if (WorldID != null)         World.Delete(WorldID);
     }
 
     private World world;
@@ -891,7 +916,6 @@ public class ScenarioManager extends javax.swing.JFrame
         world_data = new JSONWorldData(wid, width, height, min_path_len, min_dist_bw);
         world_data.max_path_len = max_path_len;
         world_data.initial_token_c = initial_token_c;
-        if (world == null) InitializeWorld();
 
         GetAgentCount();
 
@@ -916,7 +940,6 @@ public class ScenarioManager extends javax.swing.JFrame
                 boolean isOk;
 
                 isOk = GenerateAgentLocationData(width, height);
-                System.out.println("> " + isOk);
                 if (isOk) InitializeAgentData();
 
                 return isOk;
@@ -1110,6 +1133,7 @@ public class ScenarioManager extends javax.swing.JFrame
             }
         }
     }
+    //</editor-fold>
 
     private void InitializeWorld()
     {
@@ -1136,8 +1160,13 @@ public class ScenarioManager extends javax.swing.JFrame
                     System.exit(1);
                 }
             });
+        world.SetCurrentStateChangeCallback((state) -> label_current_state.setText(state));
+        world.SetCanvasUpdateCallback(() -> scenario_canvas.Update());
+
+        scenario_canvas.SetWorldData(world_data);
+        scenario_canvas.SetAgentsData(agents_data);
+        scenario_canvas.Init();
     }
-    //</editor-fold>
 
     private void ShowOverviewCard()
     {
@@ -1255,10 +1284,6 @@ public class ScenarioManager extends javax.swing.JFrame
                 e.printStackTrace();
                 System.exit(1);
             }
-        }
-
-        if (world != null) {
-            world.Loop();
         }
     }
 

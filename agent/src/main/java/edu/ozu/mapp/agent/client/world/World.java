@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 public class World
 {
@@ -40,6 +41,8 @@ public class World
 
     private ArrayList<Object[]> state_log = new ArrayList<>();
     private BiConsumer<Map<String, String>, ArrayList<Object[]>> LogDrawCallback;
+    private Consumer<String> OnCurrentStateChange;
+    private Runnable CanvasUpdateCallback;
 
     public World(boolean DeleteOnFinish)
     {
@@ -63,7 +66,6 @@ public class World
     {
         sim_start_time = System.nanoTime();
         logger.debug("SIM_START_TIME="+sim_start_time);
-        jedis.hset(WorldID, "time_tick", "0");
         state_log.add(new Object[]{"- SIM_START", new java.sql.Timestamp(System.currentTimeMillis())});
 
         IsLooping = true;
@@ -83,17 +85,22 @@ public class World
     {
         int curr_state_id = Integer.parseInt(data.get("world_state"));
 
-        if (prev_state_id == curr_state_id) {
+        if (curr_state_id == prev_state_id)
+        {
             return; // handle only once
         }
+
+        OnCurrentStateChange.accept(Globals.WORLD_STATES.get(curr_state_id).toString());
 
 //        if (data.get("player_count").equals("0")) {
 //            return; // do nothing if there are no players
 //        }
 
-        if (data.get("active_agent_count").equals("0")) {
+        if (data.get("active_agent_count").equals("0"))
+        {
             // do nothing if there are no active agents
-            if (IsLooping) {
+            if (IsLooping)
+            {
                 IsLooping = false;
                 sim_finish_time = System.nanoTime();
 
@@ -112,6 +119,7 @@ public class World
                 state_log.add(new Object[]{"- SIM_FINISH", new java.sql.Timestamp(_t)});
                 state_log.add(new Object[]{"- SIM_DURATION: " + (sim_time_diff / 1E9) + " seconds", new java.sql.Timestamp(_t)});
             }
+
             return;
         }
 
@@ -125,11 +133,16 @@ public class World
                 fl.LogWorldJoin(data);
 
                 // join state, begin loop
-                jedis.hset(WorldID, "world_state", "1");
+                if (IsLooping) Step(curr_state_id);
+                else {
+                    prev_state_id = curr_state_id;
+                }
+                CanvasUpdateCallback.run();
                 break;
             case 1:
                 // collision check state, await 2 cycles for collision updates
-                if (notify_await_cycle < 2) {
+                if (notify_await_cycle < 2)
+                {
                     notify_await_cycle += 1;
                     jedis.hincrBy(WorldID, "time_tick", 1);
                     return; // return else
@@ -143,7 +156,7 @@ public class World
                 fl.LogWorldStateBroadcast(data, timestamp);
 
                 // move to next state: 1 -> 2
-                jedis.hset(WorldID, "world_state", "2");
+                if (IsLooping) Step(curr_state_id);
                 break;
             case 2:
                 // clear notify await
@@ -165,7 +178,7 @@ public class World
                     fl.LogWorldStateNegotiate(data, timestamp, "DONE");
 
                     // move to next state: 2 -> 3
-                    jedis.hset(WorldID, "world_state", "3");
+                    if (IsLooping) Step(curr_state_id);
                 }
 
                 negotiation_state_clock++;
@@ -188,7 +201,7 @@ public class World
                     // clear move_action_count
                     jedis.hset(WorldID, "move_action_count", "0");
                     // move to next state: 3 -> 1
-                    jedis.hset(WorldID, "world_state", "1");
+                    if (IsLooping) Step(curr_state_id);
                 }
                 break;
         }
@@ -237,11 +250,36 @@ public class World
 
                     LogDrawCallback.accept(data, state_log);
 
-                    if (IsLooping) {
-                        OnStateUpdate(data);
-                    }
+                    OnStateUpdate(data);
                 }
         );
+    }
+
+    public void Step()
+    {
+        int curr_state = Integer.parseInt(jedis.hget(WorldID, "world_state"));
+        Step(curr_state);
+    }
+
+    public void Step(int current_state)
+    {
+        switch (current_state) {
+            case 0:
+                // JOIN state, switch to COLLISION_CHECK state
+            case 3:
+                // MOVE state, switch to COLLISION_CHECK state
+                jedis.hset(WorldID, "world_state", "1");
+                break;
+            case 1:
+                // COLLISION_CHECK state, switch to NEGOTIATION state
+                jedis.hset(WorldID, "world_state", "2");
+                break;
+            case 2:
+                // NEGOTIATION state, switch to MOVE state
+                jedis.hset(WorldID, "world_state", "3");
+                break;
+            default:
+        }
     }
 
     public void Delete()
@@ -259,13 +297,25 @@ public class World
         Utils.post("http://localhost:5000/world/delete", payload);
     }
 
-    public void SetLogDrawCallback(BiConsumer<Map<String, String>, ArrayList<Object[]>> callback) {
+    public void SetCurrentStateChangeCallback(Consumer<String> callback)
+    {
+        this.OnCurrentStateChange = callback;
+    }
+
+    public void SetLogDrawCallback(BiConsumer<Map<String, String>, ArrayList<Object[]>> callback)
+    {
         this.LogDrawCallback = callback;
     }
 
-    public void Log(String str) {
+    public void Log(String str)
+    {
         state_log.add(new Object[]{str, new java.sql.Timestamp(System.currentTimeMillis())});
 
         LogDrawCallback.accept(new HashMap<>(), state_log);
+    }
+
+    public void SetCanvasUpdateCallback(Runnable callback)
+    {
+        this.CanvasUpdateCallback = callback;
     }
 }
