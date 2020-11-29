@@ -79,6 +79,15 @@ public class ScenarioCanvas extends Canvas
                 (agents_data.get(agent_key).dest.y * cell_size),
                 cell_size, cell_size
             );
+
+            // DRAW AGENT TARGET LOCATION IDENTIFIER
+            String short_key = agent_key.split("_")[1];
+            g.setColor(Color.RED);
+            g.drawString(
+                    short_key,
+                    (agents_data.get(agent_key).dest.x * cell_size) + 2,
+                    (agents_data.get(agent_key).dest.y * cell_size) + 13
+            );
         }
 
         for (String agent_key : agents.keySet())
@@ -96,7 +105,18 @@ public class ScenarioCanvas extends Canvas
                         (agent_current_loc.y * cell_size),
                         cell_size, cell_size
                 );
+
+                // DRAW AGENT CURRENT LOCATION IDENTIFIER
+                String short_key = agent_key.split("_")[1];
+                g.setColor(Color.RED);
+                g.drawString(
+                    short_key,
+                    (agent_current_loc.x * cell_size) + 2,
+                    (agent_current_loc.y * cell_size) + 13
+                );
             }
+
+            g.setColor(hex2rgb(agent_colors.get(agent_key)));   // handle color
 
             // UPDATE AGENT HISTORY
             ArrayList<Point> path = history.get(agent_key);
