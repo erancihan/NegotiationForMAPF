@@ -14,17 +14,19 @@ public class Globals
     public static final int FIELD_OF_VIEW_SIZE = 5;
 
     public enum WorldState {
-        JOIN("JOIN"),
-        BROADCAST("BROADCAST"),
-        NEGOTIATE("NEGOTIATE"),
-        MOVE("MOVE"),
-        NONE("NONE");
+        JOIN("JOIN", 0),
+        BROADCAST("BROADCAST", 1),
+        NEGOTIATE("NEGOTIATE", 2),
+        MOVE("MOVE", 3),
+        NONE("NONE", -1);
 
         String value;
+        int key;
 
-        WorldState(String value)
+        WorldState(String value, int key)
         {
             this.value = value.toUpperCase();
+            this.key   = key;
         }
 
         @Override
