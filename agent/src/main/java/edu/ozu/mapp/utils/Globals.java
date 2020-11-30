@@ -20,8 +20,8 @@ public class Globals
         MOVE("MOVE", 3),
         NONE("NONE", -1);
 
-        String value;
-        int key;
+        public final String value;
+        public final int key;
 
         WorldState(String value, int key)
         {
