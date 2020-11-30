@@ -17,7 +17,8 @@ public class Globals
         JOIN("JOIN"),
         BROADCAST("BROADCAST"),
         NEGOTIATE("NEGOTIATE"),
-        MOVE("MOVE");
+        MOVE("MOVE"),
+        NONE("NONE");
 
         String value;
 
