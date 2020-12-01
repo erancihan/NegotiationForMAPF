@@ -4,10 +4,7 @@ import edu.ozu.mapp.agent.Agent;
 import edu.ozu.mapp.agent.MAPPAgent;
 import edu.ozu.mapp.agent.client.AgentClient;
 import edu.ozu.mapp.agent.client.helpers.WorldHandler;
-import edu.ozu.mapp.utils.AStar;
-import edu.ozu.mapp.utils.Action;
-import edu.ozu.mapp.utils.ActionType;
-import edu.ozu.mapp.utils.Point;
+import edu.ozu.mapp.utils.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +24,7 @@ public class HelloAgent2 extends Agent
     }
 
     @Override
-    public void PreNegotiation() {
+    public void PreNegotiation(State state) {
 
     }
 
@@ -39,7 +36,7 @@ public class HelloAgent2 extends Agent
         if (count++ >= 2)
             return new Action(this, ActionType.ACCEPT);
 
-        String[][] fov = WorldHandler.getFieldOfView(this.WORLD_ID, this.AGENT_ID);
+        String[][] fov = new WorldHandler().getFieldOfView(this.WORLD_ID, this.AGENT_ID);
 
         ArrayList<String[]> constraints = new ArrayList<>();
         for (String[] broadcast_data : fov)

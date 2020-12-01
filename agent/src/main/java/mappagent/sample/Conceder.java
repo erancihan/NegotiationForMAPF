@@ -23,13 +23,13 @@ public class Conceder extends Agent {
 
     public Conceder()
     {
-        this("Conceder 1", "CONCEDER1", new Point(2, 0), new Point(2, 10));
+        this("Conceder 1", "CONCEDER1", new Point(2, 0), new Point(2, 10), Globals.INITIAL_TOKEN_BALANCE);
         isHeadless = false;
     }
 
-    public Conceder(String agentName, String agentID, Point start, Point dest)
+    public Conceder(String agentName, String agentID, Point start, Point dest, int tokens)
     {
-        super(agentName, agentID, start, dest);
+        super(agentName, agentID, start, dest, tokens);
     }
 
     @Override
@@ -60,7 +60,7 @@ public class Conceder extends Agent {
     @Override
     public Action onMakeAction()
     {
-        int current_tokens = WorldHandler.getTokenBalance(WORLD_ID, AGENT_ID);
+        int current_tokens = new WorldHandler().getTokenBalance(WORLD_ID, AGENT_ID);
 
         // get opponent's bid
         Contract last_opponent_bid = history.GetLastOpponentBid(current_opponent);
@@ -123,7 +123,7 @@ public class Conceder extends Agent {
             if (arg.equals("HEADLESS")) IsHeadless = true;
         }
 
-        Conceder agent = new Conceder(AgentName, AgentID, Start, Dest);
+        Conceder agent = new Conceder(AgentName, AgentID, Start, Dest, 5);
         agent.isHeadless = IsHeadless;
 
         new AgentClient(args, agent);
