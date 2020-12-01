@@ -1154,7 +1154,8 @@ public class ScenarioManager extends javax.swing.JFrame
                                         return key + ": " + Globals.WORLD_STATES.getOrDefault(Integer.parseInt(data.get(key)), Globals.WorldState.NONE).toString() + "\n";
                                     case "negotiation_count":
                                         return "Current Active Negotiation Count:" + data.get(key) + "\n";
-                                    case "move_action_count":
+                                    case "move_action_count":   // IGNORE REDUNDANT
+                                    case "time_tick":           // IGNORE MISLEADING/UNRELATED INFO
                                         return "";
                                     default:
                                         return key + ": " + data.get(key) + "\n";

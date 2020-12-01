@@ -38,6 +38,7 @@ public class World
     private int prev_state_id = -1;
     private int notify_await_cycle = 0;
     private int negotiation_state_clock = 0;
+    private int world_t = 0;
 
     private ArrayList<Object[]> state_log = new ArrayList<>();
     private BiConsumer<Map<String, String>, ArrayList<Object[]>> LogDrawCallback;
@@ -248,6 +249,7 @@ public class World
                 this.WorldID,
                 (message) -> {
                     Map<String, String> data = gson.fromJson(message, messageMapType);
+                    data.put("World T", String.valueOf(world_t));
 
                     LogDrawCallback.accept(data, state_log);
 
@@ -270,6 +272,7 @@ public class World
             case 3:
                 // MOVE state, switch to COLLISION_CHECK state
                 jedis.hset(WorldID, "world_state", "1");
+                world_t++;
                 break;
             case 1:
                 // COLLISION_CHECK state, switch to NEGOTIATION state
