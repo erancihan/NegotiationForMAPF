@@ -2,9 +2,11 @@ package edu.ozu.mapp.agent.client;
 
 import edu.ozu.mapp.agent.Agent;
 import edu.ozu.mapp.agent.client.ui.AgentUI;
+import edu.ozu.mapp.utils.Point;
 import org.springframework.util.Assert;
 
 import javax.swing.*;
+import java.util.ArrayList;
 
 public class AgentClient {
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(AgentClient.class);
@@ -57,8 +59,13 @@ public class AgentClient {
         java.awt.EventQueue.invokeLater(() -> new AgentUI(this.handler).setVisible(true));
     }
 
-    // Handler Hooks
+    // SCENARIO CANVAS HELPER FUNCTION
+    public ArrayList<Point> GetAgentPlannedPath()
+    {
+        return handler.GetAgentPlannedPath();
+    }
 
+    // Handler Hooks
     public void join(String worldID)
     {
         handler.join(worldID);

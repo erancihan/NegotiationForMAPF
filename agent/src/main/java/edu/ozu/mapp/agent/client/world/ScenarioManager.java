@@ -1283,21 +1283,26 @@ public class ScenarioManager extends javax.swing.JFrame
 
         Assert.notNull(world_listener, "redis listener cannot be null!");
 
+        HashMap<String, AgentClient> agent_refs = new HashMap<>();
         for (JSONAgentData data : agents_data) {
             try {
                 world.Log(String.format("initializing %s %s -> %s", data.agent_name, data.start, data.dest));
-                new AgentClient(
+                AgentClient client = new AgentClient(
                     agents_map
                         .get(data.agent_class_name)
                         .getDeclaredConstructor(String.class, String.class, Point.class, Point.class, int.class)
                         .newInstance(data.agent_name, data.agent_name, new Point(data.start.get(), "-"), new Point(data.dest.get(), "-"), data.token_c)
-                ).join(WorldID);
+                );
+                client.join(WorldID);
+                agent_refs.put(data.agent_name, client);
             } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
                 logger.error("An error occurred while trying to generate a client");
                 e.printStackTrace();
                 System.exit(1);
             }
         }
+
+        scenario_canvas.SetAgentRefs(agent_refs);
     }
 
     //<editor-fold defaultstate="collapsed" desc="Update Create Card info for Import">
