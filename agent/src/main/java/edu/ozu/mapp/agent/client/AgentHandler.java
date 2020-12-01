@@ -169,7 +169,7 @@ public class AgentHandler {
             case 1: // collision check/broadcast
                 if (state_flag[0] != 1)
                 {
-                    checkForCollisions(watch);
+                    broadcast(watch);
                     state_flag[0] = 1;
                     state_flag[1] = watch.time_tick;
                 }
@@ -196,14 +196,16 @@ public class AgentHandler {
         }
     }
 
-    private void checkForCollisions(JSONWorldWatch data)
+    private void broadcast(JSONWorldWatch data)
     {
         String[] agent_ids = getCollidingAgents(data.fov);
         if (agent_ids.length > 1)
-        { // my path collides with broadcasted paths!
+        {   // my path collides with broadcasted paths!
             logger.debug("notify negotiation > " + Arrays.toString(agent_ids));
             notifyNegotiation(agent_ids);
         }
+
+        // TODO HANDLE BROADCAST
     }
 
     private String[] getCollidingAgents(String[][] broadcasts)
@@ -277,12 +279,6 @@ public class AgentHandler {
         }
     }
 
-    private BiConsumer<AgentHandler, HashMap<String, Object>> move_callback;
-    public void SetMoveCallback(BiConsumer<AgentHandler, HashMap<String, Object>> callback)
-    {
-        move_callback = callback;
-    }
-
     private void move() {
         // check if agent is moving
         // 0: stopped  | out of moves
@@ -307,7 +303,7 @@ public class AgentHandler {
             payload.put("direction", direction);
             payload.put("broadcast", agent.getNextBroadcast());
 
-            move_callback.accept(this, payload);
+            WORLD_HANDLER_MOVE.accept(this, payload);
         } else {
             // no more moves left, agent should stop
             is_moving = 0;
