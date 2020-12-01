@@ -30,6 +30,7 @@ public class ScenarioCanvas extends Canvas
 
     private Random rand = new Random();
     private int cell_size = 0;
+    private int offset = 1;
 
     public ScenarioCanvas()
     {
@@ -68,6 +69,15 @@ public class ScenarioCanvas extends Canvas
     public void paint(Graphics g)
     {
         super.paint(g);
+
+        // DRAW CELL BORDERS
+
+        for (int i = 0; i <= world.width; i++)
+        {
+            g.setColor(Color.BLACK);
+            g.drawLine((offset + i*cell_size), offset, (offset + i*cell_size), (offset + cell_size*world.height));
+            g.drawLine(offset, (offset + i*cell_size), (offset + cell_size*world.width), (offset + i*cell_size));
+        }
 
         for (String agent_key : agents.keySet())
         {
@@ -205,6 +215,8 @@ public class ScenarioCanvas extends Canvas
                 cursor = results.getCursor();
             } while (!cursor.equals(ScanParams.SCAN_POINTER_START));
         }
+
+        this.repaint();
     }
 
     public void Resize()

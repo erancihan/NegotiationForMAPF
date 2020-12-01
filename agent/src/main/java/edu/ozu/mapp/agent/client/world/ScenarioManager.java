@@ -1147,8 +1147,20 @@ public class ScenarioManager extends javax.swing.JFrame
                         data
                             .keySet()
                             .stream()
-                            .map(key -> key + ": " + data.get(key))
-                            .collect(Collectors.joining("\n")) +
+                            .map(key -> {
+                                switch (key)
+                                {
+                                    case "world_state":
+                                        return key + ": " + Globals.WORLD_STATES.getOrDefault(Integer.parseInt(data.get(key)), Globals.WorldState.NONE).toString() + "\n";
+                                    case "negotiation_count":
+                                        return "Current Active Negotiation Count:" + data.get(key) + "\n";
+                                    case "move_action_count":
+                                        return "";
+                                    default:
+                                        return key + ": " + data.get(key) + "\n";
+                                }
+                            })
+                            .collect(Collectors.joining("")) +
                         "\n-------------\n" +
                         log
                             .stream()

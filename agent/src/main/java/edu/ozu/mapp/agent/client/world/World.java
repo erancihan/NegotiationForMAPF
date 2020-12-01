@@ -90,6 +90,8 @@ public class World
             return; // handle only once
         }
 
+        CanvasUpdateCallback.run();
+
         OnCurrentStateChange.accept(Globals.WORLD_STATES.get(curr_state_id).toString());
 
 //        if (data.get("player_count").equals("0")) {
@@ -137,7 +139,6 @@ public class World
                 else {
                     prev_state_id = curr_state_id;
                 }
-                CanvasUpdateCallback.run();
                 break;
             case 1:
                 // collision check state, await 2 cycles for collision updates
