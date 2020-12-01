@@ -2,9 +2,14 @@ package edu.ozu.mapp.agent.client;
 
 import edu.ozu.mapp.agent.Agent;
 import edu.ozu.mapp.agent.client.ui.AgentUI;
+import edu.ozu.mapp.system.WorldManager;
+import edu.ozu.mapp.utils.JSONWorldWatch;
 import org.springframework.util.Assert;
 
 import javax.swing.*;
+import java.util.HashMap;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 public class AgentClient {
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(AgentClient.class);
@@ -67,5 +72,35 @@ public class AgentClient {
     public void leave()
     {
         handler.leave();
+    }
+
+    public void Join(WorldManager world)
+    {
+        world.Register(this);
+    }
+
+    public String GetAgentName()
+    {
+        return handler.getAgentName();
+    }
+
+    public void UpdateState(JSONWorldWatch watch)
+    {
+        handler.UpdateState(watch);
+    }
+
+    public void SetJoinCallback(Consumer<String> callback)
+    {
+        handler.join(callback);
+    }
+
+    public void SetBroadcastCallback(BiConsumer<String, String[]> callback)
+    {
+
+    }
+
+    public void SetMoveCallback(BiConsumer<AgentHandler, HashMap<String, Object>> callback)
+    {
+        handler.SetMoveCallback(callback);
     }
 }

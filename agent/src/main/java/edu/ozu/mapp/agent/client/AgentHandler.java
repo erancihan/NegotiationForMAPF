@@ -13,6 +13,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class AgentHandler {
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(AgentHandler.class);
@@ -105,6 +107,16 @@ public class AgentHandler {
         }
     }
     //</editor-fold>
+
+    public void join(Consumer<String> callback)
+    {
+        callback.accept(getAgentName());
+    }
+
+    public void UpdateState(JSONWorldWatch watch)
+    {
+        handleState(watch);
+    }
 
     /**
      * The function that is invoked after agent joins a world. Allows agent
@@ -235,6 +247,12 @@ public class AgentHandler {
         }
     }
 
+    private BiConsumer<AgentHandler, HashMap<String, Object>> move_callback;
+    public void SetMoveCallback(BiConsumer<AgentHandler, HashMap<String, Object>> callback)
+    {
+        move_callback = callback;
+    }
+
     private void move() {
         // check if agent is moving
         // 0: stopped  | out of moves
@@ -251,23 +269,15 @@ public class AgentHandler {
             Assert.isTrue((direction.length() > 0), "«DIRECTION cannot be empty»");
 
             // make Agent move
-            JSONAgent response = Move.move(WORLD_ID, agent.AGENT_ID, agent.POS, direction, agent.getNextBroadcast());
+            HashMap<String, Object> payload = new HashMap<>();
+            payload.put("world_id", WORLD_ID);
+            payload.put("agent_id", agent.AGENT_ID);
+            payload.put("agent_x", String.valueOf(agent.POS.x));
+            payload.put("agent_y", String.valueOf(agent.POS.y));
+            payload.put("direction", direction);
+            payload.put("broadcast", agent.getNextBroadcast());
 
-            // update internal clock
-            agent.time = agent.time + 1;
-
-            // get next point
-            Point next_point = new Point(agent.path.get(Math.min(agent.time, agent.path.size() - 1)).split("-"));
-
-            // validate next location
-            Assert.isTrue(
-                    (response.agent_x + "-" + response.agent_y).equals(next_point.key), "next point and move action does not match! \n" + response.agent_x + "-" + response.agent_y + " != " + next_point.key + "\n PATH:" + agent.path + "\n"
-            );
-
-            // update current position
-            agent.POS = next_point;
-
-            agent.OnMove(response);
+            move_callback.accept(this, payload);
         } else {
             // no more moves left, agent should stop
             is_moving = 0;
@@ -276,6 +286,26 @@ public class AgentHandler {
             leave();
         }
         fl.LogAgentInfo(agent, "MOVE");  // LOG AGENT INFO ON MOVE CALL
+    }
+
+    public void DoMove(JSONAgent response)
+    {
+        // update internal clock
+        agent.time = agent.time + 1;
+
+        // get next point
+        Point next_point = new Point(agent.path.get(Math.min(agent.time, agent.path.size() - 1)).split("-"));
+
+        // validate next location
+        Assert.isTrue(
+                (response.agent_x + "-" + response.agent_y).equals(next_point.key),
+                "next point and move action does not match! \n" + response.agent_x + "-" + response.agent_y + " != " + next_point.key + "\n PATH:" + agent.path + "\n"
+        );
+
+        // update current position
+        agent.POS = next_point;
+
+        agent.OnMove(response);
     }
 
     //<editor-fold defaultstate="collapsed" desc="Get Direction of next point">

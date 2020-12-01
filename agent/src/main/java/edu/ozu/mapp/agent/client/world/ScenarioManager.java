@@ -10,15 +10,14 @@ import com.google.gson.GsonBuilder;
 import edu.ozu.mapp.agent.Agent;
 import edu.ozu.mapp.agent.MAPPAgent;
 import edu.ozu.mapp.agent.client.AgentClient;
-import edu.ozu.mapp.agent.client.WorldWatchSocketIO;
 import edu.ozu.mapp.agent.client.helpers.ConflictCheck;
 import edu.ozu.mapp.agent.client.helpers.ConflictInfo;
+import edu.ozu.mapp.system.WorldManager;
 import edu.ozu.mapp.utils.Point;
 import edu.ozu.mapp.utils.*;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
-import org.springframework.util.Assert;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -875,14 +874,14 @@ public class ScenarioManager extends javax.swing.JFrame
 
     private void OnClose()
     {
-        if (world_listener != null)  world_listener.close();
+//        if (world_listener != null)  world_listener.close();
         if (scenario_canvas != null) scenario_canvas.Destroy();
-        if (WorldID != null)         World.Delete(WorldID);
     }
 
-    private World world;
+//    private World world;
+    private WorldManager world;
     private JSONWorldData world_data;
-    private WorldWatchSocketIO world_listener = null;
+//    private WorldWatchSocketIO world_listener = null;
     private int agent_count = 0; // track number of agents there should be
     private int number_of_expected_conflicts = 0;
     private HashSet<String> AgentStartLocations = new HashSet<>();
@@ -1137,7 +1136,8 @@ public class ScenarioManager extends javax.swing.JFrame
 
     private void InitializeWorld()
     {
-        world = new World();
+//        world = new World();
+        world = new WorldManager();
         world.SetOnLoopingStop(() -> generate_scenario_btn.setEnabled(true));
         world.SetLogDrawCallback(
             (data, log) -> {
@@ -1266,25 +1266,25 @@ public class ScenarioManager extends javax.swing.JFrame
 
         // initialize world
         if (world == null) InitializeWorld();
-        world_listener = world.Create(world_data.world_id, world_data.width + "x" + world_data.height);
-
-        Assert.notNull(world_listener, "redis listener cannot be null!");
+        world.Create(world_data.world_id, world_data.width, world_data.height);
 
         for (JSONAgentData data : agents_data) {
             try {
                 world.Log(String.format("initializing %s %s -> %s", data.agent_name, data.start, data.dest));
-                new AgentClient(
+                AgentClient client = new AgentClient(
                     agents_map
                         .get(data.agent_class_name)
                         .getDeclaredConstructor(String.class, String.class, Point.class, Point.class, int.class)
                         .newInstance(data.agent_name, data.agent_name, new Point(data.start.get(), "-"), new Point(data.dest.get(), "-"), data.token_c)
-                ).join(WorldID);
+                );
+                client.Join(world);
             } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
                 logger.error("An error occurred while trying to generate a client");
                 e.printStackTrace();
                 System.exit(1);
             }
         }
+        world.Run();
     }
 
     //<editor-fold defaultstate="collapsed" desc="Update Create Card info for Import">
