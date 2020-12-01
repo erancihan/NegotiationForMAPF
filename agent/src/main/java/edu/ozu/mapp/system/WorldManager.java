@@ -253,6 +253,7 @@ public class WorldManager
     {
         client.SetJoinCallback(this::Join);
         client.SetBroadcastCallback(this::Broadcast);
+        client.SetNegotiatedCallback(this::Negotiated);
         client.SetMoveCallback(this::Move);
 
         clients.put(client.GetAgentName(), client);
@@ -303,7 +304,7 @@ public class WorldManager
      * Invoked at the end of Negotiation sessions to indicate
      * task related to negotiations are done.
      * */
-    public synchronized void Negotiate(String agent_name)
+    public synchronized void Negotiated(String agent_name)
     {
         FLAG_NEGOTIATIONS.add(agent_name);
     }
