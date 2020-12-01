@@ -260,13 +260,24 @@ public class WorldManager
         logger.info(String.format("Agent %s has Registered", client.GetAgentName()));
         state_log.add(new Object[]{String.format("Agent %s has Registered", client.GetAgentName()), new java.sql.Timestamp(System.currentTimeMillis()) });
 
+        client.WORLD_HANDLER_JOIN_HOOK();
+
         active_agent_c++;
     }
 
-    public synchronized void Join(String agent_name)
+    public synchronized String[] Join(DATA_REQUEST_PAYLOAD_WORLD_JOIN payload)
     {
-        // TODO HANDLE JOIN
-        FLAG_JOINS.add(agent_name);
+        FLAG_JOINS.add(payload.AGENT_NAME);
+
+        // TODO set map data
+
+        // TODO set broadcast data
+
+        // TODO set bank data, TOKEN for agent
+
+        // TODO register agent as ACTIVE
+
+        return new String[]{WorldID, width+"x"+height};
     }
 
     /**

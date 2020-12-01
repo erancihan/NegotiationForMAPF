@@ -2,6 +2,7 @@ package edu.ozu.mapp.agent.client;
 
 import edu.ozu.mapp.agent.Agent;
 import edu.ozu.mapp.agent.client.ui.AgentUI;
+import edu.ozu.mapp.system.DATA_REQUEST_PAYLOAD_WORLD_JOIN;
 import edu.ozu.mapp.system.WorldManager;
 import edu.ozu.mapp.utils.JSONWorldWatch;
 import org.springframework.util.Assert;
@@ -10,6 +11,7 @@ import javax.swing.*;
 import java.util.HashMap;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class AgentClient {
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(AgentClient.class);
@@ -64,10 +66,10 @@ public class AgentClient {
 
     // Handler Hooks
 
-    public void join(String worldID)
-    {
-        handler.join(worldID);
-    }
+//    public void join(String worldID)
+//    {
+//        handler.join(worldID);
+//    }
 
     public void leave()
     {
@@ -77,6 +79,11 @@ public class AgentClient {
     public void Join(WorldManager world)
     {
         world.Register(this);
+    }
+
+    public void WORLD_HANDLER_JOIN_HOOK()
+    {
+        handler.WORLD_HANDLER_JOIN_HOOK();
     }
 
     public String GetAgentName()
@@ -89,14 +96,19 @@ public class AgentClient {
         handler.UpdateState(watch);
     }
 
-    public void SetJoinCallback(Consumer<String> callback)
+    public void SetJoinCallback(Function<DATA_REQUEST_PAYLOAD_WORLD_JOIN, String[]> callback)
     {
-        handler.join(callback);
+        handler.SetJoinCallback(callback);
     }
 
     public void SetBroadcastCallback(BiConsumer<String, String[]> callback)
     {
+        handler.SetBroadcastCallback(callback);
+    }
 
+    public void SetNegotiatedCallback(Consumer<String> callback)
+    {
+        handler.SetNegotiatedCallback(callback);
     }
 
     public void SetMoveCallback(BiConsumer<AgentHandler, HashMap<String, Object>> callback)

@@ -4,13 +4,12 @@ import com.google.gson.Gson;
 import edu.ozu.mapp.agent.Agent;
 import edu.ozu.mapp.agent.client.helpers.*;
 import edu.ozu.mapp.agent.client.models.Contract;
+import edu.ozu.mapp.system.DATA_REQUEST_PAYLOAD_WORLD_JOIN;
 import edu.ozu.mapp.utils.*;
 import org.springframework.util.Assert;
 import redis.clients.jedis.Jedis;
 
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -30,6 +29,11 @@ public class AgentHandler {
     private int[] state_flag = new int[2];
     private int is_moving = 1;
     private String conflict_location = "";
+
+    private Function<DATA_REQUEST_PAYLOAD_WORLD_JOIN, String[]> WORLD_HANDLER_JOIN;
+    private BiConsumer<String, String[]>                        WORLD_HANDLER_SET_BROADCAST;
+    private BiConsumer<AgentHandler, HashMap<String, Object>>   WORLD_HANDLER_MOVE;
+    private Consumer<String>                                    WORLD_HANDLER_NEGOTIATED;
 
     AgentHandler(Agent client) {
         Assert.notNull(client.START, "«START cannot be null»");
@@ -55,64 +59,90 @@ public class AgentHandler {
         return agent.AGENT_ID;
     }
 
-    /**
-     * The function that will be invoked by WebUI when player selects to join a world
-     *
-     * @param world_id id of the world the agent will join to
-     */
-    public void join(String world_id)
-    {   // headless join
-        this.join(world_id, (arg0, arg1) -> {});
-    }
+//<editor-fold defaultstate="collapsed" desc="Deprecated">
+/*
+//    /**
+//     * The function that will be invoked by WebUI when player selects to join a world
+//     *
+//     * @param world_id id of the world the agent will join to
+//     /
+//    public void join(String world_id)
+//    {   // headless join
+//        this.join(world_id, (arg0, arg1) -> {});
+//    }
 
-    public void join(String world_id, BiConsumer<JSONWorldWatch, String[]> draw)
+//    public void join(String world_id, BiConsumer<JSONWorldWatch, String[]> draw)
+//    {
+//        WORLD_ID = world_id.split(":")[1];
+//        logger.info("joining " + WORLD_ID);
+//
+//        agent.setWORLD_ID(WORLD_ID);
+//        agent.dimensions = new WorldHandler().GetDimensions(WORLD_ID);
+//
+//        new Join(agent).join(WORLD_ID);
+//
+//        fl.setWorldID(WORLD_ID);            // SET AGENT WORLD INFO ON LOGGER
+//        fl.LogAgentInfo(agent, "JOIN");     // LOG AGENT INFO ON JOIN
+//        fl.logAgentWorldJoin(agent);    // LOG AGENT JOIN
+//
+//        __watch(draw);
+//    }
+
+//    //<editor-fold defaultstate="collapsed" desc="Start watching World state :__watch">
+//    private void __watch(BiConsumer<JSONWorldWatch, String[]> draw)
+//    {
+//        Assert.notNull(draw, "Draw function cannot be null");
+//
+//        try {
+//            // open websocket
+//            String ws = "ws://" + Globals.SERVER + "/world/" + WORLD_ID + "/" + agent.AGENT_ID;
+//            websocket = new WorldWatchWS(new URI(ws));
+//
+//            // add handler
+//            websocket.setMessageHandler(message -> {
+//                JSONWorldWatch watch = gson.fromJson(message, JSONWorldWatch.class);
+//
+//                draw.accept(watch, agent.GetOwnBroadcastPath());
+//                handleState(watch);
+//            });
+//
+//            // send message
+//            websocket.sendMessage("ping");
+//        } catch (URISyntaxException e) {
+//            e.printStackTrace();
+//        }
+//    }
+//    //</editor-fold>
+*/
+//</editor-fold>
+
+    public void WORLD_HANDLER_JOIN_HOOK()
     {
-        WORLD_ID = world_id.split(":")[1];
-        logger.info("joining " + WORLD_ID);
+        DATA_REQUEST_PAYLOAD_WORLD_JOIN payload = new DATA_REQUEST_PAYLOAD_WORLD_JOIN();
+        payload.AGENT_NAME      = getAgentName();
+        payload.AGENT_ID        = agent.AGENT_ID;
+        payload.LOCATION        = agent.START;
+        payload.BROADCAST       = agent.GetOwnBroadcastPath();
+        payload.INIT_TOKEN_C    = agent.initial_tokens;
+
+        String[] response = WORLD_HANDLER_JOIN.apply(payload);
+        WORLD_ID = response[0];
+
+        logger.info("joining " + WORLD_ID + " | serverless");
 
         agent.setWORLD_ID(WORLD_ID);
-        agent.dimensions = new WorldHandler().GetDimensions(WORLD_ID);
-
-        new Join(agent).join(WORLD_ID);
+        agent.dimensions = response[1];
 
         fl.setWorldID(WORLD_ID);            // SET AGENT WORLD INFO ON LOGGER
         fl.LogAgentInfo(agent, "JOIN");     // LOG AGENT INFO ON JOIN
         fl.logAgentWorldJoin(agent);    // LOG AGENT JOIN
 
-        __watch(draw);
+        // at this point, Agent will be Registered to World
+        // and once world starts running, Client will start invoking UpdateState function
+        // which will call UpdateState function
     }
 
-    //<editor-fold defaultstate="collapsed" desc="Start watching World state :__watch">
-    private void __watch(BiConsumer<JSONWorldWatch, String[]> draw)
-    {
-        Assert.notNull(draw, "Draw function cannot be null");
-
-        try {
-            // open websocket
-            String ws = "ws://" + Globals.SERVER + "/world/" + WORLD_ID + "/" + agent.AGENT_ID;
-            websocket = new WorldWatchWS(new URI(ws));
-
-            // add handler
-            websocket.setMessageHandler(message -> {
-                JSONWorldWatch watch = gson.fromJson(message, JSONWorldWatch.class);
-
-                draw.accept(watch, agent.GetOwnBroadcastPath());
-                handleState(watch);
-            });
-
-            // send message
-            websocket.sendMessage("ping");
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
-        }
-    }
-    //</editor-fold>
-
-    public void join(Consumer<String> callback)
-    {
-        callback.accept(getAgentName());
-    }
-
+    // TODO Rename
     public void UpdateState(JSONWorldWatch watch)
     {
         handleState(watch);
@@ -552,5 +582,27 @@ public class AgentHandler {
     {
         // todo it should be possible to merge this function with another
         agent.LogNegotiationOver(bidding_agent, session_id);
+    }
+
+/** ================================================================================================================ **/
+
+    public void SetJoinCallback(Function<DATA_REQUEST_PAYLOAD_WORLD_JOIN, String[]> function)
+    {
+        WORLD_HANDLER_JOIN = function;
+    }
+
+    public void SetBroadcastCallback(BiConsumer<String, String[]> function)
+    {
+        WORLD_HANDLER_SET_BROADCAST = function;
+    }
+
+    public void SetNegotiatedCallback(Consumer<String> function)
+    {
+        WORLD_HANDLER_NEGOTIATED = function;
+    }
+
+    public void SetMoveCallback(BiConsumer<AgentHandler, HashMap<String, Object>> function)
+    {
+        WORLD_HANDLER_MOVE = function;
     }
 }

@@ -95,7 +95,7 @@ public class WorldWatch extends javax.swing.JPanel {
     public void mount()
     {
         logger.info("mount");
-        client.join(world_id, this::draw);
+//        client.join(world_id, this::draw);
     }
 
     public void unmount()
