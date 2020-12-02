@@ -27,4 +27,10 @@ public class JSONPointData {
         this.x = Integer.parseInt(xy[0]);
         this.y = Integer.parseInt(xy[1]);
     }
+
+    @Override
+    public String toString()
+    {
+        return "(" + x + ", " + y + ")";
+    }
 }
