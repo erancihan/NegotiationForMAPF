@@ -79,8 +79,8 @@ public class ScenarioCanvas extends Canvas
         for (int i = 0; i <= world.width; i++)
         {
             g.setColor(Color.BLACK);
-            g.drawLine((offset + i*cell_size), offset, (offset + i*cell_size), (offset + cell_size*world.height));
-            g.drawLine(offset, (offset + i*cell_size), (offset + cell_size*world.width), (offset + i*cell_size));
+            g.drawLine((offset + i * cell_size), offset, (offset + i * cell_size), (offset + cell_size * world.height));
+            g.drawLine(offset, (offset + i * cell_size), (offset + cell_size * world.width), (offset + i * cell_size));
         }
 
         for (String agent_key : agents.keySet())
@@ -89,18 +89,19 @@ public class ScenarioCanvas extends Canvas
 
             // DRAW AGENT TARGET LOCATION
             g.fillRect(
-                (agents_data.get(agent_key).dest.x * cell_size),
-                (agents_data.get(agent_key).dest.y * cell_size),
-                cell_size, cell_size
+                (offset + (agents_data.get(agent_key).dest.x * cell_size) + (int) (cell_size * 0.25)),
+                (offset + (agents_data.get(agent_key).dest.y * cell_size) + (int) (cell_size * 0.25)),
+                (int) (cell_size * 0.5),
+                (int) (cell_size * 0.5)
             );
 
             // DRAW AGENT TARGET LOCATION IDENTIFIER
             String short_key = agent_key.split("_")[1];
             g.setColor(Color.RED);
             g.drawString(
-                    short_key,
-                    (agents_data.get(agent_key).dest.x * cell_size) + 2,
-                    (agents_data.get(agent_key).dest.y * cell_size) + 13
+                short_key,
+                ((agents_data.get(agent_key).dest.x * cell_size) + 2),
+                ((agents_data.get(agent_key).dest.y * cell_size) + 13)
             );
         }
 
@@ -115,9 +116,9 @@ public class ScenarioCanvas extends Canvas
                 Point agent_current_loc = broadcast[0];
 
                 g.fillOval(
-                        (agent_current_loc.x * cell_size),
-                        (agent_current_loc.y * cell_size),
-                        cell_size, cell_size
+                    (agent_current_loc.x * cell_size),
+                    (agent_current_loc.y * cell_size),
+                    cell_size, cell_size
                 );
 
                 // DRAW AGENT CURRENT LOCATION IDENTIFIER
@@ -125,8 +126,8 @@ public class ScenarioCanvas extends Canvas
                 g.setColor(Color.RED);
                 g.drawString(
                     short_key,
-                    (agent_current_loc.x * cell_size) + 2,
-                    (agent_current_loc.y * cell_size) + 13
+                    ((agent_current_loc.x * cell_size) + 2),
+                    ((agent_current_loc.y * cell_size) + 13)
                 );
             }
 
@@ -155,8 +156,8 @@ public class ScenarioCanvas extends Canvas
                     Point dest = i + 1 >= path.size() ? broadcast[0] : path.get(i + 1);
 
                     g.drawLine(
-                        (from.x * cell_size) + (cell_size / 2), (from.y * cell_size) + (cell_size / 2),
-                        (dest.x * cell_size) + (cell_size / 2), (dest.y * cell_size) + (cell_size / 2)
+                        ((from.x * cell_size) + (cell_size / 2)), ((from.y * cell_size) + (cell_size / 2)),
+                        ((dest.x * cell_size) + (cell_size / 2)), ((dest.y * cell_size) + (cell_size / 2))
                     );
                 }
 
@@ -166,8 +167,8 @@ public class ScenarioCanvas extends Canvas
                     Point dest = broadcast[i + 1];
 
                     g.drawLine(
-                        (from.x * cell_size) + (cell_size / 2), (from.y * cell_size) + (cell_size / 2),
-                        (dest.x * cell_size) + (cell_size / 2), (dest.y * cell_size) + (cell_size / 2)
+                        ((from.x * cell_size) + (cell_size / 2)), ((from.y * cell_size) + (cell_size / 2)),
+                        ((dest.x * cell_size) + (cell_size / 2)), ((dest.y * cell_size) + (cell_size / 2))
                     );
                 }
 
@@ -179,8 +180,8 @@ public class ScenarioCanvas extends Canvas
                     Point dest = i + 1 >= agent_planned_path.size() ? agent_planned_path.get(i) : agent_planned_path.get(i + 1);
 
                     g.drawLine(
-                        (from.x * cell_size) + (cell_size / 2), (from.y * cell_size) + (cell_size / 2),
-                        (dest.x * cell_size) + (cell_size / 2), (dest.y * cell_size) + (cell_size / 2)
+                        ((from.x * cell_size) + (cell_size / 2)), ((from.y * cell_size) + (cell_size / 2)),
+                        ((dest.x * cell_size) + (cell_size / 2)), ((dest.y * cell_size) + (cell_size / 2))
                     );
                 }
             }
