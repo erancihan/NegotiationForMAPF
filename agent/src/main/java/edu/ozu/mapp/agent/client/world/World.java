@@ -38,6 +38,7 @@ public class World
     private int prev_state_id = -1;
     private int notify_await_cycle = 0;
     private int negotiation_state_clock = 0;
+    private int world_t = 0;
 
     private ArrayList<Object[]> state_log = new ArrayList<>();
     private BiConsumer<Map<String, String>, ArrayList<Object[]>> LogDrawCallback;
@@ -69,6 +70,7 @@ public class World
         state_log.add(new Object[]{"- SIM_START", new java.sql.Timestamp(System.currentTimeMillis())});
 
         IsLooping = true;
+        Step();
     }
 
     public void Stop()
@@ -93,6 +95,7 @@ public class World
         CanvasUpdateCallback.run();
 
         OnCurrentStateChange.accept(Globals.WORLD_STATES.get(curr_state_id).toString());
+        Log("current state: " + Globals.WORLD_STATES.get(curr_state_id).toString());
 
 //        if (data.get("player_count").equals("0")) {
 //            return; // do nothing if there are no players
@@ -248,6 +251,7 @@ public class World
                 this.WorldID,
                 (message) -> {
                     Map<String, String> data = gson.fromJson(message, messageMapType);
+                    data.put("World T", String.valueOf(world_t));
 
                     LogDrawCallback.accept(data, state_log);
 
@@ -270,14 +274,18 @@ public class World
             case 3:
                 // MOVE state, switch to COLLISION_CHECK state
                 jedis.hset(WorldID, "world_state", "1");
+                Log("changing state to BROADCAST & COLLISION_CHECK");
+                world_t++;
                 break;
             case 1:
                 // COLLISION_CHECK state, switch to NEGOTIATION state
                 jedis.hset(WorldID, "world_state", "2");
+                Log("changing state to NEGOTIATION");
                 break;
             case 2:
                 // NEGOTIATION state, switch to MOVE state
                 jedis.hset(WorldID, "world_state", "3");
+                Log("changing state to MOVE");
                 break;
             default:
         }

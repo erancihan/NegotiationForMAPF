@@ -5,9 +5,11 @@ import edu.ozu.mapp.agent.client.ui.AgentUI;
 import edu.ozu.mapp.system.DATA_REQUEST_PAYLOAD_WORLD_JOIN;
 import edu.ozu.mapp.system.WorldManager;
 import edu.ozu.mapp.utils.JSONWorldWatch;
+import edu.ozu.mapp.utils.Point;
 import org.springframework.util.Assert;
 
 import javax.swing.*;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -64,8 +66,13 @@ public class AgentClient {
         java.awt.EventQueue.invokeLater(() -> new AgentUI(this.handler).setVisible(true));
     }
 
-    // Handler Hooks
+    // SCENARIO CANVAS HELPER FUNCTION
+    public ArrayList<Point> GetAgentPlannedPath()
+    {
+        return handler.GetAgentPlannedPath();
+    }
 
+    // Handler Hooks
 //    public void join(String worldID)
 //    {
 //        handler.join(worldID);

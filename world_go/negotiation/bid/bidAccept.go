@@ -98,6 +98,10 @@ func (bid *Bid) Accept(ctx echo.Context, rds redis.Conn) (err error) {
 	if bid.AgentID == contract.A {
 		// A accepted
 		d := math.Max(float64(Ta-Tb), 0)
+		if d == 0 {
+			// no diff
+			return
+		}
 
 		_, err = rds.Do("HINCRBY", "world:"+wid+":bank", "agent:"+contract.A, d)    // A receives D
 		_, err = rds.Do("HINCRBY", "world:"+wid+":bank", "agent:"+contract.B, -1*d) // B pays D
@@ -105,12 +109,16 @@ func (bid *Bid) Accept(ctx echo.Context, rds redis.Conn) (err error) {
 	if bid.AgentID == contract.B {
 		// B accepted
 		d := math.Max(float64(Ta-Tb), 0)
+		if d == 0 {
+			// no diff
+			return
+		}
 
 		_, err = rds.Do("HINCRBY", "world:"+wid+":bank", "agent:"+contract.A, -1*d) // A pays D
 		_, err = rds.Do("HINCRBY", "world:"+wid+":bank", "agent:"+contract.B, d)    // B receives D
 	}
 	if err != nil {
-		fmt.Println("something went wrong")
+		fmt.Println("something went wrong", Ta, Tb)
 		ctx.Logger().Fatal(err)
 	}
 

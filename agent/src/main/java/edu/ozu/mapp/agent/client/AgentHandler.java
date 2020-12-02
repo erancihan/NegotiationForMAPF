@@ -14,6 +14,7 @@ import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class AgentHandler {
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(AgentHandler.class);
@@ -396,6 +397,11 @@ public class AgentHandler {
 
     public String GetAgentID() {
         return agent.AGENT_ID;
+    }
+
+    public ArrayList<Point> GetAgentPlannedPath()
+    {
+        return agent.path.stream().map(p -> new Point(p, "-")).collect(Collectors.toCollection(ArrayList::new));
     }
 
     public void OnReceiveState(State state)
