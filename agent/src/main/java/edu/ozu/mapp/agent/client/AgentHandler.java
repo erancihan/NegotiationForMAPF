@@ -203,7 +203,7 @@ public class AgentHandler {
         if (agent_ids.length > 1)
         {   // my path collides with broadcasted paths!
             logger.debug("notify negotiation > " + Arrays.toString(agent_ids));
-            notifyNegotiation(agent_ids);
+//            notifyNegotiation(agent_ids);
         }
 
         // TODO HANDLE BROADCAST
@@ -223,7 +223,6 @@ public class AgentHandler {
             }
 
             String[] path = broadcast[2].replaceAll("[\\[\\]]", "").split(",");
-
             ConflictInfo conflict_info = new ConflictCheck().check(own_path, path);
             if (conflict_info.hasConflict)
             {
@@ -247,20 +246,20 @@ public class AgentHandler {
         return agent_ids.toArray(new String[0]);
     }
 
-    //<editor-fold defaultstate="collapsed" desc="Notify Negotiation Participants">
-    private void notifyNegotiation(String[] agent_ids)
-    {// notify negotiation
-        // engage in bi-lateral negotiation session with each of the agents
-        // TODO ?? what else is there
-        HashMap<String, Object> payload = new HashMap<>();
-        payload.put("world_id", WORLD_ID);
-        payload.put("agent_id", agent.AGENT_ID);
-        payload.put("agents", agent_ids);
-
-        String response = Utils.post("http://localhost:5000/negotiation/notify", payload);
-
-        logger.info("__postNotify" + response);
-    }
+    //<editor-fold defaultstate="collapsed" desc="(DEPRECATED) Notify Negotiation Participants">
+//    private void notifyNegotiation(String[] agent_ids)
+//    {// notify negotiation
+//        // engage in bi-lateral negotiation session with each of the agents
+//        // TODO ?? what else is there
+//        HashMap<String, Object> payload = new HashMap<>();
+//        payload.put("world_id", WORLD_ID);
+//        payload.put("agent_id", agent.AGENT_ID);
+//        payload.put("agents", agent_ids);
+//
+//        String response = Utils.post("http://localhost:5000/negotiation/notify", payload);
+//
+//        logger.info("__postNotify" + response);
+//    }
     //</editor-fold>
 
     private void negotiate()
