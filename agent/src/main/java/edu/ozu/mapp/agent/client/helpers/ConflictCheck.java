@@ -23,7 +23,7 @@ public class ConflictCheck {
         // check Vertex Conflict
         for (int i = 0; i < own.length && i < other.length; i++)
         {
-            if (own[i].equals(other[i]))
+            if (own[i].trim().equals(other[i].trim()))
             {
                 conflicts.put(own[i], new ConflictInfo(i, ConflictType.VertexConflict));
                 break;  // finding 1 per path is enough
@@ -33,7 +33,7 @@ public class ConflictCheck {
         // check Swap Conflict
         for (int t = 0; t + 1 < own.length && t + 1 < other.length; t++)
         {
-            if (own[t].equals(other[t + 1]) && own[t+1].equals(other[t]))
+            if (own[t].trim().equals(other[t + 1].trim()) && own[t+1].trim().equals(other[t].trim()))
             {
                 conflicts.put(own[t]+own[t+1], new ConflictInfo(t, ConflictType.SwapConflict));
                 break;  // finding 1 per path is enough
