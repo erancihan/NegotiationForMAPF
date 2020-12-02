@@ -975,10 +975,10 @@ public class ScenarioManager extends javax.swing.JFrame
                 if (i == 0 && j == 0) continue; // self
 
                 boolean is_occupied =
-                        AgentStartLocations.contains((_x + i) + ":" + (_y + j)) ||
-                        AgentStartLocations.contains((_x + i) + ":" + (_y - j)) ||
-                        AgentStartLocations.contains((_x - i) + ":" + (_y + j)) ||
-                        AgentStartLocations.contains((_x - i) + ":" + (_y - j));
+                        AgentStartLocations.contains((_x + i) + "-" + (_y + j)) ||
+                        AgentStartLocations.contains((_x + i) + "-" + (_y - j)) ||
+                        AgentStartLocations.contains((_x - i) + "-" + (_y + j)) ||
+                        AgentStartLocations.contains((_x - i) + "-" + (_y - j));
 
                 if (is_occupied) {
                     // Premise NOT Clear
