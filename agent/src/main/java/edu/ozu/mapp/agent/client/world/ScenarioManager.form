@@ -2111,12 +2111,12 @@
 
                               <Layout class="org.netbeans.modules.form.compat2.layouts.DesignFlowLayout"/>
                               <SubComponents>
-                                <Component class="javax.swing.JButton" name="btn_cycle_states">
+                                <Component class="javax.swing.JToggleButton" name="btn_cycle_states">
                                   <Properties>
                                     <Property name="text" type="java.lang.String" value="Cycle"/>
                                   </Properties>
                                   <Events>
-                                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btn_cycle_statesActionPerformed"/>
+                                    <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="btn_cycle_statesItemStateChanged"/>
                                   </Events>
                                 </Component>
                               </SubComponents>

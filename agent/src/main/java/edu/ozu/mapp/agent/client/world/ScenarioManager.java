@@ -24,6 +24,7 @@ import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.AbstractTableModel;
 import java.awt.*;
+import java.awt.event.ItemEvent;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -122,7 +123,7 @@ public class ScenarioManager extends javax.swing.JFrame
         scenario_canvas = new edu.ozu.mapp.agent.client.world.ScenarioCanvas();
         javax.swing.JPanel world_controls = new javax.swing.JPanel();
         javax.swing.JPanel jPanel1 = new javax.swing.JPanel();
-        btn_cycle_states = new javax.swing.JButton();
+        btn_cycle_states = new javax.swing.JToggleButton();
         javax.swing.JPanel jPanel2 = new javax.swing.JPanel();
         label_current_state = new javax.swing.JLabel();
         btn_next_state = new javax.swing.JButton();
@@ -561,9 +562,9 @@ public class ScenarioManager extends javax.swing.JFrame
         world_controls.setLayout(new java.awt.BorderLayout());
 
         btn_cycle_states.setText("Cycle");
-        btn_cycle_states.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btn_cycle_statesActionPerformed(evt);
+        btn_cycle_states.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                btn_cycle_statesItemStateChanged(evt);
             }
         });
         jPanel1.add(btn_cycle_states);
@@ -758,12 +759,24 @@ public class ScenarioManager extends javax.swing.JFrame
         // todo flush
     }//GEN-LAST:event_back_to_overview_btnActionPerformed
 
-    private void btn_cycle_statesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_cycle_statesActionPerformed
-        if (world != null)
+    private void btn_cycle_statesItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_btn_cycle_statesItemStateChanged
+        int state = evt.getStateChange();
+
+        if (state == ItemEvent.SELECTED)
         {
-            world.Loop();
+            if (world != null)
+            {
+                world.Loop();
+            }
         }
-    }//GEN-LAST:event_btn_cycle_statesActionPerformed
+        if (state == ItemEvent.DESELECTED)
+        {
+            if (world != null)
+            {
+                world.Stop();
+            }
+        }
+    }//GEN-LAST:event_btn_cycle_statesItemStateChanged
 
     private void btn_next_stateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_next_stateActionPerformed
         if (world != null)
@@ -814,7 +827,7 @@ public class ScenarioManager extends javax.swing.JFrame
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTable agent_detail_table;
     private javax.swing.JTable agents_table;
-    private javax.swing.JButton btn_cycle_states;
+    private javax.swing.JToggleButton btn_cycle_states;
     private javax.swing.JButton btn_next_state;
     private javax.swing.JPanel cards_container;
     private javax.swing.JFileChooser file_chooser;
