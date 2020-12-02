@@ -6,15 +6,13 @@ import edu.ozu.mapp.agent.client.helpers.FileLogger;
 import edu.ozu.mapp.utils.Globals;
 import edu.ozu.mapp.utils.JSONWorldWatch;
 import edu.ozu.mapp.utils.Point;
+import edu.ozu.mapp.utils.Utils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -39,7 +37,11 @@ public class WorldManager
      * K: Agent name
      * V: Agent's broadcasted path
      * */
-    private ConcurrentHashMap<String, String[]>     broadcasts;
+    private ConcurrentHashMap<String, String[]> broadcasts;
+    private ConcurrentHashMap<String, Integer>  bank_data;
+    private ConcurrentHashMap<String, String>   agent_to_point;
+    private ConcurrentHashMap<String, String>   point_to_agent;
+    private ConcurrentSkipListSet<String>       active_agents;
 
     private MovementHandler movement_handler;
 
@@ -64,6 +66,12 @@ public class WorldManager
         curr_state       = Globals.WorldState.JOIN;
         prev_state       = Globals.WorldState.NONE;
         movement_handler = MovementHandler.getInstance();
+
+        broadcasts     = new ConcurrentHashMap<>();
+        bank_data      = new ConcurrentHashMap<>();
+        agent_to_point = new ConcurrentHashMap<>();
+        point_to_agent = new ConcurrentHashMap<>();
+        active_agents  = new ConcurrentSkipListSet<>();
 
         FLAG_JOINS          = new HashSet<>();
         FLAG_BROADCASTS     = new HashSet<>();
@@ -216,7 +224,37 @@ public class WorldManager
     private JSONWorldWatch get_current_state(String agent_name)
     {
         // TODO
-        return null;
+        JSONWorldWatch data = new JSONWorldWatch();
+        data.world_state = curr_state.key;
+        data.fov_size    = Globals.FIELD_OF_VIEW_SIZE;
+        data.fov         = GetAgentFoV(agent_name);
+        data.time_tick   = 0;
+
+        return data;
+    }
+
+    private String[][] GetAgentFoV(String agent_name)
+    {
+        ArrayList<String[]> agents = new ArrayList<>();
+        Point loc = new Point(agent_to_point.get(agent_name), "-");
+
+        for (int i = 0; i < Globals.FIELD_OF_VIEW_SIZE; i++) {
+            for (int j = 0; j < Globals.FIELD_OF_VIEW_SIZE; j++)
+            {
+                int x = loc.x + (j - Globals.FIELD_OF_VIEW_SIZE / 2);
+                int y = loc.y + (i - Globals.FIELD_OF_VIEW_SIZE / 2);
+
+                if (x == loc.x && y == loc.y) continue;
+
+                String agent_key = point_to_agent.getOrDefault(x + "-" + y, "");
+                if (!agent_key.isEmpty())
+                {
+                    agents.add(new String[]{agent_key, x + "-" + y, Utils.toString(broadcasts.get(agent_key), ",")});
+                }
+            }
+        }
+
+        return agents.toArray(new String[0][3]);
     }
 
     public void Step()
@@ -287,13 +325,18 @@ public class WorldManager
     {
         FLAG_JOINS.add(payload.AGENT_NAME);
 
-        // TODO set map data
+        // set map data
+        agent_to_point.put(payload.AGENT_NAME, payload.LOCATION.key);
+        point_to_agent.put(payload.LOCATION.key, payload.AGENT_NAME);
 
-        // TODO set broadcast data
+        // set broadcast data
+        broadcasts.put(payload.AGENT_NAME, payload.BROADCAST);
 
-        // TODO set bank data, TOKEN for agent
+        // set bank data, TOKEN for agent
+        bank_data.put(payload.AGENT_NAME, payload.INIT_TOKEN_C);
 
-        // TODO register agent as ACTIVE
+        // register agent as ACTIVE
+        active_agents.add(payload.AGENT_NAME);
 
         return new String[]{WorldID, width+"x"+height};
     }
