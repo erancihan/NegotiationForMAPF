@@ -70,6 +70,7 @@ public class World
         state_log.add(new Object[]{"- SIM_START", new java.sql.Timestamp(System.currentTimeMillis())});
 
         IsLooping = true;
+        Step();
     }
 
     public void Stop()
@@ -94,6 +95,7 @@ public class World
         CanvasUpdateCallback.run();
 
         OnCurrentStateChange.accept(Globals.WORLD_STATES.get(curr_state_id).toString());
+        Log("current state: " + Globals.WORLD_STATES.get(curr_state_id).toString());
 
 //        if (data.get("player_count").equals("0")) {
 //            return; // do nothing if there are no players
@@ -272,15 +274,18 @@ public class World
             case 3:
                 // MOVE state, switch to COLLISION_CHECK state
                 jedis.hset(WorldID, "world_state", "1");
+                Log("changing state to BROADCAST & COLLISION_CHECK");
                 world_t++;
                 break;
             case 1:
                 // COLLISION_CHECK state, switch to NEGOTIATION state
                 jedis.hset(WorldID, "world_state", "2");
+                Log("changing state to NEGOTIATION");
                 break;
             case 2:
                 // NEGOTIATION state, switch to MOVE state
                 jedis.hset(WorldID, "world_state", "3");
+                Log("changing state to MOVE");
                 break;
             default:
         }
