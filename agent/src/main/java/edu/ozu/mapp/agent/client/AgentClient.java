@@ -66,11 +66,17 @@ public class AgentClient {
         java.awt.EventQueue.invokeLater(() -> new AgentUI(this.handler).setVisible(true));
     }
 
-    // SCENARIO CANVAS HELPER FUNCTION
+    // SCENARIO CANVAS HELPER FUNCTIONS
     public ArrayList<Point> GetAgentPlannedPath()
     {
         return handler.GetAgentPlannedPath();
     }
+
+    public Point[] GetBroadcast()
+    {
+        return handler.GetBroadcast();
+    }
+
 
     // Handler Hooks
 //    public void join(String worldID)

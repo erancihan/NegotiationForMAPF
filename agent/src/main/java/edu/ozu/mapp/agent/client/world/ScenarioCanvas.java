@@ -1,6 +1,7 @@
 package edu.ozu.mapp.agent.client.world;
 
 import edu.ozu.mapp.agent.client.AgentClient;
+import edu.ozu.mapp.system.WorldManager;
 import edu.ozu.mapp.utils.Globals;
 import edu.ozu.mapp.utils.JSONAgentData;
 import edu.ozu.mapp.utils.JSONWorldData;
@@ -20,6 +21,7 @@ public class ScenarioCanvas extends Canvas
 
     private Jedis jedis;
     private JSONWorldData world;
+    private WorldManager world_ref;
 
     // { 'AGENT_ID': [ 'X-Y' , ... ] }
     private HashMap<String, ArrayList<Point>>   history         = new HashMap<>();
@@ -33,6 +35,7 @@ public class ScenarioCanvas extends Canvas
     private Random rand = new Random();
     private int cell_size = 0;
     private int offset = 1;
+
 
     public ScenarioCanvas()
     {
@@ -192,7 +195,12 @@ public class ScenarioCanvas extends Canvas
 
     public void Init()
     {
-        Connect();
+        Init(false);
+    }
+
+    public void Init(boolean is_serverless)
+    {
+        if (!is_serverless) Connect();
 
         // CALCULATE CELL SIZE
         cell_size = calculate_cell_size();
@@ -203,7 +211,8 @@ public class ScenarioCanvas extends Canvas
                     do {
                         TimeUnit.MILLISECONDS.sleep(100);
 
-                        Update();
+                        if (!is_serverless) Update();
+                        else Update(true);
                     } while (agents.size() != world.agent_count);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
@@ -222,8 +231,21 @@ public class ScenarioCanvas extends Canvas
 
     public void Update()
     {
-        if (jedis != null)
-        {
+        Update(false);
+    }
+
+    public void Update(boolean is_serverless)
+    {
+        if (is_serverless) {
+            if (world_ref == null) return;
+
+            agents = world_ref.GetAllBroadcasts();
+            agents.keySet().forEach(agent_name -> history.put(agent_name, new ArrayList<>()));
+
+            System.out.println(agents);
+        } else {
+            if (jedis == null) return;
+
             String WorldPath = String.format("world:%s:path", world.world_id);
 
             ScanParams params = new ScanParams().match("*");
@@ -304,5 +326,9 @@ public class ScenarioCanvas extends Canvas
     public void SetAgentRefs(HashMap<String, AgentClient> agent_refs)
     {
         this.agent_refs = agent_refs;
+    }
+
+    public void SetWorldRef(WorldManager world) {
+        this.world_ref = world;
     }
 }

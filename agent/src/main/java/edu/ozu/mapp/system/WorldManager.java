@@ -5,6 +5,7 @@ import edu.ozu.mapp.agent.client.AgentHandler;
 import edu.ozu.mapp.agent.client.helpers.FileLogger;
 import edu.ozu.mapp.utils.Globals;
 import edu.ozu.mapp.utils.JSONWorldWatch;
+import edu.ozu.mapp.utils.Point;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -130,6 +131,8 @@ public class WorldManager
             return;
         }
 
+        UI_StateChangeCallback.accept(curr_state.toString());
+
         if (active_agent_c == 0 && IsLooping)
         {   // there are no active agents left!
             IsLooping = false;
@@ -159,6 +162,8 @@ public class WorldManager
 
                     logger.info("- END OF JOIN STATE");
 
+                    prev_state = curr_state;
+
                     if (IsLooping) { Step(); }
                 }
 
@@ -166,6 +171,10 @@ public class WorldManager
             case BROADCAST:
                 if (FLAG_BROADCASTS.size() == active_agent_c)
                 {   // BROADCASTS DONE
+                    logger.info("- BROADCASTS ARE DONE");
+
+                    prev_state = curr_state;
+
                     if (IsLooping) { Step(); }
                 }
 
@@ -173,6 +182,10 @@ public class WorldManager
             case NEGOTIATE:
                 if (FLAG_NEGOTIATIONS.size() == active_agent_c)
                 {   // NEGOTIATIONS ARE COMPLETE
+                    logger.info("- NEGOTIATIONS ARE COMPLETE");
+
+                    prev_state = curr_state;
+
                     if (IsLooping) { Step(); }
                 }
 
@@ -185,6 +198,10 @@ public class WorldManager
                 if (movement_handler.size() == 0)
                 {   // queue is empty
                     // switch to BROADCAST
+                    logger.info("- MOVES ARE COMPLETE");
+
+                    prev_state = curr_state;
+
                     if (IsLooping) Step();
                 }
 
@@ -325,5 +342,17 @@ public class WorldManager
         state_log.add(new Object[]{str, new java.sql.Timestamp(System.currentTimeMillis())});
 
         UI_LogDrawCallback.accept(new HashMap<>(), state_log);
+    }
+
+    public HashMap<String, Point[]> GetAllBroadcasts()
+    {
+        HashMap<String, Point[]> broadcasts = new HashMap<>();
+
+        for (String agent_name : clients.keySet())
+        {
+            broadcasts.put(agent_name, clients.get(agent_name).GetBroadcast());
+        }
+
+        return broadcasts;
     }
 }

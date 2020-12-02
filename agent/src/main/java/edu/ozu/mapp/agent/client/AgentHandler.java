@@ -404,6 +404,11 @@ public class AgentHandler {
         return agent.path.stream().map(p -> new Point(p, "-")).collect(Collectors.toCollection(ArrayList::new));
     }
 
+    public Point[] GetBroadcast()
+    {
+        return Arrays.stream(agent.GetOwnBroadcastPath()).map(p -> new Point(p, "-")).toArray(Point[]::new);
+    }
+
     public void OnReceiveState(State state)
     {
         // New state received

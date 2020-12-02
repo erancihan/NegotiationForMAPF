@@ -1047,8 +1047,9 @@ public class ScenarioManager extends javax.swing.JFrame
                 }
             });
         world.SetCurrentStateChangeCallback((state) -> label_current_state.setText(state));
-        world.SetCanvasUpdateCallback(() -> scenario_canvas.Update());
+        world.SetCanvasUpdateCallback(() -> scenario_canvas.Update(true));
 
+        scenario_canvas.SetWorldRef(world);
         scenario_canvas.SetWorldData(world_data);
         scenario_canvas.SetAgentsData(agents_data);
         scenario_canvas.Init();
