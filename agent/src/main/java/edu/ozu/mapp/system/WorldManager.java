@@ -37,13 +37,14 @@ public class WorldManager
      * K: Agent name
      * V: Agent's broadcasted path
      * */
-    private ConcurrentHashMap<String, String[]> broadcasts;
-    private ConcurrentHashMap<String, Integer>  bank_data;
-    private ConcurrentHashMap<String, String>   agent_to_point;
-    private ConcurrentHashMap<String, String>   point_to_agent;
-    private ConcurrentSkipListSet<String>       active_agents;
+    protected ConcurrentHashMap<String, String[]> broadcasts;
+    protected ConcurrentHashMap<String, Integer>  bank_data;
+    protected ConcurrentHashMap<String, String>   agent_to_point;
+    protected ConcurrentHashMap<String, String>   point_to_agent;
+    protected ConcurrentSkipListSet<String>       active_agents;
 
-    private MovementHandler movement_handler;
+    private MovementHandler     movement_handler;
+    private NegotiationManager  negotiation_manager;
 
     private ArrayList<Object[]> state_log = new ArrayList<>();
 
@@ -134,6 +135,8 @@ public class WorldManager
         Map<String, String> data = new HashMap<>();
         // TODO POPULATE DATA
 
+        UI_CanvasUpdateHook.run();
+
         if (curr_state == prev_state)
         {   // HANDLE ONCE
             return;
@@ -201,19 +204,18 @@ public class WorldManager
             case MOVE:
                 if (active_agent_c == movement_handler.size())
                 {
-                    movement_handler.ProcessQueue();
+                    movement_handler
+                        .ProcessQueue(() -> {
+                            CompletableFuture.runAsync(() -> {
+                                logger.info("- MOVES ARE COMPLETE");
+
+                                prev_state = curr_state;
+
+                                if (IsLooping) Step();
+                            });
+                        });
                 }
-                if (movement_handler.size() == 0)
-                {   // queue is empty
-                    // switch to BROADCAST
-                    logger.info("- MOVES ARE COMPLETE");
 
-                    prev_state = curr_state;
-
-                    if (IsLooping) Step();
-                }
-
-                UI_CanvasUpdateHook.run();
                 break;
             default:
         }
@@ -374,10 +376,10 @@ public class WorldManager
      *
      * @param agent - Agent Handler
      * */
-    public void Move(AgentHandler agent, HashMap<String, Object> payload)
+    public void Move(AgentHandler agent, DATA_REQUEST_PAYLOAD_WORLD_MOVE payload)
     {
         // queue agent for movement
-        movement_handler.put(agent.getAgentName(), agent);
+        movement_handler.put(agent.getAgentName(), agent, payload);
     }
 
     public void Log(String str)

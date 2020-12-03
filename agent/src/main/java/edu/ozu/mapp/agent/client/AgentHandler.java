@@ -5,6 +5,7 @@ import edu.ozu.mapp.agent.Agent;
 import edu.ozu.mapp.agent.client.helpers.*;
 import edu.ozu.mapp.agent.client.models.Contract;
 import edu.ozu.mapp.system.DATA_REQUEST_PAYLOAD_WORLD_JOIN;
+import edu.ozu.mapp.system.DATA_REQUEST_PAYLOAD_WORLD_MOVE;
 import edu.ozu.mapp.utils.*;
 import org.springframework.util.Assert;
 import redis.clients.jedis.Jedis;
@@ -33,7 +34,7 @@ public class AgentHandler {
 
     private Function<DATA_REQUEST_PAYLOAD_WORLD_JOIN, String[]> WORLD_HANDLER_JOIN;
     private BiConsumer<String, String[]>                        WORLD_HANDLER_SET_BROADCAST;
-    private BiConsumer<AgentHandler, HashMap<String, Object>>   WORLD_HANDLER_MOVE;
+    private BiConsumer<AgentHandler, DATA_REQUEST_PAYLOAD_WORLD_MOVE>   WORLD_HANDLER_MOVE;
     private Consumer<String>                                    WORLD_HANDLER_NEGOTIATED;
 
     AgentHandler(Agent client) {
@@ -291,17 +292,15 @@ public class AgentHandler {
         if (agent.time + 1 < agent.path.size()) {
             String[] next = agent.path.get(agent.time + 1).split("-");
 
-            String direction = direction(curr, next);
-            Assert.isTrue((direction.length() > 0), "«DIRECTION cannot be empty»");
+//            String direction = direction(curr, next);
+//            Assert.isTrue((direction.length() > 0), "«DIRECTION cannot be empty»");
 
             // make Agent move
-            HashMap<String, Object> payload = new HashMap<>();
-            payload.put("world_id", WORLD_ID);
-            payload.put("agent_id", agent.AGENT_ID);
-            payload.put("agent_x", String.valueOf(agent.POS.x));
-            payload.put("agent_y", String.valueOf(agent.POS.y));
-            payload.put("direction", direction);
-            payload.put("broadcast", agent.getNextBroadcast());
+            DATA_REQUEST_PAYLOAD_WORLD_MOVE payload = new DATA_REQUEST_PAYLOAD_WORLD_MOVE();
+            payload.AGENT_NAME = getAgentName();
+            payload.CURRENT_LOCATION = agent.POS;
+            payload.NEXT_LOCATION    = new Point(agent.path.get(agent.time + 1), "-");
+            payload.BROADCAST        = agent.GetNextBroadcast();
 
             WORLD_HANDLER_MOVE.accept(this, payload);
         } else {
@@ -330,35 +329,10 @@ public class AgentHandler {
 
         // update current position
         agent.POS = next_point;
+        logger.debug("moving to " + next_point.key);
 
         agent.OnMove(response);
     }
-
-    //<editor-fold defaultstate="collapsed" desc="Get Direction of next point">
-    private String direction(String[] curr, String[] next) {
-        int c_x = Integer.parseInt(curr[0]);
-        int c_y = Integer.parseInt(curr[1]);
-
-        int n_x = Integer.parseInt(next[0]);
-        int n_y = Integer.parseInt(next[1]);
-
-        if (n_x == c_x) {
-            if (n_y - c_y < 0)
-                return "N";
-            if (n_y - c_y > 0)
-                return "S";
-        }
-
-        if (n_y == c_y) {
-            if (n_x - c_x < 0)
-                return "W";
-            if (n_x - c_x > 0)
-                return "E";
-        }
-
-        return "";
-    }
-    //</editor-fold>
 
     /**
      * Function to be called when world watch disconnects
@@ -607,7 +581,7 @@ public class AgentHandler {
         WORLD_HANDLER_NEGOTIATED = function;
     }
 
-    public void SetMoveCallback(BiConsumer<AgentHandler, HashMap<String, Object>> function)
+    public void SetMoveCallback(BiConsumer<AgentHandler, DATA_REQUEST_PAYLOAD_WORLD_MOVE> function)
     {
         WORLD_HANDLER_MOVE = function;
     }

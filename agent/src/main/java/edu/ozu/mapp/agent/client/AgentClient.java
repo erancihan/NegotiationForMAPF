@@ -3,6 +3,7 @@ package edu.ozu.mapp.agent.client;
 import edu.ozu.mapp.agent.Agent;
 import edu.ozu.mapp.agent.client.ui.AgentUI;
 import edu.ozu.mapp.system.DATA_REQUEST_PAYLOAD_WORLD_JOIN;
+import edu.ozu.mapp.system.DATA_REQUEST_PAYLOAD_WORLD_MOVE;
 import edu.ozu.mapp.system.WorldManager;
 import edu.ozu.mapp.utils.JSONWorldWatch;
 import edu.ozu.mapp.utils.Point;
@@ -124,7 +125,7 @@ public class AgentClient {
         handler.SetNegotiatedCallback(callback);
     }
 
-    public void SetMoveCallback(BiConsumer<AgentHandler, HashMap<String, Object>> callback)
+    public void SetMoveCallback(BiConsumer<AgentHandler, DATA_REQUEST_PAYLOAD_WORLD_MOVE> callback)
     {
         handler.SetMoveCallback(callback);
     }

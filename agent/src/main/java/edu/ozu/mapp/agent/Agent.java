@@ -195,6 +195,13 @@ public abstract class Agent {
     }
     //</editor-fold>
 
+    //<editor-fold defaultstate="collapsed" desc="Get Next Broadcast">
+    public final String[] GetNextBroadcast()
+    {
+        return GetOwnBroadcastPath(this.time + 1);
+    }
+    //</editor-fold>
+
     //<editor-fold defaultstate="collapsed" desc="Get Broadcast Array">
     public final String[] GetOwnBroadcastPath()
     {
