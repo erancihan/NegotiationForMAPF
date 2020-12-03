@@ -241,8 +241,6 @@ public class ScenarioCanvas extends Canvas
 
             agents = world_ref.GetAllBroadcasts();
             agents.keySet().forEach(agent_name -> history.put(agent_name, new ArrayList<>()));
-
-            System.out.println(agents);
         } else {
             if (jedis == null) return;
 
