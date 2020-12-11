@@ -1,5 +1,8 @@
 package edu.ozu.mapp.utils;
 
+import edu.ozu.mapp.agent.client.helpers.ConflictCheck;
+import edu.ozu.mapp.agent.client.helpers.ConflictInfo;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -65,16 +68,8 @@ public class Path extends ArrayList<Point> implements Cloneable
     }
 
     public boolean HasConflictWith(Path that) {
-        for (int i = 0; i < that.size() && i < this.size(); i++)
-        {   // Vertex Conflict
-            if (that.get(i).equals(this.get(i)))
-                return true;
-        }
-        for (int i = 0; i + 1 < this.size() && i < that.size(); i++)
-        {   // Swap conflict
-            if (this.get(i + 1).equals(that.get(i)))
-                return true;
-        }
-        return false;
+        ConflictInfo info = new ConflictCheck().check(that.toStringArray(), that.toStringArray());
+
+        return info.hasConflict;
     }
 }
