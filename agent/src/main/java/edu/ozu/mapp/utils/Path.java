@@ -38,6 +38,11 @@ public class Path extends ArrayList<Point> implements Cloneable
         );
     }
 
+    public Path(String[] path)
+    {
+        this(Arrays.stream(path).map(p -> new Point(p, "-")).collect(Collectors.toList()));
+    }
+
     public Point getLast()
     {
         return get(size()-1);
@@ -68,7 +73,7 @@ public class Path extends ArrayList<Point> implements Cloneable
     }
 
     public boolean HasConflictWith(Path that) {
-        ConflictInfo info = new ConflictCheck().check(that.toStringArray(), that.toStringArray());
+        ConflictInfo info = new ConflictCheck().check(this.toStringArray(), that.toStringArray());
 
         return info.hasConflict;
     }
