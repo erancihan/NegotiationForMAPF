@@ -180,86 +180,18 @@ public class NegotiationSession
             if (state.equals(NegotiationState.RUNNING))
             {
                 try {
-                    for (String agent_name : agent_names) {
-                        CompletableFuture.runAsync(() -> {
-                            try {
-                                State state = new State();
-                                state.agents = agent_names.clone();
-                                state.contract = contract.clone();
-
-                                agent_refs.get(agent_name).OnReceiveState(state);
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                        });
+                    for (String agent_name : agent_names)
+                    {
+                        CompletableFuture
+                            .runAsync(() -> send_current_state_to_agent(agent_name));
                     }
 
-                    CompletableFuture.supplyAsync(() -> {
-                        AgentHandler agent = agent_refs.get(TURN);
-                        System.out.println(" >>>>> " + TURN + " : " + agent);
-
-                        Action action = agent.OnMakeAction(session_hash);
-                        System.out.println("> " + action.bid);
-
-                        if (action.type.equals(ActionType.OFFER))
-                        {   // Bidding agent made an offer
-                            // TODO register bid
-                            try {
-                                this.contract = action.bid.clone();
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-
-                            action.bid.apply(this);
-
-                            // Update TURN
-                            if (bid_order_queue.peek() == null) {   // QUEUE is empty!!
-                                Round = Round + 1;
-                                shuffle_bid_order();
-                            }
-                            TURN = bid_order_queue.poll();
-
-                            return "";
-                        }
-                        if (action.type.equals(ActionType.ACCEPT))
-                        {   // Handle agent accept
-                            Assert.isTrue(agent_refs.size() == 2, "it is not bilateral");
-                            AgentHandler opponent = null;
-                            for (String agent_key : agent_refs.keySet()) {
-                                if (agent_key.equals(action.bid.x)) continue;
-
-                                opponent = agent_refs.get(agent_key);
-                            }
-                            Assert.notNull(opponent, "opponent cannot be empty");
-
-                            if (action.bid.Ox.isEmpty())
-                            {   // what you mean it is empty!?
-                                // TODO uh... make it more... flexible
-
-                                action.bid.Ox = Utils.toString(opponent.GetBroadcast(), ",");
-                                action.bid.apply(this);
-                            }
-
-                            // `agent` accepted `opponents` bif
-                            int T_b = Integer.parseInt(contract.getTokenCountOf(agent.GetAgent()));
-                            int T_a = Integer.parseInt(contract.getTokenCountOf(opponent.GetAgent()));
-
-                            int diff = Math.max(T_a - T_b, 0);
-
-                            agent.UpdateTokenCountBy(-1 * diff);
-                            opponent.UpdateTokenCountBy(diff);
-
-                            this.state = NegotiationState.DONE;
-
-                            return "";
-                        }
-
-                        return "";
-                    })
-                    .thenAccept((response) -> {
-                        // todo Get a form of response maybe?
-                        session_loop_agent_invoke_lock.unlock();
-                    });
+                    CompletableFuture
+                        .supplyAsync(this::process_turn_make_action)
+                        .thenAccept((response) -> {
+                            // todo Get a form of response maybe?
+                            session_loop_agent_invoke_lock.unlock();
+                        });
                 } catch (Exception exception) {
                     exception.printStackTrace();
                     session_loop_agent_invoke_lock.unlock();
@@ -288,6 +220,83 @@ public class NegotiationSession
         }
 
         T = T + 1;
+    }
+
+    private void send_current_state_to_agent(String agent_name)
+    {
+        try {
+            State state = new State();
+            state.agents = agent_names.clone();
+            state.contract = contract.clone();
+
+            agent_refs.get(agent_name).OnReceiveState(state);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @org.jetbrains.annotations.NotNull
+    private String process_turn_make_action() {
+        AgentHandler agent = agent_refs.get(TURN);
+        System.out.println(" >>>>> " + TURN + " : " + agent);
+
+        Action action = agent.OnMakeAction(session_hash);
+        System.out.println("> " + action.bid);
+
+        if (action.type.equals(ActionType.OFFER))
+        {   // Bidding agent made an offer
+            // TODO register bid
+            try {
+                this.contract = action.bid.clone();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            action.bid.apply(this);
+
+            // Update TURN
+            if (bid_order_queue.peek() == null) {   // QUEUE is empty!!
+                Round = Round + 1;
+                shuffle_bid_order();
+            }
+            TURN = bid_order_queue.poll();
+
+            return "";
+        }
+        if (action.type.equals(ActionType.ACCEPT))
+        {   // Handle agent accept
+            Assert.isTrue(agent_refs.size() == 2, "it is not bilateral");
+            AgentHandler opponent = null;
+            for (String agent_key : agent_refs.keySet()) {
+                if (agent_key.equals(action.bid.x)) continue;
+
+                opponent = agent_refs.get(agent_key);
+            }
+            Assert.notNull(opponent, "opponent cannot be empty");
+
+            if (action.bid.Ox.isEmpty())
+            {   // what you mean it is empty!?
+                // TODO uh... make it more... flexible
+
+                action.bid.Ox = Utils.toString(opponent.GetBroadcast(), ",");
+                action.bid.apply(this);
+            }
+
+            // `agent` accepted `opponents` bif
+            int T_b = Integer.parseInt(contract.getTokenCountOf(agent.GetAgent()));
+            int T_a = Integer.parseInt(contract.getTokenCountOf(opponent.GetAgent()));
+
+            int diff = Math.max(T_a - T_b, 0);
+
+            agent.UpdateTokenCountBy(-1 * diff);
+            opponent.UpdateTokenCountBy(diff);
+
+            this.state = NegotiationState.DONE;
+
+            return "";
+        }
+
+        return "";
     }
 
     // TODO update contract functions
