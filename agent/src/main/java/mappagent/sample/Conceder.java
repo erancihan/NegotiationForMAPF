@@ -3,7 +3,6 @@ package mappagent.sample;
 import edu.ozu.mapp.agent.Agent;
 import edu.ozu.mapp.agent.MAPPAgent;
 import edu.ozu.mapp.agent.client.AgentClient;
-import edu.ozu.mapp.agent.client.helpers.WorldHandler;
 import edu.ozu.mapp.agent.client.models.Contract;
 import edu.ozu.mapp.utils.*;
 import org.springframework.util.Assert;
@@ -58,9 +57,13 @@ public class Conceder extends Agent {
     }
 
     @Override
-    public Action onMakeAction()
+    public Action onMakeAction(String negotiation_session_id)
     {
-        int current_tokens = new WorldHandler().getTokenBalance(WORLD_ID, AGENT_ID);
+        System.out.println(AGENT_ID + " OnMakeAction " + negotiation_session_id);
+
+        int current_tokens = GetCurrentTokens();
+
+        System.out.println(AGENT_ID + " {token:"+current_tokens+",opponent:"+current_opponent+"}");
 
         // get opponent's bid
         Contract last_opponent_bid = history.GetLastOpponentBid(current_opponent);
@@ -86,10 +89,18 @@ public class Conceder extends Agent {
             return new Action(this, ActionType.OFFER, path_to_bid);
         }
 
+        System.out.println(AGENT_ID + " last opponent contract " + last_opponent_bid);
+        System.out.println(AGENT_ID + " own last contract      " + own_last_bid);
+        System.out.println(AGENT_ID + " current tokens         " + current_tokens);
+
         // opponent has bid
         // check if it is viable for us
         Path opponent_path = new Path(last_opponent_bid.Ox);
         Path own_last_path = new Path(own_last_bid.Ox);
+
+        if (own_last_path.isEmpty())
+            own_last_path = new Path(GetOwnBroadcastPath());
+
         if (opponent_path.HasConflictWith(own_last_path))
         {   // then propose the next possible option from
             if (bid_space_iterator.hasNext()) {

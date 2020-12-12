@@ -52,7 +52,7 @@ public class Greedy extends Agent {
     }
 
     @Override
-    public Action onMakeAction()
+    public Action onMakeAction(String session_id)
     {
         int current_tokens = new WorldHandler().getTokenBalance(WORLD_ID, AGENT_ID);
 

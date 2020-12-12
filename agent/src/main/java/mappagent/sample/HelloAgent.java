@@ -3,7 +3,6 @@ package mappagent.sample;
 import edu.ozu.mapp.agent.Agent;
 import edu.ozu.mapp.agent.MAPPAgent;
 import edu.ozu.mapp.agent.client.AgentClient;
-import edu.ozu.mapp.agent.client.helpers.WorldHandler;
 import edu.ozu.mapp.utils.*;
 
 import java.util.ArrayList;
@@ -32,9 +31,10 @@ public class HelloAgent extends Agent
     }
 
     @Override
-    public Action onMakeAction()
+    public Action onMakeAction(String session_id)
     {
-        String[][] fov = new WorldHandler().getFieldOfView(this.WORLD_ID, this.AGENT_ID);
+
+        String[][] fov = GetFieldOfView();
 //        System.out.println("fov ha1 > " + Arrays.deepToString(fov));
 
         ArrayList<String[]> constraints = new ArrayList<>();

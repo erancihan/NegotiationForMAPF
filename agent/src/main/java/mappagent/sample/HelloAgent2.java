@@ -31,7 +31,7 @@ public class HelloAgent2 extends Agent
     private int count = 0;
 
     @Override
-    public Action onMakeAction()
+    public Action onMakeAction(String session_id)
     {
         if (count++ >= 2)
             return new Action(this, ActionType.ACCEPT);
