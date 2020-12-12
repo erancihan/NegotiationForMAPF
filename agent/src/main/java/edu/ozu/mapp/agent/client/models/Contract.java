@@ -1,17 +1,15 @@
 package edu.ozu.mapp.agent.client.models;
 
 import edu.ozu.mapp.agent.Agent;
-import edu.ozu.mapp.agent.client.NegotiationSession;
-import edu.ozu.mapp.keys.KeyHandler;
+import edu.ozu.mapp.agent.client.AgentHandler;
 import edu.ozu.mapp.utils.Globals;
 import org.springframework.util.Assert;
 import redis.clients.jedis.Jedis;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-public class Contract {
+public class Contract implements Cloneable {
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(Contract.class);
     private static final boolean HAS_ENCRYPTION = false;
 
@@ -22,6 +20,7 @@ public class Contract {
     private String ETb = "0";
     public String B = ""; // id of agent B
     private String sess_id = "";
+    private boolean is_serverless = false;
 
     private Contract(Map<String, String> sess)
     {
@@ -45,74 +44,6 @@ public class Contract {
             return null;
 
         return new Contract(sess);
-    }
-
-    public static Contract Create(Agent agent, NegotiationSession session)
-    {
-        Jedis jedis = new Jedis(Globals.REDIS_HOST, Globals.REDIS_PORT);
-
-        // Session ID is privately available in the
-        // Negotiation Session class. Let's keep it that way
-        String s_id = jedis.hget("world:"+agent.WORLD_ID+":notify", "agent:"+agent.AGENT_ID);
-        if (s_id.split(",").length > 1)
-        {   // This should be to ensure that agents only engage
-            // in a single negotiation session. For now
-            logger.error("something went wrong!");
-            System.exit(1);
-        }
-
-        // There should be nothing in the REDIS at all
-        Map<String, String> sess = new HashMap<>();
-        sess = jedis.hgetAll("negotiation:"+s_id);
-        sess.put("_session_id", s_id);
-
-        // Decide on A|B if they are not already set (which they are not)
-        // for agents. Since these are bilateral negotiations,
-        // it is absolutely guaranteed that there will be no more
-        // than 2 Agents in a Negotiation Session.
-        // Negotiation Session data should be present, since "Notify"
-        // flow have to be completed before agents establish
-        // connection to Negotiation Session @ the back-end.
-        // Fetch agents list and set them as A & B.
-        // IDs are sorted & in "agents:<agent_id>" format.
-        String[] agents = jedis.hget("negotiation:"+s_id, "agents").split(",");
-        Assert.isTrue(agents.length == 2, "<<something went horribly wrong>>");
-
-        // update agent list format
-        for (int i = 0; i < agents.length; i++) { agents[i] = agents[i].split(":")[1]; }
-
-        // set session values
-        // Ox -> Bid of agent with id X
-        sess.put("Ox", "");
-        // x  -> ID of agents whose turn it is to bid
-        String x = jedis.hget("negotiation:"+s_id, "bid_order").split(",")[0];
-        sess.put("x", x);
-        // ID of agent A
-        sess.put("A", agents[0]);
-        if (agent.AGENT_ID.equals(agents[0]))
-        {   // set ETa, if A is the invoking agent
-            if (HAS_ENCRYPTION) sess.put("ETa", KeyHandler.encrypt("0", agent));
-            else sess.put("ETa", "0");
-        }
-        // ID of agent B
-        sess.put("B", agents[1]);
-        if (agent.AGENT_ID.equals(agents[1]))
-        {   // set ETb, if B is the invoking agent
-            if (HAS_ENCRYPTION) sess.put("ETb", KeyHandler.encrypt("0", agent));
-            else sess.put("ETb", "0");
-        }
-
-        // finally, create contract for real this time
-        // like actually create it
-        // for realz... INITIATE IT
-        Contract contract = new Contract(sess);
-        contract.apply();
-
-        logger.info("created contract for " + s_id + " with " + agent.AGENT_ID);
-
-        jedis.close();
-
-        return contract;
     }
 
     public String getETa(Agent agent)
@@ -164,13 +95,15 @@ public class Contract {
                 ETb = HAS_ENCRYPTION ? agent.Encrypt(String.valueOf(next)) : String.valueOf(next);
             }
         }
-        logger.debug("Cotract@Set{A:"+A+", B:"+B+", Ox:"+Ox+", x:"+agent.AGENT_ID+"}");
+        logger.debug("Contract@Set{A:"+A+", B:"+B+", Ox:"+Ox+", x:"+agent.AGENT_ID+"}");
         agent.OnContractUpdated(this);
     }
 
     private void apply()
     {
         logger.debug("apply:{Ox:"+Ox+", session_id:"+sess_id+"}");
+        if (is_serverless) return;
+
         redis.clients.jedis.Jedis jedis = new Jedis(Globals.REDIS_HOST, Globals.REDIS_PORT);
 
         jedis.hset("negotiation:"+sess_id, "Ox", Ox);
@@ -183,10 +116,15 @@ public class Contract {
         jedis.close();
     }
 
-    public void apply(NegotiationSession session)
+    public void apply(edu.ozu.mapp.system.NegotiationSession session)
     {
-        logger.debug("apply:{state:"+session.getActiveState()+"}");
-        if (session.getActiveState().equals("run") || session.getActiveState().equals("join"))
+        is_serverless = true;
+
+        logger.debug("apply:{state:"+session.GetState()+"}");
+        if (
+            session.GetState().equals(edu.ozu.mapp.system.NegotiationSession.NegotiationState.JOIN) &&
+            session.GetState().equals(edu.ozu.mapp.system.NegotiationSession.NegotiationState.RUNNING)
+        )
         {
             apply();
         }
@@ -211,6 +149,11 @@ public class Contract {
 
     public Object getJSON() {
         return String.format("{\"Ox\":\"%s\", \"x\":\"%s\", \"ETa\":\"%s\", \"A\":\"%s\", \"ETb\":\"%s\", \"B\":\"%s\", \"sess_id\":\"%s\"}", Ox, x, ETa, A, ETb, B, sess_id);
+    }
+
+    @Override
+    public Contract clone() throws CloneNotSupportedException {
+        return (Contract) super.clone();
     }
 
     @Override

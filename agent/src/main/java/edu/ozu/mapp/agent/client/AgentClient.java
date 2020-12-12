@@ -1,17 +1,17 @@
 package edu.ozu.mapp.agent.client;
 
 import edu.ozu.mapp.agent.Agent;
+import edu.ozu.mapp.agent.client.models.Contract;
 import edu.ozu.mapp.agent.client.ui.AgentUI;
 import edu.ozu.mapp.system.DATA_REQUEST_PAYLOAD_WORLD_JOIN;
 import edu.ozu.mapp.system.DATA_REQUEST_PAYLOAD_WORLD_MOVE;
-import edu.ozu.mapp.system.WorldManager;
+import edu.ozu.mapp.system.WorldOverseer;
 import edu.ozu.mapp.utils.JSONWorldWatch;
 import edu.ozu.mapp.utils.Point;
 import org.springframework.util.Assert;
 
 import javax.swing.*;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -90,7 +90,7 @@ public class AgentClient {
         handler.leave();
     }
 
-    public void Join(WorldManager world)
+    public void Join(WorldOverseer world)
     {
         world.Register(this);
     }
@@ -115,12 +115,22 @@ public class AgentClient {
         handler.SetJoinCallback(callback);
     }
 
-    public void SetBroadcastCallback(BiConsumer<String, String[]> callback)
+    public void SetOnCollisionCheckDoneCallback(BiConsumer<String, String[]> callback)
     {
-        handler.SetBroadcastCallback(callback);
+        handler.SET_COLLISION_CHECK_DONE(callback);
     }
 
-    public void SetNegotiatedCallback(Consumer<String> callback)
+    public void SetGetNegotiationsHook(Function<String, String[]> function)
+    {
+        handler.SetGetNegotiationsHook(function);
+    }
+
+    public void SetJoinNegotiationSession(BiConsumer<String, AgentHandler> function)
+    {
+        handler.SET_NEGOTIATION_JOIN_SESSION(function);
+    }
+
+    public void SetNegotiatedCallback(BiConsumer<String, String> callback)
     {
         handler.SetNegotiatedCallback(callback);
     }
@@ -128,5 +138,10 @@ public class AgentClient {
     public void SetMoveCallback(BiConsumer<AgentHandler, DATA_REQUEST_PAYLOAD_WORLD_MOVE> callback)
     {
         handler.SetMoveCallback(callback);
+    }
+
+    public void SetLeaveHook(Consumer<AgentHandler> leave)
+    {
+        handler.SET_WORLD_OVERSEER_HOOK_LEAVE(leave);
     }
 }

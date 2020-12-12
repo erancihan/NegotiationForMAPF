@@ -1,8 +1,9 @@
 package edu.ozu.mapp.keys;
 
 import edu.ozu.mapp.agent.Agent;
-import edu.ozu.mapp.agent.client.helpers.JedisConnection;
+import edu.ozu.mapp.utils.Globals;
 import org.springframework.util.Assert;
+import redis.clients.jedis.Jedis;
 
 import javax.crypto.Cipher;
 import java.security.*;
@@ -11,7 +12,7 @@ import java.util.Base64;
 
 public class KeyHandler {
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(KeyHandler.class);
-    private static redis.clients.jedis.Jedis jedis = JedisConnection.getInstance();
+    private static redis.clients.jedis.Jedis jedis = new Jedis(Globals.REDIS_HOST, Globals.REDIS_PORT);
 
     private static final String KEY_VAULT = "PubKeyVault";
 

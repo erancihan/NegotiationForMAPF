@@ -2,10 +2,8 @@ package edu.ozu.mapp.system;
 
 import edu.ozu.mapp.agent.client.AgentHandler;
 import edu.ozu.mapp.utils.JSONAgent;
-import edu.ozu.mapp.utils.Point;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -19,7 +17,7 @@ public class MovementHandler
     private ConcurrentHashMap<String, AgentHandler>                     move_queue;
     private ConcurrentHashMap<String, DATA_REQUEST_PAYLOAD_WORLD_MOVE>  payloads;
 
-    private WorldManager world;
+    private WorldOverseer world;
 
     private MovementHandler()
     {
@@ -44,7 +42,7 @@ public class MovementHandler
         return instance;
     }
 
-    public void SetWorldReference(WorldManager world)
+    public void SetWorldReference(WorldOverseer world)
     {
         this.world = world;
     }
@@ -67,12 +65,13 @@ public class MovementHandler
         {
             try {
                 CompletableFuture
-                        .runAsync(this::process_queue)
-                        .thenRun(() -> {
-                            runnable.run();
-                            process_queue_lock.unlock();
-                        });
+                    .runAsync(this::process_queue)
+                    .thenRun(() -> {
+                        runnable.run();
+                        process_queue_lock.unlock();
+                    });
             } catch (Exception exception) {
+                exception.printStackTrace();
                 process_queue_lock.unlock();
             }
         }

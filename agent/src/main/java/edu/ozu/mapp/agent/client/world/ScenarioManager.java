@@ -12,7 +12,7 @@ import edu.ozu.mapp.agent.MAPPAgent;
 import edu.ozu.mapp.agent.client.AgentClient;
 import edu.ozu.mapp.agent.client.helpers.ConflictCheck;
 import edu.ozu.mapp.agent.client.helpers.ConflictInfo;
-import edu.ozu.mapp.system.WorldManager;
+import edu.ozu.mapp.system.WorldOverseer;
 import edu.ozu.mapp.utils.Point;
 import edu.ozu.mapp.utils.*;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -892,7 +892,7 @@ public class ScenarioManager extends javax.swing.JFrame
     }
 
 //    private World world;
-    private WorldManager world;
+    private WorldOverseer world;
     private JSONWorldData world_data;
 //    private WorldWatchSocketIO world_listener = null;
     private int agent_count = 0; // track number of agents there should be
@@ -1010,7 +1010,7 @@ public class ScenarioManager extends javax.swing.JFrame
     private void InitializeWorld()
     {
 //        world = new World();
-        world = new WorldManager();
+        world = new WorldOverseer();
         world.SetOnLoopingStop(() -> generate_scenario_btn.setEnabled(true));
         world.SetLogDrawCallback(
             (data, log) -> {
@@ -1018,22 +1018,8 @@ public class ScenarioManager extends javax.swing.JFrame
                 try {
                     scenario_info_pane.setText(
                         data
-                            .keySet()
-                            .stream()
-                            .map(key -> {
-                                switch (key)
-                                {
-                                    case "world_state":
-                                        return key + ": " + Globals.WORLD_STATES.getOrDefault(Integer.parseInt(data.get(key)), Globals.WorldState.NONE).toString() + "\n";
-                                    case "negotiation_count":
-                                        return "Current Active Negotiation Count:" + data.get(key) + "\n";
-                                    case "move_action_count":   // IGNORE REDUNDANT
-                                    case "time_tick":           // IGNORE MISLEADING/UNRELATED INFO
-                                        return "";
-                                    default:
-                                        return key + ": " + data.get(key) + "\n";
-                                }
-                            })
+                            .keySet().stream().sorted()
+                            .map(key -> key + ": " + data.get(key) + "\n")
                             .collect(Collectors.joining("")) +
                         "\n-------------\n" +
                         log

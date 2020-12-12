@@ -11,27 +11,6 @@ import java.util.Map;
 public class Negotiation {
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(Negotiation.class);
 
-    /**
-     * Retrieves list of negotiation session IDs that agent will attend
-     */
-    public String[] getSessions(String worldID, String agentID)
-    {
-        try
-        {
-            Jedis jedis = new Jedis(Globals.REDIS_HOST, Globals.REDIS_PORT);
-            String session_list = jedis.hget("world:"+worldID+":notify", "agent:"+agentID);
-            jedis.close();
-            if (session_list == null)
-                return new String[0];
-
-            return session_list.split(",");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return new String[0];
-    }
-
     public Contract getContract(String WORLD_ID, String AGENT_ID)
     {
         Map<String, String> sess = new HashMap<>();

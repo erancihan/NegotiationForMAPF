@@ -70,7 +70,7 @@ public class World
         state_log.add(new Object[]{"- SIM_START", new java.sql.Timestamp(System.currentTimeMillis())});
 
         IsLooping = true;
-        Step();
+//        Step();
     }
 
     public void Stop()
@@ -211,59 +211,10 @@ public class World
         }
     }
 
-    public WorldWatchSocketIO Create(String WorldID, BiConsumer<Map<String, String>, ArrayList<Object[]>> callback)
-    {
-        return Create(WorldID, "0x0", callback);
-    }
-
-    public WorldWatchSocketIO Create(String WorldID, String Dimensions, BiConsumer<Map<String, String>, ArrayList<Object[]>> callback)
-    {
-        LogDrawCallback = callback;
-
-        return Create(WorldID, Dimensions);
-    }
-
-    public WorldWatchSocketIO Create(String WorldID, String Dimensions)
-    {
-        if (!IsJedisOK)
-        {
-            logger.error("JEDIS connection is not OK!");
-            return null;
-        }
-
-        this.WorldID = "world:" + WorldID + ":";
-        fl = new FileLogger().CreateWorldLogger(WorldID);
-
-        HashMap<String, Object> payload = new HashMap<>();
-        payload.put("world_id", this.WorldID);
-        payload.put("dimensions", Dimensions);
-
-        payload.put("player_count", "0");
-        payload.put("world_state", "0");
-        payload.put("negotiation_count", "0");
-        payload.put("move_action_count", "0");
-        payload.put("time_tick", 0);
-
-        Utils.post("http://localhost:5000/world/create", payload);
-        fl.logWorldCreate(payload);
-
-        return new WorldWatchSocketIO(
-                this.WorldID,
-                (message) -> {
-                    Map<String, String> data = gson.fromJson(message, messageMapType);
-                    data.put("World T", String.valueOf(world_t));
-
-                    LogDrawCallback.accept(data, state_log);
-
-                    OnStateUpdate(data);
-                }
-        );
-    }
-
     public void Step()
     {
         int curr_state = Integer.parseInt(jedis.hget(WorldID, "world_state"));
-        Step(curr_state);
+//        Step(curr_state);
     }
 
     public void Step(int current_state)

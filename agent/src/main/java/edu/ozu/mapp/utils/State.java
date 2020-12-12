@@ -1,5 +1,7 @@
 package edu.ozu.mapp.utils;
 
+import edu.ozu.mapp.agent.client.models.Contract;
+
 import java.util.Arrays;
 
 public class State {
@@ -7,6 +9,12 @@ public class State {
     public String[][] bids;
     public String turn;
     public String[] agents;
+    public Contract contract;
+
+    public State()
+    {
+
+    }
 
     public State(JSONNegotiationSession json)
     {

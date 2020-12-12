@@ -1,7 +1,7 @@
 package edu.ozu.mapp.agent.client.world;
 
 import edu.ozu.mapp.agent.client.AgentClient;
-import edu.ozu.mapp.system.WorldManager;
+import edu.ozu.mapp.system.WorldOverseer;
 import edu.ozu.mapp.utils.Globals;
 import edu.ozu.mapp.utils.JSONAgentData;
 import edu.ozu.mapp.utils.JSONWorldData;
@@ -21,7 +21,7 @@ public class ScenarioCanvas extends Canvas
 
     private Jedis jedis;
     private JSONWorldData world;
-    private WorldManager world_ref;
+    private WorldOverseer world_ref;
 
     // { 'AGENT_ID': [ 'X-Y' , ... ] }
     private HashMap<String, ArrayList<Point>>   history         = new HashMap<>();
@@ -326,7 +326,7 @@ public class ScenarioCanvas extends Canvas
         this.agent_refs = agent_refs;
     }
 
-    public void SetWorldRef(WorldManager world) {
+    public void SetWorldRef(WorldOverseer world) {
         this.world_ref = world;
     }
 }

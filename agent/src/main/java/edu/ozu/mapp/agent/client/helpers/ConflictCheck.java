@@ -1,6 +1,5 @@
 package edu.ozu.mapp.agent.client.helpers;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 
 public class ConflictCheck {

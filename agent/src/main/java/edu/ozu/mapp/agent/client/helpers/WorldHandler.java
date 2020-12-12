@@ -11,7 +11,6 @@ import java.util.ArrayList;
 
 public class WorldHandler {
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(WorldHandler.class);
-    private static redis.clients.jedis.Jedis jedis = JedisConnection.getInstance();
 
     public String[] list()
     {

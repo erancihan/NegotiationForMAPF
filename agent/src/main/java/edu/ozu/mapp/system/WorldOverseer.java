@@ -9,16 +9,16 @@ import edu.ozu.mapp.utils.Point;
 import edu.ozu.mapp.utils.Utils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.concurrent.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-public class WorldManager
+public class WorldOverseer
 {
-    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(WorldManager.class);
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(WorldOverseer.class);
     private FileLogger flogger;
 
     protected   String              WorldID = "";
@@ -30,7 +30,7 @@ public class WorldManager
 
     private boolean IsLooping = false;
 
-    ScheduledExecutorService service;
+    private ScheduledExecutorService service;
 
     private ConcurrentHashMap<String, AgentClient>  clients;
     /**
@@ -44,7 +44,7 @@ public class WorldManager
     protected ConcurrentSkipListSet<String>       active_agents;
 
     private MovementHandler     movement_handler;
-    private NegotiationManager  negotiation_manager;
+    private NegotiationOverseer negotiation_overseer;
 
     private ArrayList<Object[]> state_log = new ArrayList<>();
 
@@ -52,21 +52,24 @@ public class WorldManager
     private long SIM_LOOP_FINISH_TIME;
     private long SIM_LOOP_DURATION;
 
-    private HashSet<String> FLAG_JOINS;
-    private HashSet<String> FLAG_BROADCASTS;
-    private HashSet<String> FLAG_NEGOTIATIONS;
+    private ConcurrentHashMap<String, String> FLAG_JOINS;
+    private ConcurrentHashMap<String, String> FLAG_COLLISION_CHECKS;
+    private ConcurrentHashMap<String, String> FLAG_NEGOTIATIONS_DONE;
+    private ConcurrentHashMap<String, String> FLAG_INACTIVE;
 
     private BiConsumer<Map<String, String>, ArrayList<Object[]>>    UI_LogDrawCallback;
     private Consumer<String>                                        UI_StateChangeCallback;
     private Runnable                                                UI_CanvasUpdateHook;
     private Runnable                                                UI_LoopStoppedHook;
 
-    public WorldManager()
+    public WorldOverseer()
     {
-        clients          = new ConcurrentHashMap<>();
-        curr_state       = Globals.WorldState.JOIN;
-        prev_state       = Globals.WorldState.NONE;
-        movement_handler = MovementHandler.getInstance();
+        clients             = new ConcurrentHashMap<>();
+        curr_state          = Globals.WorldState.JOIN;
+        prev_state          = Globals.WorldState.NONE;
+        movement_handler    = MovementHandler.getInstance();
+        negotiation_overseer = NegotiationOverseer.getInstance();
+        negotiation_overseer.world_log_callback = this::Log;
 
         broadcasts     = new ConcurrentHashMap<>();
         bank_data      = new ConcurrentHashMap<>();
@@ -74,9 +77,10 @@ public class WorldManager
         point_to_agent = new ConcurrentHashMap<>();
         active_agents  = new ConcurrentSkipListSet<>();
 
-        FLAG_JOINS          = new HashSet<>();
-        FLAG_BROADCASTS     = new HashSet<>();
-        FLAG_NEGOTIATIONS   = new HashSet<>();
+        FLAG_JOINS            = new ConcurrentHashMap<>();
+        FLAG_COLLISION_CHECKS = new ConcurrentHashMap<>();
+        FLAG_NEGOTIATIONS_DONE = new ConcurrentHashMap<>();
+        FLAG_INACTIVE         = new ConcurrentHashMap<>();
     }
 
     public void Create(String world_id, int width, int height)
@@ -133,7 +137,12 @@ public class WorldManager
     private void run()
     {
         Map<String, String> data = new HashMap<>();
-        // TODO POPULATE DATA
+        data.put("World ID", WorldID);
+        data.put("Dimensions", width+"x"+height);
+        data.put("World State", curr_state.toString());
+        data.put("Active Agent Count", String.valueOf(active_agent_c));
+        data.put("Active Negotiation Count", String.valueOf(negotiation_overseer.ActiveCount()));
+        data.put("Cumulative Negotiation Count", String.valueOf(negotiation_overseer.CumulativeCount()));
 
         UI_CanvasUpdateHook.run();
 
@@ -180,7 +189,7 @@ public class WorldManager
 
                 break;
             case BROADCAST:
-                if (FLAG_BROADCASTS.size() == active_agent_c)
+                if (FLAG_COLLISION_CHECKS.size() == active_agent_c)
                 {   // BROADCASTS DONE
                     logger.info("- BROADCASTS ARE DONE");
 
@@ -191,9 +200,11 @@ public class WorldManager
 
                 break;
             case NEGOTIATE:
-                if (FLAG_NEGOTIATIONS.size() == active_agent_c)
+                if (FLAG_NEGOTIATIONS_DONE.size() == active_agent_c)
                 {   // NEGOTIATIONS ARE COMPLETE
                     logger.info("- NEGOTIATIONS ARE COMPLETE");
+
+                    FLAG_NEGOTIATIONS_DONE.clear();
 
                     prev_state = curr_state;
 
@@ -211,7 +222,11 @@ public class WorldManager
 
                                 prev_state = curr_state;
 
-                                if (IsLooping) Step();
+                                // Reset data
+                                FLAG_COLLISION_CHECKS.clear();
+                                FLAG_NEGOTIATIONS_DONE.clear();
+
+                                if (IsLooping) { Step(); }
                             });
                         });
                 }
@@ -274,14 +289,17 @@ public class WorldManager
                 // JOIN state, switch to COLLISION_CHECK state
             case 3:
                 // MOVE state, switch to COLLISION_CHECK | BROADCAST state
+                logger.debug("switching to BROADCAST");
                 curr_state = Globals.WorldState.BROADCAST;
                 break;
             case 1:
                 // COLLISION_CHECK | BROADCAST state, switch to NEGOTIATION state
+                logger.debug("switching to NEGOTIATE");
                 curr_state = Globals.WorldState.NEGOTIATE;
                 break;
             case 2:
                 // NEGOTIATION state, switch to MOVE state
+                logger.debug("switching to MOVE");
                 curr_state = Globals.WorldState.MOVE;
                 break;
             default:
@@ -293,9 +311,14 @@ public class WorldManager
         SIM_LOOP_START_TIME = System.nanoTime();
 
         logger.debug("SIM_LOOP_START_TIME=" + SIM_LOOP_START_TIME);
-        state_log.add(new Object[]{"- SIM_START", new java.sql.Timestamp(System.currentTimeMillis())});
+        Log("- SIM_START");
 
         IsLooping = true;
+
+        if (curr_state == prev_state)
+        {   // already run once, proceed to next step immediately
+            Step();
+        }
     }
 
     public void Stop()
@@ -309,14 +332,18 @@ public class WorldManager
     public void Register(AgentClient client)
     {
         client.SetJoinCallback(this::Join);
-        client.SetBroadcastCallback(this::Broadcast);
+        client.SetOnCollisionCheckDoneCallback(this::OnCollisionCheckDone);
+//        client.SetGetNegotiationContractHook();
+        client.SetGetNegotiationsHook(this::GetNegotiations);
+        client.SetJoinNegotiationSession(this::JoinNegotiationSession);
         client.SetNegotiatedCallback(this::Negotiated);
         client.SetMoveCallback(this::Move);
+        client.SetLeaveHook(this::Leave);
 
         clients.put(client.GetAgentName(), client);
 
         logger.info(String.format("Agent %s has Registered", client.GetAgentName()));
-        state_log.add(new Object[]{String.format("Agent %s has Registered", client.GetAgentName()), new java.sql.Timestamp(System.currentTimeMillis()) });
+        Log(String.format("Agent %s has Registered", client.GetAgentName()));
 
         client.WORLD_HANDLER_JOIN_HOOK();
 
@@ -325,7 +352,7 @@ public class WorldManager
 
     public synchronized String[] Join(DATA_REQUEST_PAYLOAD_WORLD_JOIN payload)
     {
-        FLAG_JOINS.add(payload.AGENT_NAME);
+        FLAG_JOINS.put(payload.AGENT_NAME, "");
 
         // set map data
         agent_to_point.put(payload.AGENT_NAME, payload.LOCATION.key);
@@ -344,20 +371,38 @@ public class WorldManager
     }
 
     /**
-     * @function Broadcast
+     * @function OnCollisionCheckDone
      *
-     * Invoked at the end of broadcasting process to indicate
-     * task related to broadcasting are done.
+     * Invoked at the end of collision check / broadcast state
+     * to indicate tasks related to collision checks are done.
+     *
+     * Payload includes
+     *
      * */
-    public synchronized void Broadcast(String agent_name, String[] broadcast)
+    public synchronized void OnCollisionCheckDone(String agent_name, String[] agent_ids)
     {
-        if (FLAG_BROADCASTS.contains(agent_name))
+        if (FLAG_COLLISION_CHECKS.containsKey(agent_name) || FLAG_INACTIVE.containsKey(agent_name))
         {
             return;
         }
 
-        FLAG_BROADCASTS.add(agent_name);
-        broadcasts.put(agent_name, broadcast);
+        FLAG_COLLISION_CHECKS.put(agent_name, "");
+        if (agent_ids.length > 1)
+        {
+            Log(agent_name + " reported collision : " + Arrays.toString(agent_ids));
+            negotiation_overseer.RegisterCollisionNotification(agent_ids);
+        }
+    }
+
+    public synchronized String[] GetNegotiations(String agent_name)
+    {
+        return negotiation_overseer.GetNegotiations(agent_name);
+    }
+
+    public synchronized void JoinNegotiationSession(String session_id, AgentHandler agent)
+    {
+        String msg = negotiation_overseer.AgentJoinSession(session_id, agent);
+        Log(msg);
     }
 
     /**
@@ -366,9 +411,13 @@ public class WorldManager
      * Invoked at the end of Negotiation sessions to indicate
      * task related to negotiations are done.
      * */
-    public synchronized void Negotiated(String agent_name)
+    public synchronized void Negotiated(String agent_name, String session_id)
     {
-        FLAG_NEGOTIATIONS.add(agent_name);
+        FLAG_NEGOTIATIONS_DONE.put(agent_name, "");
+        if (!session_id.isEmpty())
+        {
+            negotiation_overseer.AgentLeaveSession(agent_name, session_id);
+        }
     }
 
     /**
@@ -382,11 +431,17 @@ public class WorldManager
         movement_handler.put(agent.getAgentName(), agent, payload);
     }
 
-    public void Log(String str)
+    public synchronized void Leave(AgentHandler agent)
+    {
+        FLAG_COLLISION_CHECKS.remove(agent.getAgentName());
+        FLAG_INACTIVE.put(agent.getAgentName(), "");
+
+        active_agent_c--;
+    }
+
+    public synchronized void Log(String str)
     {
         state_log.add(new Object[]{str, new java.sql.Timestamp(System.currentTimeMillis())});
-
-        UI_LogDrawCallback.accept(new HashMap<>(), state_log);
     }
 
     public HashMap<String, Point[]> GetAllBroadcasts()

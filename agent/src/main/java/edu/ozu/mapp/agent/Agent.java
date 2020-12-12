@@ -1,10 +1,11 @@
 package edu.ozu.mapp.agent;
 
+import edu.ozu.mapp.agent.client.AgentHandler;
 import edu.ozu.mapp.agent.client.helpers.FileLogger;
-import edu.ozu.mapp.agent.client.helpers.WorldHandler;
 import edu.ozu.mapp.agent.client.models.Contract;
 import edu.ozu.mapp.keys.AgentKeys;
 import edu.ozu.mapp.keys.KeyHandler;
+import edu.ozu.mapp.system.NegotiationOverseer;
 import edu.ozu.mapp.utils.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +23,7 @@ public abstract class Agent {
     public Point START, DEST;
     public History history;
     public int initial_tokens = Globals.INITIAL_TOKEN_BALANCE;
+    public int current_tokens;
 
     public boolean isHeadless = false;
 
@@ -67,6 +69,7 @@ public abstract class Agent {
         this.START          = start;
         this.DEST           = dest;
         this.initial_tokens = initial_tokens;
+        this.current_tokens = initial_tokens;
 
         this.isHeadless = true; // unless client says so
         fl = new FileLogger().CreateAgentLogger(AGENT_ID);
@@ -82,7 +85,7 @@ public abstract class Agent {
 
     public void onReceiveState(State state) { }
 
-    public abstract Action onMakeAction();
+    public abstract Action onMakeAction(String negotiation_session_id);
 
     public void OnAcceptLastBids(JSONNegotiationSession json) { }
 
@@ -234,7 +237,7 @@ public abstract class Agent {
             return Globals.INITIAL_TOKEN_BALANCE;
         }
 
-        return new WorldHandler().getTokenBalance(WORLD_ID, AGENT_ID);
+        return current_tokens;
     }
 
     public final HashSet<String> getOwnBidHistory()
@@ -295,7 +298,12 @@ public abstract class Agent {
 
     public final String GetCurrentTokenC()
     {
-        return String.valueOf(new WorldHandler().getTokenBalance(WORLD_ID, AGENT_ID));
+        return String.valueOf(current_tokens);
+    }
+
+    public final int GetCurrentTokens()
+    {
+        return current_tokens;
     }
 
     public final void LogNegotiationState(String prev_bidding_agent)
@@ -316,5 +324,21 @@ public abstract class Agent {
         } else {
             fl.LogAgentNegotiationState(prev_bidding_agent, this, false);
         }
+    }
+
+    public final Contract GetContract()
+    {
+        return NegotiationOverseer.getInstance().GetMyContract(this);
+    }
+
+    private AgentHandler handler_ref;
+    public final void SetHandlerRef(AgentHandler handler)
+    {
+        handler_ref = handler;
+    }
+
+    public final String[][] GetFieldOfView()
+    {
+        return this.handler_ref.GetCurrentFoVData();
     }
 }

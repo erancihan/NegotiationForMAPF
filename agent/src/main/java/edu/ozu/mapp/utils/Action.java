@@ -32,7 +32,7 @@ public class Action
                 this.bid = makeOffer(agent, type, bid);
                 break;
             case ACCEPT:
-                this.bid = new Negotiation().getContract(agent);
+                this.bid = agent.GetContract();
                 break;
             default:
                 break;
@@ -49,10 +49,10 @@ public class Action
 
     private Contract makeOffer(Agent agent, ActionType type, String bid)
     {
-        int owned_tokens = new WorldHandler().getTokenBalance(agent.WORLD_ID, agent.AGENT_ID);   // get own token balance
+        int owned_tokens = agent.GetCurrentTokens();   // get own token balance
         logger.debug("owned tokens: " + owned_tokens);
 
-        Contract contract = new Negotiation().getContract(agent);
+        Contract contract = agent.GetContract();
 
         int own_token_offer = Integer.parseInt(contract.getTokenCountOf(agent)); // get own bid token count
 

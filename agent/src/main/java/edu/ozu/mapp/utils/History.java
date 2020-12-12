@@ -70,7 +70,11 @@ public class History
         }
 
         // Contract is different, save it
-        history.get(current_negotiation_id).add(contract);
+        try {
+            history.get(current_negotiation_id).add(contract.clone());
+        } catch (CloneNotSupportedException e) {
+            e.printStackTrace();
+        }
     }
 
     public Contract last()

@@ -2,15 +2,16 @@ package edu.ozu.mapp.agent.client;
 
 import com.google.gson.Gson;
 import edu.ozu.mapp.agent.Agent;
-import edu.ozu.mapp.agent.client.helpers.*;
+import edu.ozu.mapp.agent.client.helpers.ConflictCheck;
+import edu.ozu.mapp.agent.client.helpers.ConflictInfo;
+import edu.ozu.mapp.agent.client.helpers.FileLogger;
 import edu.ozu.mapp.agent.client.models.Contract;
 import edu.ozu.mapp.system.DATA_REQUEST_PAYLOAD_WORLD_JOIN;
 import edu.ozu.mapp.system.DATA_REQUEST_PAYLOAD_WORLD_MOVE;
 import edu.ozu.mapp.utils.*;
 import org.springframework.util.Assert;
-import redis.clients.jedis.Jedis;
+//import redis.clients.jedis.Jedis;
 
-import java.io.IOException;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -24,24 +25,29 @@ public class AgentHandler {
     private String AGENT_NAME;
     private String WORLD_ID = "";
     private Agent agent;
-    private WorldWatchWS websocket;
 
     private Gson gson;
 
-    private int[] state_flag = new int[2];
     private int is_moving = 1;
     private String conflict_location = "";
 
     private Function<DATA_REQUEST_PAYLOAD_WORLD_JOIN, String[]> WORLD_HANDLER_JOIN;
-    private BiConsumer<String, String[]>                        WORLD_HANDLER_SET_BROADCAST;
-    private BiConsumer<AgentHandler, DATA_REQUEST_PAYLOAD_WORLD_MOVE>   WORLD_HANDLER_MOVE;
-    private Consumer<String>                                    WORLD_HANDLER_NEGOTIATED;
+    private BiConsumer<String, String[]>                        WORLD_HANDLER_COLLISION_CHECK_DONE;
+    private Function<String, Contract>                          WORLD_OVERSEER_HOOK_GET_NEGOTIATION_CONTRACT;
+    private Function<String, String[]>                          WORLD_HANDLER_GET_NEGOTIATION_SESSIONS;
+    private BiConsumer<String, AgentHandler>                    WORLD_OVERSEER_JOIN_NEGOTIATION_SESSION;
+    private BiConsumer<String, String>                          WORLD_OVERSEER_NEGOTIATED;
+    private BiConsumer<AgentHandler, DATA_REQUEST_PAYLOAD_WORLD_MOVE> WORLD_OVERSEER_MOVE;
+    private Consumer<AgentHandler>                              WORLD_OVERSEER_HOOK_LEAVE;
+
+    private String[][] fov;
 
     AgentHandler(Agent client) {
         Assert.notNull(client.START, "«START cannot be null»");
         Assert.notNull(client.AGENT_ID, "«AGENT_ID cannot be null»");
 
         agent = client;
+        agent.SetHandlerRef(this);
 
         // init file logger
         fl = new FileLogger().CreateAgentLogger(agent.AGENT_ID);
@@ -60,63 +66,6 @@ public class AgentHandler {
     {
         return agent.AGENT_ID;
     }
-
-//<editor-fold defaultstate="collapsed" desc="Deprecated">
-/*
-//    /**
-//     * The function that will be invoked by WebUI when player selects to join a world
-//     *
-//     * @param world_id id of the world the agent will join to
-//     /
-//    public void join(String world_id)
-//    {   // headless join
-//        this.join(world_id, (arg0, arg1) -> {});
-//    }
-
-//    public void join(String world_id, BiConsumer<JSONWorldWatch, String[]> draw)
-//    {
-//        WORLD_ID = world_id.split(":")[1];
-//        logger.info("joining " + WORLD_ID);
-//
-//        agent.setWORLD_ID(WORLD_ID);
-//        agent.dimensions = new WorldHandler().GetDimensions(WORLD_ID);
-//
-//        new Join(agent).join(WORLD_ID);
-//
-//        fl.setWorldID(WORLD_ID);            // SET AGENT WORLD INFO ON LOGGER
-//        fl.LogAgentInfo(agent, "JOIN");     // LOG AGENT INFO ON JOIN
-//        fl.logAgentWorldJoin(agent);    // LOG AGENT JOIN
-//
-//        __watch(draw);
-//    }
-
-//    //<editor-fold defaultstate="collapsed" desc="Start watching World state :__watch">
-//    private void __watch(BiConsumer<JSONWorldWatch, String[]> draw)
-//    {
-//        Assert.notNull(draw, "Draw function cannot be null");
-//
-//        try {
-//            // open websocket
-//            String ws = "ws://" + Globals.SERVER + "/world/" + WORLD_ID + "/" + agent.AGENT_ID;
-//            websocket = new WorldWatchWS(new URI(ws));
-//
-//            // add handler
-//            websocket.setMessageHandler(message -> {
-//                JSONWorldWatch watch = gson.fromJson(message, JSONWorldWatch.class);
-//
-//                draw.accept(watch, agent.GetOwnBroadcastPath());
-//                handleState(watch);
-//            });
-//
-//            // send message
-//            websocket.sendMessage("ping");
-//        } catch (URISyntaxException e) {
-//            e.printStackTrace();
-//        }
-//    }
-//    //</editor-fold>
-*/
-//</editor-fold>
 
     public void WORLD_HANDLER_JOIN_HOOK()
     {
@@ -163,6 +112,7 @@ public class AgentHandler {
      *
      * @param watch: JSONWorldWatch
      */
+    private int[] state_flag = new int[2];
     private void handleState(JSONWorldWatch watch) {
         switch (watch.world_state) {
             case 0: // join
@@ -171,7 +121,9 @@ public class AgentHandler {
             case 1: // collision check/broadcast
                 if (state_flag[0] != 1)
                 {
-                    broadcast(watch);
+                    fov = watch.fov;
+
+                    collision_check(watch);
                     state_flag[0] = 1;
                     state_flag[1] = watch.time_tick;
                 }
@@ -179,6 +131,8 @@ public class AgentHandler {
             case 2: // negotiation state
                 if (state_flag[0] != 2)
                 {
+                    fov = watch.fov;
+
                     negotiate();
                     state_flag[0] = 2;
                     state_flag[1] = watch.time_tick;
@@ -187,6 +141,8 @@ public class AgentHandler {
             case 3: // move and update broadcast
                 if (state_flag[0] != 3)
                 {   // move once
+                    fov = watch.fov;
+
                     move();
                     state_flag[0] = 3;
                     state_flag[1] = watch.time_tick;
@@ -198,24 +154,26 @@ public class AgentHandler {
         }
     }
 
-    private void broadcast(JSONWorldWatch data)
+    private void collision_check(JSONWorldWatch data)
     {
+        if (is_moving == 0) return;
+
         String[] agent_ids = getCollidingAgents(data.fov);
         if (agent_ids.length > 1)
-        {   // my path collides with broadcasted paths!
-            logger.debug("notify negotiation > " + Arrays.toString(agent_ids));
-//            notifyNegotiation(agent_ids);
+        {   // my path collides with one of broadcasted paths!
+            logger.debug(getAgentName() + " | notify negotiation > " + Arrays.toString(agent_ids));
         }
 
-        // TODO HANDLE BROADCAST
+        WORLD_HANDLER_COLLISION_CHECK_DONE.accept(getAgentName(), agent_ids);
     }
 
-    private String[] getCollidingAgents(String[][] broadcasts)
+    private String[] getCollidingAgents(String[][] data)
     {
+        List<String[]> broadcasts = Arrays.stream(data).sorted().collect(Collectors.toList());
         Set<String> agent_ids = new HashSet<>();
         String[] own_path = agent.GetOwnBroadcastPath();
 
-        agent_ids.add("agent:"+ agent.AGENT_ID); // add own data
+        agent_ids.add(agent.AGENT_ID); // add own data
         for (String[] broadcast : broadcasts)
         {
             if (broadcast[2].equals("-"))
@@ -247,26 +205,12 @@ public class AgentHandler {
         return agent_ids.toArray(new String[0]);
     }
 
-    //<editor-fold defaultstate="collapsed" desc="(DEPRECATED) Notify Negotiation Participants">
-//    private void notifyNegotiation(String[] agent_ids)
-//    {// notify negotiation
-//        // engage in bi-lateral negotiation session with each of the agents
-//        // TODO ?? what else is there
-//        HashMap<String, Object> payload = new HashMap<>();
-//        payload.put("world_id", WORLD_ID);
-//        payload.put("agent_id", agent.AGENT_ID);
-//        payload.put("agents", agent_ids);
-//
-//        String response = Utils.post("http://localhost:5000/negotiation/notify", payload);
-//
-//        logger.info("__postNotify" + response);
-//    }
-    //</editor-fold>
-
     private void negotiate()
     {
-        String[] sessions = new Negotiation().getSessions(WORLD_ID, agent.AGENT_ID); // retrieve sessions list
-        logger.debug("negotiate state > " + Arrays.toString(sessions));
+        if (is_moving == 0) return;
+
+        String[] sessions = WORLD_HANDLER_GET_NEGOTIATION_SESSIONS.apply(getAgentName());
+        logger.debug(getAgentName() + " | negotiate state > " + Arrays.toString(sessions));
         if (sessions.length > 0)
         {
             for (String sid : sessions)
@@ -274,9 +218,13 @@ public class AgentHandler {
                 if (sid.isEmpty()) { continue; }
 
                 agent.SetConflictLocation(conflict_location);
-                NegotiationSession session = new NegotiationSession(WORLD_ID, sid, this);
-                session.connect();
+
+                WORLD_OVERSEER_JOIN_NEGOTIATION_SESSION.accept(sid, this);
+
+                logger.debug(getAgentName() + " | " + sid);
             }
+        } else {
+            WORLD_OVERSEER_NEGOTIATED.accept(getAgentName(), "");
         }
     }
 
@@ -286,14 +234,8 @@ public class AgentHandler {
         // 1: can move | has moves to move
         if (is_moving == 0) return;
 
-        String[] curr = agent.path.get(agent.time).split("-");
-        // if next time equals to path size
-        // current location is the destination
         if (agent.time + 1 < agent.path.size()) {
-            String[] next = agent.path.get(agent.time + 1).split("-");
-
-//            String direction = direction(curr, next);
-//            Assert.isTrue((direction.length() > 0), "«DIRECTION cannot be empty»");
+            System.out.println("moving " + getAgentName());
 
             // make Agent move
             DATA_REQUEST_PAYLOAD_WORLD_MOVE payload = new DATA_REQUEST_PAYLOAD_WORLD_MOVE();
@@ -302,8 +244,9 @@ public class AgentHandler {
             payload.NEXT_LOCATION    = new Point(agent.path.get(agent.time + 1), "-");
             payload.BROADCAST        = agent.GetNextBroadcast();
 
-            WORLD_HANDLER_MOVE.accept(this, payload);
+            WORLD_OVERSEER_MOVE.accept(this, payload);
         } else {
+            System.out.println(getAgentName() + " stopping t:" + agent.time + " path: " + agent.path);
             // no more moves left, agent should stop
             is_moving = 0;
 
@@ -337,21 +280,14 @@ public class AgentHandler {
     /**
      * Function to be called when world watch disconnects
      */
-    public void leave() {
-        try {
-            if (websocket != null) {
-                websocket.close();
-            }
-            fl.LogAgentInfo(agent, "LEAVE");  // LOG AGENT INFO ON LEAVE
-            fl.logAgentWorldLeave(agent);           // LOG AGENT LEAVING
-//            new WorldHandler().leave(WORLD_ID, agent.AGENT_ID);
-            Jedis jedis = new Jedis(Globals.REDIS_HOST, Globals.REDIS_PORT);
-            jedis.srem("world:"+WORLD_ID+":active_agents", "agent:"+agent.AGENT_ID);
-            jedis.close();
-            logger.debug("World@leave{world:"+WORLD_ID+": , agent:"+agent.AGENT_ID+"}");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public void leave()
+    {
+        fl.LogAgentInfo(agent, "LEAVE");  // LOG AGENT INFO ON LEAVE
+        fl.logAgentWorldLeave(agent);           // LOG AGENT LEAVING
+
+        WORLD_OVERSEER_HOOK_LEAVE.accept(this);
+
+        logger.debug("World@leave{world:"+WORLD_ID+": , agent:"+agent.AGENT_ID+"}");
     }
 
     // todo handle better later
@@ -386,33 +322,11 @@ public class AgentHandler {
     {
         // New state received
         // fetch current Contract
-        Contract contract = new Negotiation().getContract(agent);
+        Contract contract = state.contract;
 
         if (contract != null) agent.history.put(contract);
 
         agent.onReceiveState(state);
-    }
-
-    /**
-     * Invoked only when negotiation is initiated, and agent
-     * is about to join. (Before {@link #PrepareContract(NegotiationSession)})
-     *
-     * Negotiation session status should be "join" for this
-     * function to be invoked
-     *
-     * Fills the empty contract with necessary information.
-     *
-     * Mark that a new session has started
-     * */
-    @SuppressWarnings("UnusedReturnValue")
-    public Contract PrepareContract(NegotiationSession session)
-    {
-        // clear negotiation result checker
-        // todo better handle
-        // current setup assumes that there will be only single instance of
-        // negotiation that agent participates at any given time
-        agent.negotiation_result = -1;
-        return Contract.Create(agent, session);
     }
 
     public void PreNegotiation(String session_id, State state)
@@ -437,18 +351,27 @@ public class AgentHandler {
         agent.LogNegotiationState(prev_bidding_agent, action);
     }
 
-    public Action OnMakeAction() {
-        return agent.onMakeAction();
+    public Action OnMakeAction(String negotiation_session_id)
+    {
+        return agent.onMakeAction(negotiation_session_id);
+    }
+
+    public void AcceptLastBids(JSONNegotiationSession json)
+    {
+        // get contract
+        Contract contract = agent.GetContract();
+
+        logger.debug("AcceptLastBids:"+contract);
+        logger.debug("          json:"+json);
+
+        AcceptLastBids(contract);
+
+        agent.OnAcceptLastBids(json);
     }
 
     @SuppressWarnings("Duplicates")
     //<editor-fold defaultstate="collapsed" desc="Accept Last Bids">
-    public void AcceptLastBids(JSONNegotiationSession json) {
-        // get contract
-        Contract contract = new Negotiation().getContract(agent);
-        logger.debug("AcceptLastBids:"+contract);
-        logger.debug("          json:"+json);
-
+    public void AcceptLastBids(Contract contract) {
         List<String> new_path = new ArrayList<>();
 
         // use contract to apply select paths
@@ -542,19 +465,22 @@ public class AgentHandler {
         logger.debug(agent.AGENT_ID + "{path:" + agent.path + "}");
 
 //        WorldHandler.doBroadcast(WORLD_ID, agent.AGENT_ID, agent.GetOwnBroadcastPath());
-        try {
-            Jedis jedis = new Jedis(Globals.REDIS_HOST, Globals.REDIS_PORT);
-            jedis.hset("world:" + WORLD_ID + ":path", "agent:" + agent.AGENT_ID, Utils.toString(agent.GetOwnBroadcastPath(), ","));
-            jedis.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        agent.OnAcceptLastBids(json);
+//        try {
+//            Jedis jedis = new Jedis(Globals.REDIS_HOST, Globals.REDIS_PORT);
+//            jedis.hset("world:" + WORLD_ID + ":path", "agent:" + agent.AGENT_ID, Utils.toString(agent.GetOwnBroadcastPath(), ","));
+//            jedis.close();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
     }
     //</editor-fold>
 
-    public void PostNegotiation()
+    public void PostNegotiation(String session_id)
     {
+        if (WORLD_OVERSEER_NEGOTIATED != null) {
+            WORLD_OVERSEER_NEGOTIATED.accept(getAgentName(), session_id);
+        }
+
         agent.PostNegotiation();
     }
 
@@ -564,25 +490,59 @@ public class AgentHandler {
         agent.LogNegotiationOver(bidding_agent, session_id);
     }
 
-/** ================================================================================================================ **/
+    public void UpdateTokenCountBy(int i)
+    {
+        agent.current_tokens += i;
+    }
+
+    public Agent GetAgent()
+    {
+        return agent;
+    }
+
+    public String[][] GetCurrentFoVData() {
+        return fov;
+    }
+
+    /** ================================================================================================================ **/
 
     public void SetJoinCallback(Function<DATA_REQUEST_PAYLOAD_WORLD_JOIN, String[]> function)
     {
         WORLD_HANDLER_JOIN = function;
     }
 
-    public void SetBroadcastCallback(BiConsumer<String, String[]> function)
+    public void SET_COLLISION_CHECK_DONE(BiConsumer<String, String[]> function)
     {
-        WORLD_HANDLER_SET_BROADCAST = function;
+        WORLD_HANDLER_COLLISION_CHECK_DONE = function;
     }
 
-    public void SetNegotiatedCallback(Consumer<String> function)
+    public void GET_NEGOTIATION_CONTRACT(Function<String, Contract> function)
     {
-        WORLD_HANDLER_NEGOTIATED = function;
+        WORLD_OVERSEER_HOOK_GET_NEGOTIATION_CONTRACT = function;
+    }
+
+    public void SetGetNegotiationsHook(Function<String, String[]> function)
+    {
+        WORLD_HANDLER_GET_NEGOTIATION_SESSIONS = function;
+    }
+
+    public void SET_NEGOTIATION_JOIN_SESSION(BiConsumer<String, AgentHandler> function)
+    {
+        WORLD_OVERSEER_JOIN_NEGOTIATION_SESSION = function;
+    }
+
+    public void SetNegotiatedCallback(BiConsumer<String, String> function)
+    {
+        WORLD_OVERSEER_NEGOTIATED = function;
     }
 
     public void SetMoveCallback(BiConsumer<AgentHandler, DATA_REQUEST_PAYLOAD_WORLD_MOVE> function)
     {
-        WORLD_HANDLER_MOVE = function;
+        WORLD_OVERSEER_MOVE = function;
+    }
+
+    public void SET_WORLD_OVERSEER_HOOK_LEAVE(Consumer<AgentHandler> leave)
+    {
+        WORLD_OVERSEER_HOOK_LEAVE = leave;
     }
 }
