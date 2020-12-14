@@ -148,9 +148,9 @@ public class ScenarioManager extends javax.swing.JFrame
         popup_generating.getContentPane().add(jLabel1, java.awt.BorderLayout.CENTER);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setMinimumSize(new java.awt.Dimension(600, 450));
-        setPreferredSize(new java.awt.Dimension(800, 450));
-        setSize(new java.awt.Dimension(600, 450));
+        setMinimumSize(new java.awt.Dimension(800, 500));
+        setPreferredSize(new java.awt.Dimension(800, 500));
+        setSize(new java.awt.Dimension(800, 500));
         addComponentListener(new java.awt.event.ComponentAdapter() {
             public void componentResized(java.awt.event.ComponentEvent evt) {
                 formComponentResized(evt);
@@ -549,10 +549,8 @@ public class ScenarioManager extends javax.swing.JFrame
 
         java.awt.GridBagLayout world_view_tabLayout = new java.awt.GridBagLayout();
         world_view_tabLayout.columnWeights = new double[] {1.0};
-        world_view_tabLayout.rowWeights = new double[] {1.0};
+        world_view_tabLayout.rowWeights = new double[] {10.0, 0.0};
         world_view_tab.setLayout(world_view_tabLayout);
-
-        scenario_canvas.setBackground(new java.awt.Color(238, 238, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -560,7 +558,6 @@ public class ScenarioManager extends javax.swing.JFrame
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.RELATIVE;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
-        gridBagConstraints.weightx = 1.0;
         world_view_tab.add(scenario_canvas, gridBagConstraints);
 
         world_controls.setMinimumSize(new java.awt.Dimension(80, 80));
@@ -594,7 +591,7 @@ public class ScenarioManager extends javax.swing.JFrame
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.RELATIVE;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
         world_view_tab.add(world_controls, gridBagConstraints);
