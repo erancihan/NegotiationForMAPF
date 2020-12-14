@@ -117,7 +117,7 @@ public class ScenarioManager extends javax.swing.JFrame
         javax.swing.JButton run_btn = new javax.swing.JButton();
         javax.swing.JPanel run_scenario = new javax.swing.JPanel();
         javax.swing.JPanel scenario_info_container = new javax.swing.JPanel();
-        javax.swing.JTabbedPane tab_container = new javax.swing.JTabbedPane();
+        javax.swing.JTabbedPane world_tab_container = new javax.swing.JTabbedPane();
         world_view_tab = new javax.swing.JPanel();
         scenario_canvas = new edu.ozu.mapp.agent.client.world.ScenarioCanvas();
         javax.swing.JPanel world_controls = new javax.swing.JPanel();
@@ -126,6 +126,7 @@ public class ScenarioManager extends javax.swing.JFrame
         javax.swing.JPanel jPanel2 = new javax.swing.JPanel();
         label_current_state = new javax.swing.JLabel();
         btn_next_state = new javax.swing.JButton();
+        javax.swing.JTabbedPane logs_tab_container = new javax.swing.JTabbedPane();
         javax.swing.JPanel world_logs = new javax.swing.JPanel();
         javax.swing.JScrollPane jScrollPane1 = new javax.swing.JScrollPane();
         scenario_info_pane = new javax.swing.JTextPane();
@@ -544,16 +545,22 @@ public class ScenarioManager extends javax.swing.JFrame
         run_scenario.setLayout(run_scenarioLayout);
 
         scenario_info_container.setPreferredSize(new java.awt.Dimension(400, 150));
-        scenario_info_container.setLayout(new java.awt.BorderLayout());
+        scenario_info_container.setLayout(new java.awt.GridLayout());
 
         java.awt.GridBagLayout world_view_tabLayout = new java.awt.GridBagLayout();
         world_view_tabLayout.columnWeights = new double[] {1.0};
-        world_view_tabLayout.rowWeights = new double[] {1.0, 0.0};
+        world_view_tabLayout.rowWeights = new double[] {1.0};
         world_view_tab.setLayout(world_view_tabLayout);
+
+        scenario_canvas.setBackground(new java.awt.Color(238, 238, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.RELATIVE;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
+        gridBagConstraints.weightx = 1.0;
         world_view_tab.add(scenario_canvas, gridBagConstraints);
 
         world_controls.setMinimumSize(new java.awt.Dimension(80, 80));
@@ -586,11 +593,15 @@ public class ScenarioManager extends javax.swing.JFrame
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
         world_view_tab.add(world_controls, gridBagConstraints);
 
-        tab_container.addTab("World View", world_view_tab);
+        world_tab_container.addTab("World View", world_view_tab);
+
+        scenario_info_container.add(world_tab_container);
 
         world_logs.setLayout(new java.awt.BorderLayout());
 
@@ -600,10 +611,10 @@ public class ScenarioManager extends javax.swing.JFrame
 
         world_logs.add(jScrollPane1, java.awt.BorderLayout.CENTER);
 
-        tab_container.addTab("Logs", world_logs);
+        logs_tab_container.addTab("Logs", world_logs);
 
-        scenario_info_container.add(tab_container, java.awt.BorderLayout.CENTER);
-        tab_container.getAccessibleContext().setAccessibleName("World Info");
+        scenario_info_container.add(logs_tab_container);
+        logs_tab_container.getAccessibleContext().setAccessibleName("World Info");
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
