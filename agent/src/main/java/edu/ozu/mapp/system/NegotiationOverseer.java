@@ -11,6 +11,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public class NegotiationOverseer
@@ -18,6 +19,7 @@ public class NegotiationOverseer
     private static NegotiationOverseer instance;
 
     protected Consumer<String> world_log_callback;
+    protected BiConsumer<String, String> log_payload_hook;
 
     // { AGENT_NAME: [ SESSION_HASH, ... ] }
     private ConcurrentHashMap<String, ArrayList<String>> session_keys;
@@ -53,8 +55,6 @@ public class NegotiationOverseer
         // sort data first
         Arrays.sort(agent_ids);
 
-        System.out.println(Arrays.toString(agent_ids));
-
         // PREPARE SESSION HASH
         StringBuilder session_key = new StringBuilder();
         for (String id : agent_ids)
@@ -84,8 +84,7 @@ public class NegotiationOverseer
 
         if (!sessions.containsKey(session_hash))
         {
-            System.out.println("creating session " + session_hash);
-            sessions.put(session_hash, new NegotiationSession(session_hash, agent_ids, world_log_callback));
+            sessions.put(session_hash, new NegotiationSession(session_hash, agent_ids, world_log_callback, log_payload_hook));
             cumulative_negotiation_count++;
         }
     }
@@ -97,8 +96,6 @@ public class NegotiationOverseer
 
     public String AgentJoinSession(String session_id, AgentHandler agent)
     {
-        System.out.println(agent.getAgentName() + " joining " + session_id + " | " + sessions.containsKey(session_id));
-
         sessions.get(session_id).RegisterAgentREF(agent);
 
         return agent.getAgentName() + " joining " + session_id + " | " + Arrays.toString(sessions.get(session_id).GetAgentNames());
@@ -116,7 +113,6 @@ public class NegotiationOverseer
 
     public synchronized void AgentLeaveSession(String agent_name, String session_id)
     {
-        System.out.println("> " + session_id + " agent leaving : " + agent_name);
         NegotiationSession session = sessions.get(session_id);
 
         if (session.GetState().equals(NegotiationSession.NegotiationState.DONE))
@@ -126,11 +122,11 @@ public class NegotiationOverseer
         }
         if (session.GetActiveAgentNames().length == 0)
         {
-            System.out.println("deleting session " + session_id);
 //            session.destroy();
             sessions.remove(session_id);
 
-            System.out.println("deleted " + session + " " + sessions.containsKey(session_id));
+            String timestamp = new java.sql.Timestamp(System.currentTimeMillis()).toString();
+            log_payload_hook.accept(String.format("%s-%s",  session_id, timestamp), String.format("%-23s %s", timestamp, "DELETED"));
         }
     }
 

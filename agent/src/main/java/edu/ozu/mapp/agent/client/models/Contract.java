@@ -174,4 +174,12 @@ public class Contract implements Cloneable {
     public int hashCode() {
         return Objects.hash(Ox, x, ETa, A, ETb, B, sess_id);
     }
+
+    public String print()
+    {
+        return String.format(
+            "{SESS_ID: %s, A: %s, ETa: %s, B: %s, ETb: %s, x: %s, Ox: %s}",
+            sess_id.substring(0, 7), A, ETa, B, ETb, x, Ox
+        );
+    }
 }

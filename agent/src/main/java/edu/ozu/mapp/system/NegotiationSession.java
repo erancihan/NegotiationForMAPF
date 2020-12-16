@@ -13,11 +13,13 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public class NegotiationSession
 {
     private Consumer<String> world_log_callback;
+    private BiConsumer<String, String> log_hook;
 
     private ConcurrentHashMap<String, AgentHandler> agent_refs;
     private ConcurrentSkipListSet<String> AGENTS_READY;
@@ -40,7 +42,7 @@ public class NegotiationSession
         JOIN, RUNNING, DONE;
     }
 
-    public NegotiationSession(String session_hash, String[] agent_names, Consumer<String> world_log_callback)
+    public NegotiationSession(String session_hash, String[] agent_names, Consumer<String> world_log_callback, BiConsumer<String, String> log_payload_hook)
     {
         this.agent_refs   = new ConcurrentHashMap<>();
         this._agent_names = agent_names.clone();
@@ -48,6 +50,7 @@ public class NegotiationSession
         this.service      = Executors.newScheduledThreadPool(2);
         this.AGENTS_READY = new ConcurrentSkipListSet<>();
         this.world_log_callback = world_log_callback;
+        this.log_hook = log_payload_hook;
 
         this.bid_order_queue = new ConcurrentLinkedQueue<>();
 
@@ -73,6 +76,9 @@ public class NegotiationSession
 
         // initialize LOCKs
         session_loop_agent_invoke_lock = new ReentrantLock();
+
+        // LOG
+        log_hook.accept(session_hash, String.format("%-23s %-7s %s", new java.sql.Timestamp(System.currentTimeMillis()), "INIT", Arrays.toString(agent_names)));
     }
 
     public NegotiationState GetState()
@@ -91,6 +97,7 @@ public class NegotiationSession
             Assert.isTrue(Arrays.asList(agent_names).contains(agent_name), "AGENT " + agent_name+ " DOES NOT BELONG HERE");
 
             this.agent_refs.put(agent.getAgentName(), agent);
+            this.log_hook.accept(session_hash, String.format("%-23s %s JOIN", new java.sql.Timestamp(System.currentTimeMillis()), agent_name));
         }
 
         if (this.agent_refs.size() == this.agent_names.length)
@@ -101,8 +108,8 @@ public class NegotiationSession
 
     private void conclude_join_process()
     {
-        System.out.println(session_hash + " CONCLUDING JOIN PROCESS | " + Arrays.toString(_agent_names));
         world_log_callback.accept(session_hash + " starting Negotiation Session " + Arrays.toString(_agent_names));
+        log_hook.accept(session_hash, String.format("%-23s %-7s", new java.sql.Timestamp(System.currentTimeMillis()), "START"));
 
         join_task();
 
@@ -122,15 +129,12 @@ public class NegotiationSession
                         state.contract = contract.clone();
 
                         agent_refs.get(agent_name).PreNegotiation(session_hash, state);
-
-                        System.out.println(agent_name + " pre-negotiation done");
                     } catch (CloneNotSupportedException e) {
                         e.printStackTrace();
                     }
                 })
                 .thenRun(() -> {
                     AGENTS_READY.add(agent_name);
-                    System.out.println(agent_name + " ready | " + AGENTS_READY.size());
                 });
             }
         });
@@ -154,9 +158,7 @@ public class NegotiationSession
         state = NegotiationState.RUNNING;
         Assert.notNull(TURN, "TURN cannot be null! " + Arrays.toString(agent_names));
 
-        System.out.println(session_hash + " starting with " + Arrays.toString(agent_names));
-
-        task_run = service.scheduleAtFixedRate(this::session_loop, 0, 100, TimeUnit.MILLISECONDS);
+        task_run = service.scheduleAtFixedRate(this::session_loop_container, 0, 100, TimeUnit.MILLISECONDS);
     }
 
     private synchronized void shuffle_bid_order()
@@ -171,12 +173,24 @@ public class NegotiationSession
         this.bid_order_queue.addAll(bid_order);
     }
 
+    private void session_loop_container()
+    {
+        try {
+            session_loop();
+        } catch (CloneNotSupportedException e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
+    }
+
     private Lock session_loop_agent_invoke_lock;
-    private void session_loop()
+    private void session_loop() throws CloneNotSupportedException
     {
         if (session_loop_agent_invoke_lock.tryLock())
         {
-            System.out.println(session_hash + " loop " + state + " | " + agent_refs.keySet());
+            Contract contract = this.contract.clone();
+
+            log_hook.accept(session_hash, String.format("%-23s %-7s %s", new java.sql.Timestamp(System.currentTimeMillis()), state, contract.print()));
             if (state.equals(NegotiationState.RUNNING))
             {
                 try {
@@ -200,17 +214,11 @@ public class NegotiationSession
 
             if (state.equals(NegotiationState.DONE))
             {   // TELL ALL AGENTS THAT NEGOTIATION IS DONE
-                System.out.println(session_hash + " loop DONE");
-                for (String agent_name : agent_names) {
+                for (String agent_name : agent_names)
+                {
                     CompletableFuture.runAsync(() -> {
-                        try {
-                            Contract contract = this.contract.clone();
-
-                            agent_refs.get(agent_name).AcceptLastBids(contract);
-                            agent_refs.get(agent_name).PostNegotiation(session_hash);
-                        } catch (CloneNotSupportedException e) {
-                            e.printStackTrace();
-                        }
+                        agent_refs.get(agent_name).AcceptLastBids(contract);
+                        agent_refs.get(agent_name).PostNegotiation(session_hash);
                     });
                 }
 
@@ -238,10 +246,10 @@ public class NegotiationSession
     @org.jetbrains.annotations.NotNull
     private String process_turn_make_action() {
         AgentHandler agent = agent_refs.get(TURN);
-        System.out.println(" >>>>> " + TURN + " : " + agent);
 
         Action action = agent.OnMakeAction(session_hash);
-        System.out.println("> " + action.bid);
+
+        log_hook.accept(session_hash, String.format("%-23s %-7s %s", new java.sql.Timestamp(System.currentTimeMillis()), action.type, action.bid.print()));
 
         if (action.type.equals(ActionType.OFFER))
         {   // Bidding agent made an offer

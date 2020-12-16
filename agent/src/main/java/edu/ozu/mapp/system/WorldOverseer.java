@@ -52,12 +52,14 @@ public class WorldOverseer
     private long SIM_LOOP_FINISH_TIME;
     private long SIM_LOOP_DURATION;
 
+    DATA_LOG_DISPLAY log_payload;
+
     private ConcurrentHashMap<String, String> FLAG_JOINS;
     private ConcurrentHashMap<String, String> FLAG_COLLISION_CHECKS;
     private ConcurrentHashMap<String, String> FLAG_NEGOTIATIONS_DONE;
     private ConcurrentHashMap<String, String> FLAG_INACTIVE;
 
-    private BiConsumer<Map<String, String>, ArrayList<Object[]>>    UI_LogDrawCallback;
+    private Consumer<DATA_LOG_DISPLAY>    UI_LogDrawCallback;
     private Consumer<String>                                        UI_StateChangeCallback;
     private Runnable                                                UI_CanvasUpdateHook;
     private Runnable                                                UI_LoopStoppedHook;
@@ -70,12 +72,15 @@ public class WorldOverseer
         movement_handler    = MovementHandler.getInstance();
         negotiation_overseer = NegotiationOverseer.getInstance();
         negotiation_overseer.world_log_callback = this::Log;
+        negotiation_overseer.log_payload_hook = this::LogNegotiation;
 
         broadcasts     = new ConcurrentHashMap<>();
         bank_data      = new ConcurrentHashMap<>();
         agent_to_point = new ConcurrentHashMap<>();
         point_to_agent = new ConcurrentHashMap<>();
         active_agents  = new ConcurrentSkipListSet<>();
+
+        log_payload    = new DATA_LOG_DISPLAY();
 
         FLAG_JOINS            = new ConcurrentHashMap<>();
         FLAG_COLLISION_CHECKS = new ConcurrentHashMap<>();
@@ -103,7 +108,7 @@ public class WorldOverseer
         UI_LoopStoppedHook = callback;
     }
 
-    public void SetLogDrawCallback(BiConsumer<Map<String, String>, ArrayList<Object[]>> callback)
+    public void SetLogDrawCallback(Consumer<DATA_LOG_DISPLAY> callback)
     {
         UI_LogDrawCallback = callback;
     }
@@ -235,7 +240,10 @@ public class WorldOverseer
             default:
         }
 
-        UI_LogDrawCallback.accept(data, state_log);
+        log_payload.world_data = data;
+        log_payload.world_log  = state_log;
+
+        UI_LogDrawCallback.accept(log_payload);
     }
 
     private JSONWorldWatch get_current_state(String agent_name)
@@ -442,6 +450,24 @@ public class WorldOverseer
     public synchronized void Log(String str)
     {
         state_log.add(new Object[]{str, new java.sql.Timestamp(System.currentTimeMillis())});
+    }
+
+    public synchronized void LogNegotiation(String key, String value)
+    {
+        String[] key_data = key.split("-", 2);
+
+        ArrayList<String> data = log_payload.negotiation_logs.getOrDefault(key_data[0], new ArrayList<>());
+        data.add(value);
+
+        if (key_data.length == 2)
+        {   // clear
+            log_payload.negotiation_logs.remove(key_data[0]);
+            log_payload.negotiation_logs.put(key, data);
+
+            return;
+        }
+
+        log_payload.negotiation_logs.put(key_data[0], data);
     }
 
     public HashMap<String, Point[]> GetAllBroadcasts()

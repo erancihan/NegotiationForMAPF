@@ -117,6 +117,7 @@ public class ScenarioManager extends javax.swing.JFrame
         javax.swing.JButton run_btn = new javax.swing.JButton();
         javax.swing.JPanel run_scenario = new javax.swing.JPanel();
         javax.swing.JPanel scenario_info_container = new javax.swing.JPanel();
+        jSplitPane1 = new javax.swing.JSplitPane();
         javax.swing.JTabbedPane world_tab_container = new javax.swing.JTabbedPane();
         world_view_tab = new javax.swing.JPanel();
         scenario_canvas = new edu.ozu.mapp.agent.client.world.ScenarioCanvas();
@@ -130,6 +131,9 @@ public class ScenarioManager extends javax.swing.JFrame
         javax.swing.JPanel world_logs = new javax.swing.JPanel();
         javax.swing.JScrollPane jScrollPane1 = new javax.swing.JScrollPane();
         scenario_info_pane = new javax.swing.JTextPane();
+        javax.swing.JPanel negotiation_logs = new javax.swing.JPanel();
+        jScrollPane4 = new javax.swing.JScrollPane();
+        negotiation_info_pane = new javax.swing.JTextPane();
         javax.swing.JPanel run_controls = new javax.swing.JPanel();
         javax.swing.JButton back_to_overview_btn = new javax.swing.JButton();
         javax.swing.JMenuBar jMenuBar1 = new javax.swing.JMenuBar();
@@ -545,7 +549,16 @@ public class ScenarioManager extends javax.swing.JFrame
         run_scenario.setLayout(run_scenarioLayout);
 
         scenario_info_container.setPreferredSize(new java.awt.Dimension(400, 150));
-        scenario_info_container.setLayout(new java.awt.GridLayout());
+        scenario_info_container.setLayout(new java.awt.GridLayout(1, 0));
+
+        jSplitPane1.setDividerLocation(300);
+        jSplitPane1.setDividerSize(5);
+        jSplitPane1.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+        jSplitPane1.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+            public void propertyChange(java.beans.PropertyChangeEvent evt) {
+                jSplitPane1PropertyChange(evt);
+            }
+        });
 
         java.awt.GridBagLayout world_view_tabLayout = new java.awt.GridBagLayout();
         world_view_tabLayout.columnWeights = new double[] {1.0};
@@ -598,7 +611,7 @@ public class ScenarioManager extends javax.swing.JFrame
 
         world_tab_container.addTab("World View", world_view_tab);
 
-        scenario_info_container.add(world_tab_container);
+        jSplitPane1.setLeftComponent(world_tab_container);
 
         world_logs.setLayout(new java.awt.BorderLayout());
 
@@ -608,10 +621,21 @@ public class ScenarioManager extends javax.swing.JFrame
 
         world_logs.add(jScrollPane1, java.awt.BorderLayout.CENTER);
 
-        logs_tab_container.addTab("Logs", world_logs);
+        logs_tab_container.addTab("World Logs", world_logs);
 
-        scenario_info_container.add(logs_tab_container);
+        negotiation_logs.setLayout(new java.awt.BorderLayout());
+
+        negotiation_info_pane.setFont(new java.awt.Font("Ubuntu Mono", 0, 14)); // NOI18N
+        jScrollPane4.setViewportView(negotiation_info_pane);
+
+        negotiation_logs.add(jScrollPane4, java.awt.BorderLayout.CENTER);
+
+        logs_tab_container.addTab("Negotiation Logs", negotiation_logs);
+
+        jSplitPane1.setRightComponent(logs_tab_container);
         logs_tab_container.getAccessibleContext().setAccessibleName("World Info");
+
+        scenario_info_container.add(jSplitPane1);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
@@ -796,6 +820,10 @@ public class ScenarioManager extends javax.swing.JFrame
         if (scenario_canvas != null) scenario_canvas.Resize();
     }//GEN-LAST:event_formComponentResized
 
+    private void jSplitPane1PropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_jSplitPane1PropertyChange
+        if (scenario_canvas != null) scenario_canvas.Resize();
+    }//GEN-LAST:event_jSplitPane1PropertyChange
+
     /**
      * @param args the command line arguments
      */
@@ -842,12 +870,15 @@ public class ScenarioManager extends javax.swing.JFrame
     private javax.swing.JTextField height_input;
     private javax.swing.JTextField input_initial_token_count_per_agent;
     private javax.swing.JTextField input_number_of_expected_conflicts;
+    private javax.swing.JScrollPane jScrollPane4;
+    private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JLabel label_current_state;
     private javax.swing.JTextField max_path_length_input;
     private javax.swing.JLabel max_path_length_label;
     private javax.swing.JTextField min_dist_bw_agents;
     private javax.swing.JTextField min_path_length_input;
     private javax.swing.JLabel min_path_length_label;
+    private javax.swing.JTextPane negotiation_info_pane;
     private javax.swing.JLabel number_of_agents_label;
     private javax.swing.JLabel number_of_conflicts_label;
     private javax.swing.JPanel overview_scenario;
@@ -1015,31 +1046,17 @@ public class ScenarioManager extends javax.swing.JFrame
     }
     //</editor-fold>
 
+    private TextPaneLogFormatter text_pane_formatter;
     private void InitializeWorld()
     {
+        text_pane_formatter = new TextPaneLogFormatter();
+        text_pane_formatter.scenario_info_pane = scenario_info_pane;
+        text_pane_formatter.negotiation_info_pane = negotiation_info_pane;
+
 //        world = new World();
         world = new WorldOverseer();
         world.SetOnLoopingStop(() -> generate_scenario_btn.setEnabled(true));
-        world.SetLogDrawCallback(
-            (data, log) -> {
-                // update canvas
-                try {
-                    scenario_info_pane.setText(
-                        data
-                            .keySet().stream().sorted()
-                            .map(key -> key + ": " + data.get(key) + "\n")
-                            .collect(Collectors.joining("")) +
-                        "\n-------------\n" +
-                        log
-                            .stream()
-                            .map(item -> String.format("%-23s", item[1].toString()) + " " + item[0].toString())
-                            .collect(Collectors.joining("\n"))
-                    );
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    System.exit(1);
-                }
-            });
+        world.SetLogDrawCallback((data) -> text_pane_formatter.format(data));
         world.SetCurrentStateChangeCallback((state) -> label_current_state.setText(state));
         world.SetCanvasUpdateCallback(() -> scenario_canvas.Update(true));
 
