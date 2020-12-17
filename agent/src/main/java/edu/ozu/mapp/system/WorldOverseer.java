@@ -114,11 +114,13 @@ public class WorldOverseer
         return instance;
     }
 
-    public void Flush()
+    public WorldOverseer Flush()
     {
         construct();
         movement_handler.Flush();
         negotiation_overseer.Flush();
+
+        return null;
     }
 
     public void Create(String world_id, int width, int height)
