@@ -256,8 +256,8 @@ public class WorldOverseer
             case MOVE:
                 if (active_agent_c == movement_handler.size())
                 {
-                    movement_handler
-                        .ProcessQueue(() -> CompletableFuture.runAsync(() -> {
+                    movement_handler.ProcessQueue(() -> CompletableFuture
+                        .runAsync(() -> {
                             logger.info("- MOVES ARE COMPLETE");
 
                             prev_state = curr_state;
@@ -271,7 +271,9 @@ public class WorldOverseer
                             log_payload.LogWorldTime(TIME);
 
                             if (IsLooping) { Step(); }
-                        }));
+                        })
+                        .exceptionally(ex -> { ex.printStackTrace(); return null; })
+                    );
                 }
 
                 break;

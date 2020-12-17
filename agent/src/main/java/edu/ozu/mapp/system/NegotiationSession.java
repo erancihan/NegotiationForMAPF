@@ -133,11 +133,16 @@ public class NegotiationSession
                         e.printStackTrace();
                     }
                 })
+                .exceptionally(ex -> { ex.printStackTrace(); return null; })
                 .thenRun(() -> {
                     AGENTS_READY.add(agent_name);
-                });
+                })
+                .exceptionally(ex -> { ex.printStackTrace(); return null; })
+                ;
             }
-        });
+        })
+        .exceptionally(ex -> { ex.printStackTrace(); return null; })
+        ;
     }
 
     private void await_init()
@@ -197,15 +202,20 @@ public class NegotiationSession
                     for (String agent_name : agent_names)
                     {
                         CompletableFuture
-                            .runAsync(() -> send_current_state_to_agent(agent_name));
+                            .runAsync(() -> send_current_state_to_agent(agent_name))
+                            .exceptionally(ex -> { ex.printStackTrace(); return null; })
+                        ;
                     }
 
                     CompletableFuture
                         .supplyAsync(this::process_turn_make_action)
+                        .exceptionally(ex -> { ex.printStackTrace(); return null; })
                         .thenAccept((response) -> {
                             // todo Get a form of response maybe?
                             session_loop_agent_invoke_lock.unlock();
-                        });
+                        })
+                        .exceptionally(ex -> { ex.printStackTrace(); return null; })
+                    ;
                 } catch (Exception exception) {
                     exception.printStackTrace();
                     session_loop_agent_invoke_lock.unlock();
@@ -219,7 +229,9 @@ public class NegotiationSession
                     CompletableFuture.runAsync(() -> {
                         agent_refs.get(agent_name).AcceptLastBids(contract);
                         agent_refs.get(agent_name).PostNegotiation(session_hash);
-                    });
+                    })
+                    .exceptionally(ex -> { ex.printStackTrace(); return null; })
+                    ;
                 }
 
                 // clean up
