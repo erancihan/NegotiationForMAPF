@@ -50,6 +50,11 @@ public class NegotiationOverseer
         return instance;
     }
 
+    public void Flush()
+    {
+        instance = new NegotiationOverseer();
+    }
+
     public synchronized void RegisterCollisionNotification(String[] agent_ids)
     {
         // sort data first

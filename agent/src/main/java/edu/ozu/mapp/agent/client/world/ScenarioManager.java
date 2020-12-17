@@ -788,6 +788,7 @@ public class ScenarioManager extends javax.swing.JFrame
     private void back_to_overview_btnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_back_to_overview_btnActionPerformed
         ((CardLayout) cards_container.getLayout()).show(cards_container, "overview");
         // todo flush
+        if (world != null) world.Flush();
     }//GEN-LAST:event_back_to_overview_btnActionPerformed
 
     private void btn_cycle_statesItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_btn_cycle_statesItemStateChanged

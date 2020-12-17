@@ -69,6 +69,11 @@ public class WorldOverseer
 
     private WorldOverseer()
     {
+        construct();
+    }
+
+    private void construct()
+    {
         clients             = new ConcurrentHashMap<>();
         curr_state          = Globals.WorldState.JOIN;
         prev_state          = Globals.WorldState.NONE;
@@ -107,6 +112,13 @@ public class WorldOverseer
         }
 
         return instance;
+    }
+
+    public void Flush()
+    {
+        construct();
+        movement_handler.Flush();
+        negotiation_overseer.Flush();
     }
 
     public void Create(String world_id, int width, int height)

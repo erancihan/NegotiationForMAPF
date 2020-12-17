@@ -42,6 +42,11 @@ public class MovementHandler
         return instance;
     }
 
+    public void Flush()
+    {
+        instance = new MovementHandler();
+    }
+
     public void SetWorldReference(WorldOverseer world)
     {
         this.world = world;
