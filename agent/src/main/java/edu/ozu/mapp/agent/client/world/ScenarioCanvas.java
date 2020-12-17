@@ -54,19 +54,17 @@ public class ScenarioCanvas extends Canvas
 
     public void SetAgentsData(ArrayList<JSONAgentData> agents_data)
     {
+        int idx = 0;
         for (JSONAgentData agent_data : agents_data)
         {
             String agent_key = agent_data.agent_name.replace("agent:", "");
 
             this.agents_data.put(agent_key, agent_data);
 
-            String agent_hex_color;
-            do {
-                agent_hex_color = rgb2hex(rand.nextInt(256), rand.nextInt(256), rand.nextInt(256));
-            } while (agent_hex_color.isEmpty() && used_hex_colors.contains(agent_hex_color));
-            used_hex_colors.add(agent_hex_color);
+            String agent_hex_color = edu.ozu.mapp.system.Colors.get(idx);
 
             this.agent_colors.put(agent_key, agent_hex_color);
+            idx += 1;
         }
     }
 
