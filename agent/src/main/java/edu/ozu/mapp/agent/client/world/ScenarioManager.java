@@ -616,7 +616,7 @@ public class ScenarioManager extends javax.swing.JFrame
         world_logs.setLayout(new java.awt.BorderLayout());
 
         scenario_info_pane.setBackground(new java.awt.Color(250, 250, 250));
-        scenario_info_pane.setFont(new java.awt.Font("Trebuchet MS", 0, 12)); // NOI18N
+        scenario_info_pane.setFont(new java.awt.Font("Ubuntu Mono", 0, 14)); // NOI18N
         jScrollPane1.setViewportView(scenario_info_pane);
 
         world_logs.add(jScrollPane1, java.awt.BorderLayout.CENTER);
@@ -1054,7 +1054,7 @@ public class ScenarioManager extends javax.swing.JFrame
         text_pane_formatter.negotiation_info_pane = negotiation_info_pane;
 
 //        world = new World();
-        world = new WorldOverseer();
+        world = WorldOverseer.getInstance();
         world.SetOnLoopingStop(() -> generate_scenario_btn.setEnabled(true));
         world.SetLogDrawCallback((data) -> text_pane_formatter.format(data));
         world.SetCurrentStateChangeCallback((state) -> label_current_state.setText(state));

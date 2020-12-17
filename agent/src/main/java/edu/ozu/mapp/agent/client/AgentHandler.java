@@ -332,6 +332,14 @@ public class AgentHandler {
     public void PreNegotiation(String session_id, State state)
     {
         agent.history.setCurrentNegotiationID(session_id);
+
+        // since this is a Bi-lateral negotiation, there should be only
+        // two participant in the negotiation
+        Assert.isTrue(state.agents.length == 2, "There are more agents than expected");
+
+        // filter matching out
+        agent.current_opponent = Arrays.stream(state.agents).filter(a -> !a.equals(agent.AGENT_ID)).collect(Collectors.toList()).get(0);
+
         agent.PreNegotiation(state);
     }
 
@@ -351,9 +359,9 @@ public class AgentHandler {
         agent.LogNegotiationState(prev_bidding_agent, action);
     }
 
-    public Action OnMakeAction(String negotiation_session_id)
+    public Action OnMakeAction(Contract contract)
     {
-        return agent.onMakeAction(negotiation_session_id);
+        return agent.onMakeAction(contract);
     }
 
     public void AcceptLastBids(JSONNegotiationSession json)

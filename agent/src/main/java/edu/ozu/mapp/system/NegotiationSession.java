@@ -63,7 +63,7 @@ public class NegotiationSession
 
         Map<String, String> session_data = new HashMap<>();
         session_data.put("Ox", "");
-        session_data.put("x", TURN);
+        session_data.put("x", "");
 
         // todo make this more... flexible
         session_data.put("A", agent_names[0]);
@@ -97,7 +97,7 @@ public class NegotiationSession
             Assert.isTrue(Arrays.asList(agent_names).contains(agent_name), "AGENT " + agent_name+ " DOES NOT BELONG HERE");
 
             this.agent_refs.put(agent.getAgentName(), agent);
-            this.log_hook.accept(session_hash, String.format("%-23s %s JOIN", new java.sql.Timestamp(System.currentTimeMillis()), agent_name));
+            this.log_hook.accept(session_hash, String.format("%-23s %s JOIN {BROADCAST: %s }", new java.sql.Timestamp(System.currentTimeMillis()), agent_name, Arrays.toString(agent.GetBroadcast())));
         }
 
         if (this.agent_refs.size() == this.agent_names.length)
@@ -247,7 +247,12 @@ public class NegotiationSession
     private String process_turn_make_action() {
         AgentHandler agent = agent_refs.get(TURN);
 
-        Action action = agent.OnMakeAction(session_hash);
+        Action action = null;
+        try {
+            action = agent.OnMakeAction(contract.clone());
+        } catch (CloneNotSupportedException e) {
+            e.printStackTrace();
+        }
 
         log_hook.accept(session_hash, String.format("%-23s %-7s %s", new java.sql.Timestamp(System.currentTimeMillis()), action.type, action.bid.print()));
 

@@ -58,6 +58,6 @@ public class Point implements Comparable<Point> {
 
     @Override
     public String toString() {
-        return "Point{" + key + '}';
+        return "{x:" + x + ", y:" + y + "}";
     }
 }

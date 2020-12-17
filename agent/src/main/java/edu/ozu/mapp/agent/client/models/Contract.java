@@ -40,8 +40,8 @@ public class Contract implements Cloneable {
     public static Contract Create(Map<String, String> sess)
     {
 //        Assert.isTrue(!sess.get("x").isEmpty(), "<<Contract cannot be empty>>");
-        if (sess == null || sess.getOrDefault("x", "").isEmpty())
-            return null;
+//        if (sess == null || sess.getOrDefault("x", "").isEmpty())
+//            return null;
 
         return new Contract(sess);
     }

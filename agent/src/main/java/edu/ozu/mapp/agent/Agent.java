@@ -6,6 +6,7 @@ import edu.ozu.mapp.agent.client.models.Contract;
 import edu.ozu.mapp.keys.AgentKeys;
 import edu.ozu.mapp.keys.KeyHandler;
 import edu.ozu.mapp.system.NegotiationOverseer;
+import edu.ozu.mapp.system.WorldOverseer;
 import edu.ozu.mapp.utils.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +25,7 @@ public abstract class Agent {
     public History history;
     public int initial_tokens = Globals.INITIAL_TOKEN_BALANCE;
     public int current_tokens;
+    public String current_opponent;
 
     public boolean isHeadless = false;
 
@@ -85,7 +87,7 @@ public abstract class Agent {
 
     public void onReceiveState(State state) { }
 
-    public abstract Action onMakeAction(String negotiation_session_id);
+    public abstract Action onMakeAction(Contract contract);
 
     public void OnAcceptLastBids(JSONNegotiationSession json) { }
 
@@ -223,6 +225,11 @@ public abstract class Agent {
         return broadcast.toArray(new String[0]);
     }
     //</editor-fold>
+
+    public final Path GetOpponentCurrentlyBroadcastedPath()
+    {
+        return new Path(WorldOverseer.getInstance().GetBroadcast(current_opponent));
+    }
 
     public final void setWORLD_ID(String WORLD_ID)
     {

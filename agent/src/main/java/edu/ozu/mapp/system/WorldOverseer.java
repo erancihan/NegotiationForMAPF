@@ -18,6 +18,8 @@ import java.util.function.Consumer;
 
 public class WorldOverseer
 {
+    private static WorldOverseer instance;
+
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(WorldOverseer.class);
     private FileLogger flogger;
 
@@ -51,6 +53,7 @@ public class WorldOverseer
     private long SIM_LOOP_START_TIME;
     private long SIM_LOOP_FINISH_TIME;
     private long SIM_LOOP_DURATION;
+    private int TIME;
 
     DATA_LOG_DISPLAY log_payload;
 
@@ -64,7 +67,7 @@ public class WorldOverseer
     private Runnable                                                UI_CanvasUpdateHook;
     private Runnable                                                UI_LoopStoppedHook;
 
-    public WorldOverseer()
+    private WorldOverseer()
     {
         clients             = new ConcurrentHashMap<>();
         curr_state          = Globals.WorldState.JOIN;
@@ -86,6 +89,24 @@ public class WorldOverseer
         FLAG_COLLISION_CHECKS = new ConcurrentHashMap<>();
         FLAG_NEGOTIATIONS_DONE = new ConcurrentHashMap<>();
         FLAG_INACTIVE         = new ConcurrentHashMap<>();
+
+        TIME = 0;
+    }
+
+    public static WorldOverseer getInstance()
+    {
+        if (instance == null)
+        {
+            synchronized (WorldOverseer.class)
+            {
+                if (instance == null)
+                {
+                    instance = new WorldOverseer();
+                }
+            }
+        }
+
+        return instance;
     }
 
     public void Create(String world_id, int width, int height)
@@ -145,6 +166,7 @@ public class WorldOverseer
         data.put("World ID", WorldID);
         data.put("Dimensions", width+"x"+height);
         data.put("World State", curr_state.toString());
+        data.put("World TIME", String.valueOf(TIME));
         data.put("Active Agent Count", String.valueOf(active_agent_c));
         data.put("Active Negotiation Count", String.valueOf(negotiation_overseer.ActiveCount()));
         data.put("Cumulative Negotiation Count", String.valueOf(negotiation_overseer.CumulativeCount()));
@@ -221,19 +243,21 @@ public class WorldOverseer
                 if (active_agent_c == movement_handler.size())
                 {
                     movement_handler
-                        .ProcessQueue(() -> {
-                            CompletableFuture.runAsync(() -> {
-                                logger.info("- MOVES ARE COMPLETE");
+                        .ProcessQueue(() -> CompletableFuture.runAsync(() -> {
+                            logger.info("- MOVES ARE COMPLETE");
 
-                                prev_state = curr_state;
+                            prev_state = curr_state;
 
-                                // Reset data
-                                FLAG_COLLISION_CHECKS.clear();
-                                FLAG_NEGOTIATIONS_DONE.clear();
+                            // Reset data
+                            FLAG_COLLISION_CHECKS.clear();
+                            FLAG_NEGOTIATIONS_DONE.clear();
 
-                                if (IsLooping) { Step(); }
-                            });
-                        });
+                            TIME++;
+                            log_payload.LogAgentLocations(agent_to_point);
+                            log_payload.LogWorldTime(TIME);
+
+                            if (IsLooping) { Step(); }
+                        }));
                 }
 
                 break;
@@ -375,6 +399,8 @@ public class WorldOverseer
         // register agent as ACTIVE
         active_agents.add(payload.AGENT_NAME);
 
+        log_payload.LogAgentLocations(agent_to_point);
+
         return new String[]{WorldID, width+"x"+height};
     }
 
@@ -480,5 +506,12 @@ public class WorldOverseer
         }
 
         return broadcasts;
+    }
+
+    public String[] GetBroadcast(String agent_name)
+    {
+        if (agent_name == null) return new String[0];
+
+        return broadcasts.getOrDefault(agent_name, new String[0]);
     }
 }
