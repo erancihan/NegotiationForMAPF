@@ -147,9 +147,13 @@ public class NegotiationSession
 
     private void await_init()
     {
-        if (AGENTS_READY.size() == agent_names.length)
-        {   // ALL AGENTS ARE READY
-            run();
+        try {
+            if (AGENTS_READY.size() == agent_names.length)
+            {   // ALL AGENTS ARE READY
+                run();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 

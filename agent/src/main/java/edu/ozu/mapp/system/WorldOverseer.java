@@ -7,13 +7,13 @@ import edu.ozu.mapp.utils.Globals;
 import edu.ozu.mapp.utils.JSONWorldWatch;
 import edu.ozu.mapp.utils.Point;
 import edu.ozu.mapp.utils.Utils;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.*;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public class WorldOverseer
@@ -161,13 +161,28 @@ public class WorldOverseer
     public void Run()
     {
         service = Executors.newScheduledThreadPool(clients.size() + 1);
-        service.scheduleAtFixedRate(this::run, 0, 250, TimeUnit.MILLISECONDS);
+        service.scheduleAtFixedRate(this::run_loop_container, 0, 250, TimeUnit.MILLISECONDS);
 
         for (String agent_name : clients.keySet())
         {
             AgentClient client = clients.get(agent_name);
-            service.scheduleAtFixedRate(() -> client.UpdateState(get_current_state(client.GetAgentName())), 100, 500, TimeUnit.MILLISECONDS);
+            service.scheduleAtFixedRate(update_state_func_generator(client), 100, 500, TimeUnit.MILLISECONDS);
         }
+    }
+
+    private void run_loop_container()
+    {
+        try { run(); }
+        catch (Exception e) { e.printStackTrace(); }
+    }
+
+    @NotNull
+    private Runnable update_state_func_generator(AgentClient client)
+    {
+        return () -> {
+            try { client.UpdateState(get_current_state(client.GetAgentName())); }
+            catch (Exception e) { e.printStackTrace(); }
+        };
     }
 
     /**
