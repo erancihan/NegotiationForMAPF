@@ -343,6 +343,11 @@ public class NegotiationSession
         return null;
     }
 
+    public void SetContract(Contract contract)
+    {
+        this.contract = contract;
+    }
+
     public String[] GetAgentNames()
     {
         return _agent_names;
