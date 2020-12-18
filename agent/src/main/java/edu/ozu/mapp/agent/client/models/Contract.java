@@ -1,11 +1,9 @@
 package edu.ozu.mapp.agent.client.models;
 
 import edu.ozu.mapp.agent.Agent;
-import edu.ozu.mapp.agent.client.AgentHandler;
-import edu.ozu.mapp.utils.Globals;
 import org.springframework.util.Assert;
-import redis.clients.jedis.Jedis;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
@@ -20,7 +18,8 @@ public class Contract implements Cloneable {
     private String ETb = "0";
     public String B = ""; // id of agent B
     private String sess_id = "";
-    private boolean is_serverless = false;
+
+    private HashMap<String, String> offers;
 
     private Contract(Map<String, String> sess)
     {
@@ -35,6 +34,10 @@ public class Contract implements Cloneable {
 
         sess_id = sess.get("_session_id");
         Assert.isTrue(!sess_id.isEmpty(), "Session ID cannot be null");
+
+        offers = new HashMap<>();
+        offers.put(A, ETa);
+        offers.put(B, ETb);
     }
 
     public static Contract Create(Map<String, String> sess)
@@ -46,24 +49,12 @@ public class Contract implements Cloneable {
         return new Contract(sess);
     }
 
-    public String getETa(Agent agent)
-    {
-        return HAS_ENCRYPTION ? agent.Decrypt(ETa) : ETa;
-    }
-
-    public String getETb(Agent agent)
-    {
-        return HAS_ENCRYPTION ? agent.Decrypt(ETb) : ETb;
-    }
-
     public String getTokenCountOf(Agent agent)
     {
-        System.out.println(A + " " + B + " " + agent.AGENT_ID);
-        if (A.equals(agent.AGENT_ID)) {
-            return getETa(agent);
-        }
-        if (B.equals(agent.AGENT_ID)) {
-            return getETb(agent);
+//        System.out.println(A + " " + B + " " + agent.AGENT_ID);
+        if (offers.containsKey(agent.AGENT_ID))
+        {
+            return HAS_ENCRYPTION ? agent.Decrypt(offers.get(agent.AGENT_ID)) : offers.get(agent.AGENT_ID);
         }
 
         return null;
@@ -72,73 +63,62 @@ public class Contract implements Cloneable {
     public void set(Agent agent, String O, int next)
     {
         logger.debug("{A:"+A+", B:"+B+", Ox:"+O+", x:"+agent.AGENT_ID+"}");
-        if (A.equals(agent.AGENT_ID))
+        if (offers.containsKey(agent.AGENT_ID))
         {
-            int current = Integer.parseInt(getETa(agent));
-            logger.debug("{current:"+current+", next:"+next+"}");
+            logger.debug("{current:"+offers.get(agent.AGENT_ID)+", next:"+next+"}");
 //            if (current <= next)  // TODO take care of this later
             {
                 Ox = O;
                 x = agent.AGENT_ID;
+                offers.put(
+                        agent.AGENT_ID,
+                        HAS_ENCRYPTION ? agent.Encrypt(String.valueOf(next)) : String.valueOf(next)
+                );
+            }
+
+            if (A.equals(agent.AGENT_ID))
+            {
                 ETa = HAS_ENCRYPTION ? agent.Encrypt(String.valueOf(next)) : String.valueOf(next);
             }
-        }
-
-        if (B.equals(agent.AGENT_ID))
-        {
-            int current = Integer.parseInt(getETb(agent));
-            logger.debug("{current:"+current+", next:"+next+"}");
-//            if (current <= next)  // TODO take care of this later
+            if (B.equals(agent.AGENT_ID))
             {
-                Ox = O;
-                x = agent.AGENT_ID;
                 ETb = HAS_ENCRYPTION ? agent.Encrypt(String.valueOf(next)) : String.valueOf(next);
             }
         }
+
         logger.debug("Contract@Set{A:"+A+", B:"+B+", Ox:"+Ox+", x:"+agent.AGENT_ID+"}");
         agent.OnContractUpdated(this);
     }
 
-    private void apply()
-    {
-        logger.debug("apply:{Ox:"+Ox+", session_id:"+sess_id+"}");
-        if (is_serverless) return;
-
-        redis.clients.jedis.Jedis jedis = new Jedis(Globals.REDIS_HOST, Globals.REDIS_PORT);
-
-        jedis.hset("negotiation:"+sess_id, "Ox", Ox);
-        jedis.hset("negotiation:"+sess_id, "x", x);
-        jedis.hset("negotiation:"+sess_id, "ETa", ETa);
-        jedis.hset("negotiation:"+sess_id, "A", A);
-        jedis.hset("negotiation:"+sess_id, "ETb", ETb);
-        jedis.hset("negotiation:"+sess_id, "B", B);
-
-        jedis.close();
-    }
-
     public void apply(edu.ozu.mapp.system.NegotiationSession session)
     {
-        is_serverless = true;
-
         logger.debug("apply:{state:"+session.GetState()+"}");
         if (
             session.GetState().equals(edu.ozu.mapp.system.NegotiationSession.NegotiationState.JOIN) &&
             session.GetState().equals(edu.ozu.mapp.system.NegotiationSession.NegotiationState.RUNNING)
         )
         {
-            apply();
+            session.SetContract(this);
         }
     }
 
-    public boolean isAgentSet(Agent agent) {
-        if (A.equals(agent.AGENT_ID)) {
-            return !ETa.isEmpty();
-        }
-        if (B.equals(agent.AGENT_ID)) {
-            return !ETb.isEmpty();
+    public boolean isAgentSet(Agent agent)
+    {
+        if (offers.containsKey(agent.AGENT_ID))
+        {
+            return !offers.get(agent.AGENT_ID).isEmpty();
         }
 
-        return true;
+        return false;
+    }
+
+    public int GetOpponentTokenProposal(Agent agent)
+    {
+        if (offers.containsKey(agent.current_opponent))
+        {
+            return Integer.parseInt(offers.get(agent.current_opponent));
+        }
+        return -1;
     }
 
     @Override
