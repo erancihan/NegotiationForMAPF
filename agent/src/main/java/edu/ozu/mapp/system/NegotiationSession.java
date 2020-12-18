@@ -299,7 +299,8 @@ public class NegotiationSession
             Assert.isTrue(agent_refs.size() == 2, "it is not bilateral");
             AgentHandler opponent = null;
             for (String agent_key : agent_refs.keySet()) {
-                if (agent_key.equals(action.bid.x)) continue;
+                // opponent is the agent whose turn it is not at the moment
+                if (agent_key.equals(TURN)) continue;
 
                 opponent = agent_refs.get(agent_key);
             }
@@ -322,7 +323,7 @@ public class NegotiationSession
             int T_a_next = agent.UpdateTokenCountBy(-1 * diff);
             bank_update_hook.accept(agent.getAgentName(), T_a_next);
             int T_b_next = opponent.UpdateTokenCountBy(diff);
-            bank_update_hook.accept(agent.getAgentName(), T_b_next);
+            bank_update_hook.accept(opponent.getAgentName(), T_b_next);
 
             this.state = NegotiationState.DONE;
 
