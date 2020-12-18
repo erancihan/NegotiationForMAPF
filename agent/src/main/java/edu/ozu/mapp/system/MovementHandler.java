@@ -71,10 +71,14 @@ public class MovementHandler
             try {
                 CompletableFuture
                     .runAsync(this::process_queue)
-                    .thenRun(() -> {
+                    .exceptionally(ex -> { ex.printStackTrace(); return null; })
+                    .whenCompleteAsync((entity, ex) -> {
+                        if (ex != null) ex.printStackTrace();
+
                         runnable.run();
                         process_queue_lock.unlock();
-                    });
+                    })
+                ;
             } catch (Exception exception) {
                 exception.printStackTrace();
                 process_queue_lock.unlock();

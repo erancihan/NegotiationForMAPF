@@ -18,6 +18,7 @@ import java.util.function.Consumer;
 
 public class NegotiationSession
 {
+    private BiConsumer<String, Integer> bank_update_hook;
     private Consumer<String> world_log_callback;
     private BiConsumer<String, String> log_hook;
 
@@ -42,15 +43,17 @@ public class NegotiationSession
         JOIN, RUNNING, DONE;
     }
 
-    public NegotiationSession(String session_hash, String[] agent_names, Consumer<String> world_log_callback, BiConsumer<String, String> log_payload_hook)
+    public NegotiationSession(String session_hash, String[] agent_names, BiConsumer<String, Integer> bank_update_hook, Consumer<String> world_log_callback, BiConsumer<String, String> log_payload_hook)
     {
         this.agent_refs   = new ConcurrentHashMap<>();
         this._agent_names = agent_names.clone();
         this.agent_names  = agent_names.clone();
         this.service      = Executors.newScheduledThreadPool(2);
         this.AGENTS_READY = new ConcurrentSkipListSet<>();
+
+        this.bank_update_hook   = bank_update_hook;
         this.world_log_callback = world_log_callback;
-        this.log_hook = log_payload_hook;
+        this.log_hook           = log_payload_hook;
 
         this.bid_order_queue = new ConcurrentLinkedQueue<>();
 
@@ -213,12 +216,11 @@ public class NegotiationSession
 
                     CompletableFuture
                         .supplyAsync(this::process_turn_make_action)
-                        .exceptionally(ex -> { ex.printStackTrace(); return null; })
-                        .thenAccept((response) -> {
-                            // todo Get a form of response maybe?
+                        .whenCompleteAsync((entity, ex) -> {
+                            if (ex != null) ex.printStackTrace();
+
                             session_loop_agent_invoke_lock.unlock();
-                        })
-                        .exceptionally(ex -> { ex.printStackTrace(); return null; })
+                        }, service)
                     ;
                 } catch (Exception exception) {
                     exception.printStackTrace();
@@ -311,14 +313,16 @@ public class NegotiationSession
                 action.bid.apply(this);
             }
 
-            // `agent` accepted `opponents` bif
-            int T_b = Integer.parseInt(contract.getTokenCountOf(agent.GetAgent()));
+            // `agent` accepted `opponents` bid
             int T_a = Integer.parseInt(contract.getTokenCountOf(opponent.GetAgent()));
+            int T_b = Integer.parseInt(contract.getTokenCountOf(agent.GetAgent()));
 
             int diff = Math.max(T_a - T_b, 0);
 
-            agent.UpdateTokenCountBy(-1 * diff);
-            opponent.UpdateTokenCountBy(diff);
+            int T_a_next = agent.UpdateTokenCountBy(-1 * diff);
+            bank_update_hook.accept(agent.getAgentName(), T_a_next);
+            int T_b_next = opponent.UpdateTokenCountBy(diff);
+            bank_update_hook.accept(agent.getAgentName(), T_b_next);
 
             this.state = NegotiationState.DONE;
 

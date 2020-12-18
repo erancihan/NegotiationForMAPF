@@ -79,6 +79,7 @@ public class WorldOverseer
         prev_state          = Globals.WorldState.NONE;
         movement_handler    = MovementHandler.getInstance();
         negotiation_overseer = NegotiationOverseer.getInstance();
+        negotiation_overseer.bank_update_hook = this::UpdateBankInfo;
         negotiation_overseer.world_log_callback = this::Log;
         negotiation_overseer.log_payload_hook = this::LogNegotiation;
 
@@ -200,6 +201,8 @@ public class WorldOverseer
         data.put("Active Negotiation Count", String.valueOf(negotiation_overseer.ActiveCount()));
         data.put("Cumulative Negotiation Count", String.valueOf(negotiation_overseer.CumulativeCount()));
 
+        log_payload.world_data = data;
+
         UI_CanvasUpdateHook.run();
 
         if (curr_state == prev_state)
@@ -284,10 +287,15 @@ public class WorldOverseer
                             TIME++;
                             log_payload.LogAgentLocations(agent_to_point);
                             log_payload.LogWorldTime(TIME);
+                            log_payload.LogAgentBankInfo(bank_data);
 
                             if (IsLooping) { Step(); }
                         })
-                        .exceptionally(ex -> { ex.printStackTrace(); return null; })
+                        .whenComplete((entity, ex) -> {
+                            if (ex != null) ex.printStackTrace();
+
+                            UI_LogDrawCallback.accept(log_payload);
+                        })
                     );
                 }
 
@@ -295,7 +303,6 @@ public class WorldOverseer
             default:
         }
 
-        log_payload.world_data = data;
         log_payload.world_log  = state_log;
 
         UI_LogDrawCallback.accept(log_payload);
@@ -431,6 +438,7 @@ public class WorldOverseer
         active_agents.add(payload.AGENT_NAME);
 
         log_payload.LogAgentLocations(agent_to_point);
+        log_payload.LogAgentBankInfo(bank_data);
 
         return new String[]{WorldID, width+"x"+height};
     }
@@ -483,6 +491,12 @@ public class WorldOverseer
         {
             negotiation_overseer.AgentLeaveSession(agent_name, session_id);
         }
+    }
+
+    private synchronized void UpdateBankInfo(String agent_name, int new_balance)
+    {
+        if (bank_data.containsKey(agent_name))
+            bank_data.put(agent_name, new_balance);
     }
 
     /**

@@ -9,6 +9,7 @@ public class DATA_LOG_DISPLAY
 {
     public Map<String, String> world_data;
     public Map<String, String> agent_to_point;
+    public Map<String, Integer> agent_bank_info;
     public ArrayList<Object[]> world_log;
     public Map<String, ArrayList<String>> negotiation_logs;
 
@@ -16,6 +17,7 @@ public class DATA_LOG_DISPLAY
     {
         world_data          = new HashMap<>();
         agent_to_point      = new HashMap<>();
+        agent_bank_info     = new HashMap<>();
         world_log           = new ArrayList<>();
         negotiation_logs    = new HashMap<>();
     }
@@ -28,5 +30,12 @@ public class DATA_LOG_DISPLAY
 
     public void LogWorldTime(int time)
     {
+        world_data.put("World TIME", String.valueOf(time));
+    }
+
+    public void LogAgentBankInfo(ConcurrentHashMap<String, Integer> bank_data)
+    {
+        this.agent_bank_info.clear();
+        this.agent_bank_info.putAll(bank_data);
     }
 }

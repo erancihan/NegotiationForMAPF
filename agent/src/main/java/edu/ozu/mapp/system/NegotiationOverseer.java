@@ -18,6 +18,7 @@ public class NegotiationOverseer
 {
     private static NegotiationOverseer instance;
 
+    protected BiConsumer<String, Integer> bank_update_hook;
     protected Consumer<String> world_log_callback;
     protected BiConsumer<String, String> log_payload_hook;
 
@@ -89,7 +90,7 @@ public class NegotiationOverseer
 
         if (!sessions.containsKey(session_hash))
         {
-            sessions.put(session_hash, new NegotiationSession(session_hash, agent_ids, world_log_callback, log_payload_hook));
+            sessions.put(session_hash, new NegotiationSession(session_hash, agent_ids, bank_update_hook, world_log_callback, log_payload_hook));
             cumulative_negotiation_count++;
         }
     }

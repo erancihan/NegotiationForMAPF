@@ -34,7 +34,7 @@ public class TextPaneLogFormatter
             "\n-------------\n" +
             data.agent_to_point
                 .keySet().stream().sorted()
-                .map(key -> String.format("%s POS: %s", key, data.agent_to_point.get(key)))
+                .map(key -> String.format("%s POS: %s T: %s", key, data.agent_to_point.get(key), data.agent_bank_info.get(key)))
                 .collect(Collectors.joining("\n")) +
             "\n-------------\n" +
             data.world_log

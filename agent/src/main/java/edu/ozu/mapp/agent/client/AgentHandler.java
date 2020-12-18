@@ -498,9 +498,11 @@ public class AgentHandler {
         agent.LogNegotiationOver(bidding_agent, session_id);
     }
 
-    public void UpdateTokenCountBy(int i)
+    public int UpdateTokenCountBy(int i)
     {
         agent.current_tokens += i;
+
+        return agent.current_tokens;
     }
 
     public Agent GetAgent()
