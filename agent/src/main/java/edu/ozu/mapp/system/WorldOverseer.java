@@ -474,8 +474,7 @@ public class WorldOverseer
 
     public synchronized void JoinNegotiationSession(String session_id, AgentHandler agent)
     {
-        String msg = negotiation_overseer.AgentJoinSession(session_id, agent);
-        Log(msg);
+        negotiation_overseer.AgentJoinSession(session_id, agent);
     }
 
     /**

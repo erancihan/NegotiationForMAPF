@@ -100,11 +100,13 @@ public class NegotiationOverseer
         return session_keys.getOrDefault(agent_name, new ArrayList<>()).toArray(new String[0]);
     }
 
-    public String AgentJoinSession(String session_id, AgentHandler agent)
+    public void AgentJoinSession(String session_id, AgentHandler agent)
     {
         sessions.get(session_id).RegisterAgentREF(agent);
 
-        return agent.getAgentName() + " joining " + session_id + " | " + Arrays.toString(sessions.get(session_id).GetAgentNames());
+        world_log_callback.accept(
+                String.format("%s joining %s | %s", agent.getAgentName(), session_id.substring(0, 7), Arrays.toString(sessions.get(session_id).GetAgentNames()))
+        );
     }
 
     public Contract GetMyContract(Agent agent)
