@@ -111,7 +111,7 @@ public class NegotiationSession
 
     private void conclude_join_process()
     {
-        world_log_callback.accept(session_hash + " starting Negotiation Session " + Arrays.toString(_agent_names));
+        world_log_callback.accept(String.format("Negotiation Session %s STARTING | %s", session_hash.substring(0, 7), Arrays.toString(_agent_names)));
         log_hook.accept(session_hash, String.format("%-23s %-7s", new java.sql.Timestamp(System.currentTimeMillis()), "START"));
 
         join_task();

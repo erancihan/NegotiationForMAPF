@@ -135,6 +135,7 @@ public class NegotiationOverseer
 
             String timestamp = new java.sql.Timestamp(System.currentTimeMillis()).toString();
             log_payload_hook.accept(String.format("%s-%s",  session_id, timestamp), String.format("%-23s %s", timestamp, "DELETED"));
+            world_log_callback.accept(String.format("Negotiation Session %s TERMINATED", session_id.substring(0, 7)));
         }
     }
 
