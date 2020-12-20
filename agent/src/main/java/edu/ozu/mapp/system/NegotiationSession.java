@@ -202,9 +202,9 @@ public class NegotiationSession
         {
             Contract contract = this.contract.clone();
 
-            log_hook.accept(session_hash, String.format("%-23s %-7s %s", new java.sql.Timestamp(System.currentTimeMillis()), state, contract.print()));
             if (state.equals(NegotiationState.RUNNING))
             {
+//            log_hook.accept(session_hash, String.format("%-23s %-7s %s", new java.sql.Timestamp(System.currentTimeMillis()), state, contract.print()));
                 try {
                     for (String agent_name : agent_names)
                     {
@@ -230,6 +230,7 @@ public class NegotiationSession
 
             if (state.equals(NegotiationState.DONE))
             {   // TELL ALL AGENTS THAT NEGOTIATION IS DONE
+            log_hook.accept(session_hash, String.format("%-23s %-7s %s", new java.sql.Timestamp(System.currentTimeMillis()), state, contract.print()));
                 for (String agent_name : agent_names)
                 {
                     CompletableFuture.runAsync(() -> {
