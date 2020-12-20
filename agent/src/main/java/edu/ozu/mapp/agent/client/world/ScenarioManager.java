@@ -681,6 +681,8 @@ public class ScenarioManager extends javax.swing.JFrame
         });
         jMenu1.add(import_btn);
 
+        jMenu1.getPopupMenu().setLightWeightPopupEnabled(false);
+
         jMenuBar1.add(jMenu1);
 
         setJMenuBar(jMenuBar1);

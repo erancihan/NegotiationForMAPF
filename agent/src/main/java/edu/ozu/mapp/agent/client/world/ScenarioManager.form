@@ -47,6 +47,7 @@
             <Property name="text" type="java.lang.String" value="Options"/>
           </Properties>
           <AuxValues>
+            <AuxValue name="JavaCodeGenerator_LayoutCodePost" type="java.lang.String" value="jMenu1.getPopupMenu().setLightWeightPopupEnabled(false);"/>
             <AuxValue name="JavaCodeGenerator_VariableLocal" type="java.lang.Boolean" value="true"/>
             <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="0"/>
           </AuxValues>
