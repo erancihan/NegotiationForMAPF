@@ -158,8 +158,8 @@ public class Contract implements Cloneable {
     public String print()
     {
         return String.format(
-            "{SESS_ID: %s, A: %s, ETa: %s, B: %s, ETb: %s, x: %s, Ox: %s}",
-            sess_id.substring(0, 7), A, ETa, B, ETb, x, Ox
+            "{A: %s, ETa: %s, B: %s, ETb: %s, x: %s, Ox: %s}",
+            A, ETa, B, ETb, x, Ox
         );
     }
 }
