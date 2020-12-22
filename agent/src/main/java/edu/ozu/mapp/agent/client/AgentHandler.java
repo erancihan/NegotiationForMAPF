@@ -514,6 +514,11 @@ public class AgentHandler {
         return fov;
     }
 
+    public int GetRemainingPathLength()
+    {
+        return (agent.path.size()-1) - agent.time;
+    }
+
     /** ================================================================================================================ **/
 
     public void SetJoinCallback(Function<DATA_REQUEST_PAYLOAD_WORLD_JOIN, String[]> function)

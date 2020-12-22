@@ -78,6 +78,10 @@ public class AgentClient {
         return handler.GetBroadcast();
     }
 
+    public int GetAgentRemainingPathLength()
+    {
+        return handler.GetRemainingPathLength();
+    }
 
     // Handler Hooks
 //    public void join(String worldID)

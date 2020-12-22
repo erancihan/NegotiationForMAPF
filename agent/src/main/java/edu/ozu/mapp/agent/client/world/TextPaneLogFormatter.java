@@ -1,6 +1,7 @@
 package edu.ozu.mapp.agent.client.world;
 
 import edu.ozu.mapp.system.DATA_LOG_DISPLAY;
+import edu.ozu.mapp.system.WorldOverseer;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -34,7 +35,11 @@ public class TextPaneLogFormatter
             "\n-------------\n" +
             data.agent_to_point
                 .keySet().stream().sorted()
-                .map(key -> String.format("%s POS: %s TOKEN: %s", key, data.agent_to_point.get(key), data.agent_bank_info.get(key)))
+                .map(key -> {
+                    String[] _data = WorldOverseer.getInstance().GetAgentData(key);
+
+                    return String.format("%s POS: %s TOKEN: %s REMAINING_PATH_LEN: %S", key, _data[0], _data[1], _data[2]);
+                })
                 .collect(Collectors.joining("\n")) +
             "\n-------------\n" +
             data.world_log

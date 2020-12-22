@@ -558,4 +558,15 @@ public class WorldOverseer
 
         return broadcasts.getOrDefault(agent_name, new String[0]);
     }
+
+    public String[] GetAgentData(String key)
+    {
+        String[] data = new String[]{"", "", ""};
+
+        data[0] = agent_to_point.getOrDefault(key, "");
+        data[1] = String.valueOf(bank_data.get(key));
+        data[2] = String.valueOf(clients.get(key).GetAgentRemainingPathLength());
+
+        return data;
+    }
 }
