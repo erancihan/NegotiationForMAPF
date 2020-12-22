@@ -470,6 +470,14 @@ public class AgentHandler {
 
         // update global path
         logger.debug(agent.AGENT_ID + "{path:" + agent.path + "}");
+
+        WORLD_OVERSEER_HOOK_LOG.accept(String.format(
+                "PATH UPDATE AGENT: %s \n%23s PATH BEFORE: %s\n%23s PATH AFTER : %s",
+                agent.AGENT_ID,
+                "", Utils.toString(agent.path),
+                "", Utils.toString(new_path)
+        ));
+
         agent.path = new_path;
         logger.debug(agent.AGENT_ID + "{path:" + agent.path + "}");
 
