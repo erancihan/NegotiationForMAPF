@@ -39,6 +39,7 @@ public class AgentHandler {
     private BiConsumer<String, String>                          WORLD_OVERSEER_NEGOTIATED;
     private BiConsumer<AgentHandler, DATA_REQUEST_PAYLOAD_WORLD_MOVE> WORLD_OVERSEER_MOVE;
     private Consumer<AgentHandler>                              WORLD_OVERSEER_HOOK_LEAVE;
+    private Consumer<String>                                    WORLD_OVERSEER_HOOK_LOG;
 
     private String[][] fov;
 
@@ -559,5 +560,10 @@ public class AgentHandler {
     public void SET_WORLD_OVERSEER_HOOK_LEAVE(Consumer<AgentHandler> leave)
     {
         WORLD_OVERSEER_HOOK_LEAVE = leave;
+    }
+
+    public void SET_WORLD_OVERSEER_HOOK_LOG(Consumer<String> log)
+    {
+        WORLD_OVERSEER_HOOK_LOG = log;
     }
 }

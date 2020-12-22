@@ -148,4 +148,9 @@ public class AgentClient {
     {
         handler.SET_WORLD_OVERSEER_HOOK_LEAVE(leave);
     }
+
+    public void SetLogHook(Consumer<String> log)
+    {
+        handler.SET_WORLD_OVERSEER_HOOK_LOG(log);
+    }
 }

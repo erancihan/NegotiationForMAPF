@@ -409,6 +409,7 @@ public class WorldOverseer
         client.SetNegotiatedCallback(this::Negotiated);
         client.SetMoveCallback(this::Move);
         client.SetLeaveHook(this::Leave);
+        client.SetLogHook(this::Log);
 
         clients.put(client.GetAgentName(), client);
 

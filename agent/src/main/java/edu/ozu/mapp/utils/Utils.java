@@ -11,6 +11,8 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class Utils {
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(Utils.class);
@@ -98,5 +100,13 @@ public class Utils {
         }
 
         return "[]";
+    }
+
+    public static String toString(List<?> list)
+    {
+        if (list == null) return "null";
+
+        return
+            "[" + list.stream().map(Object::toString).collect(Collectors.joining(",")) + "]";
     }
 }
