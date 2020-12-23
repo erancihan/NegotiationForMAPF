@@ -55,6 +55,9 @@ public class AStar {
 
     //<editor-fold defaultstate="collapsed" desc="A-Star implementation">
     private List<String> run(Point start, Point goal, HashMap<String, ArrayList<String>> occupiedList, String Dimensions) {
+        if (start.equals(goal))
+            return Collections.singletonList(start.key);
+
         int T = 0;
         double inf = Double.MAX_VALUE;
 
