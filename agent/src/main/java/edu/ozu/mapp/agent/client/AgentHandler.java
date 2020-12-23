@@ -386,54 +386,7 @@ public class AgentHandler {
         // use contract to apply select paths
         // if 'x' is self, update planned path
         if (contract.x.equals(agent.AGENT_ID)) {
-            // WIN condition
-            logger.debug("x is self | {contract.x:"+contract.x + " == a_id:" + agent.AGENT_ID + "}");
-
-            String[] Ox = contract.Ox.replaceAll("([\\[\\]]*)", "").split(",");
-
-            logger.debug("{current POS:" + agent.POS + " == Ox[0]:" + Ox[0] + "}");
-            Assert.isTrue(agent.POS.equals(new Point(Ox[0].split("-"))), "");
-
-            // acknowledge negotiation result and calculate from its last point to the goal
-            Point end = new Point(Ox[Ox.length - 1].split("-"));
-            // recalculate path starting from the end point of agreed path
-            logger.debug(agent.AGENT_ID + "{accepted_path:" + Arrays.toString(Ox) + "}");
-            logger.debug(agent.AGENT_ID + "{calculating path from:" + end + " to:" + agent.DEST + " }");
-            List<String> rest = agent.calculatePath(end, agent.DEST);
-            logger.debug(agent.AGENT_ID + "{rest: " + Arrays.toString(rest.toArray()) + " }");
-
-            // ...glue them together
-            new_path = new ArrayList<>();
-            for (int idx = 0; idx < agent.path.size() && !agent.path.get(idx).equals(agent.POS.key); idx++)
-            {   // prepend path so far until current POS
-                // for history purposes
-                new_path.add(agent.path.get(idx));
-            }
-            new_path.add(agent.POS.key); // add current POS
-            for (int idx = 0; idx < Ox.length; idx++)
-            {   // add accepted paths
-                if (idx == 0 && Ox[idx].equals(agent.POS.key))
-                {   // skip if first index is current POS, as it is already added
-                    continue;
-                }
-                new_path.add(Ox[idx]);
-            }
-
-            if (rest.size() > 0)
-            {
-                // ensure that connection points match
-                Assert.isTrue(
-                        new_path.get(new_path.size() - 1).equals(rest.get(0)),
-                        "Something went wrong while accepting last bids!"
-                );
-
-                // merge...
-                for (int idx = 1; idx < rest.size(); idx++)
-                {
-                    new_path.add(rest.get(idx));
-                }
-            }
-            agent.winC++;
+            new_path = handle_win_condition(contract);
         } else {
             // else use 'Ox' & others as constraint & re-calculate path
             // LOSE condition
@@ -480,15 +433,61 @@ public class AgentHandler {
 
         agent.path = new_path;
         logger.debug(agent.AGENT_ID + "{path:" + agent.path + "}");
+    }
 
-//        WorldHandler.doBroadcast(WORLD_ID, agent.AGENT_ID, agent.GetOwnBroadcastPath());
-//        try {
-//            Jedis jedis = new Jedis(Globals.REDIS_HOST, Globals.REDIS_PORT);
-//            jedis.hset("world:" + WORLD_ID + ":path", "agent:" + agent.AGENT_ID, Utils.toString(agent.GetOwnBroadcastPath(), ","));
-//            jedis.close();
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
+    @NotNull
+    private List<String> handle_win_condition(Contract contract) {
+        // WIN condition
+        logger.debug(String.format("%s | WON | %s", agent.AGENT_ID, contract.print()));
+        logger.debug(String.format("%s | current location : %s", agent.AGENT_ID, agent.POS));
+
+        String[] Ox = contract.Ox.replaceAll("([\\[\\]]*)", "").split(",");
+
+        logger.debug(String.format("%s | ASSERT POS{%s} == Ox[0]{%s}", agent.AGENT_ID, agent.POS.key, Ox[0]));
+        Assert.isTrue(agent.POS.equals(new Point(Ox[0].split("-"))), "");
+
+        logger.debug(String.format("%s | ACCEPTED PATH %s", agent.AGENT_ID, Arrays.toString(Ox)));
+
+        List<String> path_next = new ArrayList<>();
+
+        // acknowledge negotiation result.
+        // since i have won, the path that i have chosen for my self is locked
+
+        // add past path locations
+        for (int idx = 0; idx < agent.path.size() && !agent.path.get(idx).equals(agent.POS.key); idx++)
+        {
+        logger.debug(String.format("%s | PATH UPDATE | ADDING %s %s", agent.AGENT_ID, idx, agent.path.get(idx)));
+            path_next.add(agent.path.get(idx));
+        }
+        // add Ox
+        for (int idx = 0; idx < Ox.length; idx++)
+        {
+            path_next.add(Ox[idx]);
+        }
+        // calculate path from last to destination
+        // i do not have to worry about opponent's path since i won
+        Point end = new Point(path_next.get(path_next.size()-1), "-");
+
+        logger.debug(String.format("%s | CALCULATING REST OF THE PATH", agent.AGENT_ID));
+        logger.debug(String.format("%s | FROM %s TO %s", agent.AGENT_ID, end, agent.DEST));
+
+        List<String> rest = agent.calculatePath(end, agent.DEST);
+
+        logger.debug(String.format("%s | CALCULATED PATH", agent.AGENT_ID));
+        logger.debug(String.format("%s | %s", agent.AGENT_ID, Arrays.toString(rest.toArray())));
+
+        if (rest.size() > 0) {
+            // ensure that connection points match
+            Assert.isTrue(path_next.get(path_next.size() - 1).equals(rest.get(0)),"Something went wrong while accepting last bids!");
+
+            // merge...
+            for (int idx = 1; idx < rest.size(); idx++) {
+                path_next.add(rest.get(idx));
+            }
+        }
+        agent.winC++;
+
+        return path_next;
     }
     //</editor-fold>
 
