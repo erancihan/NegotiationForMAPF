@@ -3,19 +3,20 @@ package edu.ozu.mapp.utils;
 import edu.ozu.mapp.agent.client.models.Contract;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class History
 {
     private String agent_id;
     private String current_negotiation_id;
 
-    public HashMap<String, List<Contract>> history;
+    public ConcurrentHashMap<String, List<Contract>> history;
 
     public History(String agent_id)
     {
         this.agent_id = agent_id;
 
-        history = new HashMap<String, List<Contract>>();
+        history = new ConcurrentHashMap<>();
     }
 
     public void setCurrentNegotiationID(String current_negotiation_id) {
@@ -93,7 +94,7 @@ public class History
         return last();
     }
 
-    public Contract GetLastAgentBid(String id)
+    public synchronized Contract GetLastAgentBid(String id)
     {
         if (current_negotiation_id == null) {
             return null;
