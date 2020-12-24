@@ -14,7 +14,7 @@ public class AStar {
                 _o.add(occupied.get(key));
             }
 
-            List<String> a = calculateWithConstraints(new Point(5, 5), new Point(10, 10), _o.toArray(new String[0][0]));
+            List<String> a = calculateWithConstraints(new Point(5, 5), new Point(10, 10), _o.toArray(new String[0][0]), 0);
 
             paths.add(a.toArray(new String[0]));
 
@@ -24,7 +24,7 @@ public class AStar {
         System.out.println(Arrays.deepToString(paths.toArray(new String[0][])));
     }
 
-    public static List<String> calculateWithConstraints(Point start, Point dest, String[][] constraints_with_time)
+    public static List<String> calculateWithConstraints(Point start, Point dest, String[][] constraints_with_time, int t)
     {
         // parse constraints
         HashMap<String, ArrayList<String>> occupied_list = new HashMap<>();
@@ -35,30 +35,30 @@ public class AStar {
             occupied_list.put(constraint[0], vals);
         }
 
-        return new AStar().run(start, dest, occupied_list);
+        return new AStar().run(start, dest, occupied_list, t);
     }
 
     public static List<String> calculate(Point start, Point dest)
     {
-        return new AStar().run(start, dest, new HashMap<>(), "");
+        return new AStar().run(start, dest, new HashMap<>(), "", 0);
     }
 
     public static List<String> calculate(Point start, Point dest, String Dimensions)
     {
-        return new AStar().run(start, dest, new HashMap<>(), Dimensions);
+        return new AStar().run(start, dest, new HashMap<>(), Dimensions, 0);
     }
 
-    private List<String> run(Point start, Point goal, HashMap<String, ArrayList<String>> occupiedList)
+    private List<String> run(Point start, Point goal, HashMap<String, ArrayList<String>> occupiedList, int t)
     {
-        return run(start, goal, occupiedList, "");
+        return run(start, goal, occupiedList, "", t);
     }
 
     //<editor-fold defaultstate="collapsed" desc="A-Star implementation">
-    private List<String> run(Point start, Point goal, HashMap<String, ArrayList<String>> occupiedList, String Dimensions) {
+    private List<String> run(Point start, Point goal, HashMap<String, ArrayList<String>> occupiedList, String Dimensions, int T)
+    {
         if (start.equals(goal))
             return Collections.singletonList(start.key);
 
-        int T = 0;
         double inf = Double.MAX_VALUE;
 
         String[] ds = Dimensions.split("x");
@@ -67,77 +67,72 @@ public class AStar {
 
         HashMap<String, String> links = new HashMap<>();
 
-        PriorityQueue<AStarNode> open = new PriorityQueue<>();
-        List<Point> closed = new ArrayList<>();
+        PriorityQueue<Node> open = new PriorityQueue<>();
+        List<Node> closed = new ArrayList<>();
         HashMap<String, Double> g = new HashMap<>();
         g.put(start.key, 0.0);
 
-        open.add(new AStarNode(start, start.ManhattanDistTo(goal)));
+        open.add(new Node(start, start.ManhattanDistTo(goal), T));
 
-        while (!open.isEmpty()) {
-            AStarNode currentNode = open.remove();
-            Point current = currentNode.point;
+        while (!open.isEmpty())
+        {
+            Node current = open.remove();
 
-            if (closed.contains(current)) {
-                continue;
-            }
+            if (closed.contains(current)) continue;
 
             closed.add(current);
-            T = T + 1;
 
-            if (current.equals(goal)) {
+            if (current.point.equals(goal))
+            {
                 return constructPath(links, start, goal);
             }
 
-            List<Point> neighbours = getNeighbours(current, T, occupiedList, width, height);
-            for (Point neighbour : neighbours) {
-                if (closed.contains(neighbour)) {
-                    continue;
-                }
+            List<Node> neighbours = getNeighbours(current.point, current.t + 1, occupiedList, width, height);
+            for (Node neighbour : neighbours)
+            {
+                if (closed.contains(neighbour)) continue;
 
                 // d <- g[current] + COST(current, neighbour, g)
-                double d = g.getOrDefault(current.key, inf) + current.ManhattanDistTo(neighbour);
+                double d = g.getOrDefault(current.point.key, inf) + current.point.ManhattanDistTo(neighbour.point);
+                if (d < g.getOrDefault(neighbour.point.key, inf))
+                {
+                    g.put(neighbour.point.key, d);
 
-                if (d < g.getOrDefault(neighbour.key, inf)) {
-                    g.put(neighbour.key, d);
+                    links.put(neighbour.point.key, current.point.key);
+                    neighbour.dist = d + neighbour.point.ManhattanDistTo(goal);
 
-                    links.put(neighbour.key, current.key);
-                    d = d + neighbour.ManhattanDistTo(goal);
-                    open.add(new AStarNode(neighbour, d));
+                    try { open.add(neighbour.clone()); }
+                    catch (CloneNotSupportedException e) { e.printStackTrace(); }
                 }
             }
         }
+
         return null;
     }
 
     // todo retrieve env dims
-    private List<Point> getNeighbours(Point point, int t, HashMap<String, ArrayList<String>> occupiedList, int width, int height) {
-        List<Point> nodes = new ArrayList<>();
+    private List<Node> getNeighbours(Point point, int t, HashMap<String, ArrayList<String>> occupiedList, int width, int height) {
+        List<Node> nodes = new ArrayList<>();
 
         for (int i = 0; i < 9; i++) { // position of point
-            if (i % 2 == 0) {
-                continue;
-            }
+            if (i % 2 == 0) continue;
 
             int x = point.x + (i % 3) - 1;
             int y = point.y + (i / 3) - 1;
 
-            if (x < 0 || x >= width) { // x out of bounds
-                continue;
-            }
-            if (y < 0 || y >= height) { // y out of bounds
-                continue;
-            }
+            if (x < 0 || x >= width) continue;  // x out of bounds
+            if (y < 0 || y >= height) continue; // y out of bounds
 
-            Point n = new Point(x, y);
-            if (occupiedList.containsKey(n.key))
+            Node node = new Node(new Point(x, y), t);
+            if (occupiedList.containsKey(node.point.key))
             {
-                if (occupiedList.get(n.key).contains(String.valueOf(t)) || occupiedList.get(n.key).contains("inf"))
-                {
+                if (
+                    occupiedList.get(node.point.key).contains(String.valueOf(t)) ||
+                    occupiedList.get(node.point.key).contains("inf")
+                )
                     continue;
-                }
             }
-            nodes.add(n);
+            nodes.add(node);
         }
 
         return nodes;
@@ -161,25 +156,64 @@ public class AStar {
 
         return path;
     }
-
-    private static class AStarNode implements Comparable<AStarNode> {
-        Point point;
-        private double dist;
-
-        AStarNode(Point point, double dist) {
-            this.point = point;
-            this.dist = dist;
-        }
-
-        @Override
-        public int compareTo(AStarNode o) {
-            return Double.compare(this.dist, o.dist);
-        }
-
-        @Override
-        public String toString() {
-            return String.format("%s:%.2f", point.key, dist);
-        }
-    }
     //</editor-fold>
+}
+
+class Node implements Comparable<Node>, Cloneable {
+    Point point;
+    double dist;
+
+    int t;
+
+    Node(Point point)
+    {
+        this.point = point;
+    }
+
+    Node(Point point, int t)
+    {
+        this.point = point;
+        this.t     = t;
+    }
+
+    Node(Point point, double dist)
+    {
+        this(point);
+        this.dist = dist;
+    }
+
+    Node(Point point, double dist, int t)
+    {
+        this(point, dist);
+        this.t = t;
+    }
+
+    @Override
+    protected Node clone() throws CloneNotSupportedException {
+        return (Node) super.clone();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+        if (this == that) return true;
+        if (!(that instanceof Node)) return false;
+
+        Node node = (Node) that;
+        return Double.compare(node.dist, dist) == 0 && t == node.t && point.equals(node.point);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(point, dist, t);
+    }
+
+    @Override
+    public int compareTo(Node o) {
+        return Double.compare(this.dist, o.dist);
+    }
+
+    @Override
+    public String toString() {
+        return String.format("%s:%.2f", point.key, dist);
+    }
 }
