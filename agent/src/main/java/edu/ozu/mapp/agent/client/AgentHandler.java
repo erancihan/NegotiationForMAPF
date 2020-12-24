@@ -9,8 +9,8 @@ import edu.ozu.mapp.agent.client.models.Contract;
 import edu.ozu.mapp.system.DATA_REQUEST_PAYLOAD_WORLD_JOIN;
 import edu.ozu.mapp.system.DATA_REQUEST_PAYLOAD_WORLD_MOVE;
 import edu.ozu.mapp.utils.*;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.util.Assert;
-//import redis.clients.jedis.Jedis;
 
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -389,40 +389,11 @@ public class AgentHandler {
             new_path = handle_win_condition(contract);
         } else {
             // else use 'Ox' & others as constraint & re-calculate path
-            // LOSE condition
-            logger.debug("x is not self | {contract.x:"+contract.x + " != a_id:" + agent.AGENT_ID + "}");
-
-            String[] Ox = contract.Ox.replaceAll("([\\[\\]]*)", "").split(",");
-
-            // create constraints
-            ArrayList<String[]> constraints = new ArrayList<>();
-            for (int i = 0; i < Ox.length; i++)
-            {   // Add Ox as constraint
-                constraints.add(new String[]{Ox[i], String.valueOf(agent.time + i)});
-            }
-            // TODO add from FoV
-
-            List<String> rest = AStar.calculateWithConstraints(agent.POS, agent.DEST, constraints.toArray(new String[0][0]));
-
-            new_path = new ArrayList<>();
-            for (int idx = 0; idx < agent.path.size() && !agent.path.get(idx).equals(agent.POS.key); idx++)
-            {   // prepend path so far until current POS
-                // for history purposes
-                new_path.add(agent.path.get(idx));
-            }
-
-            // ensure that connection points match
-            Assert.isTrue(agent.POS.key.equals(rest.get(0)), "Something went wrong while accepting last bids!");
-            Assert.isTrue(agent.DEST.key.equals(rest.get(rest.size() - 1)), "Something went wrong while accepting last bids!");
-
-            // merge...
-            // since current POS is already in 'rest'@0, we can just add it
-            new_path.addAll(rest);
-            agent.loseC++;
+            new_path = handle_lose_condition(contract);
         }
 
         // update global path
-        logger.debug(agent.AGENT_ID + "{path:" + agent.path + "}");
+        logger.debug(String.format("%s | PATH BEFORE %s", agent.AGENT_ID, agent.path));
 
         WORLD_OVERSEER_HOOK_LOG.accept(String.format(
                 "PATH UPDATE AGENT: %s \n%23s PATH BEFORE: %s\n%23s PATH AFTER : %s",
@@ -432,7 +403,7 @@ public class AgentHandler {
         ));
 
         agent.path = new_path;
-        logger.debug(agent.AGENT_ID + "{path:" + agent.path + "}");
+        logger.debug(String.format("%s | PATH AFTER  %s", agent.AGENT_ID, agent.path));
     }
 
     @NotNull
@@ -486,6 +457,43 @@ public class AgentHandler {
             }
         }
         agent.winC++;
+
+        return path_next;
+    }
+
+    @NotNull
+    private List<String> handle_lose_condition(Contract contract) {
+        // LOSE condition
+        logger.debug(String.format("%s | LOST | %s", agent.AGENT_ID, contract.print()));
+        logger.debug(String.format("%s | current location : %s", agent.AGENT_ID, agent.POS));
+
+        String[] Ox = contract.Ox.replaceAll("([\\[\\]]*)", "").split(",");
+
+        // create constraints
+        // Add Ox as constraint
+        ArrayList<String[]> constraints = new ArrayList<>();
+        for (int i = 0; i < Ox.length; i++) {
+            constraints.add(new String[]{Ox[i], String.valueOf(agent.time + i)});
+        logger.debug(String.format("%s | ADDED CONSTRAINT %s", agent.AGENT_ID, Arrays.toString(constraints.get(i))));
+        }
+        // TODO add from FoV
+
+        List<String> rest = AStar.calculateWithConstraints(agent.POS, agent.DEST, constraints.toArray(new String[0][0]), agent.time);
+
+        List<String> path_next = new ArrayList<>();
+        for (int idx = 0; idx < agent.path.size() && !agent.path.get(idx).equals(agent.POS.key); idx++)
+        {
+            path_next.add(agent.path.get(idx));
+        }
+
+        // ensure that connection points match
+        Assert.isTrue(agent.POS.key.equals(rest.get(0)), "Something went wrong while accepting last bids!");
+        Assert.isTrue(agent.DEST.key.equals(rest.get(rest.size() - 1)), "Something went wrong while accepting last bids!");
+
+        // merge...
+        // since current POS is already in 'rest'@0, we can just add it
+        path_next.addAll(rest);
+        agent.loseC++;
 
         return path_next;
     }
