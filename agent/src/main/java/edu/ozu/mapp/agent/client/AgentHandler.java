@@ -471,14 +471,16 @@ public class AgentHandler {
 
         // create constraints
         // Add Ox as constraint
-        ArrayList<String[]> constraints = new ArrayList<>();
+        HashMap<String, ArrayList<String>> constraints = new HashMap<>();
         for (int i = 0; i < Ox.length; i++) {
-            constraints.add(new String[]{Ox[i], String.valueOf(agent.time + i)});
-        logger.debug(String.format("%s | ADDED CONSTRAINT %s", agent.AGENT_ID, Arrays.toString(constraints.get(i))));
+            ArrayList<String> c = constraints.getOrDefault(Ox[i], new ArrayList<>());
+            c.add(String.valueOf(agent.time + i));
+            constraints.put(Ox[i], c);
+        logger.debug(String.format("%s | ADDED CONSTRAINT %s:%s", agent.AGENT_ID, Ox[i], agent.time + i));
         }
         // TODO add from FoV
 
-        List<String> rest = new AStar().calculateWithConstraints(agent.POS, agent.DEST, constraints.toArray(new String[0][0]), agent.time);
+        List<String> rest = agent.calculatePath(agent.POS, agent.DEST, constraints);
 
         List<String> path_next = new ArrayList<>();
         for (int idx = 0; idx < agent.path.size() && !agent.path.get(idx).equals(agent.POS.key); idx++)
@@ -533,6 +535,11 @@ public class AgentHandler {
     public int GetRemainingPathLength()
     {
         return (agent.path.size()-1) - agent.time;
+    }
+
+    public String GetCurrentLocation()
+    {
+        return agent.POS.key;
     }
 
     /** ================================================================================================================ **/

@@ -44,6 +44,7 @@ public class WorldOverseer
     protected ConcurrentHashMap<String, String>   agent_to_point;
     protected ConcurrentHashMap<String, String>   point_to_agent;
     protected ConcurrentSkipListSet<String>       active_agents;
+    protected ConcurrentHashMap<String, String[]>   left_agent_locations;
 
     private MovementHandler     movement_handler;
     private NegotiationOverseer negotiation_overseer;
@@ -62,10 +63,10 @@ public class WorldOverseer
     private ConcurrentHashMap<String, String> FLAG_NEGOTIATIONS_DONE;
     private ConcurrentHashMap<String, String> FLAG_INACTIVE;
 
-    private Consumer<DATA_LOG_DISPLAY>    UI_LogDrawCallback;
-    private Consumer<String>                                        UI_StateChangeCallback;
-    private Runnable                                                UI_CanvasUpdateHook;
-    private Runnable                                                UI_LoopStoppedHook;
+    private Consumer<DATA_LOG_DISPLAY>  UI_LogDrawCallback;
+    private Consumer<String>            UI_StateChangeCallback;
+    private Runnable                    UI_CanvasUpdateHook;
+    private Runnable                    UI_LoopStoppedHook;
 
     private WorldOverseer()
     {
@@ -88,6 +89,7 @@ public class WorldOverseer
         agent_to_point = new ConcurrentHashMap<>();
         point_to_agent = new ConcurrentHashMap<>();
         active_agents  = new ConcurrentSkipListSet<>();
+        left_agent_locations = new ConcurrentHashMap<>();
 
         log_payload    = new DATA_LOG_DISPLAY();
 
@@ -515,6 +517,8 @@ public class WorldOverseer
         FLAG_COLLISION_CHECKS.remove(agent.getAgentName());
         FLAG_INACTIVE.put(agent.getAgentName(), "");
 
+        left_agent_locations.put(agent.getAgentName(), new String[]{ agent.GetCurrentLocation(), "inf" });
+
         active_agent_c--;
     }
 
@@ -569,5 +573,9 @@ public class WorldOverseer
         data[2] = String.valueOf(clients.get(key).GetAgentRemainingPathLength());
 
         return data;
+    }
+
+    public String[][] GetLocationConstraints() {
+        return left_agent_locations.values().toArray(new String[0][0]);
     }
 }

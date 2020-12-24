@@ -110,7 +110,19 @@ public abstract class Agent {
 
     public List<String> calculatePath(Point start, Point dest)
     {
-        return new AStar().calculate(start, dest, dimensions);
+        return calculatePath(start, dest, new HashMap<>());
+    }
+
+    public final List<String> calculatePath(Point start, Point dest, HashMap<String, ArrayList<String>> constraints)
+    {
+        String[][] world_constraints = WorldOverseer.getInstance().GetLocationConstraints();
+        for(String[] wc : world_constraints) {
+            ArrayList<String> c = constraints.getOrDefault(wc[0], new ArrayList<>());
+            c.add(wc[1]);
+            constraints.put(wc[0], c);
+        }
+
+        return new AStar().calculate(start, dest, constraints, dimensions, time);
     }
 
     public final List<Bid> GetBidSpace(Point From, Point To, int deadline)
