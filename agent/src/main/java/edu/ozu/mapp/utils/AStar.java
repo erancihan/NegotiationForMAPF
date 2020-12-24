@@ -14,7 +14,7 @@ public class AStar {
                 _o.add(occupied.get(key));
             }
 
-            List<String> a = new AStar().calculateWithConstraints(new Point(5, 5), new Point(10, 10), _o.toArray(new String[0][0]), 0);
+            List<String> a = new AStar().calculate(new Point(5, 5), new Point(10, 10), _o.toArray(new String[0][0]), "", 0);
 
             paths.add(a.toArray(new String[0]));
 
@@ -24,7 +24,12 @@ public class AStar {
         System.out.println(Arrays.deepToString(paths.toArray(new String[0][])));
     }
 
-    public List<String> calculateWithConstraints(Point start, Point dest, String[][] constraints_with_time, int t)
+    public List<String> calculate(Point start, Point dest, String[][] constraints_with_time, String dimensions, int t)
+    {
+        return calculateWithConstraints(start, dest, constraints_with_time, dimensions, t);
+    }
+
+    public List<String> calculateWithConstraints(Point start, Point dest, String[][] constraints_with_time, String dimensions, int t)
     {
         // parse constraints
         HashMap<String, ArrayList<String>> occupied_list = new HashMap<>();
@@ -35,7 +40,7 @@ public class AStar {
             occupied_list.put(constraint[0], vals);
         }
 
-        return run(start, dest, occupied_list, t);
+        return run(start, dest, occupied_list, dimensions, t);
     }
 
     /**
@@ -48,29 +53,24 @@ public class AStar {
      *
      * @return List
      */
-    public List<String> calculate(Point start, Point dest, HashMap<String, ArrayList<String>> constraints_with_time, int t)
+    public List<String> calculate(Point start, Point dest, HashMap<String, ArrayList<String>> constraints_with_time, String dimension, int t)
     {
-        return calculateWithConstraints(start, dest, constraints_with_time, t);
+        return run(start, dest, constraints_with_time, dimension, t);
     }
 
     public List<String> calculateWithConstraints(Point start, Point dest, HashMap<String, ArrayList<String>> constraints_with_time, int t)
     {
-        return run(start, dest, constraints_with_time, t);
+        return run(start, dest, constraints_with_time, "", t);
     }
 
     public List<String> calculate(Point start, Point dest)
     {
-        return new AStar().run(start, dest, new HashMap<>(), "", 0);
+        return run(start, dest, new HashMap<>(), "", 0);
     }
 
     public List<String> calculate(Point start, Point dest, String Dimensions)
     {
-        return new AStar().run(start, dest, new HashMap<>(), Dimensions, 0);
-    }
-
-    private List<String> run(Point start, Point goal, HashMap<String, ArrayList<String>> occupiedList, int t)
-    {
-        return run(start, goal, occupiedList, "", t);
+        return run(start, dest, new HashMap<>(), Dimensions, 0);
     }
 
     //<editor-fold defaultstate="collapsed" desc="A-Star implementation">
