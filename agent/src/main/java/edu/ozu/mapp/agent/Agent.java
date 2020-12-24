@@ -110,7 +110,7 @@ public abstract class Agent {
 
     public List<String> calculatePath(Point start, Point dest)
     {
-        return AStar.calculate(start, dest, dimensions);
+        return new AStar().calculate(start, dest, dimensions);
     }
 
     public final List<Bid> GetBidSpace(Point From, Point To, int deadline)

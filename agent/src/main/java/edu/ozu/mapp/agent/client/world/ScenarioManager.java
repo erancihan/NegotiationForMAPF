@@ -1122,7 +1122,7 @@ public class ScenarioManager extends javax.swing.JFrame
             if (agent_paths.containsKey(a.id)) {
                 a_path = agent_paths.get(a.id);
             } else {
-                a_path = AStar.calculate(a.start.toPoint(), a.dest.toPoint(), world_data.width+"x"+world_data.height).toArray(new String[0]);
+                a_path = new AStar().calculate(a.start.toPoint(), a.dest.toPoint(), world_data.width+"x"+world_data.height).toArray(new String[0]);
                 agent_paths.put(a.id, a_path);
             }
             agents_data.get(i).path_length = a_path.length;
@@ -1143,7 +1143,7 @@ public class ScenarioManager extends javax.swing.JFrame
                 if (agent_paths.containsKey(b.id)) {
                     b_path = agent_paths.get(b.id);
                 } else {
-                    b_path = AStar.calculate(b.start.toPoint(), b.dest.toPoint(), world_data.width+"x"+world_data.height).toArray(new String[0]);
+                    b_path = new AStar().calculate(b.start.toPoint(), b.dest.toPoint(), world_data.width+"x"+world_data.height).toArray(new String[0]);
                     agent_paths.put(b.id, b_path);
                 }
 

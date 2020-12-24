@@ -40,7 +40,7 @@ public class JSONAgentData {
 
     public void gen_path()
     {
-        path = Arrays.toString(AStar.calculate(start.toPoint(), dest.toPoint()).toArray(new String[0]));
+        path = Arrays.toString(new AStar().calculate(start.toPoint(), dest.toPoint()).toArray(new String[0]));
     }
 
     public void update_start(String val) {

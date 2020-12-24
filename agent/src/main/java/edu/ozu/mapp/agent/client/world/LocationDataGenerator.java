@@ -90,7 +90,7 @@ public class LocationDataGenerator
                 if (paths.containsKey(a_key)) {
                     a_path = paths.get(a_key);
                 } else {
-                    a_path = AStar.calculate(a[0], a[1]).toArray(new String[0]);
+                    a_path = new AStar().calculate(a[0], a[1]).toArray(new String[0]);
                     paths.put(a_key, a_path);
                 }
 
@@ -103,7 +103,7 @@ public class LocationDataGenerator
                     if (paths.containsKey(b_key)) {
                         b_path = paths.get(b_key);
                     } else {
-                        b_path = AStar.calculate(b[0], b[1]).toArray(new String[0]);
+                        b_path = new AStar().calculate(b[0], b[1]).toArray(new String[0]);
                         paths.put(b_key, b_path);
                     }
 

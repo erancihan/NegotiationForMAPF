@@ -38,17 +38,32 @@ public class AStar {
         return run(start, dest, occupied_list, t);
     }
 
+    /**
+     * Calculate path with constraints
+     *
+     * @param start Starting point for calculation
+     * @param dest Destination of calculation
+     * @param constraints_with_time Constraint parameters with T timestamps
+     * @param t Current time T of the world/agent
+     *
+     * @return List
+     */
+    public List<String> calculate(Point start, Point dest, HashMap<String, ArrayList<String>> constraints_with_time, int t)
+    {
+        return calculateWithConstraints(start, dest, constraints_with_time, t);
+    }
+
     public List<String> calculateWithConstraints(Point start, Point dest, HashMap<String, ArrayList<String>> constraints_with_time, int t)
     {
         return run(start, dest, constraints_with_time, t);
     }
 
-    public static List<String> calculate(Point start, Point dest)
+    public List<String> calculate(Point start, Point dest)
     {
         return new AStar().run(start, dest, new HashMap<>(), "", 0);
     }
 
-    public static List<String> calculate(Point start, Point dest, String Dimensions)
+    public List<String> calculate(Point start, Point dest, String Dimensions)
     {
         return new AStar().run(start, dest, new HashMap<>(), Dimensions, 0);
     }
