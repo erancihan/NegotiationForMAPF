@@ -478,7 +478,7 @@ public class AgentHandler {
         }
         // TODO add from FoV
 
-        List<String> rest = AStar.calculateWithConstraints(agent.POS, agent.DEST, constraints.toArray(new String[0][0]), agent.time);
+        List<String> rest = new AStar().calculateWithConstraints(agent.POS, agent.DEST, constraints.toArray(new String[0][0]), agent.time);
 
         List<String> path_next = new ArrayList<>();
         for (int idx = 0; idx < agent.path.size() && !agent.path.get(idx).equals(agent.POS.key); idx++)

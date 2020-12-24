@@ -14,7 +14,7 @@ public class AStar {
                 _o.add(occupied.get(key));
             }
 
-            List<String> a = calculateWithConstraints(new Point(5, 5), new Point(10, 10), _o.toArray(new String[0][0]), 0);
+            List<String> a = new AStar().calculateWithConstraints(new Point(5, 5), new Point(10, 10), _o.toArray(new String[0][0]), 0);
 
             paths.add(a.toArray(new String[0]));
 
@@ -24,7 +24,7 @@ public class AStar {
         System.out.println(Arrays.deepToString(paths.toArray(new String[0][])));
     }
 
-    public static List<String> calculateWithConstraints(Point start, Point dest, String[][] constraints_with_time, int t)
+    public List<String> calculateWithConstraints(Point start, Point dest, String[][] constraints_with_time, int t)
     {
         // parse constraints
         HashMap<String, ArrayList<String>> occupied_list = new HashMap<>();
@@ -35,7 +35,12 @@ public class AStar {
             occupied_list.put(constraint[0], vals);
         }
 
-        return new AStar().run(start, dest, occupied_list, t);
+        return run(start, dest, occupied_list, t);
+    }
+
+    public List<String> calculateWithConstraints(Point start, Point dest, HashMap<String, ArrayList<String>> constraints_with_time, int t)
+    {
+        return run(start, dest, constraints_with_time, t);
     }
 
     public static List<String> calculate(Point start, Point dest)
