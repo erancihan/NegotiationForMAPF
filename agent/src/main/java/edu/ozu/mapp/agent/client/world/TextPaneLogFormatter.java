@@ -27,6 +27,14 @@ public class TextPaneLogFormatter
     @NotNull
     private String parse_scenario_pane_log(DATA_LOG_DISPLAY data)
     {
+        StringBuilder out = new StringBuilder();
+
+        for (Object[] item : data.world_log)
+        {
+            out.append(String.format("%-23s %s ", item[1].toString(), item[0].toString()));
+            out.append("\n");
+        }
+
         return
             data.world_data
                 .keySet().stream().sorted()
@@ -42,10 +50,7 @@ public class TextPaneLogFormatter
                 })
                 .collect(Collectors.joining("\n")) +
             "\n-------------\n" +
-            data.world_log
-                .stream()
-                .map(item -> String.format("%-23s %s ", item[1].toString(), item[0].toString()))
-                .collect(Collectors.joining("\n"))
+            out.toString()
             ;
     }
 
