@@ -14,6 +14,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.*;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 
 public class WorldOverseer
@@ -61,6 +63,7 @@ public class WorldOverseer
     private ConcurrentHashMap<String, String> FLAG_JOINS;
     private ConcurrentHashMap<String, String> FLAG_COLLISION_CHECKS;
     private ConcurrentHashMap<String, String> FLAG_NEGOTIATIONS_DONE;
+    private ConcurrentHashMap<String, String> FLAG_NEGOTIATIONS_VERIFIED;
     private ConcurrentHashMap<String, String> FLAG_INACTIVE;
 
     private Consumer<DATA_LOG_DISPLAY>  UI_LogDrawCallback;
@@ -96,6 +99,7 @@ public class WorldOverseer
         FLAG_JOINS            = new ConcurrentHashMap<>();
         FLAG_COLLISION_CHECKS = new ConcurrentHashMap<>();
         FLAG_NEGOTIATIONS_DONE = new ConcurrentHashMap<>();
+        FLAG_NEGOTIATIONS_VERIFIED = new ConcurrentHashMap<>();
         FLAG_INACTIVE         = new ConcurrentHashMap<>();
 
         TIME = 0;
@@ -240,8 +244,7 @@ public class WorldOverseer
 
                 if (FLAG_JOINS.size() == active_agent_c)
                 {   // ALL REGISTERED AGENTS ARE DONE JOINING
-
-                    logger.info("- END OF JOIN STATE");
+                    Log("- END OF JOIN STATE", logger::info);
 
                     prev_state = curr_state;
 
@@ -252,7 +255,7 @@ public class WorldOverseer
             case BROADCAST:
                 if (FLAG_COLLISION_CHECKS.size() == active_agent_c)
                 {   // BROADCASTS DONE
-                    logger.info("- BROADCASTS ARE DONE");
+                    Log("- BROADCASTS ARE DONE", logger::info);
 
                     prev_state = curr_state;
 
@@ -261,24 +264,44 @@ public class WorldOverseer
 
                 break;
             case NEGOTIATE:
-                if (FLAG_NEGOTIATIONS_DONE.size() == active_agent_c)
-                {   // NEGOTIATIONS ARE COMPLETE
-                    logger.info("- NEGOTIATIONS ARE COMPLETE");
+                if (FLAG_NEGOTIATIONS_VERIFIED.size() == active_agent_c)
+                {
+                    Log("- NEGOTIATIONS ARE VERIFIED", logger::info);
 
-                    FLAG_NEGOTIATIONS_DONE.clear();
+                    FLAG_NEGOTIATIONS_VERIFIED.clear();
 
                     prev_state = curr_state;
 
                     if (IsLooping) { Step(); }
+                    break;
+                }
+                if (FLAG_NEGOTIATIONS_DONE.size() == active_agent_c)
+                {   // NEGOTIATIONS ARE COMPLETE
+                    Log("- NEGOTIATIONS ARE COMPLETE", logger::info);
+
+                    /* VERIFY NEGOTIATIONS
+                     *
+                     * Request verification from all agents.
+                     * If one verification fails
+                     *  - remove failing from negotiations done
+                     *  - remove failing from verified (should not be in in the first place)
+                     *  - failing agents should update their state flags to int:1
+                     *     `collision_check` function already takes care of this
+                     * */
+                    agents_verify_paths_after_negotiation();
                 }
 
                 break;
             case MOVE:
                 if (active_agent_c == movement_handler.size())
                 {
+                    // flush previous state checks
+                    FLAG_NEGOTIATIONS_DONE.clear();
+                    FLAG_NEGOTIATIONS_VERIFIED.clear();
+
                     movement_handler.ProcessQueue(() -> CompletableFuture
                         .runAsync(() -> {
-                            logger.info("- MOVES ARE COMPLETE");
+                            Log("- MOVES ARE COMPLETE", logger::info);
 
                             prev_state = curr_state;
 
@@ -320,6 +343,11 @@ public class WorldOverseer
         data.time_tick   = 0;
 
         return data;
+    }
+
+    public String[][] GetFoV(String agent_name)
+    {
+        return GetAgentFoV(agent_name);
     }
 
     private String[][] GetAgentFoV(String agent_name)
@@ -412,6 +440,7 @@ public class WorldOverseer
         client.SetGetNegotiationsHook(this::GetNegotiations);
         client.SetJoinNegotiationSession(this::JoinNegotiationSession);
         client.SetNegotiatedCallback(this::Negotiated);
+        client.SetVerifyNegotiationsCallback(this::verify_negotiations_callback);
         client.SetMoveCallback(this::Move);
         client.SetLeaveHook(this::Leave);
         client.SetUpdateBroadcastHook(this::update_broadcast_hook);
@@ -471,6 +500,8 @@ public class WorldOverseer
         {
             Log(agent_name + " reported collision : " + Arrays.toString(agent_ids));
             negotiation_overseer.RegisterCollisionNotification(agent_ids);
+
+            for (String id : agent_ids) FLAG_NEGOTIATIONS_DONE.remove(id);
         }
     }
 
@@ -505,6 +536,45 @@ public class WorldOverseer
             bank_data.put(agent_name, new_balance);
     }
 
+    private final Lock agents_verify_lock = new ReentrantLock();
+    private synchronized void agents_verify_paths_after_negotiation()
+    {
+        if (!agents_verify_lock.tryLock()) return;
+
+        CompletableFuture
+            .runAsync(() -> {
+                for (String agent_id : clients.keySet())
+                {
+                    AgentClient client = clients.get(agent_id);
+
+                    if (passive_agents.containsKey(agent_id)) continue;
+
+                    CompletableFuture
+                        .runAsync(client::VerifyNegotiations)
+                        .whenComplete((entity, ex) -> { if (ex != null) ex.printStackTrace(); })
+                    ;
+                }
+            })
+            .whenComplete((entity, ex) -> {
+                if (ex != null) ex.printStackTrace();
+
+                agents_verify_lock.unlock();
+            })
+        ;
+    }
+
+    private synchronized void verify_negotiations_callback(String agent_id, boolean is_ok)
+    {
+        if (is_ok) {
+            FLAG_NEGOTIATIONS_VERIFIED.put(agent_id, "");
+        } else {
+            // agent cannot verify paths, there is conflict
+            // agent will need to re-do negotiation step
+            FLAG_NEGOTIATIONS_DONE.remove(agent_id);
+            FLAG_NEGOTIATIONS_VERIFIED.remove(agent_id);
+        }
+    }
+
     /**
      * Queue AgentHandler
      *
@@ -513,15 +583,15 @@ public class WorldOverseer
     public void Move(AgentHandler agent, DATA_REQUEST_PAYLOAD_WORLD_MOVE payload)
     {
         // queue agent for movement
-        movement_handler.put(agent.getAgentName(), agent, payload);
+        movement_handler.put(agent.GetAgentID(), agent, payload);
     }
 
     public synchronized void Leave(AgentHandler agent)
     {
-        FLAG_COLLISION_CHECKS.remove(agent.getAgentName());
-        FLAG_INACTIVE.put(agent.getAgentName(), "");
+        FLAG_COLLISION_CHECKS.remove(agent.GetAgentID());
+        FLAG_INACTIVE.put(agent.GetAgentID(), "");
 
-        passive_agents.put(agent.getAgentName(), new String[]{ agent.GetCurrentLocation(), "inf" });
+        passive_agents.put(agent.GetAgentID(), new String[]{ agent.GetCurrentLocation(), "inf" });
 
         active_agent_c--;
     }
@@ -529,6 +599,14 @@ public class WorldOverseer
     private synchronized void update_broadcast_hook(String agent_name, String[] broadcast)
     {
         broadcasts.put(agent_name, broadcast);
+    }
+
+    public synchronized void Log(String str, Consumer<String> logger)
+    {
+        if (state_log.get(state_log.size()-1)[0].equals(str)) return;
+
+        logger.accept(str);
+        Log(str);
     }
 
     public synchronized void Log(String str)
