@@ -44,7 +44,7 @@ public class WorldOverseer
     protected ConcurrentHashMap<String, String>   agent_to_point;
     protected ConcurrentHashMap<String, String>   point_to_agent;
     protected ConcurrentSkipListSet<String>       active_agents;
-    protected ConcurrentHashMap<String, String[]>   left_agent_locations;
+    protected ConcurrentHashMap<String, String[]> passive_agents;
 
     private MovementHandler     movement_handler;
     private NegotiationOverseer negotiation_overseer;
@@ -89,7 +89,7 @@ public class WorldOverseer
         agent_to_point = new ConcurrentHashMap<>();
         point_to_agent = new ConcurrentHashMap<>();
         active_agents  = new ConcurrentSkipListSet<>();
-        left_agent_locations = new ConcurrentHashMap<>();
+        passive_agents = new ConcurrentHashMap<>();
 
         log_payload    = new DATA_LOG_DISPLAY();
 
@@ -338,7 +338,10 @@ public class WorldOverseer
                 String agent_key = point_to_agent.getOrDefault(x + "-" + y, "");
                 if (!agent_key.isEmpty())
                 {
-                    agents.add(new String[]{agent_key, x + "-" + y, Utils.toString(broadcasts.get(agent_key), ",")});
+                    if (passive_agents.containsKey(agent_key))
+                        agents.add(new String[]{agent_key, x + "-" + y, "inf"});
+                    else
+                        agents.add(new String[]{agent_key, x + "-" + y, Utils.toString(broadcasts.get(agent_key), ",")});
                 }
             }
         }
@@ -517,7 +520,7 @@ public class WorldOverseer
         FLAG_COLLISION_CHECKS.remove(agent.getAgentName());
         FLAG_INACTIVE.put(agent.getAgentName(), "");
 
-        left_agent_locations.put(agent.getAgentName(), new String[]{ agent.GetCurrentLocation(), "inf" });
+        passive_agents.put(agent.getAgentName(), new String[]{ agent.GetCurrentLocation(), "inf" });
 
         active_agent_c--;
     }
@@ -576,6 +579,6 @@ public class WorldOverseer
     }
 
     public String[][] GetLocationConstraints() {
-        return left_agent_locations.values().toArray(new String[0][0]);
+        return passive_agents.values().toArray(new String[0][0]);
     }
 }
