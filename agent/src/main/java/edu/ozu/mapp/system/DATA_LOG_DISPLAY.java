@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class DATA_LOG_DISPLAY
+public class DATA_LOG_DISPLAY implements Cloneable
 {
     public Map<String, String> world_data;
     public Map<String, String> agent_to_point;
@@ -37,5 +37,11 @@ public class DATA_LOG_DISPLAY
     {
         this.agent_bank_info.clear();
         this.agent_bank_info.putAll(bank_data);
+    }
+
+    @Override
+    protected DATA_LOG_DISPLAY clone() throws CloneNotSupportedException
+    {
+        return (DATA_LOG_DISPLAY) super.clone();
     }
 }
