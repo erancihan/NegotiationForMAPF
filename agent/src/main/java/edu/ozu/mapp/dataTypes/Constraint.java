@@ -13,6 +13,12 @@ public class Constraint
         at_t     = t;
     }
 
+    public Constraint(Point point)
+    {
+        location = point;
+        at_t     = -1;  // INF
+    }
+
     @Override
     public boolean equals(Object that)
     {
