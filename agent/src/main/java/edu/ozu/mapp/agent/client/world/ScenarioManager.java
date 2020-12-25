@@ -117,7 +117,9 @@ public class ScenarioManager extends javax.swing.JFrame
         javax.swing.JButton run_btn = new javax.swing.JButton();
         javax.swing.JPanel run_scenario = new javax.swing.JPanel();
         javax.swing.JPanel scenario_info_container = new javax.swing.JPanel();
-        jSplitPane1 = new javax.swing.JSplitPane();
+        horizontal_spliter = new javax.swing.JSplitPane();
+        world_view_state_container = new javax.swing.JPanel();
+        vertical_spliter = new javax.swing.JSplitPane();
         javax.swing.JTabbedPane world_tab_container = new javax.swing.JTabbedPane();
         world_view_tab = new javax.swing.JPanel();
         scenario_canvas = new edu.ozu.mapp.agent.client.world.ScenarioCanvas();
@@ -127,6 +129,8 @@ public class ScenarioManager extends javax.swing.JFrame
         javax.swing.JPanel jPanel2 = new javax.swing.JPanel();
         label_current_state = new javax.swing.JLabel();
         btn_next_state = new javax.swing.JButton();
+        javax.swing.JTabbedPane world_history_tab_container = new javax.swing.JTabbedPane();
+        world_history_tab = new javax.swing.JPanel();
         javax.swing.JTabbedPane logs_tab_container = new javax.swing.JTabbedPane();
         javax.swing.JPanel world_logs = new javax.swing.JPanel();
         javax.swing.JScrollPane jScrollPane1 = new javax.swing.JScrollPane();
@@ -551,12 +555,27 @@ public class ScenarioManager extends javax.swing.JFrame
         scenario_info_container.setPreferredSize(new java.awt.Dimension(400, 150));
         scenario_info_container.setLayout(new java.awt.GridLayout(1, 0));
 
-        jSplitPane1.setDividerLocation(300);
-        jSplitPane1.setDividerSize(5);
-        jSplitPane1.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
-        jSplitPane1.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+        horizontal_spliter.setDividerLocation(300);
+        horizontal_spliter.setDividerSize(5);
+        horizontal_spliter.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+        horizontal_spliter.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
             public void propertyChange(java.beans.PropertyChangeEvent evt) {
-                jSplitPane1PropertyChange(evt);
+                splitterPropertyChange(evt);
+            }
+        });
+
+        world_view_state_container.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+        world_view_state_container.setMinimumSize(new java.awt.Dimension(300, 300));
+        world_view_state_container.setPreferredSize(new java.awt.Dimension(300, 300));
+        world_view_state_container.setLayout(new java.awt.BorderLayout());
+
+        vertical_spliter.setDividerLocation(300);
+        vertical_spliter.setDividerSize(5);
+        vertical_spliter.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
+        vertical_spliter.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+        vertical_spliter.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+            public void propertyChange(java.beans.PropertyChangeEvent evt) {
+                splitterPropertyChange(evt);
             }
         });
 
@@ -611,7 +630,17 @@ public class ScenarioManager extends javax.swing.JFrame
 
         world_tab_container.addTab("World View", world_view_tab);
 
-        jSplitPane1.setLeftComponent(world_tab_container);
+        vertical_spliter.setTopComponent(world_tab_container);
+
+        world_history_tab.setMinimumSize(new java.awt.Dimension(100, 50));
+        world_history_tab_container.addTab("World History", world_history_tab);
+
+        vertical_spliter.setBottomComponent(world_history_tab_container);
+        world_history_tab_container.getAccessibleContext().setAccessibleName("");
+
+        world_view_state_container.add(vertical_spliter, java.awt.BorderLayout.CENTER);
+
+        horizontal_spliter.setLeftComponent(world_view_state_container);
 
         world_logs.setLayout(new java.awt.BorderLayout());
 
@@ -632,10 +661,10 @@ public class ScenarioManager extends javax.swing.JFrame
 
         logs_tab_container.addTab("Negotiation Logs", negotiation_logs);
 
-        jSplitPane1.setRightComponent(logs_tab_container);
+        horizontal_spliter.setRightComponent(logs_tab_container);
         logs_tab_container.getAccessibleContext().setAccessibleName("World Info");
 
-        scenario_info_container.add(jSplitPane1);
+        scenario_info_container.add(horizontal_spliter);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
@@ -826,9 +855,9 @@ public class ScenarioManager extends javax.swing.JFrame
         if (scenario_canvas != null) scenario_canvas.Resize();
     }//GEN-LAST:event_formComponentResized
 
-    private void jSplitPane1PropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_jSplitPane1PropertyChange
+    private void splitterPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_splitterPropertyChange
         if (scenario_canvas != null) scenario_canvas.Resize();
-    }//GEN-LAST:event_jSplitPane1PropertyChange
+    }//GEN-LAST:event_splitterPropertyChange
 
     /**
      * @param args the command line arguments
@@ -874,10 +903,10 @@ public class ScenarioManager extends javax.swing.JFrame
     private javax.swing.JFileChooser file_chooser;
     private javax.swing.JButton generate_scenario_btn;
     private javax.swing.JTextField height_input;
+    private javax.swing.JSplitPane horizontal_spliter;
     private javax.swing.JTextField input_initial_token_count_per_agent;
     private javax.swing.JTextField input_number_of_expected_conflicts;
     private javax.swing.JScrollPane jScrollPane4;
-    private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JLabel label_current_state;
     private javax.swing.JTextField max_path_length_input;
     private javax.swing.JLabel max_path_length_label;
@@ -891,7 +920,10 @@ public class ScenarioManager extends javax.swing.JFrame
     private javax.swing.JDialog popup_generating;
     private edu.ozu.mapp.agent.client.world.ScenarioCanvas scenario_canvas;
     private javax.swing.JTextPane scenario_info_pane;
+    private javax.swing.JSplitPane vertical_spliter;
     private javax.swing.JTextField width_input;
+    private javax.swing.JPanel world_history_tab;
+    private javax.swing.JPanel world_view_state_container;
     private javax.swing.JPanel world_view_tab;
     // End of variables declaration//GEN-END:variables
 

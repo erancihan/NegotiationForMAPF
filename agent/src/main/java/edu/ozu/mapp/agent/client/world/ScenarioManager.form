@@ -2049,7 +2049,7 @@
                 <Property name="rows" type="int" value="1"/>
               </Layout>
               <SubComponents>
-                <Container class="javax.swing.JSplitPane" name="jSplitPane1">
+                <Container class="javax.swing.JSplitPane" name="horizontal_spliter">
                   <Properties>
                     <Property name="dividerLocation" type="int" value="300"/>
                     <Property name="dividerSize" type="int" value="5"/>
@@ -2058,12 +2058,23 @@
                     </Property>
                   </Properties>
                   <Events>
-                    <EventHandler event="propertyChange" listener="java.beans.PropertyChangeListener" parameters="java.beans.PropertyChangeEvent" handler="jSplitPane1PropertyChange"/>
+                    <EventHandler event="propertyChange" listener="java.beans.PropertyChangeListener" parameters="java.beans.PropertyChangeEvent" handler="splitterPropertyChange"/>
                   </Events>
 
                   <Layout class="org.netbeans.modules.form.compat2.layouts.support.JSplitPaneSupportLayout"/>
                   <SubComponents>
-                    <Container class="javax.swing.JTabbedPane" name="world_tab_container">
+                    <Container class="javax.swing.JPanel" name="world_view_state_container">
+                      <Properties>
+                        <Property name="cursor" type="java.awt.Cursor" editor="org.netbeans.modules.form.editors2.CursorEditor">
+                          <Color id="Default Cursor"/>
+                        </Property>
+                        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[300, 300]"/>
+                        </Property>
+                        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[300, 300]"/>
+                        </Property>
+                      </Properties>
                       <AuxValues>
                         <AuxValue name="JavaCodeGenerator_VariableLocal" type="java.lang.Boolean" value="true"/>
                         <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="0"/>
@@ -2074,376 +2085,447 @@
                         </Constraint>
                       </Constraints>
 
-                      <Layout class="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout"/>
+                      <Layout class="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout"/>
                       <SubComponents>
-                        <Container class="javax.swing.JPanel" name="world_view_tab">
+                        <Container class="javax.swing.JSplitPane" name="vertical_spliter">
+                          <Properties>
+                            <Property name="dividerLocation" type="int" value="300"/>
+                            <Property name="dividerSize" type="int" value="5"/>
+                            <Property name="orientation" type="int" value="0"/>
+                            <Property name="cursor" type="java.awt.Cursor" editor="org.netbeans.modules.form.editors2.CursorEditor">
+                              <Color id="Default Cursor"/>
+                            </Property>
+                          </Properties>
+                          <Events>
+                            <EventHandler event="propertyChange" listener="java.beans.PropertyChangeListener" parameters="java.beans.PropertyChangeEvent" handler="splitterPropertyChange"/>
+                          </Events>
                           <Constraints>
-                            <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
-                              <JTabbedPaneConstraints tabName="World View">
-                                <Property name="tabTitle" type="java.lang.String" value="World View"/>
-                              </JTabbedPaneConstraints>
+                            <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout" value="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout$BorderConstraintsDescription">
+                              <BorderConstraints direction="Center"/>
                             </Constraint>
                           </Constraints>
+
+                          <Layout class="org.netbeans.modules.form.compat2.layouts.support.JSplitPaneSupportLayout"/>
                           <SubComponents>
-                            <Component class="edu.ozu.mapp.agent.client.world.ScenarioCanvas" name="scenario_canvas">
-                              <Constraints>
-                                <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
-                                  <GridBagConstraints gridX="0" gridY="0" gridWidth="0" gridHeight="-1" fill="1" ipadX="0" ipadY="0" insetsTop="0" insetsLeft="0" insetsBottom="0" insetsRight="0" anchor="11" weightX="0.0" weightY="0.0"/>
-                                </Constraint>
-                              </Constraints>
-                            </Component>
-                            <Container class="javax.swing.JPanel" name="world_controls">
-                              <Properties>
-                                <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                                  <Dimension value="[80, 80]"/>
-                                </Property>
-                                <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                                  <Dimension value="[80, 40]"/>
-                                </Property>
-                              </Properties>
+                            <Container class="javax.swing.JTabbedPane" name="world_tab_container">
                               <AuxValues>
                                 <AuxValue name="JavaCodeGenerator_VariableLocal" type="java.lang.Boolean" value="true"/>
                                 <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="0"/>
                               </AuxValues>
                               <Constraints>
-                                <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
-                                  <GridBagConstraints gridX="0" gridY="1" gridWidth="0" gridHeight="-1" fill="2" ipadX="0" ipadY="0" insetsTop="0" insetsLeft="0" insetsBottom="0" insetsRight="0" anchor="15" weightX="0.0" weightY="0.0"/>
+                                <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JSplitPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JSplitPaneSupportLayout$JSplitPaneConstraintsDescription">
+                                  <JSplitPaneConstraints position="top"/>
                                 </Constraint>
                               </Constraints>
 
-                              <Layout class="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout"/>
+                              <Layout class="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout"/>
                               <SubComponents>
-                                <Container class="javax.swing.JPanel" name="jPanel1">
-                                  <AuxValues>
-                                    <AuxValue name="JavaCodeGenerator_VariableLocal" type="java.lang.Boolean" value="true"/>
-                                    <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="0"/>
-                                  </AuxValues>
+                                <Container class="javax.swing.JPanel" name="world_view_tab">
                                   <Constraints>
-                                    <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout" value="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout$BorderConstraintsDescription">
-                                      <BorderConstraints direction="West"/>
+                                    <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
+                                      <JTabbedPaneConstraints tabName="World View">
+                                        <Property name="tabTitle" type="java.lang.String" value="World View"/>
+                                      </JTabbedPaneConstraints>
                                     </Constraint>
                                   </Constraints>
-
-                                  <Layout class="org.netbeans.modules.form.compat2.layouts.DesignFlowLayout"/>
                                   <SubComponents>
-                                    <Component class="javax.swing.JToggleButton" name="btn_cycle_states">
-                                      <Properties>
-                                        <Property name="text" type="java.lang.String" value="Cycle"/>
-                                      </Properties>
-                                      <Events>
-                                        <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="btn_cycle_statesItemStateChanged"/>
-                                      </Events>
+                                    <Component class="edu.ozu.mapp.agent.client.world.ScenarioCanvas" name="scenario_canvas">
+                                      <Constraints>
+                                        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
+                                          <GridBagConstraints gridX="0" gridY="0" gridWidth="0" gridHeight="-1" fill="1" ipadX="0" ipadY="0" insetsTop="0" insetsLeft="0" insetsBottom="0" insetsRight="0" anchor="11" weightX="0.0" weightY="0.0"/>
+                                        </Constraint>
+                                      </Constraints>
                                     </Component>
+                                    <Container class="javax.swing.JPanel" name="world_controls">
+                                      <Properties>
+                                        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                                          <Dimension value="[80, 80]"/>
+                                        </Property>
+                                        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                                          <Dimension value="[80, 40]"/>
+                                        </Property>
+                                      </Properties>
+                                      <AuxValues>
+                                        <AuxValue name="JavaCodeGenerator_VariableLocal" type="java.lang.Boolean" value="true"/>
+                                        <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="0"/>
+                                      </AuxValues>
+                                      <Constraints>
+                                        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
+                                          <GridBagConstraints gridX="0" gridY="1" gridWidth="0" gridHeight="-1" fill="2" ipadX="0" ipadY="0" insetsTop="0" insetsLeft="0" insetsBottom="0" insetsRight="0" anchor="15" weightX="0.0" weightY="0.0"/>
+                                        </Constraint>
+                                      </Constraints>
+
+                                      <Layout class="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout"/>
+                                      <SubComponents>
+                                        <Container class="javax.swing.JPanel" name="jPanel1">
+                                          <AuxValues>
+                                            <AuxValue name="JavaCodeGenerator_VariableLocal" type="java.lang.Boolean" value="true"/>
+                                            <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="0"/>
+                                          </AuxValues>
+                                          <Constraints>
+                                            <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout" value="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout$BorderConstraintsDescription">
+                                              <BorderConstraints direction="West"/>
+                                            </Constraint>
+                                          </Constraints>
+
+                                          <Layout class="org.netbeans.modules.form.compat2.layouts.DesignFlowLayout"/>
+                                          <SubComponents>
+                                            <Component class="javax.swing.JToggleButton" name="btn_cycle_states">
+                                              <Properties>
+                                                <Property name="text" type="java.lang.String" value="Cycle"/>
+                                              </Properties>
+                                              <Events>
+                                                <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="btn_cycle_statesItemStateChanged"/>
+                                              </Events>
+                                            </Component>
+                                          </SubComponents>
+                                        </Container>
+                                        <Container class="javax.swing.JPanel" name="jPanel2">
+                                          <AuxValues>
+                                            <AuxValue name="JavaCodeGenerator_VariableLocal" type="java.lang.Boolean" value="true"/>
+                                            <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="0"/>
+                                          </AuxValues>
+                                          <Constraints>
+                                            <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout" value="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout$BorderConstraintsDescription">
+                                              <BorderConstraints direction="East"/>
+                                            </Constraint>
+                                          </Constraints>
+
+                                          <Layout class="org.netbeans.modules.form.compat2.layouts.DesignFlowLayout"/>
+                                          <SubComponents>
+                                            <Component class="javax.swing.JLabel" name="label_current_state">
+                                              <Properties>
+                                                <Property name="text" type="java.lang.String" value="-current-state-"/>
+                                              </Properties>
+                                            </Component>
+                                            <Component class="javax.swing.JButton" name="btn_next_state">
+                                              <Properties>
+                                                <Property name="text" type="java.lang.String" value="Next State"/>
+                                              </Properties>
+                                              <Events>
+                                                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btn_next_stateActionPerformed"/>
+                                              </Events>
+                                            </Component>
+                                          </SubComponents>
+                                        </Container>
+                                      </SubComponents>
+                                    </Container>
                                   </SubComponents>
+                                  <LayoutCode>
+                                    <CodeStatement>
+                                      <CodeExpression id="72_world_view_tabLayout">
+                                        <CodeVariable name="world_view_tabLayout" type="4096" declaredType="java.awt.GridBagLayout"/>
+                                        <ExpressionOrigin>
+                                          <ExpressionProvider type="CodeConstructor">
+                                            <CodeConstructor class="java.awt.GridBagLayout" parameterTypes=""/>
+                                          </ExpressionProvider>
+                                        </ExpressionOrigin>
+                                      </CodeExpression>
+                                      <StatementProvider type="CodeExpression">
+                                        <CodeExpression id="72_world_view_tabLayout"/>
+                                      </StatementProvider>
+                                    </CodeStatement>
+                                    <CodeStatement>
+                                      <CodeExpression id="72_world_view_tabLayout"/>
+                                      <StatementProvider type="CodeField">
+                                        <CodeField name="columnWeights" class="java.awt.GridBagLayout"/>
+                                      </StatementProvider>
+                                      <Parameters>
+                                        <CodeExpression id="73">
+                                          <ExpressionOrigin>
+                                            <Value type="[D" editor="org.netbeans.modules.form.layoutsupport.delegates.GridBagLayoutSupport$DoubleArrayPropertyEditor">
+                                              <PropertyValue value="[1.0]"/>
+                                            </Value>
+                                          </ExpressionOrigin>
+                                        </CodeExpression>
+                                      </Parameters>
+                                    </CodeStatement>
+                                    <CodeStatement>
+                                      <CodeExpression id="72_world_view_tabLayout"/>
+                                      <StatementProvider type="CodeField">
+                                        <CodeField name="rowWeights" class="java.awt.GridBagLayout"/>
+                                      </StatementProvider>
+                                      <Parameters>
+                                        <CodeExpression id="74">
+                                          <ExpressionOrigin>
+                                            <Value type="[D" editor="org.netbeans.modules.form.layoutsupport.delegates.GridBagLayoutSupport$DoubleArrayPropertyEditor">
+                                              <PropertyValue value="[10.0, 0.0]"/>
+                                            </Value>
+                                          </ExpressionOrigin>
+                                        </CodeExpression>
+                                      </Parameters>
+                                    </CodeStatement>
+                                    <CodeStatement>
+                                      <CodeExpression id="75_world_view_tab">
+                                        <CodeVariable name="world_view_tab" type="8194" declaredType="javax.swing.JPanel"/>
+                                        <ExpressionOrigin>
+                                          <ExpressionProvider type="ComponentRef">
+                                            <ComponentRef name="world_view_tab"/>
+                                          </ExpressionProvider>
+                                        </ExpressionOrigin>
+                                      </CodeExpression>
+                                      <StatementProvider type="CodeMethod">
+                                        <CodeMethod name="setLayout" class="java.awt.Container" parameterTypes="java.awt.LayoutManager"/>
+                                      </StatementProvider>
+                                      <Parameters>
+                                        <CodeExpression id="72_world_view_tabLayout"/>
+                                      </Parameters>
+                                    </CodeStatement>
+                                    <CodeStatement>
+                                      <CodeExpression id="76_gridBagConstraints">
+                                        <CodeVariable name="gridBagConstraints"/>
+                                        <ExpressionOrigin>
+                                          <ExpressionProvider type="CodeConstructor">
+                                            <CodeConstructor class="java.awt.GridBagConstraints" parameterTypes=""/>
+                                          </ExpressionProvider>
+                                        </ExpressionOrigin>
+                                      </CodeExpression>
+                                      <StatementProvider type="CodeExpression">
+                                        <CodeExpression id="76_gridBagConstraints"/>
+                                      </StatementProvider>
+                                    </CodeStatement>
+                                    <CodeStatement>
+                                      <CodeExpression id="76_gridBagConstraints"/>
+                                      <StatementProvider type="CodeField">
+                                        <CodeField name="gridx" class="java.awt.GridBagConstraints"/>
+                                      </StatementProvider>
+                                      <Parameters>
+                                        <CodeExpression id="77">
+                                          <ExpressionOrigin>
+                                            <Value type="int" value="0"/>
+                                          </ExpressionOrigin>
+                                        </CodeExpression>
+                                      </Parameters>
+                                    </CodeStatement>
+                                    <CodeStatement>
+                                      <CodeExpression id="76_gridBagConstraints"/>
+                                      <StatementProvider type="CodeField">
+                                        <CodeField name="gridy" class="java.awt.GridBagConstraints"/>
+                                      </StatementProvider>
+                                      <Parameters>
+                                        <CodeExpression id="78">
+                                          <ExpressionOrigin>
+                                            <Value type="int" value="0"/>
+                                          </ExpressionOrigin>
+                                        </CodeExpression>
+                                      </Parameters>
+                                    </CodeStatement>
+                                    <CodeStatement>
+                                      <CodeExpression id="76_gridBagConstraints"/>
+                                      <StatementProvider type="CodeField">
+                                        <CodeField name="gridwidth" class="java.awt.GridBagConstraints"/>
+                                      </StatementProvider>
+                                      <Parameters>
+                                        <CodeExpression id="79">
+                                          <ExpressionOrigin>
+                                            <Value type="int" value="0"/>
+                                          </ExpressionOrigin>
+                                        </CodeExpression>
+                                      </Parameters>
+                                    </CodeStatement>
+                                    <CodeStatement>
+                                      <CodeExpression id="76_gridBagConstraints"/>
+                                      <StatementProvider type="CodeField">
+                                        <CodeField name="gridheight" class="java.awt.GridBagConstraints"/>
+                                      </StatementProvider>
+                                      <Parameters>
+                                        <CodeExpression id="80">
+                                          <ExpressionOrigin>
+                                            <Value type="int" value="-1"/>
+                                          </ExpressionOrigin>
+                                        </CodeExpression>
+                                      </Parameters>
+                                    </CodeStatement>
+                                    <CodeStatement>
+                                      <CodeExpression id="76_gridBagConstraints"/>
+                                      <StatementProvider type="CodeField">
+                                        <CodeField name="fill" class="java.awt.GridBagConstraints"/>
+                                      </StatementProvider>
+                                      <Parameters>
+                                        <CodeExpression id="81">
+                                          <ExpressionOrigin>
+                                            <Value type="int" value="1"/>
+                                          </ExpressionOrigin>
+                                        </CodeExpression>
+                                      </Parameters>
+                                    </CodeStatement>
+                                    <CodeStatement>
+                                      <CodeExpression id="76_gridBagConstraints"/>
+                                      <StatementProvider type="CodeField">
+                                        <CodeField name="anchor" class="java.awt.GridBagConstraints"/>
+                                      </StatementProvider>
+                                      <Parameters>
+                                        <CodeExpression id="82">
+                                          <ExpressionOrigin>
+                                            <Value type="int" value="11"/>
+                                          </ExpressionOrigin>
+                                        </CodeExpression>
+                                      </Parameters>
+                                    </CodeStatement>
+                                    <CodeStatement>
+                                      <CodeExpression id="75_world_view_tab"/>
+                                      <StatementProvider type="CodeMethod">
+                                        <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component, java.lang.Object"/>
+                                      </StatementProvider>
+                                      <Parameters>
+                                        <CodeExpression id="83_scenario_canvas">
+                                          <CodeVariable name="scenario_canvas" type="8194" declaredType="edu.ozu.mapp.agent.client.world.ScenarioCanvas"/>
+                                          <ExpressionOrigin>
+                                            <ExpressionProvider type="ComponentRef">
+                                              <ComponentRef name="scenario_canvas"/>
+                                            </ExpressionProvider>
+                                          </ExpressionOrigin>
+                                        </CodeExpression>
+                                        <CodeExpression id="76_gridBagConstraints"/>
+                                      </Parameters>
+                                    </CodeStatement>
+                                    <CodeStatement>
+                                      <CodeExpression id="84_gridBagConstraints">
+                                        <CodeVariable name="gridBagConstraints"/>
+                                        <ExpressionOrigin>
+                                          <ExpressionProvider type="CodeConstructor">
+                                            <CodeConstructor class="java.awt.GridBagConstraints" parameterTypes=""/>
+                                          </ExpressionProvider>
+                                        </ExpressionOrigin>
+                                      </CodeExpression>
+                                      <StatementProvider type="CodeExpression">
+                                        <CodeExpression id="84_gridBagConstraints"/>
+                                      </StatementProvider>
+                                    </CodeStatement>
+                                    <CodeStatement>
+                                      <CodeExpression id="84_gridBagConstraints"/>
+                                      <StatementProvider type="CodeField">
+                                        <CodeField name="gridx" class="java.awt.GridBagConstraints"/>
+                                      </StatementProvider>
+                                      <Parameters>
+                                        <CodeExpression id="85">
+                                          <ExpressionOrigin>
+                                            <Value type="int" value="0"/>
+                                          </ExpressionOrigin>
+                                        </CodeExpression>
+                                      </Parameters>
+                                    </CodeStatement>
+                                    <CodeStatement>
+                                      <CodeExpression id="84_gridBagConstraints"/>
+                                      <StatementProvider type="CodeField">
+                                        <CodeField name="gridy" class="java.awt.GridBagConstraints"/>
+                                      </StatementProvider>
+                                      <Parameters>
+                                        <CodeExpression id="86">
+                                          <ExpressionOrigin>
+                                            <Value type="int" value="1"/>
+                                          </ExpressionOrigin>
+                                        </CodeExpression>
+                                      </Parameters>
+                                    </CodeStatement>
+                                    <CodeStatement>
+                                      <CodeExpression id="84_gridBagConstraints"/>
+                                      <StatementProvider type="CodeField">
+                                        <CodeField name="gridwidth" class="java.awt.GridBagConstraints"/>
+                                      </StatementProvider>
+                                      <Parameters>
+                                        <CodeExpression id="87">
+                                          <ExpressionOrigin>
+                                            <Value type="int" value="0"/>
+                                          </ExpressionOrigin>
+                                        </CodeExpression>
+                                      </Parameters>
+                                    </CodeStatement>
+                                    <CodeStatement>
+                                      <CodeExpression id="84_gridBagConstraints"/>
+                                      <StatementProvider type="CodeField">
+                                        <CodeField name="gridheight" class="java.awt.GridBagConstraints"/>
+                                      </StatementProvider>
+                                      <Parameters>
+                                        <CodeExpression id="88">
+                                          <ExpressionOrigin>
+                                            <Value type="int" value="-1"/>
+                                          </ExpressionOrigin>
+                                        </CodeExpression>
+                                      </Parameters>
+                                    </CodeStatement>
+                                    <CodeStatement>
+                                      <CodeExpression id="84_gridBagConstraints"/>
+                                      <StatementProvider type="CodeField">
+                                        <CodeField name="fill" class="java.awt.GridBagConstraints"/>
+                                      </StatementProvider>
+                                      <Parameters>
+                                        <CodeExpression id="89">
+                                          <ExpressionOrigin>
+                                            <Value type="int" value="2"/>
+                                          </ExpressionOrigin>
+                                        </CodeExpression>
+                                      </Parameters>
+                                    </CodeStatement>
+                                    <CodeStatement>
+                                      <CodeExpression id="84_gridBagConstraints"/>
+                                      <StatementProvider type="CodeField">
+                                        <CodeField name="anchor" class="java.awt.GridBagConstraints"/>
+                                      </StatementProvider>
+                                      <Parameters>
+                                        <CodeExpression id="90">
+                                          <ExpressionOrigin>
+                                            <Value type="int" value="15"/>
+                                          </ExpressionOrigin>
+                                        </CodeExpression>
+                                      </Parameters>
+                                    </CodeStatement>
+                                    <CodeStatement>
+                                      <CodeExpression id="75_world_view_tab"/>
+                                      <StatementProvider type="CodeMethod">
+                                        <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component, java.lang.Object"/>
+                                      </StatementProvider>
+                                      <Parameters>
+                                        <CodeExpression id="91_world_controls">
+                                          <CodeVariable name="world_controls" type="20480" declaredType="javax.swing.JPanel"/>
+                                          <ExpressionOrigin>
+                                            <ExpressionProvider type="ComponentRef">
+                                              <ComponentRef name="world_controls"/>
+                                            </ExpressionProvider>
+                                          </ExpressionOrigin>
+                                        </CodeExpression>
+                                        <CodeExpression id="84_gridBagConstraints"/>
+                                      </Parameters>
+                                    </CodeStatement>
+                                  </LayoutCode>
                                 </Container>
-                                <Container class="javax.swing.JPanel" name="jPanel2">
-                                  <AuxValues>
-                                    <AuxValue name="JavaCodeGenerator_VariableLocal" type="java.lang.Boolean" value="true"/>
-                                    <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="0"/>
-                                  </AuxValues>
+                              </SubComponents>
+                            </Container>
+                            <Container class="javax.swing.JTabbedPane" name="world_history_tab_container">
+                              <AccessibilityProperties>
+                                <Property name="AccessibleContext.accessibleName" type="java.lang.String" value=""/>
+                              </AccessibilityProperties>
+                              <AuxValues>
+                                <AuxValue name="JavaCodeGenerator_VariableLocal" type="java.lang.Boolean" value="true"/>
+                                <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="0"/>
+                              </AuxValues>
+                              <Constraints>
+                                <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JSplitPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JSplitPaneSupportLayout$JSplitPaneConstraintsDescription">
+                                  <JSplitPaneConstraints position="bottom"/>
+                                </Constraint>
+                              </Constraints>
+
+                              <Layout class="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout"/>
+                              <SubComponents>
+                                <Container class="javax.swing.JPanel" name="world_history_tab">
+                                  <Properties>
+                                    <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                                      <Dimension value="[100, 50]"/>
+                                    </Property>
+                                  </Properties>
                                   <Constraints>
-                                    <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout" value="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout$BorderConstraintsDescription">
-                                      <BorderConstraints direction="East"/>
+                                    <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
+                                      <JTabbedPaneConstraints tabName="World History">
+                                        <Property name="tabTitle" type="java.lang.String" value="World History"/>
+                                      </JTabbedPaneConstraints>
                                     </Constraint>
                                   </Constraints>
 
                                   <Layout class="org.netbeans.modules.form.compat2.layouts.DesignFlowLayout"/>
-                                  <SubComponents>
-                                    <Component class="javax.swing.JLabel" name="label_current_state">
-                                      <Properties>
-                                        <Property name="text" type="java.lang.String" value="-current-state-"/>
-                                      </Properties>
-                                    </Component>
-                                    <Component class="javax.swing.JButton" name="btn_next_state">
-                                      <Properties>
-                                        <Property name="text" type="java.lang.String" value="Next State"/>
-                                      </Properties>
-                                      <Events>
-                                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btn_next_stateActionPerformed"/>
-                                      </Events>
-                                    </Component>
-                                  </SubComponents>
                                 </Container>
                               </SubComponents>
                             </Container>
                           </SubComponents>
-                          <LayoutCode>
-                            <CodeStatement>
-                              <CodeExpression id="72_world_view_tabLayout">
-                                <CodeVariable name="world_view_tabLayout" type="4096" declaredType="java.awt.GridBagLayout"/>
-                                <ExpressionOrigin>
-                                  <ExpressionProvider type="CodeConstructor">
-                                    <CodeConstructor class="java.awt.GridBagLayout" parameterTypes=""/>
-                                  </ExpressionProvider>
-                                </ExpressionOrigin>
-                              </CodeExpression>
-                              <StatementProvider type="CodeExpression">
-                                <CodeExpression id="72_world_view_tabLayout"/>
-                              </StatementProvider>
-                            </CodeStatement>
-                            <CodeStatement>
-                              <CodeExpression id="72_world_view_tabLayout"/>
-                              <StatementProvider type="CodeField">
-                                <CodeField name="columnWeights" class="java.awt.GridBagLayout"/>
-                              </StatementProvider>
-                              <Parameters>
-                                <CodeExpression id="73">
-                                  <ExpressionOrigin>
-                                    <Value type="[D" editor="org.netbeans.modules.form.layoutsupport.delegates.GridBagLayoutSupport$DoubleArrayPropertyEditor">
-                                      <PropertyValue value="[1.0]"/>
-                                    </Value>
-                                  </ExpressionOrigin>
-                                </CodeExpression>
-                              </Parameters>
-                            </CodeStatement>
-                            <CodeStatement>
-                              <CodeExpression id="72_world_view_tabLayout"/>
-                              <StatementProvider type="CodeField">
-                                <CodeField name="rowWeights" class="java.awt.GridBagLayout"/>
-                              </StatementProvider>
-                              <Parameters>
-                                <CodeExpression id="74">
-                                  <ExpressionOrigin>
-                                    <Value type="[D" editor="org.netbeans.modules.form.layoutsupport.delegates.GridBagLayoutSupport$DoubleArrayPropertyEditor">
-                                      <PropertyValue value="[10.0, 0.0]"/>
-                                    </Value>
-                                  </ExpressionOrigin>
-                                </CodeExpression>
-                              </Parameters>
-                            </CodeStatement>
-                            <CodeStatement>
-                              <CodeExpression id="75_world_view_tab">
-                                <CodeVariable name="world_view_tab" type="8194" declaredType="javax.swing.JPanel"/>
-                                <ExpressionOrigin>
-                                  <ExpressionProvider type="ComponentRef">
-                                    <ComponentRef name="world_view_tab"/>
-                                  </ExpressionProvider>
-                                </ExpressionOrigin>
-                              </CodeExpression>
-                              <StatementProvider type="CodeMethod">
-                                <CodeMethod name="setLayout" class="java.awt.Container" parameterTypes="java.awt.LayoutManager"/>
-                              </StatementProvider>
-                              <Parameters>
-                                <CodeExpression id="72_world_view_tabLayout"/>
-                              </Parameters>
-                            </CodeStatement>
-                            <CodeStatement>
-                              <CodeExpression id="76_gridBagConstraints">
-                                <CodeVariable name="gridBagConstraints"/>
-                                <ExpressionOrigin>
-                                  <ExpressionProvider type="CodeConstructor">
-                                    <CodeConstructor class="java.awt.GridBagConstraints" parameterTypes=""/>
-                                  </ExpressionProvider>
-                                </ExpressionOrigin>
-                              </CodeExpression>
-                              <StatementProvider type="CodeExpression">
-                                <CodeExpression id="76_gridBagConstraints"/>
-                              </StatementProvider>
-                            </CodeStatement>
-                            <CodeStatement>
-                              <CodeExpression id="76_gridBagConstraints"/>
-                              <StatementProvider type="CodeField">
-                                <CodeField name="gridx" class="java.awt.GridBagConstraints"/>
-                              </StatementProvider>
-                              <Parameters>
-                                <CodeExpression id="77">
-                                  <ExpressionOrigin>
-                                    <Value type="int" value="0"/>
-                                  </ExpressionOrigin>
-                                </CodeExpression>
-                              </Parameters>
-                            </CodeStatement>
-                            <CodeStatement>
-                              <CodeExpression id="76_gridBagConstraints"/>
-                              <StatementProvider type="CodeField">
-                                <CodeField name="gridy" class="java.awt.GridBagConstraints"/>
-                              </StatementProvider>
-                              <Parameters>
-                                <CodeExpression id="78">
-                                  <ExpressionOrigin>
-                                    <Value type="int" value="0"/>
-                                  </ExpressionOrigin>
-                                </CodeExpression>
-                              </Parameters>
-                            </CodeStatement>
-                            <CodeStatement>
-                              <CodeExpression id="76_gridBagConstraints"/>
-                              <StatementProvider type="CodeField">
-                                <CodeField name="gridwidth" class="java.awt.GridBagConstraints"/>
-                              </StatementProvider>
-                              <Parameters>
-                                <CodeExpression id="79">
-                                  <ExpressionOrigin>
-                                    <Value type="int" value="0"/>
-                                  </ExpressionOrigin>
-                                </CodeExpression>
-                              </Parameters>
-                            </CodeStatement>
-                            <CodeStatement>
-                              <CodeExpression id="76_gridBagConstraints"/>
-                              <StatementProvider type="CodeField">
-                                <CodeField name="gridheight" class="java.awt.GridBagConstraints"/>
-                              </StatementProvider>
-                              <Parameters>
-                                <CodeExpression id="80">
-                                  <ExpressionOrigin>
-                                    <Value type="int" value="-1"/>
-                                  </ExpressionOrigin>
-                                </CodeExpression>
-                              </Parameters>
-                            </CodeStatement>
-                            <CodeStatement>
-                              <CodeExpression id="76_gridBagConstraints"/>
-                              <StatementProvider type="CodeField">
-                                <CodeField name="fill" class="java.awt.GridBagConstraints"/>
-                              </StatementProvider>
-                              <Parameters>
-                                <CodeExpression id="81">
-                                  <ExpressionOrigin>
-                                    <Value type="int" value="1"/>
-                                  </ExpressionOrigin>
-                                </CodeExpression>
-                              </Parameters>
-                            </CodeStatement>
-                            <CodeStatement>
-                              <CodeExpression id="76_gridBagConstraints"/>
-                              <StatementProvider type="CodeField">
-                                <CodeField name="anchor" class="java.awt.GridBagConstraints"/>
-                              </StatementProvider>
-                              <Parameters>
-                                <CodeExpression id="82">
-                                  <ExpressionOrigin>
-                                    <Value type="int" value="11"/>
-                                  </ExpressionOrigin>
-                                </CodeExpression>
-                              </Parameters>
-                            </CodeStatement>
-                            <CodeStatement>
-                              <CodeExpression id="75_world_view_tab"/>
-                              <StatementProvider type="CodeMethod">
-                                <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component, java.lang.Object"/>
-                              </StatementProvider>
-                              <Parameters>
-                                <CodeExpression id="83_scenario_canvas">
-                                  <CodeVariable name="scenario_canvas" type="8194" declaredType="edu.ozu.mapp.agent.client.world.ScenarioCanvas"/>
-                                  <ExpressionOrigin>
-                                    <ExpressionProvider type="ComponentRef">
-                                      <ComponentRef name="scenario_canvas"/>
-                                    </ExpressionProvider>
-                                  </ExpressionOrigin>
-                                </CodeExpression>
-                                <CodeExpression id="76_gridBagConstraints"/>
-                              </Parameters>
-                            </CodeStatement>
-                            <CodeStatement>
-                              <CodeExpression id="84_gridBagConstraints">
-                                <CodeVariable name="gridBagConstraints"/>
-                                <ExpressionOrigin>
-                                  <ExpressionProvider type="CodeConstructor">
-                                    <CodeConstructor class="java.awt.GridBagConstraints" parameterTypes=""/>
-                                  </ExpressionProvider>
-                                </ExpressionOrigin>
-                              </CodeExpression>
-                              <StatementProvider type="CodeExpression">
-                                <CodeExpression id="84_gridBagConstraints"/>
-                              </StatementProvider>
-                            </CodeStatement>
-                            <CodeStatement>
-                              <CodeExpression id="84_gridBagConstraints"/>
-                              <StatementProvider type="CodeField">
-                                <CodeField name="gridx" class="java.awt.GridBagConstraints"/>
-                              </StatementProvider>
-                              <Parameters>
-                                <CodeExpression id="85">
-                                  <ExpressionOrigin>
-                                    <Value type="int" value="0"/>
-                                  </ExpressionOrigin>
-                                </CodeExpression>
-                              </Parameters>
-                            </CodeStatement>
-                            <CodeStatement>
-                              <CodeExpression id="84_gridBagConstraints"/>
-                              <StatementProvider type="CodeField">
-                                <CodeField name="gridy" class="java.awt.GridBagConstraints"/>
-                              </StatementProvider>
-                              <Parameters>
-                                <CodeExpression id="86">
-                                  <ExpressionOrigin>
-                                    <Value type="int" value="1"/>
-                                  </ExpressionOrigin>
-                                </CodeExpression>
-                              </Parameters>
-                            </CodeStatement>
-                            <CodeStatement>
-                              <CodeExpression id="84_gridBagConstraints"/>
-                              <StatementProvider type="CodeField">
-                                <CodeField name="gridwidth" class="java.awt.GridBagConstraints"/>
-                              </StatementProvider>
-                              <Parameters>
-                                <CodeExpression id="87">
-                                  <ExpressionOrigin>
-                                    <Value type="int" value="0"/>
-                                  </ExpressionOrigin>
-                                </CodeExpression>
-                              </Parameters>
-                            </CodeStatement>
-                            <CodeStatement>
-                              <CodeExpression id="84_gridBagConstraints"/>
-                              <StatementProvider type="CodeField">
-                                <CodeField name="gridheight" class="java.awt.GridBagConstraints"/>
-                              </StatementProvider>
-                              <Parameters>
-                                <CodeExpression id="88">
-                                  <ExpressionOrigin>
-                                    <Value type="int" value="-1"/>
-                                  </ExpressionOrigin>
-                                </CodeExpression>
-                              </Parameters>
-                            </CodeStatement>
-                            <CodeStatement>
-                              <CodeExpression id="84_gridBagConstraints"/>
-                              <StatementProvider type="CodeField">
-                                <CodeField name="fill" class="java.awt.GridBagConstraints"/>
-                              </StatementProvider>
-                              <Parameters>
-                                <CodeExpression id="89">
-                                  <ExpressionOrigin>
-                                    <Value type="int" value="2"/>
-                                  </ExpressionOrigin>
-                                </CodeExpression>
-                              </Parameters>
-                            </CodeStatement>
-                            <CodeStatement>
-                              <CodeExpression id="84_gridBagConstraints"/>
-                              <StatementProvider type="CodeField">
-                                <CodeField name="anchor" class="java.awt.GridBagConstraints"/>
-                              </StatementProvider>
-                              <Parameters>
-                                <CodeExpression id="90">
-                                  <ExpressionOrigin>
-                                    <Value type="int" value="15"/>
-                                  </ExpressionOrigin>
-                                </CodeExpression>
-                              </Parameters>
-                            </CodeStatement>
-                            <CodeStatement>
-                              <CodeExpression id="75_world_view_tab"/>
-                              <StatementProvider type="CodeMethod">
-                                <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component, java.lang.Object"/>
-                              </StatementProvider>
-                              <Parameters>
-                                <CodeExpression id="91_world_controls">
-                                  <CodeVariable name="world_controls" type="20480" declaredType="javax.swing.JPanel"/>
-                                  <ExpressionOrigin>
-                                    <ExpressionProvider type="ComponentRef">
-                                      <ComponentRef name="world_controls"/>
-                                    </ExpressionProvider>
-                                  </ExpressionOrigin>
-                                </CodeExpression>
-                                <CodeExpression id="84_gridBagConstraints"/>
-                              </Parameters>
-                            </CodeStatement>
-                          </LayoutCode>
                         </Container>
                       </SubComponents>
                     </Container>
