@@ -7,6 +7,7 @@ import edu.ozu.mapp.agent.client.helpers.ConflictInfo;
 import edu.ozu.mapp.agent.client.helpers.FileLogger;
 import edu.ozu.mapp.agent.client.models.Contract;
 import edu.ozu.mapp.dataTypes.Constraint;
+import edu.ozu.mapp.dataTypes.ReturnType;
 import edu.ozu.mapp.system.DATA_REQUEST_PAYLOAD_WORLD_JOIN;
 import edu.ozu.mapp.system.DATA_REQUEST_PAYLOAD_WORLD_MOVE;
 import edu.ozu.mapp.utils.*;
@@ -14,6 +15,8 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.util.Assert;
 
 import java.util.*;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -115,7 +118,10 @@ public class AgentHandler {
      * @param watch: JSONWorldWatch
      */
     private int[] state_flag = new int[2];
+    private final Lock handle_state_run_once_at_a_time_lock = new ReentrantLock();
     private void handleState(JSONWorldWatch watch) {
+        if (!handle_state_run_once_at_a_time_lock.tryLock()) return;
+
         switch (watch.world_state) {
             case 0: // join
                 state_flag = new int[]{0, 0};
@@ -126,7 +132,6 @@ public class AgentHandler {
                     fov = watch.fov;
 
                     collision_check(watch);
-                    state_flag[0] = 1;
                     state_flag[1] = watch.time_tick;
                 }
                 break;
@@ -154,22 +159,38 @@ public class AgentHandler {
                 logger.error("«unhandled world state:" + watch.world_state + "»");
                 break;
         }
+
+        // there are no async calls in this function
+        // it is safe to unlock at the end of the function
+        handle_state_run_once_at_a_time_lock.unlock();
     }
 
     private void collision_check(JSONWorldWatch data)
     {
         if (is_moving == 0) return;
 
-        String[] agent_ids = getCollidingAgents(data.fov);
-        if (agent_ids.length > 1)
-        {   // my path collides with one of broadcasted paths!
-            logger.debug(getAgentName() + " | notify negotiation > " + Arrays.toString(agent_ids));
+        ReturnType result = getCollidingAgents(data.fov);
+        switch (result.type) {
+            case COLLISION:
+                // There is a collision in path! Resolve this first
+                logger.debug(getAgentName() + " | notify negotiation > " + Arrays.toString(result.agent_ids));
+                state_flag[0] = 1;
+                WORLD_HANDLER_COLLISION_CHECK_DONE.accept(getAgentName(), result.agent_ids);
+                break;
+            case OBSTACLE:
+                // There is an obstacle in the path! Update route according to constraints
+                logger.debug(getAgentName() + " | found obstacle");
+                // Re-calculate path starting from here on out
+                agent.path = update_agent_path_from_pos_to_dest();
+                break;
+            case NONE:
+            default:
+                state_flag[0] = 1;
+                WORLD_HANDLER_COLLISION_CHECK_DONE.accept(getAgentName(), new String[]{agent.AGENT_ID});
         }
-
-        WORLD_HANDLER_COLLISION_CHECK_DONE.accept(getAgentName(), agent_ids);
     }
 
-    private String[] getCollidingAgents(String[][] data)
+    private ReturnType getCollidingAgents(String[][] data)
     {
         List<String[]> broadcasts = Arrays.stream(data).sorted().collect(Collectors.toList());
         Set<String> agent_ids = new HashSet<>();
@@ -181,6 +202,16 @@ public class AgentHandler {
             if (broadcast[2].equals("-"))
             { // own data
                 continue;
+            }
+
+            if (broadcast[2].equals("inf"))
+            {   // OBSTACLE IN FoV
+                if (Arrays.asList(own_path).contains(broadcast[1]))
+                {   // OBSTACLE IS IN WAY
+                    agent.constraints.add(new Constraint(new Point(broadcast[1], "-")));
+
+                    return new ReturnType(ReturnType.Type.OBSTACLE);
+                }
             }
 
             String[] path = broadcast[2].replaceAll("[\\[\\]]", "").split(",");
@@ -199,12 +230,15 @@ public class AgentHandler {
 
                 logger.info("found " + conflict_info.type + " at " + conflict_location + " | " + Arrays.toString(broadcast));
 
-                return agent_ids.toArray(new String[0]);
+                ReturnType ret = new ReturnType(ReturnType.Type.COLLISION);
+                ret.agent_ids = agent_ids.toArray(new String[0]);
+
+                return ret;
             }
         }
 
         conflict_location = "";
-        return agent_ids.toArray(new String[0]);
+        return new ReturnType();
     }
 
     private void negotiate()
@@ -492,18 +526,6 @@ public class AgentHandler {
     @NotNull
     private List<String> update_agent_path_from_pos_to_dest() {
         logger.debug(String.format("%s | current location : %s", agent.AGENT_ID, agent.POS));
-
-        // create constraints
-        // Add Ox as constraint
-        HashMap<String, ArrayList<String>> constraints = new HashMap<>();
-        for (Constraint constraint : agent.constraints) {
-            ArrayList<String> c = constraints.getOrDefault(constraint.location.key, new ArrayList<>());
-            c.add(String.valueOf(constraint.at_t));
-            constraints.put(constraint.location.key, c);
-        logger.debug(String.format("%s | ADDED CONSTRAINT %s", agent.AGENT_ID, constraint));
-        }
-
-        List<String> rest = agent.calculatePath(agent.POS, agent.DEST, constraints);
 
         List<String> path_next = new ArrayList<>();
         // add path up until now
