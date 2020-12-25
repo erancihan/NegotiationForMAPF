@@ -196,7 +196,8 @@ public class AgentHandler {
 
     private ReturnType getCollidingAgents(String[][] data)
     {
-        List<String[]> broadcasts = Arrays.stream(data).sorted().collect(Collectors.toList());
+        Arrays.sort(data, Comparator.comparing(a -> a[0]));
+        List<String[]> broadcasts = Arrays.stream(data).collect(Collectors.toList());
         Set<String> agent_ids = new HashSet<>();
         String[] own_path = agent.GetOwnBroadcastPath();
 
