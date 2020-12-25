@@ -444,6 +444,8 @@ public class AgentHandler {
 
         agent.path = new_path;
         logger.debug(String.format("%s | PATH AFTER  %s", agent.AGENT_ID, agent.path));
+
+        WORLD_OVERSEER_HOOK_UPDATE_BROADCAST.accept(agent.AGENT_ID, agent.GetOwnBroadcastPath());
     }
 
     @NotNull
