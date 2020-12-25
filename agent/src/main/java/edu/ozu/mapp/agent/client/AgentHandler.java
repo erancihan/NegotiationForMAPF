@@ -415,10 +415,10 @@ public class AgentHandler {
         logger.debug(String.format("%s | WON | %s", agent.AGENT_ID, contract.print()));
         logger.debug(String.format("%s | current location : %s", agent.AGENT_ID, agent.POS));
 
-        String[] Ox = contract.Ox.replaceAll("([\\[\\]]*)", "").split(",");
+        Point[] Ox = contract.GetOx();
 
         logger.debug(String.format("%s | ASSERT POS{%s} == Ox[0]{%s}", agent.AGENT_ID, agent.POS.key, Ox[0]));
-        Assert.isTrue(agent.POS.equals(new Point(Ox[0].split("-"))), "");
+        Assert.isTrue(agent.POS.equals(Ox[0]), "inconsistent bid location");
 
         logger.debug(String.format("%s | ACCEPTED PATH %s", agent.AGENT_ID, Arrays.toString(Ox)));
 
@@ -436,7 +436,7 @@ public class AgentHandler {
         // add Ox
         for (int idx = 0; idx < Ox.length; idx++)
         {
-            path_next.add(Ox[idx]);
+            path_next.add(Ox[idx].key);
         }
         // calculate path from last to destination
         // i do not have to worry about opponent's path since i won
@@ -469,8 +469,6 @@ public class AgentHandler {
         // LOSE condition
         logger.debug(String.format("%s | LOST | %s", agent.AGENT_ID, contract.print()));
         logger.debug(String.format("%s | current location : %s", agent.AGENT_ID, agent.POS));
-
-        String[] Ox = contract.Ox.replaceAll("([\\[\\]]*)", "").split(",");
 
         // create constraints
         // Add Ox as constraint
