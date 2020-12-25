@@ -1,8 +1,10 @@
 package edu.ozu.mapp.agent.client.models;
 
 import edu.ozu.mapp.agent.Agent;
+import edu.ozu.mapp.utils.Point;
 import org.springframework.util.Assert;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -119,6 +121,15 @@ public class Contract implements Cloneable {
             return Integer.parseInt(offers.get(agent.current_opponent));
         }
         return -1;
+    }
+
+    public Point[] GetOx()
+    {
+        return Arrays
+                .stream(Ox.replaceAll("([\\[\\]]*)", "").split(","))
+                .map(item -> new Point(item.trim(), "-"))
+                .toArray(Point[]::new)
+                ;
     }
 
     @Override
