@@ -3,6 +3,7 @@ package mappagent.sample;
 import edu.ozu.mapp.agent.Agent;
 import edu.ozu.mapp.agent.MAPPAgent;
 import edu.ozu.mapp.agent.client.AgentClient;
+import edu.ozu.mapp.agent.client.models.Contract;
 import edu.ozu.mapp.utils.*;
 
 import java.util.ArrayList;
@@ -31,7 +32,7 @@ public class HelloAgent extends Agent
     }
 
     @Override
-    public Action onMakeAction(String session_id)
+    public Action onMakeAction(Contract contract)
     {
 
         String[][] fov = GetFieldOfView();
@@ -50,7 +51,7 @@ public class HelloAgent extends Agent
             }
         }
 
-        List<String> path = AStar.calculateWithConstraints(POS, DEST, constraints.toArray(new String[0][3]));
+        List<String> path = new AStar().calculate(POS, DEST, constraints.toArray(new String[0][3]), this.dimensions, time);
         String[] bid = new String[5];
         for (int i = 0; i < bid.length; i++) {
             bid[i] = path.get(i);

@@ -5,18 +5,14 @@ import edu.ozu.mapp.agent.MAPPAgent;
 import edu.ozu.mapp.agent.client.AgentClient;
 import edu.ozu.mapp.agent.client.models.Contract;
 import edu.ozu.mapp.utils.*;
-import org.springframework.util.Assert;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @SuppressWarnings("Duplicates")
 @MAPPAgent
 public class Conceder extends Agent {
-    private String current_opponent;
     private List<Bid> bid_space = new ArrayList<>();
     private Iterator<Bid> bid_space_iterator;
 
@@ -47,30 +43,20 @@ public class Conceder extends Agent {
         bid_space_iterator = bid_space.iterator();
 //        System.out.println(Arrays.toString(bid_space.toArray(new Bid[0])));
 //        System.exit(1);
-
-        // since this is a Bi-lateral negotiation, there should be only
-        // two participant in the negotiation
-        Assert.isTrue(state.agents.length == 2, "There are more agents than expected");
-
-        // filter matching out
-        current_opponent = Arrays.stream(state.agents).filter(a -> !a.equals(AGENT_ID)).collect(Collectors.toList()).get(0);
     }
 
     @Override
-    public Action onMakeAction(String negotiation_session_id)
+    public Action onMakeAction(Contract contract)
     {
-        System.out.println(AGENT_ID + " OnMakeAction " + negotiation_session_id);
-
         int current_tokens = GetCurrentTokens();
-
-        System.out.println(AGENT_ID + " {token:"+current_tokens+",opponent:"+current_opponent+"}");
 
         // get opponent's bid
         Contract last_opponent_bid = history.GetLastOpponentBid(current_opponent);
-        Contract own_last_bid = history.GetLastOwnBid();
+        Contract last_own_bid = history.GetLastOwnBid();
 
-        if (last_opponent_bid == null)
+        if (contract.Ox.isEmpty())
         {
+            // contract is empty
             // I am the one doing the first bid of negotiation
             // propose current path by default, as it is the
             // current best possible bid
@@ -83,26 +69,28 @@ public class Conceder extends Agent {
             return new Action(this, ActionType.ACCEPT);
         }
 
-        if (own_last_bid == null)
-        {   // I haven't made an offer before
-            String[] path_to_bid = GetOwnBroadcastPath();
-            return new Action(this, ActionType.OFFER, path_to_bid);
-        }
-
-        System.out.println(AGENT_ID + " last opponent contract " + last_opponent_bid);
-        System.out.println(AGENT_ID + " own last contract      " + own_last_bid);
-        System.out.println(AGENT_ID + " current tokens         " + current_tokens);
-
         // opponent has bid
         // check if it is viable for us
-        Path opponent_path = new Path(last_opponent_bid.Ox);
-        Path own_last_path = new Path(own_last_bid.Ox);
+        Path opponent_path;
+        if (last_opponent_bid == null)
+            opponent_path = GetOpponentCurrentlyBroadcastedPath();
+        else
+            opponent_path = new Path(last_opponent_bid.Ox);
 
-        if (own_last_path.isEmpty())
+        Path own_last_path;
+        if (last_own_bid == null)
             own_last_path = new Path(GetOwnBroadcastPath());
+        else
+            own_last_path = new Path(last_own_bid.Ox);
 
         if (opponent_path.HasConflictWith(own_last_path))
-        {   // then propose the next possible option from
+        {   // opponent said they will take a path that conflicts with own
+            // are they insisting on it?
+            int opponent_offered_tokens =  contract.GetOpponentTokenProposal(this);
+            if (opponent_offered_tokens > 0)
+                return new Action(this, ActionType.ACCEPT);
+
+            // then propose the next possible option from
             if (bid_space_iterator.hasNext()) {
                 Bid bid = bid_space_iterator.next();
                 return new Action(this, ActionType.OFFER, bid);

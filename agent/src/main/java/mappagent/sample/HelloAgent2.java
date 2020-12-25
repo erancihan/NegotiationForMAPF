@@ -4,6 +4,7 @@ import edu.ozu.mapp.agent.Agent;
 import edu.ozu.mapp.agent.MAPPAgent;
 import edu.ozu.mapp.agent.client.AgentClient;
 import edu.ozu.mapp.agent.client.helpers.WorldHandler;
+import edu.ozu.mapp.agent.client.models.Contract;
 import edu.ozu.mapp.utils.*;
 
 import java.util.ArrayList;
@@ -31,7 +32,7 @@ public class HelloAgent2 extends Agent
     private int count = 0;
 
     @Override
-    public Action onMakeAction(String session_id)
+    public Action onMakeAction(Contract contract)
     {
         if (count++ >= 2)
             return new Action(this, ActionType.ACCEPT);
@@ -51,7 +52,7 @@ public class HelloAgent2 extends Agent
             }
         }
 
-        List<String> path = AStar.calculateWithConstraints(POS, DEST, constraints.toArray(new String[0][3]));
+        List<String> path = new AStar().calculate(POS, DEST, constraints.toArray(new String[0][3]), this.dimensions, this.time);
         String[] bid = new String[5];
         for (int i = 0; i < bid.length; i++) {
             bid[i] = path.get(i);
