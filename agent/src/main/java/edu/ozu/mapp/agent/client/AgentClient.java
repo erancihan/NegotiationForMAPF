@@ -139,6 +139,16 @@ public class AgentClient {
         handler.SetNegotiatedCallback(callback);
     }
 
+    public void VerifyNegotiations()
+    {
+        handler.VerifyNegotiations();
+    }
+
+    public void SetVerifyNegotiationsCallback(BiConsumer<String, Boolean> verify_negotiations_callback)
+    {
+        handler.SET_WORLD_OVERSEER_VERIFY_NEGOTIATIONS_CALLBACK(verify_negotiations_callback);
+    }
+
     public void SetMoveCallback(BiConsumer<AgentHandler, DATA_REQUEST_PAYLOAD_WORLD_MOVE> callback)
     {
         handler.SetMoveCallback(callback);

@@ -10,6 +10,7 @@ import edu.ozu.mapp.dataTypes.Constraint;
 import edu.ozu.mapp.dataTypes.ReturnType;
 import edu.ozu.mapp.system.DATA_REQUEST_PAYLOAD_WORLD_JOIN;
 import edu.ozu.mapp.system.DATA_REQUEST_PAYLOAD_WORLD_MOVE;
+import edu.ozu.mapp.system.WorldOverseer;
 import edu.ozu.mapp.utils.*;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.util.Assert;
@@ -41,6 +42,7 @@ public class AgentHandler {
     private Function<String, String[]>                          WORLD_HANDLER_GET_NEGOTIATION_SESSIONS;
     private BiConsumer<String, AgentHandler>                    WORLD_OVERSEER_JOIN_NEGOTIATION_SESSION;
     private BiConsumer<String, String>                          WORLD_OVERSEER_NEGOTIATED;
+    private BiConsumer<String, Boolean>                         WORLD_OVERSEER_CALLBACK_VERIFY_NEGOTIATIONS;
     private BiConsumer<AgentHandler, DATA_REQUEST_PAYLOAD_WORLD_MOVE> WORLD_OVERSEER_MOVE;
     private Consumer<AgentHandler>                              WORLD_OVERSEER_HOOK_LEAVE;
     private BiConsumer<String, String[]>                        WORLD_OVERSEER_HOOK_UPDATE_BROADCAST;
@@ -132,7 +134,7 @@ public class AgentHandler {
                 {
                     fov = watch.fov;
 
-                    collision_check(watch);
+                    collision_check(watch.fov);
                     state_flag[1] = watch.time_tick;
                 }
                 break;
@@ -166,18 +168,33 @@ public class AgentHandler {
         handle_state_run_once_at_a_time_lock.unlock();
     }
 
-    private void collision_check(JSONWorldWatch data)
+    /**
+     * Collision Check function.
+     *
+     * Returns <code>true</code> if collision check result is safe.
+     *
+     * @return is_ok
+     * */
+    private boolean collision_check(String[][] fov_data)
     {
-        if (is_moving == 0) return;
+        if (is_moving == 0) return true;
 
-        ReturnType result = getCollidingAgents(data.fov);
+        ReturnType result = getCollidingAgents(fov_data);
         switch (result.type) {
             case COLLISION:
                 // There is a collision in path! Resolve this first
                 logger.debug(agent.AGENT_ID + " | notify negotiation > " + Arrays.toString(result.agent_ids));
+                /* Collision check step is done update state
+                 *  flag to 1 (collision check/broadcast) to
+                 *  indicate the current state.
+                 * If current state is 1, it will not run again.
+                 * If current state is 2, setting state flag to 1
+                 *  will make negotiate state run again.
+                 *  */
                 state_flag[0] = 1;
                 WORLD_HANDLER_COLLISION_CHECK_DONE.accept(agent.AGENT_ID, result.agent_ids);
-                break;
+
+                return false;
             case OBSTACLE:
                 // TODO LOG OBSTACLE UPDATE
                 // There is an obstacle in the path! Update route according to constraints
@@ -186,11 +203,14 @@ public class AgentHandler {
                 agent.path = update_agent_path_from_pos_to_dest();
                 // I have updated my path, make broadcast
                 WORLD_OVERSEER_HOOK_UPDATE_BROADCAST.accept(agent.AGENT_ID, agent.GetOwnBroadcastPath());
-                break;
+
+                return false;
             case NONE:
             default:
                 state_flag[0] = 1;
                 WORLD_HANDLER_COLLISION_CHECK_DONE.accept(agent.AGENT_ID, new String[]{agent.AGENT_ID});
+
+                return true;
         }
     }
 
@@ -565,6 +585,20 @@ public class AgentHandler {
         }
     }
 
+    private final Lock agent_handler_verify_negotiations_lock = new ReentrantLock();
+    public void VerifyNegotiations()
+    {
+        if (!agent_handler_verify_negotiations_lock.tryLock()) return;
+
+        // verify path is conflict free at the moment
+        String[][] fov_data = WorldOverseer.getInstance().GetFoV(agent.AGENT_ID);
+        boolean is_ok = collision_check(fov_data);
+
+        WORLD_OVERSEER_CALLBACK_VERIFY_NEGOTIATIONS.accept(agent.AGENT_ID, is_ok);
+
+        agent_handler_verify_negotiations_lock.unlock();
+    }
+
     public void LogNegotiationOver(String bidding_agent, String session_id)
     {
         // todo it should be possible to merge this function with another
@@ -647,5 +681,10 @@ public class AgentHandler {
     public void SET_WORLD_OVERSEER_HOOK_UPDATE_BROADCAST(BiConsumer<String, String[]> update_broadcast_hook)
     {
         WORLD_OVERSEER_HOOK_UPDATE_BROADCAST = update_broadcast_hook;
+    }
+
+    public void SET_WORLD_OVERSEER_VERIFY_NEGOTIATIONS_CALLBACK(BiConsumer<String, Boolean> verify_negotiations_callback)
+    {
+        WORLD_OVERSEER_CALLBACK_VERIFY_NEGOTIATIONS = verify_negotiations_callback;
     }
 }
