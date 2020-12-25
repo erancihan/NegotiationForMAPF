@@ -126,6 +126,12 @@ public abstract class Agent {
             c.add(wc[1]);
             constraints.put(wc[0], c);
         }
+        for (Constraint constraint : this.constraints) {
+            ArrayList<String> c = constraints.getOrDefault(constraint.location.key, new ArrayList<>());
+            if (constraint.at_t >= 0) c.add(String.valueOf(constraint.at_t));
+            else c.add("inf");
+            constraints.put(constraint.location.key, c);
+        }
 
         return new AStar().calculate(start, dest, constraints, dimensions, time);
     }
