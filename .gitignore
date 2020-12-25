@@ -2,6 +2,8 @@
 **/__pycache__/
 dump.rdb
 logs/*
+lib
+
 # Covers JetBrains IDEs
 .idea/*
 cmake-build-*/
