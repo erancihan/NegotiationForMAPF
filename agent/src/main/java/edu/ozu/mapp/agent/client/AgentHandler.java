@@ -43,6 +43,7 @@ public class AgentHandler {
     private BiConsumer<String, String>                          WORLD_OVERSEER_NEGOTIATED;
     private BiConsumer<AgentHandler, DATA_REQUEST_PAYLOAD_WORLD_MOVE> WORLD_OVERSEER_MOVE;
     private Consumer<AgentHandler>                              WORLD_OVERSEER_HOOK_LEAVE;
+    private BiConsumer<String, String[]>                        WORLD_OVERSEER_HOOK_UPDATE_BROADCAST;
     private Consumer<String>                                    WORLD_OVERSEER_HOOK_LOG;
 
     private String[][] fov;
@@ -178,10 +179,13 @@ public class AgentHandler {
                 WORLD_HANDLER_COLLISION_CHECK_DONE.accept(getAgentName(), result.agent_ids);
                 break;
             case OBSTACLE:
+                // TODO LOG OBSTACLE UPDATE
                 // There is an obstacle in the path! Update route according to constraints
                 logger.debug(getAgentName() + " | found obstacle");
                 // Re-calculate path starting from here on out
                 agent.path = update_agent_path_from_pos_to_dest();
+                // I have updated my path, make broadcast
+                WORLD_OVERSEER_HOOK_UPDATE_BROADCAST.accept(getAgentName(), agent.GetOwnBroadcastPath());
                 break;
             case NONE:
             default:
@@ -634,5 +638,10 @@ public class AgentHandler {
     public void SET_WORLD_OVERSEER_HOOK_LOG(Consumer<String> log)
     {
         WORLD_OVERSEER_HOOK_LOG = log;
+    }
+
+    public void SET_WORLD_OVERSEER_HOOK_UPDATE_BROADCAST(BiConsumer<String, String[]> update_broadcast_hook)
+    {
+        WORLD_OVERSEER_HOOK_UPDATE_BROADCAST = update_broadcast_hook;
     }
 }

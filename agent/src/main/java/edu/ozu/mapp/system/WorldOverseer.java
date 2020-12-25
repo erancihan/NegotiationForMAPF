@@ -414,6 +414,7 @@ public class WorldOverseer
         client.SetNegotiatedCallback(this::Negotiated);
         client.SetMoveCallback(this::Move);
         client.SetLeaveHook(this::Leave);
+        client.SetUpdateBroadcastHook(this::update_broadcast_hook);
         client.SetLogHook(this::Log);
 
         clients.put(client.GetAgentName(), client);
@@ -523,6 +524,11 @@ public class WorldOverseer
         passive_agents.put(agent.getAgentName(), new String[]{ agent.GetCurrentLocation(), "inf" });
 
         active_agent_c--;
+    }
+
+    private synchronized void update_broadcast_hook(String agent_name, String[] broadcast)
+    {
+        broadcasts.put(agent_name, broadcast);
     }
 
     public synchronized void Log(String str)

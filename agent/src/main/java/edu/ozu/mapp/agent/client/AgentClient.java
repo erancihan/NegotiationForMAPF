@@ -153,4 +153,9 @@ public class AgentClient {
     {
         handler.SET_WORLD_OVERSEER_HOOK_LOG(log);
     }
+
+    public void SetUpdateBroadcastHook(BiConsumer<String, String[]> update_broadcast_hook)
+    {
+        handler.SET_WORLD_OVERSEER_HOOK_UPDATE_BROADCAST(update_broadcast_hook);
+    }
 }
