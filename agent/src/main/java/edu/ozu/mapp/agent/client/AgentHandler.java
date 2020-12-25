@@ -554,11 +554,12 @@ public class AgentHandler {
 
     public void PostNegotiation(String session_id)
     {
-        if (WORLD_OVERSEER_NEGOTIATED != null) {
+        agent.PostNegotiation();
+
+        if (WORLD_OVERSEER_NEGOTIATED != null)
+        {
             WORLD_OVERSEER_NEGOTIATED.accept(getAgentName(), session_id);
         }
-
-        agent.PostNegotiation();
     }
 
     public void LogNegotiationOver(String bidding_agent, String session_id)
