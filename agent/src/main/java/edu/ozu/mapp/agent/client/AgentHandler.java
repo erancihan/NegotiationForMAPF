@@ -390,7 +390,6 @@ public class AgentHandler {
             new_path = handle_win_condition(contract);
         } else {
             // else use 'Ox' & others as constraint & re-calculate path
-            update_agent_constraints(contract);
             new_path = handle_lose_condition(contract);
         }
 
@@ -465,9 +464,33 @@ public class AgentHandler {
     }
 
     @NotNull
-    private List<String> handle_lose_condition(Contract contract) {
-        // LOSE condition
+    private List<String> handle_lose_condition(Contract contract)
+    {   // LOSE condition
+        update_agent_constraints(contract);
         logger.debug(String.format("%s | LOST | %s", agent.AGENT_ID, contract.print()));
+        agent.loseC++;
+
+        return update_agent_path_from_pos_to_dest();
+    }
+
+    /**
+     * Run when agent is lost to set accepted Ox points as constraints
+     * */
+    private void update_agent_constraints(Contract contract)
+    {
+        // create constraints, add Ox as constraint
+        int i = 0;
+        for (Point point : contract.GetOx())
+        {
+            agent.constraints.add(new Constraint(point, agent.time + i));
+            logger.debug(String.format("%s | ADDED CONSTRAINT %s:%s", agent.AGENT_ID, point, agent.time + i));
+            i++;
+        }
+    }
+    //</editor-fold>
+
+    @NotNull
+    private List<String> update_agent_path_from_pos_to_dest() {
         logger.debug(String.format("%s | current location : %s", agent.AGENT_ID, agent.POS));
 
         // create constraints
@@ -483,10 +506,14 @@ public class AgentHandler {
         List<String> rest = agent.calculatePath(agent.POS, agent.DEST, constraints);
 
         List<String> path_next = new ArrayList<>();
+        // add path up until now
         for (int idx = 0; idx < agent.path.size() && !agent.path.get(idx).equals(agent.POS.key); idx++)
         {
             path_next.add(agent.path.get(idx));
         }
+
+        // calculate rest of the path
+        List<String> rest = agent.calculatePath(agent.POS, agent.DEST, new HashMap<>());
 
         // ensure that connection points match
         Assert.isTrue(agent.POS.key.equals(rest.get(0)), "Something went wrong while accepting last bids!");
@@ -495,24 +522,9 @@ public class AgentHandler {
         // merge...
         // since current POS is already in 'rest'@0, we can just add it
         path_next.addAll(rest);
-        agent.loseC++;
 
         return path_next;
     }
-
-    /**
-     * Run when agent is lost to set accepted Ox points as constraints
-     * */
-    private void update_agent_constraints(Contract contract)
-    {
-        int i = 0;
-        for (Point point : contract.GetOx())
-        {
-            agent.constraints.add(new Constraint(point, agent.time + i));
-            i++;
-        }
-    }
-    //</editor-fold>
 
     public void PostNegotiation(String session_id)
     {
