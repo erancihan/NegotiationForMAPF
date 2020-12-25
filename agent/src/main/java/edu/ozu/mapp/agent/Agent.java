@@ -3,6 +3,7 @@ package edu.ozu.mapp.agent;
 import edu.ozu.mapp.agent.client.AgentHandler;
 import edu.ozu.mapp.agent.client.helpers.FileLogger;
 import edu.ozu.mapp.agent.client.models.Contract;
+import edu.ozu.mapp.dataTypes.Constraint;
 import edu.ozu.mapp.keys.AgentKeys;
 import edu.ozu.mapp.keys.KeyHandler;
 import edu.ozu.mapp.system.NegotiationOverseer;
@@ -59,6 +60,8 @@ public abstract class Agent {
                 return (1 - ((search.PathSize - search.MinPathSize) / (search.MaxPathSize - search.MinPathSize)) - offset);
             };
 
+    public ArrayList<Constraint> constraints;
+
     public Agent(String agentName, String agentID, Point start, Point dest)
     {
         this(agentName, agentID, start, dest, Globals.INITIAL_TOKEN_BALANCE);
@@ -72,6 +75,8 @@ public abstract class Agent {
         this.DEST           = dest;
         this.initial_tokens = initial_tokens;
         this.current_tokens = initial_tokens;
+
+        this.constraints    = new ArrayList<>();
 
         this.isHeadless = true; // unless client says so
         fl = new FileLogger().CreateAgentLogger(AGENT_ID);

@@ -6,6 +6,7 @@ import edu.ozu.mapp.agent.client.helpers.ConflictCheck;
 import edu.ozu.mapp.agent.client.helpers.ConflictInfo;
 import edu.ozu.mapp.agent.client.helpers.FileLogger;
 import edu.ozu.mapp.agent.client.models.Contract;
+import edu.ozu.mapp.dataTypes.Constraint;
 import edu.ozu.mapp.system.DATA_REQUEST_PAYLOAD_WORLD_JOIN;
 import edu.ozu.mapp.system.DATA_REQUEST_PAYLOAD_WORLD_MOVE;
 import edu.ozu.mapp.utils.*;
@@ -389,18 +390,20 @@ public class AgentHandler {
             new_path = handle_win_condition(contract);
         } else {
             // else use 'Ox' & others as constraint & re-calculate path
+            update_agent_constraints(contract);
             new_path = handle_lose_condition(contract);
         }
 
         // update global path
         logger.debug(String.format("%s | PATH BEFORE %s", agent.AGENT_ID, agent.path));
 
-        WORLD_OVERSEER_HOOK_LOG.accept(String.format(
+        WORLD_OVERSEER_HOOK_LOG
+            .accept(String.format(
                 "PATH UPDATE AGENT: %s \n%23s PATH BEFORE: %s\n%23s PATH AFTER : %s",
                 agent.AGENT_ID,
                 "", Utils.toString(agent.path),
                 "", Utils.toString(new_path)
-        ));
+            ));
 
         agent.path = new_path;
         logger.debug(String.format("%s | PATH AFTER  %s", agent.AGENT_ID, agent.path));
@@ -472,13 +475,12 @@ public class AgentHandler {
         // create constraints
         // Add Ox as constraint
         HashMap<String, ArrayList<String>> constraints = new HashMap<>();
-        for (int i = 0; i < Ox.length; i++) {
-            ArrayList<String> c = constraints.getOrDefault(Ox[i], new ArrayList<>());
-            c.add(String.valueOf(agent.time + i));
-            constraints.put(Ox[i], c);
-        logger.debug(String.format("%s | ADDED CONSTRAINT %s:%s", agent.AGENT_ID, Ox[i], agent.time + i));
+        for (Constraint constraint : agent.constraints) {
+            ArrayList<String> c = constraints.getOrDefault(constraint.location.key, new ArrayList<>());
+            c.add(String.valueOf(constraint.at_t));
+            constraints.put(constraint.location.key, c);
+        logger.debug(String.format("%s | ADDED CONSTRAINT %s", agent.AGENT_ID, constraint));
         }
-        // TODO add from FoV
 
         List<String> rest = agent.calculatePath(agent.POS, agent.DEST, constraints);
 
@@ -498,6 +500,19 @@ public class AgentHandler {
         agent.loseC++;
 
         return path_next;
+    }
+
+    /**
+     * Run when agent is lost to set accepted Ox points as constraints
+     * */
+    private void update_agent_constraints(Contract contract)
+    {
+        int i = 0;
+        for (Point point : contract.GetOx())
+        {
+            agent.constraints.add(new Constraint(point, agent.time + i));
+            i++;
+        }
     }
     //</editor-fold>
 
