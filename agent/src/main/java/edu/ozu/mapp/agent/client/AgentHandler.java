@@ -76,7 +76,7 @@ public class AgentHandler {
     public void WORLD_HANDLER_JOIN_HOOK()
     {
         DATA_REQUEST_PAYLOAD_WORLD_JOIN payload = new DATA_REQUEST_PAYLOAD_WORLD_JOIN();
-        payload.AGENT_NAME      = getAgentName();
+        payload.AGENT_NAME      = agent.AGENT_ID;
         payload.AGENT_ID        = agent.AGENT_ID;
         payload.LOCATION        = agent.START;
         payload.BROADCAST       = agent.GetOwnBroadcastPath();
@@ -174,23 +174,23 @@ public class AgentHandler {
         switch (result.type) {
             case COLLISION:
                 // There is a collision in path! Resolve this first
-                logger.debug(getAgentName() + " | notify negotiation > " + Arrays.toString(result.agent_ids));
+                logger.debug(agent.AGENT_ID + " | notify negotiation > " + Arrays.toString(result.agent_ids));
                 state_flag[0] = 1;
-                WORLD_HANDLER_COLLISION_CHECK_DONE.accept(getAgentName(), result.agent_ids);
+                WORLD_HANDLER_COLLISION_CHECK_DONE.accept(agent.AGENT_ID, result.agent_ids);
                 break;
             case OBSTACLE:
                 // TODO LOG OBSTACLE UPDATE
                 // There is an obstacle in the path! Update route according to constraints
-                logger.debug(getAgentName() + " | found obstacle");
+                logger.debug(agent.AGENT_ID + " | found obstacle");
                 // Re-calculate path starting from here on out
                 agent.path = update_agent_path_from_pos_to_dest();
                 // I have updated my path, make broadcast
-                WORLD_OVERSEER_HOOK_UPDATE_BROADCAST.accept(getAgentName(), agent.GetOwnBroadcastPath());
+                WORLD_OVERSEER_HOOK_UPDATE_BROADCAST.accept(agent.AGENT_ID, agent.GetOwnBroadcastPath());
                 break;
             case NONE:
             default:
                 state_flag[0] = 1;
-                WORLD_HANDLER_COLLISION_CHECK_DONE.accept(getAgentName(), new String[]{agent.AGENT_ID});
+                WORLD_HANDLER_COLLISION_CHECK_DONE.accept(agent.AGENT_ID, new String[]{agent.AGENT_ID});
         }
     }
 
@@ -249,8 +249,8 @@ public class AgentHandler {
     {
         if (is_moving == 0) return;
 
-        String[] sessions = WORLD_HANDLER_GET_NEGOTIATION_SESSIONS.apply(getAgentName());
-        logger.debug(getAgentName() + " | negotiate state > " + Arrays.toString(sessions));
+        String[] sessions = WORLD_HANDLER_GET_NEGOTIATION_SESSIONS.apply(agent.AGENT_ID);
+        logger.debug(agent.AGENT_ID + " | negotiate state > " + Arrays.toString(sessions));
         if (sessions.length > 0)
         {
             for (String sid : sessions)
@@ -261,10 +261,10 @@ public class AgentHandler {
 
                 WORLD_OVERSEER_JOIN_NEGOTIATION_SESSION.accept(sid, this);
 
-                logger.debug(getAgentName() + " | " + sid);
+                logger.debug(agent.AGENT_ID + " | " + sid);
             }
         } else {
-            WORLD_OVERSEER_NEGOTIATED.accept(getAgentName(), "");
+            WORLD_OVERSEER_NEGOTIATED.accept(agent.AGENT_ID, "");
         }
     }
 
@@ -275,18 +275,18 @@ public class AgentHandler {
         if (is_moving == 0) return;
 
         if (agent.time + 1 < agent.path.size()) {
-            System.out.println("moving " + getAgentName());
+            System.out.println("moving " + agent.AGENT_ID);
 
             // make Agent move
             DATA_REQUEST_PAYLOAD_WORLD_MOVE payload = new DATA_REQUEST_PAYLOAD_WORLD_MOVE();
-            payload.AGENT_NAME = getAgentName();
+            payload.AGENT_NAME = agent.AGENT_ID;
             payload.CURRENT_LOCATION = agent.POS;
             payload.NEXT_LOCATION    = new Point(agent.path.get(agent.time + 1), "-");
             payload.BROADCAST        = agent.GetNextBroadcast();
 
             WORLD_OVERSEER_MOVE.accept(this, payload);
         } else {
-            System.out.println(getAgentName() + " stopping t:" + agent.time + " path: " + agent.path);
+            System.out.println(agent.AGENT_ID + " stopping t:" + agent.time + " path: " + agent.path);
             // no more moves left, agent should stop
             is_moving = 0;
 
@@ -560,7 +560,7 @@ public class AgentHandler {
 
         if (WORLD_OVERSEER_NEGOTIATED != null)
         {
-            WORLD_OVERSEER_NEGOTIATED.accept(getAgentName(), session_id);
+            WORLD_OVERSEER_NEGOTIATED.accept(agent.AGENT_ID, session_id);
         }
     }
 
