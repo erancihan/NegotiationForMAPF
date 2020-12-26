@@ -118,7 +118,7 @@ public class ScenarioManager extends javax.swing.JFrame
         javax.swing.JPanel run_scenario = new javax.swing.JPanel();
         javax.swing.JPanel scenario_info_container = new javax.swing.JPanel();
         horizontal_spliter = new javax.swing.JSplitPane();
-        world_view_state_container = new javax.swing.JPanel();
+        javax.swing.JPanel world_view_state_container = new javax.swing.JPanel();
         vertical_spliter = new javax.swing.JSplitPane();
         javax.swing.JTabbedPane world_tab_container = new javax.swing.JTabbedPane();
         world_view_tab = new javax.swing.JPanel();
@@ -130,7 +130,7 @@ public class ScenarioManager extends javax.swing.JFrame
         label_current_state = new javax.swing.JLabel();
         btn_next_state = new javax.swing.JButton();
         javax.swing.JTabbedPane world_history_tab_container = new javax.swing.JTabbedPane();
-        world_history_tab = new javax.swing.JPanel();
+        history_panel = new edu.ozu.mapp.agent.client.world.WorldHistoryPanel();
         javax.swing.JTabbedPane logs_tab_container = new javax.swing.JTabbedPane();
         javax.swing.JPanel world_logs = new javax.swing.JPanel();
         javax.swing.JScrollPane jScrollPane1 = new javax.swing.JScrollPane();
@@ -632,8 +632,18 @@ public class ScenarioManager extends javax.swing.JFrame
 
         vertical_spliter.setTopComponent(world_tab_container);
 
-        world_history_tab.setMinimumSize(new java.awt.Dimension(100, 50));
-        world_history_tab_container.addTab("World History", world_history_tab);
+        javax.swing.GroupLayout history_panelLayout = new javax.swing.GroupLayout(history_panel);
+        history_panel.setLayout(history_panelLayout);
+        history_panelLayout.setHorizontalGroup(
+            history_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 292, Short.MAX_VALUE)
+        );
+        history_panelLayout.setVerticalGroup(
+            history_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 0, Short.MAX_VALUE)
+        );
+
+        world_history_tab_container.addTab("World History", history_panel);
 
         vertical_spliter.setBottomComponent(world_history_tab_container);
         world_history_tab_container.getAccessibleContext().setAccessibleName("");
@@ -903,6 +913,7 @@ public class ScenarioManager extends javax.swing.JFrame
     private javax.swing.JFileChooser file_chooser;
     private javax.swing.JButton generate_scenario_btn;
     private javax.swing.JTextField height_input;
+    private edu.ozu.mapp.agent.client.world.WorldHistoryPanel history_panel;
     private javax.swing.JSplitPane horizontal_spliter;
     private javax.swing.JTextField input_initial_token_count_per_agent;
     private javax.swing.JTextField input_number_of_expected_conflicts;
