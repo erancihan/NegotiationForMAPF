@@ -2,13 +2,9 @@ package edu.ozu.mapp.agent.client.world;
 
 import edu.ozu.mapp.agent.client.AgentClient;
 import edu.ozu.mapp.system.WorldOverseer;
-import edu.ozu.mapp.utils.Globals;
 import edu.ozu.mapp.utils.JSONAgentData;
 import edu.ozu.mapp.utils.JSONWorldData;
 import edu.ozu.mapp.utils.Point;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.ScanParams;
-import redis.clients.jedis.ScanResult;
 
 import java.awt.*;
 import java.util.*;
@@ -19,7 +15,6 @@ public class ScenarioCanvas extends Canvas
 {
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ScenarioCanvas.class);
 
-    private Jedis jedis;
     private JSONWorldData world;
     private WorldOverseer world_ref;
 
@@ -30,12 +25,8 @@ public class ScenarioCanvas extends Canvas
     private HashMap<String, Point[]>            agents          = new HashMap<>();
     private HashMap<String, String>             agent_colors    = new HashMap<>();
 
-    private HashSet<String> used_hex_colors = new HashSet<>();
-
-    private Random rand = new Random();
     private int cell_size = 0;
     private int offset = 1;
-
 
     public ScenarioCanvas()
     {
@@ -193,13 +184,6 @@ public class ScenarioCanvas extends Canvas
 
     public void Init()
     {
-        Init(false);
-    }
-
-    public void Init(boolean is_serverless)
-    {
-        if (!is_serverless) Connect();
-
         // CALCULATE CELL SIZE
         cell_size = calculate_cell_size();
 
@@ -209,8 +193,7 @@ public class ScenarioCanvas extends Canvas
                     do {
                         TimeUnit.MILLISECONDS.sleep(100);
 
-                        if (!is_serverless) Update();
-                        else Update(true);
+                        Update();
                     } while (agents.size() != world.agent_count);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
@@ -219,48 +202,12 @@ public class ScenarioCanvas extends Canvas
         ;
     }
 
-    public void Connect()
-    {
-        if (jedis == null)
-        {
-            jedis = new Jedis(Globals.REDIS_HOST, Globals.REDIS_PORT);
-        }
-    }
-
     public void Update()
     {
-        Update(false);
-    }
+        if (world_ref == null) return;
 
-    public void Update(boolean is_serverless)
-    {
-        if (is_serverless) {
-            if (world_ref == null) return;
-
-            agents = world_ref.GetAllBroadcasts();
-            agents.keySet().forEach(agent_name -> history.put(agent_name, new ArrayList<>()));
-        } else {
-            if (jedis == null) return;
-
-            String WorldPath = String.format("world:%s:path", world.world_id);
-
-            ScanParams params = new ScanParams().match("*");
-            String cursor = ScanParams.SCAN_POINTER_START;
-
-            do {
-                ScanResult<Map.Entry<String, String>> results = jedis.hscan(WorldPath, cursor, params);
-
-                results.getResult().forEach((result) -> {
-                    String agent_name = result.getKey().replace("agent:", "");
-                    Point[] agent_broadcast = String2BroadcastArray(result.getValue());
-
-                    agents.put(agent_name, agent_broadcast);
-                    history.put(agent_name, new ArrayList<>());
-                });
-
-                cursor = results.getCursor();
-            } while (!cursor.equals(ScanParams.SCAN_POINTER_START));
-        }
+        agents = world_ref.GetAllBroadcasts();
+        agents.keySet().forEach(agent_name -> history.put(agent_name, new ArrayList<>()));
 
         this.repaint();
     }
@@ -275,10 +222,6 @@ public class ScenarioCanvas extends Canvas
 
     public void Destroy()
     {
-        if (jedis != null)
-        {
-            jedis.close();
-        }
     }
 
     private Color hex2rgb(String hex)

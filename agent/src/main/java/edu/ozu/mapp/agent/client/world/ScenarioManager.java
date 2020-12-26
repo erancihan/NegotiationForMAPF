@@ -1096,7 +1096,7 @@ public class ScenarioManager extends javax.swing.JFrame
         world.SetOnLoopingStop(() -> generate_scenario_btn.setEnabled(true));
         world.SetLogDrawCallback((data) -> text_pane_formatter.format(data));
         world.SetCurrentStateChangeCallback((state) -> label_current_state.setText(state));
-        world.SetCanvasUpdateCallback(() -> scenario_canvas.Update(true));
+        world.SetCanvasUpdateCallback(() -> scenario_canvas.Update());
 
         scenario_canvas.SetWorldRef(world);
         scenario_canvas.SetWorldData(world_data);
