@@ -5,16 +5,25 @@
  */
 package edu.ozu.mapp.agent.client.world;
 
+import edu.ozu.mapp.dataTypes.WorldSnapshot;
+
+import java.util.ArrayList;
+import java.util.concurrent.ConcurrentHashMap;
+
 /**
  *
- * @author freedrone
+ * @author Cihan Eran
  */
 public class WorldHistoryPanel extends javax.swing.JPanel {
 
     /**
      * Creates new form WorldHistoryPanel
      */
-    public WorldHistoryPanel() {
+    public WorldHistoryPanel()
+    {
+        history_store   = new ConcurrentHashMap<>();
+        labels          = new ArrayList<>();
+
         initComponents();
     }
 
@@ -36,9 +45,20 @@ public class WorldHistoryPanel extends javax.swing.JPanel {
         add(canvas, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
 
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private java.awt.Canvas canvas;
     private javax.swing.JComboBox<String> dropdown;
     // End of variables declaration//GEN-END:variables
+
+    private ConcurrentHashMap<String, WorldSnapshot>    history_store;
+    private ArrayList<String>                           labels;
+
+    public synchronized void SetSnapshot(String label, WorldSnapshot data)
+    {
+        if (!history_store.containsKey(label))
+        {
+            labels.add(label);
+            history_store.put(label, data);
+        }
+    }
 }
