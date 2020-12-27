@@ -3,6 +3,7 @@ package edu.ozu.mapp.system;
 import edu.ozu.mapp.agent.client.AgentClient;
 import edu.ozu.mapp.agent.client.AgentHandler;
 import edu.ozu.mapp.agent.client.helpers.FileLogger;
+import edu.ozu.mapp.dataTypes.WorldSnapshot;
 import edu.ozu.mapp.utils.Globals;
 import edu.ozu.mapp.utils.JSONWorldWatch;
 import edu.ozu.mapp.utils.Point;
@@ -16,6 +17,7 @@ import java.util.Map;
 import java.util.concurrent.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public class WorldOverseer
@@ -70,6 +72,7 @@ public class WorldOverseer
     private Consumer<String>            UI_StateChangeCallback;
     private Runnable                    UI_CanvasUpdateHook;
     private Runnable                    UI_LoopStoppedHook;
+    private BiConsumer<String, WorldSnapshot> SNAPSHOT_HOOK;
 
     private WorldOverseer()
     {
@@ -245,6 +248,10 @@ public class WorldOverseer
                 if (FLAG_JOINS.size() == active_agent_c)
                 {   // ALL REGISTERED AGENTS ARE DONE JOINING
                     Log("- END OF JOIN STATE", logger::info);
+                    SNAPSHOT_HOOK.accept(
+                        String.format("Initial State - %-23s", new java.sql.Timestamp(System.currentTimeMillis())),
+                        generate_snapshot()
+                    );
 
                     prev_state = curr_state;
 
@@ -319,6 +326,10 @@ public class WorldOverseer
                         .whenComplete((entity, ex) -> {
                             if (ex != null) ex.printStackTrace();
 
+                            SNAPSHOT_HOOK.accept(
+                                String.format("MOVE T:%s - %-23s", TIME, new java.sql.Timestamp(System.currentTimeMillis())),
+                                generate_snapshot()
+                            );
                             UI_LogDrawCallback.accept(log_payload);
                         })
                     );
@@ -622,9 +633,26 @@ public class WorldOverseer
         data.add(value);
 
         if (key_data.length == 2)
-        {   // clear
+        {   /* Run when session terminates.
+             *
+             * Since it is possible for two agents to re-engage in negotiation,
+             *  their session hash will be the same.
+             *  In such case, the log data will be overwritten.
+             *  To prevent this from happening, remove the previous key, and
+             *  instead create a new key with the updated data.
+             *  Key for the negotiation session instance will be timestamped,
+             *  separated by `-` in this case. Directly use the key.
+             *
+             * As this is the case only run when agents end their negotiation session
+             *  take a snapshot of the world at this given time.
+             * */
             log_payload.negotiation_logs.remove(key_data[0]);
             log_payload.negotiation_logs.put(key, data);
+
+            SNAPSHOT_HOOK.accept(
+                String.format("NEGO SESS %s DONE - %-23s", key_data[0].substring(0, 7), key_data[1]),
+                generate_snapshot()
+            );
 
             return;
         }
@@ -664,5 +692,26 @@ public class WorldOverseer
 
     public String[][] GetLocationConstraints() {
         return passive_agents.values().toArray(new String[0][0]);
+    }
+
+    public void SetSnapshotHook(BiConsumer<String, WorldSnapshot> hook)
+    {
+        SNAPSHOT_HOOK = hook;
+    }
+
+    private WorldSnapshot generate_snapshot()
+    {
+        WorldSnapshot snapshot = new WorldSnapshot();
+
+        for (String client_key : clients.keySet())
+        {
+            snapshot.agent_keys.add(client_key);
+            snapshot.locations
+                    .put(client_key, clients.get(client_key).GetCurrentLocation());
+            snapshot.paths
+                    .put(client_key, clients.get(client_key).GetAgentPlannedPath());
+        }
+
+        return snapshot;
     }
 }
