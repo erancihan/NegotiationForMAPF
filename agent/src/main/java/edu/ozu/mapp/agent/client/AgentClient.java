@@ -83,16 +83,17 @@ public class AgentClient {
         return handler.GetRemainingPathLength();
     }
 
-    // Handler Hooks
-//    public void join(String worldID)
-//    {
-//        handler.join(worldID);
-//    }
+    public Point GetCurrentLocation()
+    {
+        return handler.GetAgent().POS;
+    }
 
     public void leave()
     {
         handler.leave();
     }
+
+    // Handler Hooks
 
     public void Join(WorldOverseer world)
     {
