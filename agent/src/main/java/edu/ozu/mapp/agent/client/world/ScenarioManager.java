@@ -572,6 +572,7 @@ public class ScenarioManager extends javax.swing.JFrame
         vertical_spliter.setDividerLocation(300);
         vertical_spliter.setDividerSize(5);
         vertical_spliter.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
+        vertical_spliter.setToolTipText("");
         vertical_spliter.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
         vertical_spliter.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
             public void propertyChange(java.beans.PropertyChangeEvent evt) {
@@ -579,18 +580,8 @@ public class ScenarioManager extends javax.swing.JFrame
             }
         });
 
-        java.awt.GridBagLayout world_view_tabLayout = new java.awt.GridBagLayout();
-        world_view_tabLayout.columnWeights = new double[] {1.0};
-        world_view_tabLayout.rowWeights = new double[] {10.0, 0.0};
-        world_view_tab.setLayout(world_view_tabLayout);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.RELATIVE;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
-        world_view_tab.add(scenario_canvas, gridBagConstraints);
+        world_view_tab.setLayout(new java.awt.BorderLayout());
+        world_view_tab.add(scenario_canvas, java.awt.BorderLayout.CENTER);
 
         world_controls.setMinimumSize(new java.awt.Dimension(80, 80));
         world_controls.setPreferredSize(new java.awt.Dimension(80, 40));
@@ -619,29 +610,11 @@ public class ScenarioManager extends javax.swing.JFrame
 
         world_controls.add(jPanel2, java.awt.BorderLayout.EAST);
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.RELATIVE;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
-        world_view_tab.add(world_controls, gridBagConstraints);
+        world_view_tab.add(world_controls, java.awt.BorderLayout.PAGE_END);
 
         world_tab_container.addTab("World View", world_view_tab);
 
         vertical_spliter.setTopComponent(world_tab_container);
-
-        javax.swing.GroupLayout history_panelLayout = new javax.swing.GroupLayout(history_panel);
-        history_panel.setLayout(history_panelLayout);
-        history_panelLayout.setHorizontalGroup(
-            history_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 292, Short.MAX_VALUE)
-        );
-        history_panelLayout.setVerticalGroup(
-            history_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
-        );
 
         world_history_tab_container.addTab("World History", history_panel);
 
@@ -933,8 +906,6 @@ public class ScenarioManager extends javax.swing.JFrame
     private javax.swing.JTextPane scenario_info_pane;
     private javax.swing.JSplitPane vertical_spliter;
     private javax.swing.JTextField width_input;
-    private javax.swing.JPanel world_history_tab;
-    private javax.swing.JPanel world_view_state_container;
     private javax.swing.JPanel world_view_tab;
     // End of variables declaration//GEN-END:variables
 
