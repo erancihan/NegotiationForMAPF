@@ -60,6 +60,7 @@ public class WorldHistoryCanvas extends javax.swing.JPanel {
     private HashMap<String, String> agent_colors = new HashMap<>();
     private int offset  = 1;
 
+    @SuppressWarnings("DuplicatedCode")
     @Override
     public void paint(Graphics graphics)
     {
@@ -142,7 +143,6 @@ public class WorldHistoryCanvas extends javax.swing.JPanel {
                 );
             }
         }
-
     }
 
     private String get_color(String agent_key)
