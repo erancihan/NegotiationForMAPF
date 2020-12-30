@@ -7,6 +7,7 @@ package edu.ozu.mapp.agent.client.world;
 
 import edu.ozu.mapp.dataTypes.WorldSnapshot;
 
+import java.awt.event.ItemEvent;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -37,16 +38,45 @@ public class WorldHistoryPanel extends javax.swing.JPanel {
     private void initComponents() {
 
         dropdown = new javax.swing.JComboBox<>();
-        canvas = new java.awt.Canvas();
+        canvas = new edu.ozu.mapp.agent.client.world.WorldHistoryCanvas();
 
+        setMinimumSize(new java.awt.Dimension(100, 100));
         setLayout(new java.awt.BorderLayout());
 
-        add(dropdown, java.awt.BorderLayout.NORTH);
+        dropdown.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "- select -" }));
+        dropdown.setToolTipText("");
+        dropdown.setAutoscrolls(true);
+        dropdown.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                dropdownItemStateChanged(evt);
+            }
+        });
+        add(dropdown, java.awt.BorderLayout.PAGE_END);
+
+        javax.swing.GroupLayout canvasLayout = new javax.swing.GroupLayout(canvas);
+        canvas.setLayout(canvasLayout);
+        canvasLayout.setHorizontalGroup(
+            canvasLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 303, Short.MAX_VALUE)
+        );
+        canvasLayout.setVerticalGroup(
+            canvasLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 329, Short.MAX_VALUE)
+        );
+
         add(canvas, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
 
+    private void dropdownItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_dropdownItemStateChanged
+        if (evt.getStateChange() == ItemEvent.SELECTED)
+        {
+            String item = (String) evt.getItem();
+            display_snapshot(item);
+        }
+    }//GEN-LAST:event_dropdownItemStateChanged
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private java.awt.Canvas canvas;
+    private edu.ozu.mapp.agent.client.world.WorldHistoryCanvas canvas;
     private javax.swing.JComboBox<String> dropdown;
     // End of variables declaration//GEN-END:variables
 
@@ -59,6 +89,14 @@ public class WorldHistoryPanel extends javax.swing.JPanel {
         {
             labels.add(label);
             history_store.put(label, data);
+
+            dropdown.addItem(label);
         }
+    }
+
+    private void display_snapshot(String key)
+    {
+        canvas.snapshot = history_store.get(key);
+        canvas.repaint();
     }
 }
