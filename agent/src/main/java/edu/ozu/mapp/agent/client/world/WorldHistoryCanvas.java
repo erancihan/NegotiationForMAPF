@@ -55,6 +55,8 @@ public class WorldHistoryCanvas extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
 
     public WorldSnapshot snapshot = null;
+    public String[] agent_keys = null;
+
     private HashMap<String, String> agent_colors = new HashMap<>();
     private int offset  = 1;
 
@@ -67,9 +69,6 @@ public class WorldHistoryCanvas extends javax.swing.JPanel {
 
         // PREPROCESS
         Graphics2D g = (Graphics2D) graphics.create();
-
-        String[] agent_keys = snapshot.agent_keys.toArray(new String[0]);
-        Arrays.sort(agent_keys);
 
         int width   = snapshot.world_width;
         int height  = snapshot.world_height;

@@ -9,6 +9,7 @@ import edu.ozu.mapp.dataTypes.WorldSnapshot;
 
 import java.awt.event.ItemEvent;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -96,7 +97,11 @@ public class WorldHistoryPanel extends javax.swing.JPanel {
 
     private void display_snapshot(String key)
     {
+        String[] agent_keys = history_store.get(key).agent_keys.toArray(new String[0]);
+        Arrays.sort(agent_keys);
+
         canvas.snapshot = history_store.get(key);
+        canvas.agent_keys = agent_keys;
         canvas.repaint();
     }
 }
