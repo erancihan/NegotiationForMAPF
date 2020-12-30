@@ -702,6 +702,8 @@ public class WorldOverseer
     private WorldSnapshot generate_snapshot()
     {
         WorldSnapshot snapshot = new WorldSnapshot();
+        snapshot.world_height = height;
+        snapshot.world_width  = width;
 
         for (String client_key : clients.keySet())
         {
