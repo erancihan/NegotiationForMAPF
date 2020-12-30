@@ -16,7 +16,7 @@ public class TextPaneLogFormatter
     public void format(DATA_LOG_DISPLAY data)
     {
         try {
-            scenario_info_pane.setText(parse_scenario_pane_log(data));
+            scenario_info_pane.setText(parse_scenario_pane_log(data.clone()));
             negotiation_info_pane.setText(parse_negotiation_pane_log(data));
         } catch (Exception e) {
             e.printStackTrace();
