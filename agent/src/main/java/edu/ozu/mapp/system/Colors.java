@@ -72,8 +72,10 @@ public class Colors
         return hex_color;
     }
 
-    private static java.awt.Color hex2rgb(String hex)
+    public static java.awt.Color hex2rgb(String hex)
     {
+        if (hex == null) return null;
+
         return new java.awt.Color(
                 Integer.valueOf(hex.substring(1, 3), 16),
                 Integer.valueOf(hex.substring(3, 5), 16),
@@ -81,7 +83,7 @@ public class Colors
         );
     }
 
-    private static String rgb2hex(int r, int g, int b)
+    public static String rgb2hex(int r, int g, int b)
     {
         return String.format("#%02x%02x%02x", r, g, b);
     }
