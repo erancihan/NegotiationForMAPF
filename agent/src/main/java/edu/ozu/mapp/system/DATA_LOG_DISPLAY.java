@@ -40,7 +40,7 @@ public class DATA_LOG_DISPLAY implements Cloneable
     }
 
     @Override
-    protected DATA_LOG_DISPLAY clone() throws CloneNotSupportedException
+    public DATA_LOG_DISPLAY clone() throws CloneNotSupportedException
     {
         return (DATA_LOG_DISPLAY) super.clone();
     }
