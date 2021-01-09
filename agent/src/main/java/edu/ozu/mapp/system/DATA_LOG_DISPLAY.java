@@ -1,8 +1,6 @@
 package edu.ozu.mapp.system;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class DATA_LOG_DISPLAY implements Cloneable
@@ -10,7 +8,7 @@ public class DATA_LOG_DISPLAY implements Cloneable
     public Map<String, String> world_data;
     public Map<String, String> agent_to_point;
     public Map<String, Integer> agent_bank_info;
-    public ArrayList<Object[]> world_log;
+    public List<Object[]> world_log;
     public Map<String, ArrayList<String>> negotiation_logs;
 
     public DATA_LOG_DISPLAY()
@@ -18,7 +16,7 @@ public class DATA_LOG_DISPLAY implements Cloneable
         world_data          = new HashMap<>();
         agent_to_point      = new HashMap<>();
         agent_bank_info     = new HashMap<>();
-        world_log           = new ArrayList<>();
+        world_log           = Collections.synchronizedList(new ArrayList<>());
         negotiation_logs    = new HashMap<>();
     }
 

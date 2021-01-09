@@ -29,29 +29,26 @@ public class TextPaneLogFormatter
     {
         StringBuilder out = new StringBuilder();
 
+        data.world_data
+            .keySet().stream().sorted()
+            .forEach(key -> {
+                out.append(String.format("%-11s : %s\n", key, data.world_data.get(key)));
+            });
+        out.append("-------------\n");
+        data.agent_to_point
+            .keySet().stream().sorted()
+            .forEach(key -> {
+                String[] _data = WorldOverseer.getInstance().GetAgentData(key);
+
+                out.append(String.format("%s POS: %s TOKEN: %s REMAINING_PATH_LEN: %S\n", key, _data[0], _data[1], _data[2]));
+            });
+        out.append("-------------\n");
         for (Object[] item : data.world_log)
         {
-            out.append(String.format("%-23s %s ", item[1].toString(), item[0].toString()));
-            out.append("\n");
+            out.append(String.format("%-23s %s\n", item[1].toString(), item[0].toString()));
         }
 
-        return
-            data.world_data
-                .keySet().stream().sorted()
-                .map(key -> String.format("%-11s : %s", key, data.world_data.get(key)))
-                .collect(Collectors.joining("\n")) +
-            "\n-------------\n" +
-            data.agent_to_point
-                .keySet().stream().sorted()
-                .map(key -> {
-                    String[] _data = WorldOverseer.getInstance().GetAgentData(key);
-
-                    return String.format("%s POS: %s TOKEN: %s REMAINING_PATH_LEN: %S", key, _data[0], _data[1], _data[2]);
-                })
-                .collect(Collectors.joining("\n")) +
-            "\n-------------\n" +
-            out.toString()
-            ;
+        return out.toString();
     }
 
     @NotNull

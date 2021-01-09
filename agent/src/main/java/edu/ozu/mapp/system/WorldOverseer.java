@@ -252,7 +252,6 @@ public class WorldOverseer
                         String.format("Initial State - %-23s", new java.sql.Timestamp(System.currentTimeMillis())),
                         generate_snapshot()
                     );
-
                     prev_state = curr_state;
 
                     if (IsLooping) { Step(); }
@@ -330,7 +329,7 @@ public class WorldOverseer
                                 String.format("MOVE T:%s - %-23s", TIME, new java.sql.Timestamp(System.currentTimeMillis())),
                                 generate_snapshot()
                             );
-                            UI_LogDrawCallback.accept(log_payload);
+                            ui_log_draw_callback_invoker(log_payload);
                         })
                     );
                 }
@@ -341,7 +340,17 @@ public class WorldOverseer
 
         log_payload.world_log  = state_log;
 
-        UI_LogDrawCallback.accept(log_payload);
+        ui_log_draw_callback_invoker(log_payload);
+    }
+
+    private void ui_log_draw_callback_invoker(DATA_LOG_DISPLAY log_payload)
+    {
+        try {
+            UI_LogDrawCallback.accept(log_payload.clone());
+        } catch (CloneNotSupportedException e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
     }
 
     private JSONWorldWatch get_current_state(String agent_name)
