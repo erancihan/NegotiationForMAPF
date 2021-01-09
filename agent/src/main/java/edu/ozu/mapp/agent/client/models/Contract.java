@@ -19,7 +19,7 @@ public class Contract implements Cloneable {
     public String A = ""; // id of agent A
     private String ETb = "0";
     public String B = ""; // id of agent B
-    private String sess_id = "";
+    public String sess_id = "";
 
     private HashMap<String, String> offers;
 

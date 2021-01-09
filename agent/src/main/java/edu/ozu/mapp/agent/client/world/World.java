@@ -118,7 +118,7 @@ public class World
 
                 logger.debug("SIM_FINISH_TIME="+sim_finish_time);
                 logger.debug("SIM_DURATION_TIME:" + (sim_time_diff / 1E9));
-                fl.LogWorldDone(data, (sim_time_diff / 1E9));
+//                fl.LogWorldDone(data, (sim_time_diff / 1E9));
 
                 long _t = System.currentTimeMillis();
                 state_log.add(new Object[]{"- SIM_FINISH", new java.sql.Timestamp(_t)});
@@ -135,7 +135,7 @@ public class World
                 state_log.add(new Object[]{"- end of join state", timestamp});
 
                 logger.info("- end of join state");
-                fl.LogWorldJoin(data);
+//                fl.LogWorldJoin(data);
 
                 // join state, begin loop
                 if (IsLooping) Step(curr_state_id);
@@ -157,7 +157,7 @@ public class World
                 state_log.add(new Object[]{"- collision check done", timestamp});
 
                 logger.info("- collision check done");
-                fl.LogWorldStateBroadcast(data, timestamp);
+//                fl.LogWorldStateBroadcast(data, timestamp);
 
                 // move to next state: 1 -> 2
                 if (IsLooping) Step(curr_state_id);
@@ -168,7 +168,7 @@ public class World
 
                 if (negotiation_state_clock == 0)
                 {
-                    fl.LogWorldStateNegotiate(data, timestamp, "BEGIN");
+//                    fl.LogWorldStateNegotiate(data, timestamp, "BEGIN");
                 }
 
                 // negotiation state, do nothing until active negotiation_count is 0
@@ -179,7 +179,7 @@ public class World
                     state_log.add(new Object[]{"- negotiations done", timestamp});
 
                     logger.info("- negotiations done");
-                    fl.LogWorldStateNegotiate(data, timestamp, "DONE");
+//                    fl.LogWorldStateNegotiate(data, timestamp, "DONE");
 
                     // move to next state: 2 -> 3
                     if (IsLooping) Step(curr_state_id);
@@ -200,7 +200,7 @@ public class World
                     state_log.add(new Object[]{"- movement complete", new java.sql.Timestamp(System.currentTimeMillis())});
 
                     logger.info("- movement complete");
-                    fl.LogWorldStateMove(data, timestamp);
+//                    fl.LogWorldStateMove(data, timestamp);
 
                     // clear move_action_count
                     jedis.hset(WorldID, "move_action_count", "0");

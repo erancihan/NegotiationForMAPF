@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 
 public class AgentHandler {
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(AgentHandler.class);
-    private FileLogger fl;
+    private FileLogger file_logger;
 
     private String AGENT_NAME;
     private String WORLD_ID = "";
@@ -58,7 +58,7 @@ public class AgentHandler {
         agent.SetHandlerRef(this);
 
         // init file logger
-        fl = new FileLogger().CreateAgentLogger(agent.AGENT_ID);
+        file_logger = FileLogger.getInstance();
 
         AGENT_NAME = client.AGENT_NAME;
 
@@ -92,9 +92,10 @@ public class AgentHandler {
         agent.setWORLD_ID(WORLD_ID);
         agent.dimensions = response[1];
 
-        fl.setWorldID(WORLD_ID);            // SET AGENT WORLD INFO ON LOGGER
-        fl.LogAgentInfo(agent, "JOIN");     // LOG AGENT INFO ON JOIN
-        fl.logAgentWorldJoin(agent);    // LOG AGENT JOIN
+//        file_logger.setWorldID(WORLD_ID);            // SET AGENT WORLD INFO ON LOGGER
+        file_logger.AgentLogInfo(agent, "JOIN");      // LOG AGENT INFO ON JOIN
+//        file_logger.LogAgentInfo(agent, "JOIN");
+        file_logger.WorldLogAgentJoin(agent);    // LOG AGENT JOIN
 
         // at this point, Agent will be Registered to World
         // and once world starts running, Client will start invoking UpdateState function
@@ -314,7 +315,8 @@ public class AgentHandler {
             // let the world know that you are done with it!
             leave();
         }
-        fl.LogAgentInfo(agent, "MOVE");  // LOG AGENT INFO ON MOVE CALL
+
+        file_logger.AgentLogInfo(agent, "MOVE");  // LOG AGENT INFO ON MOVE CALL
     }
 
     public void DoMove(JSONAgent response)
@@ -343,8 +345,8 @@ public class AgentHandler {
      */
     public void leave()
     {
-        fl.LogAgentInfo(agent, "LEAVE");  // LOG AGENT INFO ON LEAVE
-        fl.logAgentWorldLeave(agent);           // LOG AGENT LEAVING
+        file_logger.AgentLogInfo(agent, "LEAVE"); // LOG AGENT INFO ON LEAVE
+        file_logger.WorldLogAgentLeave(agent);    // LOG AGENT LEAVING
 
         WORLD_OVERSEER_HOOK_LEAVE.accept(this);
 
@@ -401,41 +403,17 @@ public class AgentHandler {
         // filter matching out
         agent.current_opponent = Arrays.stream(state.agents).filter(a -> !a.equals(agent.AGENT_ID)).collect(Collectors.toList()).get(0);
 
+        file_logger.AgentLogPreNegotiation(this, session_id);
         agent.PreNegotiation(state);
     }
 
-    public void LogPreNegotiation(String session_id)
+    public final Action OnMakeAction(Contract contract)
     {
-        // todo it should be possible to merge this function with another
-        agent.logNegoPre(session_id);
-    }
+        Action action = agent.onMakeAction(contract);
 
-    public void LogNegotiationState(String bidding_agent)
-    {
-        agent.LogNegotiationState(bidding_agent);
-    }
+        file_logger.AgentLogNegotiationAction(this, action);
 
-    public void LogNegotiationState(String prev_bidding_agent, Action action)
-    {
-        agent.LogNegotiationState(prev_bidding_agent, action);
-    }
-
-    public Action OnMakeAction(Contract contract)
-    {
-        return agent.onMakeAction(contract);
-    }
-
-    public void AcceptLastBids(JSONNegotiationSession json)
-    {
-        // get contract
-        Contract contract = agent.GetContract();
-
-        logger.debug("AcceptLastBids:"+contract);
-        logger.debug("          json:"+json);
-
-        AcceptLastBids(contract);
-
-        agent.OnAcceptLastBids(json);
+        return action;
     }
 
     @SuppressWarnings("Duplicates")
@@ -467,6 +445,7 @@ public class AgentHandler {
         logger.debug(String.format("%s | PATH AFTER  %s", agent.AGENT_ID, agent.path));
 
         WORLD_OVERSEER_HOOK_UPDATE_BROADCAST.accept(agent.AGENT_ID, agent.GetOwnBroadcastPath());
+        agent.OnAcceptLastBids(contract);
     }
 
     @NotNull
@@ -575,13 +554,14 @@ public class AgentHandler {
         return path_next;
     }
 
-    public void PostNegotiation(String session_id)
+    public void PostNegotiation(Contract contract)
     {
+        file_logger.AgentLogPostNegotiation(this, contract.sess_id, contract.x.equals(agent.AGENT_ID));
         agent.PostNegotiation();
 
         if (WORLD_OVERSEER_NEGOTIATED != null)
         {
-            WORLD_OVERSEER_NEGOTIATED.accept(agent.AGENT_ID, session_id);
+            WORLD_OVERSEER_NEGOTIATED.accept(agent.AGENT_ID, contract.sess_id);
         }
     }
 
@@ -597,12 +577,6 @@ public class AgentHandler {
         WORLD_OVERSEER_CALLBACK_VERIFY_NEGOTIATIONS.accept(agent.AGENT_ID, is_ok);
 
         agent_handler_verify_negotiations_lock.unlock();
-    }
-
-    public void LogNegotiationOver(String bidding_agent, String session_id)
-    {
-        // todo it should be possible to merge this function with another
-        agent.LogNegotiationOver(bidding_agent, session_id);
     }
 
     public int UpdateTokenCountBy(int i)

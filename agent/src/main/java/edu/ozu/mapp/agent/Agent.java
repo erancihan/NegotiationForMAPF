@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 
 public abstract class Agent {
     public static final Logger logger = LoggerFactory.getLogger(Agent.class);
-    private FileLogger fl;
+    private FileLogger file_logger;
 
     public String AGENT_NAME, AGENT_ID;
     public Point START, DEST;
@@ -79,7 +79,7 @@ public abstract class Agent {
         this.constraints    = new ArrayList<>();
 
         this.isHeadless = true; // unless client says so
-        fl = new FileLogger().CreateAgentLogger(AGENT_ID);
+        file_logger = FileLogger.getInstance();//.CreateAgentLogger(AGENT_ID);
 
         history = new History(AGENT_ID);
         // create and store agent keys
@@ -95,6 +95,8 @@ public abstract class Agent {
     public abstract Action onMakeAction(Contract contract);
 
     public void OnAcceptLastBids(JSONNegotiationSession json) { }
+
+    public void OnAcceptLastBids(Contract contract) { }
 
     public void PostNegotiation() { }
 
@@ -256,7 +258,6 @@ public abstract class Agent {
 
     public final void setWORLD_ID(String WORLD_ID)
     {
-        fl.setWorldID(WORLD_ID);
         this.WORLD_ID = WORLD_ID;
     }
 
@@ -290,26 +291,23 @@ public abstract class Agent {
         return keys.GetPublicKey();
     }
 
-    public final void logNegoPre(String session_id) {
-        fl.logAgentPreNego(session_id, this);
-    }
-
-    public final void LogNegotiationOver(String prev_bidding_agent, String session_id)
-    {
-        /*
-         * by the time this function is invoked,
-         * if the negotiation result has not been updated,
-         * it means that negotiation concluded without THIS agent accepting
-         * SINCE NO TIMEOUT IS IMPLEMENTED YET
-         * it indicates that opponent has accepted the bid & negotiation is won
-         * */
-        if (negotiation_result == -1)
-        {
-            negotiation_result = 1;
-            fl.LogAgentNegotiationState(prev_bidding_agent, this, true);
-        }
-        fl.logAgentPostNego(session_id, this);
-    }
+//    @Deprecated
+//    public final void LogNegotiationOver(String prev_bidding_agent, String session_id)
+//    {
+//        /*
+//         * by the time this function is invoked,
+//         * if the negotiation result has not been updated,
+//         * it means that negotiation concluded without THIS agent accepting
+//         * SINCE NO TIMEOUT IS IMPLEMENTED YET
+//         * it indicates that opponent has accepted the bid & negotiation is won
+//         * */
+//        if (negotiation_result == -1)
+//        {
+//            negotiation_result = 1;
+//            file_logger.LogAgentNegotiationState(prev_bidding_agent, this, true);
+//        }
+//        file_logger.logAgentPostNego(session_id, this);
+//    }
 
     public final void SetConflictLocation(String conflictLocation)
     {
@@ -334,26 +332,6 @@ public abstract class Agent {
     public final int GetCurrentTokens()
     {
         return current_tokens;
-    }
-
-    public final void LogNegotiationState(String prev_bidding_agent)
-    {
-        fl.LogAgentNegotiationState(prev_bidding_agent, this);
-    }
-
-    /**
-     * This function is invoked after an action is made.
-     * If action type is accept, that indicates Agent accepted
-     * opponents bid & has LOST the negotiation.
-     * */
-    public final void LogNegotiationState(String prev_bidding_agent, Action action)
-    {
-        if (action.type == ActionType.ACCEPT) {
-            negotiation_result = 0;
-            fl.LogAgentNegotiationState(prev_bidding_agent, this, true);
-        } else {
-            fl.LogAgentNegotiationState(prev_bidding_agent, this, false);
-        }
     }
 
     public final Contract GetContract()

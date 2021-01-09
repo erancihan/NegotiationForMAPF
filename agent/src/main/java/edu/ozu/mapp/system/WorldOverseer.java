@@ -25,7 +25,7 @@ public class WorldOverseer
     private static WorldOverseer instance;
 
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(WorldOverseer.class);
-    private FileLogger flogger;
+    private FileLogger file_logger;
 
     protected   String              WorldID = "";
     protected   int                 width   = 0;
@@ -139,13 +139,10 @@ public class WorldOverseer
         this.width  = width;
         this.height = height;
 
-        flogger = new FileLogger().CreateWorldLogger(world_id);
+        file_logger = FileLogger.getInstance();//.CreateWorldLogger(world_id);
         movement_handler.SetWorldReference(this);
 
-        HashMap<String, Object> payload = new HashMap<>();
-        payload.put("world_id",     world_id);
-        payload.put("dimensions",   width + "x" + height);
-        flogger.logWorldCreate(payload);
+        file_logger.WorldLogCreate(world_id, width, height);
     }
 
     public void SetOnLoopingStop(Runnable callback)
@@ -236,6 +233,9 @@ public class WorldOverseer
             long _t = System.currentTimeMillis();
             state_log.add(new Object[]{"- SIM_LOOP_FINISH_TIME", new java.sql.Timestamp(_t)});
             state_log.add(new Object[]{String.format("- SIM_LOOP_DURATION %s seconds", (SIM_LOOP_DURATION / 1E9)), new java.sql.Timestamp(_t)});
+            file_logger.WorldLogDone(WorldID, _t, (SIM_LOOP_DURATION / 1E9));
+
+            ui_log_draw_callback_invoker(log_payload);
 
             return;
         }
@@ -409,21 +409,37 @@ public class WorldOverseer
         switch (state_key)
         {
             case 0:
+                file_logger.WorldLogJoin(WorldID, active_agent_c, TIME);
+
                 // JOIN state, switch to COLLISION_CHECK state
-            case 3:
-                // MOVE state, switch to COLLISION_CHECK | BROADCAST state
                 logger.debug("switching to BROADCAST");
                 curr_state = Globals.WorldState.BROADCAST;
+
                 break;
             case 1:
+                file_logger.WorldLogBroadcast(WorldID);
+
                 // COLLISION_CHECK | BROADCAST state, switch to NEGOTIATION state
                 logger.debug("switching to NEGOTIATE");
                 curr_state = Globals.WorldState.NEGOTIATE;
+
+                file_logger.WorldLogNegotiate(WorldID, "BEGIN");
+
                 break;
             case 2:
+                file_logger.WorldLogNegotiate(WorldID, "DONE");
+
                 // NEGOTIATION state, switch to MOVE state
                 logger.debug("switching to MOVE");
                 curr_state = Globals.WorldState.MOVE;
+
+                break;
+            case 3:
+                file_logger.WorldLogMove(WorldID);
+
+                // MOVE state, switch to COLLISION_CHECK | BROADCAST state
+                logger.debug("switching to BROADCAST");
+                curr_state = Globals.WorldState.BROADCAST;
                 break;
             default:
         }

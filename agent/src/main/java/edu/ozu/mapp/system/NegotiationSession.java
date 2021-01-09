@@ -235,7 +235,7 @@ public class NegotiationSession
                 {
                     CompletableFuture.runAsync(() -> {
                         agent_refs.get(agent_name).AcceptLastBids(contract);
-                        agent_refs.get(agent_name).PostNegotiation(session_hash);
+                        agent_refs.get(agent_name).PostNegotiation(contract);
                     })
                     .exceptionally(ex -> { ex.printStackTrace(); return null; })
                     ;
