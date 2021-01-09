@@ -3,8 +3,8 @@ package mappagent.sample;
 import edu.ozu.mapp.agent.Agent;
 import edu.ozu.mapp.agent.MAPPAgent;
 import edu.ozu.mapp.agent.client.AgentClient;
-import edu.ozu.mapp.agent.client.helpers.WorldHandler;
 import edu.ozu.mapp.agent.client.models.Contract;
+import edu.ozu.mapp.system.WorldOverseer;
 import edu.ozu.mapp.utils.*;
 
 import java.util.ArrayList;
@@ -37,7 +37,7 @@ public class HelloAgent2 extends Agent
         if (count++ >= 2)
             return new Action(this, ActionType.ACCEPT);
 
-        String[][] fov = new WorldHandler().getFieldOfView(this.WORLD_ID, this.AGENT_ID);
+        String[][] fov = WorldOverseer.getInstance().GetFoV(this.AGENT_ID);
 
         ArrayList<String[]> constraints = new ArrayList<>();
         for (String[] broadcast_data : fov)

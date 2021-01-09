@@ -3,8 +3,8 @@ package mappagent.sample;
 import edu.ozu.mapp.agent.Agent;
 import edu.ozu.mapp.agent.MAPPAgent;
 import edu.ozu.mapp.agent.client.AgentClient;
-import edu.ozu.mapp.agent.client.helpers.WorldHandler;
 import edu.ozu.mapp.agent.client.models.Contract;
+import edu.ozu.mapp.system.WorldOverseer;
 import edu.ozu.mapp.utils.*;
 import org.springframework.util.Assert;
 
@@ -54,7 +54,7 @@ public class Greedy extends Agent {
     @Override
     public Action onMakeAction(Contract contract)
     {
-        int current_tokens = new WorldHandler().getTokenBalance(WORLD_ID, AGENT_ID);
+        int current_tokens = Integer.parseInt(WorldOverseer.getInstance().GetAgentData(AGENT_ID)[1]);
 
         // get opponent's bid
         Contract last_opponent_bid = history.GetLastOpponentBid(current_opponent);
