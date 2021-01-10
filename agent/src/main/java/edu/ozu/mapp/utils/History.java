@@ -100,7 +100,7 @@ public class History
             return null;
         }
 
-        int current_history_size = history.get(current_negotiation_id).size();
+        int current_history_size = history.getOrDefault(current_negotiation_id, new ArrayList<>()).size();
         ListIterator<Contract> iterator = history.get(current_negotiation_id).listIterator(current_history_size);
         while (iterator.hasPrevious())
         {
