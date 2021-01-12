@@ -53,14 +53,12 @@ public class WorldOverseer
     private MovementHandler     movement_handler;
     private NegotiationOverseer negotiation_overseer;
 
-    private ArrayList<Object[]> state_log = new ArrayList<>();
+    DATA_LOG_DISPLAY log_payload;
 
     private long SIM_LOOP_START_TIME;
     private long SIM_LOOP_FINISH_TIME;
     private long SIM_LOOP_DURATION;
     private int TIME;
-
-    DATA_LOG_DISPLAY log_payload;
 
     private ConcurrentHashMap<String, String> FLAG_JOINS;
     private ConcurrentHashMap<String, String> FLAG_COLLISION_CHECKS;
@@ -231,8 +229,8 @@ public class WorldOverseer
             logger.debug("SIM_LOOP_DURATION   =" + (SIM_LOOP_DURATION / 1E9));
 
             long _t = System.currentTimeMillis();
-            state_log.add(new Object[]{"- SIM_LOOP_FINISH_TIME", new java.sql.Timestamp(_t)});
-            state_log.add(new Object[]{String.format("- SIM_LOOP_DURATION %s seconds", (SIM_LOOP_DURATION / 1E9)), new java.sql.Timestamp(_t)});
+            Log("- SIM_LOOP_FINISH_TIME", new java.sql.Timestamp(_t));
+            Log(String.format("- SIM_LOOP_DURATION %s seconds", (SIM_LOOP_DURATION / 1E9)), new java.sql.Timestamp(_t));
             file_logger.WorldLogDone(WorldID, _t, (SIM_LOOP_DURATION / 1E9));
 
             ui_log_draw_callback_invoker(log_payload);
@@ -337,8 +335,6 @@ public class WorldOverseer
                 break;
             default:
         }
-
-        log_payload.world_log  = state_log;
 
         ui_log_draw_callback_invoker(log_payload);
     }
@@ -639,7 +635,7 @@ public class WorldOverseer
 
     public synchronized void Log(String str, Consumer<String> logger)
     {
-        if (state_log.get(state_log.size()-1)[0].equals(str)) return;
+        if (log_payload.world_log.getLast()[0].equals(str)) return;
 
         logger.accept(str);
         Log(str);
@@ -647,7 +643,12 @@ public class WorldOverseer
 
     public synchronized void Log(String str)
     {
-        state_log.add(new Object[]{str, new java.sql.Timestamp(System.currentTimeMillis())});
+        Log(str, new java.sql.Timestamp(System.currentTimeMillis()));
+    }
+
+    public synchronized void Log(String str, java.sql.Timestamp timestamp)
+    {
+        log_payload.world_log.add(new Object[]{str, timestamp});
     }
 
     public synchronized void LogNegotiation(String key, String value)
