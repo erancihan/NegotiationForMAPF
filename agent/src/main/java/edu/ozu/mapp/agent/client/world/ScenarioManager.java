@@ -92,6 +92,9 @@ public class ScenarioManager extends javax.swing.JFrame
         javax.swing.Box.Filler filler5 = new javax.swing.Box.Filler(new java.awt.Dimension(26, 26), new java.awt.Dimension(26, 26), new java.awt.Dimension(26, 26));
         javax.swing.JLabel label_number_of_expected_conflicts = new javax.swing.JLabel();
         input_number_of_expected_conflicts = new javax.swing.JTextField();
+        javax.swing.JLabel jLabel2 = new javax.swing.JLabel();
+        input_field_of_view = new javax.swing.JTextField();
+        input_field_of_view.setText(String.valueOf(Globals.FIELD_OF_VIEW_SIZE));
         javax.swing.JPanel agent_list_container = new javax.swing.JPanel();
         javax.swing.JScrollPane jScrollPane2 = new javax.swing.JScrollPane();
         agents_table = new javax.swing.JTable();
@@ -335,6 +338,20 @@ public class ScenarioManager extends javax.swing.JFrame
         gridBagConstraints.gridx = 9;
         gridBagConstraints.gridy = 2;
         inputs_container.add(input_number_of_expected_conflicts, gridBagConstraints);
+
+        jLabel2.setFont(new java.awt.Font("Ubuntu", 0, 14)); // NOI18N
+        jLabel2.setText("Field of View");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 7;
+        inputs_container.add(jLabel2, gridBagConstraints);
+
+        input_field_of_view.setHorizontalAlignment(javax.swing.JTextField.CENTER);
+        input_field_of_view.setPreferredSize(new java.awt.Dimension(80, 35));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 7;
+        inputs_container.add(input_field_of_view, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -888,6 +905,7 @@ public class ScenarioManager extends javax.swing.JFrame
     private javax.swing.JTextField height_input;
     private edu.ozu.mapp.agent.client.world.WorldHistoryPanel history_panel;
     private javax.swing.JSplitPane horizontal_spliter;
+    private javax.swing.JTextField input_field_of_view;
     private javax.swing.JTextField input_initial_token_count_per_agent;
     private javax.swing.JTextField input_number_of_expected_conflicts;
     private javax.swing.JScrollPane jScrollPane4;
@@ -950,10 +968,8 @@ public class ScenarioManager extends javax.swing.JFrame
         if (scenario_canvas != null) scenario_canvas.Destroy();
     }
 
-//    private World world;
     private WorldOverseer world;
     private JSONWorldData world_data;
-//    private WorldWatchSocketIO world_listener = null;
     private int agent_count = 0; // track number of agents there should be
     private int number_of_expected_conflicts = 0;
     private ArrayList<JSONAgentData> agents_data = new ArrayList<>();
@@ -966,6 +982,9 @@ public class ScenarioManager extends javax.swing.JFrame
     private void GenerateScenario()
     {
         String wid = String.valueOf(System.currentTimeMillis());
+
+        Globals.FIELD_OF_VIEW_SIZE = Integer.parseInt(input_field_of_view.getText());
+        Globals.BROADCAST_SIZE     = Globals.FIELD_OF_VIEW_SIZE;
 
         // fetch scenario information
         int width, height, min_path_len, max_path_len, min_dist_bw, initial_token_c;
