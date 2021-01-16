@@ -204,6 +204,7 @@ public class WorldOverseer
         data.put("Active Agent Count", String.valueOf(active_agent_c));
         data.put("Active Negotiation Count", String.valueOf(negotiation_overseer.ActiveCount()));
         data.put("Cumulative Negotiation Count", String.valueOf(negotiation_overseer.CumulativeCount()));
+        data.put("Field of View", String.valueOf(Globals.FIELD_OF_VIEW_SIZE));
 
         log_payload.world_data = data;
 
@@ -248,6 +249,10 @@ public class WorldOverseer
                     Log("- END OF JOIN STATE", logger::info);
                     SNAPSHOT_HOOK.accept(
                         String.format("Initial State - %-23s", new java.sql.Timestamp(System.currentTimeMillis())),
+                        generate_snapshot()
+                    );
+                    SNAPSHOT_HOOK.accept(
+                        String.format("MOVE T:%s - %-23s", TIME, new java.sql.Timestamp(System.currentTimeMillis())),
                         generate_snapshot()
                     );
                     prev_state = curr_state;
@@ -734,10 +739,8 @@ public class WorldOverseer
         for (String client_key : clients.keySet())
         {
             snapshot.agent_keys.add(client_key);
-            snapshot.locations
-                    .put(client_key, clients.get(client_key).GetCurrentLocation());
-            snapshot.paths
-                    .put(client_key, clients.get(client_key).GetAgentPlannedPath());
+            snapshot.locations.put(client_key, clients.get(client_key).GetCurrentLocation());
+            snapshot.paths.put(client_key, clients.get(client_key).GetAgentPlannedPath());
         }
 
         return snapshot;
