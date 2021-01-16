@@ -1,20 +1,41 @@
 package edu.ozu.mapp.keys;
 
 import edu.ozu.mapp.agent.Agent;
-import edu.ozu.mapp.utils.Globals;
 import org.springframework.util.Assert;
-import redis.clients.jedis.Jedis;
 
 import javax.crypto.Cipher;
 import java.security.*;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
+import java.util.concurrent.ConcurrentHashMap;
 
-public class KeyHandler {
+public class KeyHandler
+{
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(KeyHandler.class);
-    private static redis.clients.jedis.Jedis jedis = new Jedis(Globals.REDIS_HOST, Globals.REDIS_PORT);
+    private static KeyHandler instance;
 
-    private static final String KEY_VAULT = "PubKeyVault";
+    private final ConcurrentHashMap<String, String> vault;
+
+    private KeyHandler()
+    {
+        vault = new ConcurrentHashMap<>();
+    }
+
+    public static KeyHandler getInstance()
+    {
+        if (instance == null)
+        {
+            synchronized (KeyHandler.class)
+            {
+                if (instance == null)
+                {
+                    instance = new KeyHandler();
+                }
+            }
+        }
+
+        return instance;
+    }
 
     private static KeyPair generateKeyPair()
     {
@@ -33,18 +54,14 @@ public class KeyHandler {
         return null;
     }
 
-    public static AgentKeys create(Agent agent)
+    public AgentKeys create(Agent agent)
     {
         Assert.isTrue(agent.AGENT_ID != null && !agent.AGENT_ID.isEmpty(), "Agent is empty!!!");
 
         try {
             AgentKeys keys = new AgentKeys(generateKeyPair(), agent);
 
-            jedis.hset(
-                    KEY_VAULT,
-                    agent.AGENT_ID,
-                    Base64.getEncoder().encodeToString(keys.GetPublicKey().getEncoded())
-            );
+            vault.put(agent.AGENT_ID,Base64.getEncoder().encodeToString(keys.GetPublicKey().getEncoded()));
 
             return keys;
         } catch (Exception e) {
@@ -90,9 +107,9 @@ public class KeyHandler {
         return null;
     }
 
-    public static PublicKey getPubKey(String agentID)
+    public PublicKey getPubKey(String agentID)
     {
-        String key_str = jedis.hget(KEY_VAULT, agentID);
+        String key_str = vault.get(agentID); //jedis.hget(KEY_VAULT, agentID);
 
         PublicKey key = null;
         try {

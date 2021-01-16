@@ -83,7 +83,7 @@ public abstract class Agent {
 
         history = new History(AGENT_ID);
         // create and store agent keys
-        keys = KeyHandler.create(this);
+        keys = KeyHandler.getInstance().create(this);
     }
 
     public void init() { }
