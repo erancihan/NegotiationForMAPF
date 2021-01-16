@@ -326,7 +326,11 @@ public class WorldOverseer
                             if (IsLooping) { Step(); }
                         })
                         .whenComplete((entity, ex) -> {
-                            if (ex != null) ex.printStackTrace();
+                            if (ex != null)
+                            {
+                                ex.printStackTrace();
+                                System.exit(1);
+                            }
 
                             SNAPSHOT_HOOK.accept(
                                 String.format("MOVE T:%s - %-23s", TIME, new java.sql.Timestamp(System.currentTimeMillis())),
