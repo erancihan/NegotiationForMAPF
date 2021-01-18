@@ -5,18 +5,30 @@ import edu.ozu.mapp.system.WorldOverseer;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import javax.swing.text.Element;
+import javax.swing.text.SimpleAttributeSet;
+import java.lang.annotation.Documented;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 
 public class TextPaneLogFormatter
 {
-    public JTextPane scenario_info_pane;
+    public LogDisplayPane scenario_info_pane;
     public JTextPane negotiation_info_pane;
+
+    public SimpleAttributeSet attributes;
+
+    public TextPaneLogFormatter()
+    {
+        attributes = new SimpleAttributeSet();
+    }
 
     public void format(DATA_LOG_DISPLAY data)
     {
         try {
-            scenario_info_pane.setText(parse_scenario_pane_log(data.clone()));
+            parse_scenario_pane_log(data.clone());
             negotiation_info_pane.setText(parse_negotiation_pane_log(data));
         } catch (Exception e) {
             e.printStackTrace();
@@ -24,31 +36,9 @@ public class TextPaneLogFormatter
         }
     }
 
-    @NotNull
-    private String parse_scenario_pane_log(DATA_LOG_DISPLAY data)
+    private void parse_scenario_pane_log(DATA_LOG_DISPLAY data)
     {
-        StringBuilder out = new StringBuilder();
-
-        data.world_data
-            .keySet().stream().sorted()
-            .forEach(key -> {
-                out.append(String.format("%-11s : %s\n", key, data.world_data.get(key)));
-            });
-        out.append("-------------\n");
-        data.agent_to_point
-            .keySet().stream().sorted()
-            .forEach(key -> {
-                String[] _data = WorldOverseer.getInstance().GetAgentData(key);
-
-                out.append(String.format("%s POS: %s TOKEN: %s REMAINING_PATH_LEN: %S\n", key, _data[0], _data[1], _data[2]));
-            });
-        out.append("-------------\n");
-        for (Object[] item : data.world_log)
-        {
-            out.append(String.format("%-23s %s\n", item[1].toString(), item[0].toString()));
-        }
-
-        return out.toString();
+        scenario_info_pane.SetData(data);
     }
 
     @NotNull

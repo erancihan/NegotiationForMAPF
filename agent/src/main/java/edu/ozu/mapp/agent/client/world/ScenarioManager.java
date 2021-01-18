@@ -42,10 +42,6 @@ import java.util.stream.Collectors;
 public class ScenarioManager extends javax.swing.JFrame
 {
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ScenarioManager.class);
-    private Random rng = new Random();
-
-    private String WorldID = null;
-    private boolean ReadyToRun = false;
 
     /**
      * Creates new form ScenarioManager
@@ -137,9 +133,12 @@ public class ScenarioManager extends javax.swing.JFrame
         javax.swing.JTabbedPane logs_tab_container = new javax.swing.JTabbedPane();
         javax.swing.JPanel world_logs = new javax.swing.JPanel();
         javax.swing.JScrollPane jScrollPane1 = new javax.swing.JScrollPane();
-        scenario_info_pane = new javax.swing.JTextPane();
+        jScrollPane1.getVerticalScrollBar().setUnitIncrement(14);
+        jScrollPane1.getViewport().setScrollMode(JViewport.SIMPLE_SCROLL_MODE);
+        scenario_info_pane = new edu.ozu.mapp.agent.client.world.LogDisplayPane();
         javax.swing.JPanel negotiation_logs = new javax.swing.JPanel();
-        jScrollPane4 = new javax.swing.JScrollPane();
+        javax.swing.JScrollPane jScrollPane4 = new javax.swing.JScrollPane();
+        jScrollPane4.getViewport().setScrollMode(JViewport.SIMPLE_SCROLL_MODE);
         negotiation_info_pane = new javax.swing.JTextPane();
         javax.swing.JPanel run_controls = new javax.swing.JPanel();
         javax.swing.JButton back_to_overview_btn = new javax.swing.JButton();
@@ -644,8 +643,23 @@ public class ScenarioManager extends javax.swing.JFrame
 
         world_logs.setLayout(new java.awt.BorderLayout());
 
-        scenario_info_pane.setBackground(new java.awt.Color(250, 250, 250));
+        jScrollPane1.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+        jScrollPane1.setAutoscrolls(true);
+
         scenario_info_pane.setFont(new java.awt.Font("Ubuntu Mono", 0, 14)); // NOI18N
+        scenario_info_pane.SetScrollPane(jScrollPane1);
+
+        javax.swing.GroupLayout scenario_info_paneLayout = new javax.swing.GroupLayout(scenario_info_pane);
+        scenario_info_pane.setLayout(scenario_info_paneLayout);
+        scenario_info_paneLayout.setHorizontalGroup(
+            scenario_info_paneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 504, Short.MAX_VALUE)
+        );
+        scenario_info_paneLayout.setVerticalGroup(
+            scenario_info_paneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 617, Short.MAX_VALUE)
+        );
+
         jScrollPane1.setViewportView(scenario_info_pane);
 
         world_logs.add(jScrollPane1, java.awt.BorderLayout.CENTER);
@@ -908,7 +922,6 @@ public class ScenarioManager extends javax.swing.JFrame
     private javax.swing.JTextField input_field_of_view;
     private javax.swing.JTextField input_initial_token_count_per_agent;
     private javax.swing.JTextField input_number_of_expected_conflicts;
-    private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JLabel label_current_state;
     private javax.swing.JTextField max_path_length_input;
     private javax.swing.JLabel max_path_length_label;
@@ -921,7 +934,7 @@ public class ScenarioManager extends javax.swing.JFrame
     private javax.swing.JPanel overview_scenario;
     private javax.swing.JDialog popup_generating;
     private edu.ozu.mapp.agent.client.world.ScenarioCanvas scenario_canvas;
-    private javax.swing.JTextPane scenario_info_pane;
+    private edu.ozu.mapp.agent.client.world.LogDisplayPane scenario_info_pane;
     private javax.swing.JSplitPane vertical_spliter;
     private javax.swing.JTextField width_input;
     private javax.swing.JPanel world_view_tab;
@@ -1200,7 +1213,7 @@ public class ScenarioManager extends javax.swing.JFrame
     {
         generate_scenario_btn.setEnabled(false);
 
-        WorldID = "world:" + world_data.world_id + ":";
+        String worldID = "world:" + world_data.world_id + ":";
 
         // initialize world
         if (world == null) InitializeWorld();
