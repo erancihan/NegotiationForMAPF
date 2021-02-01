@@ -109,7 +109,7 @@ public class KeyHandler
 
     public PublicKey getPubKey(String agentID)
     {
-        String key_str = vault.get(agentID); //jedis.hget(KEY_VAULT, agentID);
+        String key_str = vault.get(agentID);
 
         PublicKey key = null;
         try {

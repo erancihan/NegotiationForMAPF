@@ -51,6 +51,11 @@ public class Contract implements Cloneable {
         return new Contract(sess);
     }
 
+    public int GetTokenCountOf(Agent agent)
+    {
+        return Integer.parseInt(getTokenCountOf(agent));
+    }
+
     public String getTokenCountOf(Agent agent)
     {
 //        System.out.println(A + " " + B + " " + agent.AGENT_ID);

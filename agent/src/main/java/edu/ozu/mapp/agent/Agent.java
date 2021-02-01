@@ -24,7 +24,10 @@ public abstract class Agent {
     public String AGENT_NAME, AGENT_ID;
     public Point START, DEST;
     public History history;
+
     public int initial_tokens = Globals.INITIAL_TOKEN_BALANCE;
+    public int initial_path = -1;
+
     public int current_tokens;
     public String current_opponent;
 
@@ -106,6 +109,7 @@ public abstract class Agent {
     {
         logger.info("calculating path");
         path = calculatePath();
+        this.initial_path = path.size();
 
         POS = new Point(path.get(0).split("-"));
         history = new History(AGENT_ID);
@@ -256,19 +260,15 @@ public abstract class Agent {
         return new Path(WorldOverseer.getInstance().GetBroadcast(current_opponent));
     }
 
-    public final void setWORLD_ID(String WORLD_ID)
+    // TODO
+    public final int GetMyCurrentTokenBalance()
     {
-        this.WORLD_ID = WORLD_ID;
+        return -1;
     }
 
-    private int GetTokenBalance()
+    public final int GetMyRemainingPathLength()
     {
-        if (WORLD_ID.isEmpty()) {
-            logger.error("world id is empty!");
-            return Globals.INITIAL_TOKEN_BALANCE;
-        }
-
-        return current_tokens;
+        return (this.path.size()-1) - time;
     }
 
     public final HashSet<String> getOwnBidHistory()
@@ -291,23 +291,10 @@ public abstract class Agent {
         return keys.GetPublicKey();
     }
 
-//    @Deprecated
-//    public final void LogNegotiationOver(String prev_bidding_agent, String session_id)
-//    {
-//        /*
-//         * by the time this function is invoked,
-//         * if the negotiation result has not been updated,
-//         * it means that negotiation concluded without THIS agent accepting
-//         * SINCE NO TIMEOUT IS IMPLEMENTED YET
-//         * it indicates that opponent has accepted the bid & negotiation is won
-//         * */
-//        if (negotiation_result == -1)
-//        {
-//            negotiation_result = 1;
-//            file_logger.LogAgentNegotiationState(prev_bidding_agent, this, true);
-//        }
-//        file_logger.logAgentPostNego(session_id, this);
-//    }
+    public final void setWORLD_ID(String WORLD_ID)
+    {
+        this.WORLD_ID = WORLD_ID;
+    }
 
     public final void SetConflictLocation(String conflictLocation)
     {
