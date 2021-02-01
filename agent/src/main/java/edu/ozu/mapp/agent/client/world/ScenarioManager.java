@@ -955,17 +955,17 @@ public class ScenarioManager extends javax.swing.JFrame
     //<editor-fold defaultstate="collapsed" desc="Find Agent Classes">
     private void FindClasses()
     {
+        String[] packages = new String[]{"mappagent.sample", "mapp.agent"};
         HashMap<String, Class<? extends Agent>> agents = new HashMap<>();
 
         ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(true);
         scanner.addIncludeFilter(new AnnotationTypeFilter(MAPPAgent.class));
 
         try {
-            for (BeanDefinition bd : scanner.findCandidateComponents("mappagent.sample")) {
-                agents.put(
-                        Objects.requireNonNull(bd.getBeanClassName()),
-                        (Class<? extends Agent>) Class.forName(bd.getBeanClassName())
-                );
+            for (String basePackage : packages) {
+                for (BeanDefinition bd : scanner.findCandidateComponents(basePackage)) {
+                    agents.put(Objects.requireNonNull(bd.getBeanClassName()), (Class<? extends Agent>) Class.forName(bd.getBeanClassName()));
+                }
             }
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
