@@ -13,6 +13,10 @@ out/
 *.ipr
 .idea_modules/
 
+# OK, dont ignore project's imls after all
+!agent/agent.iml
+!scripts/scripts.iml
+
 # JIRA plugin
 atlassian-ide-plugin.xml
 
