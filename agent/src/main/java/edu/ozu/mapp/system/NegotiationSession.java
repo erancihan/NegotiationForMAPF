@@ -197,55 +197,69 @@ public class NegotiationSession
     private Lock session_loop_agent_invoke_lock;
     private void session_loop() throws CloneNotSupportedException
     {
-        if (session_loop_agent_invoke_lock.tryLock())
+        if (!session_loop_agent_invoke_lock.tryLock()) return;
+
+        switch (state)
         {
-            Contract contract = this.contract.clone();
-
-            if (state.equals(NegotiationState.RUNNING))
-            {
-//            log_hook.accept(session_hash, String.format("%-23s %-7s %s", new java.sql.Timestamp(System.currentTimeMillis()), state, contract.print()));
-                try {
-                    for (String agent_name : agent_names)
-                    {
-                        CompletableFuture
-                            .runAsync(() -> send_current_state_to_agent(agent_name))
-                            .exceptionally(ex -> { ex.printStackTrace(); return null; })
-                        ;
-                    }
-
-                    CompletableFuture
-                        .supplyAsync(this::process_turn_make_action)
-                        .whenCompleteAsync((entity, ex) -> {
-                            if (ex != null) ex.printStackTrace();
-
-                            session_loop_agent_invoke_lock.unlock();
-                        }, service)
-                    ;
-                } catch (Exception exception) {
-                    exception.printStackTrace();
-                    session_loop_agent_invoke_lock.unlock();
-                }
-            }
-
-            if (state.equals(NegotiationState.DONE))
-            {   // TELL ALL AGENTS THAT NEGOTIATION IS DONE
-            log_hook.accept(session_hash, String.format("%-23s %-7s %s", new java.sql.Timestamp(System.currentTimeMillis()), state, contract.print()));
-                for (String agent_name : agent_names)
-                {
-                    CompletableFuture.runAsync(() -> {
-                        agent_refs.get(agent_name).AcceptLastBids(contract);
-                        agent_refs.get(agent_name).PostNegotiation(contract);
-                    })
-                    .exceptionally(ex -> { ex.printStackTrace(); return null; })
-                    ;
-                }
-
-                // clean up
-                task_run.cancel(false);
-            }
+            case RUNNING:
+                session_loop_state_case_running();
+                break;
+            case DONE:
+                // TELL ALL AGENTS THAT NEGOTIATION IS DONE
+                session_loop_state_case_done();
+                break;
+            default:
+                System.err.printf("UNHANDLED STATE: %s %s", state, System.lineSeparator());
+                System.exit(1);
         }
 
         T = T + 1;
+    }
+
+    private void session_loop_state_case_running()
+    {
+//        log_hook.accept(session_hash, String.format("%-23s %-7s %s", new java.sql.Timestamp(System.currentTimeMillis()), state, contract.print()));
+        try {
+            for (String agent_name : agent_names)
+            {
+                CompletableFuture
+                    .runAsync(() -> send_current_state_to_agent(agent_name))
+                    .exceptionally(ex -> { ex.printStackTrace(); return null; })
+                ;
+            }
+
+            CompletableFuture
+                .supplyAsync(this::process_turn_make_action)
+                .whenCompleteAsync((entity, ex) -> {
+                    if (ex != null) ex.printStackTrace();
+
+                    session_loop_agent_invoke_lock.unlock();
+                }, service)
+            ;
+        } catch (Exception exception) {
+            exception.printStackTrace();
+            session_loop_agent_invoke_lock.unlock();
+        }
+    }
+
+    private void session_loop_state_case_done() throws CloneNotSupportedException
+    {
+        Contract contract = this.contract.clone();
+
+        log_hook.accept(session_hash, String.format("%-23s %-7s %s", new java.sql.Timestamp(System.currentTimeMillis()), state, contract.print()));
+        for (String agent_name : agent_names)
+        {
+            CompletableFuture
+                .runAsync(() -> {
+                    agent_refs.get(agent_name).AcceptLastBids(contract);
+                    agent_refs.get(agent_name).PostNegotiation(contract);
+                })
+                .exceptionally(ex -> { ex.printStackTrace(); return null; })
+            ;
+        }
+
+        // clean up
+        task_run.cancel(false);
     }
 
     private void send_current_state_to_agent(String agent_name)
