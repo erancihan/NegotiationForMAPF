@@ -88,7 +88,7 @@ public class MovementHandler
 
     private synchronized void process_queue()
     {
-        System.out.println("processing queue of size " + move_queue.size());
+//        System.out.println("processing queue of size " + move_queue.size());
         Iterator<String> iterator = move_queue.keySet().iterator();
         while (iterator.hasNext())
         {
