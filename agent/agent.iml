@@ -38,7 +38,6 @@
     <orderEntry type="library" name="Maven: org.springframework:spring-aop:5.1.9.RELEASE" level="project" />
     <orderEntry type="library" name="Maven: org.springframework:spring-beans:5.1.9.RELEASE" level="project" />
     <orderEntry type="library" name="Maven: org.springframework:spring-expression:5.1.9.RELEASE" level="project" />
-    <orderEntry type="library" name="Maven: javax.websocket:javax.websocket-api:1.1" level="project" />
     <orderEntry type="library" name="Maven: org.glassfish.tyrus:tyrus-client:1.15" level="project" />
     <orderEntry type="library" name="Maven: org.glassfish.tyrus:tyrus-core:1.15" level="project" />
     <orderEntry type="library" name="Maven: org.glassfish.tyrus:tyrus-spi:1.15" level="project" />
@@ -148,10 +147,5 @@
     <orderEntry type="library" name="Maven: org.slf4j:slf4j-api:1.7.28" level="project" />
     <orderEntry type="library" name="Maven: ch.qos.logback:logback-classic:1.2.3" level="project" />
     <orderEntry type="library" name="Maven: ch.qos.logback:logback-core:1.2.3" level="project" />
-    <orderEntry type="library" name="Maven: io.socket:socket.io-client:1.0.0" level="project" />
-    <orderEntry type="library" name="Maven: io.socket:engine.io-client:1.0.0" level="project" />
-    <orderEntry type="library" name="Maven: com.squareup.okhttp3:okhttp:3.8.1" level="project" />
-    <orderEntry type="library" name="Maven: com.squareup.okio:okio:1.13.0" level="project" />
-    <orderEntry type="library" name="Maven: org.json:json:20090211" level="project" />
   </component>
 </module>
