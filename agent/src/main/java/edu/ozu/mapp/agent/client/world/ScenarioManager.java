@@ -48,7 +48,20 @@ public class ScenarioManager extends javax.swing.JFrame
      */
     public ScenarioManager()
     {
-        initComponents();
+        // default has gui, there for not headless
+        this(false);
+    }
+
+    public ScenarioManager(boolean is_headless)
+    {
+        if (is_headless) {
+            logger.warn("HEADLESS DESIGN IS NOT FULLY IMPLEMENTED");
+        } else {
+            initComponents();
+        }
+
+        // despite having no components, this is final step of creation function
+        // perhaps renaming is in order
         onComponentsDidMount();
     }
 
@@ -949,7 +962,7 @@ public class ScenarioManager extends javax.swing.JFrame
         logger.debug(agents_map.toString());
 
         AgentsTableModel table = new AgentsTableModel(agents_map.keySet().toArray(new String[0]));
-        agents_table.setModel(table);
+        if (agents_table != null) agents_table.setModel(table);
     }
 
     //<editor-fold defaultstate="collapsed" desc="Find Agent Classes">
