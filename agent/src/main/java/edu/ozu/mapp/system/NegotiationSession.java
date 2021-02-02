@@ -2,10 +2,7 @@ package edu.ozu.mapp.system;
 
 import edu.ozu.mapp.agent.client.AgentHandler;
 import edu.ozu.mapp.agent.client.models.Contract;
-import edu.ozu.mapp.utils.Action;
-import edu.ozu.mapp.utils.ActionType;
-import edu.ozu.mapp.utils.State;
-import edu.ozu.mapp.utils.Utils;
+import edu.ozu.mapp.utils.*;
 import org.glassfish.grizzly.utils.ArrayUtils;
 import org.springframework.util.Assert;
 
@@ -32,6 +29,7 @@ public class NegotiationSession
 
     private int T = 0;
     private int Round = 0;
+    private long start_time;
     private ConcurrentLinkedQueue<String> bid_order_queue;
 
     private String session_hash;
@@ -168,6 +166,7 @@ public class NegotiationSession
         task_join_await.cancel(false);
 
         state = NegotiationState.RUNNING;
+        start_time = System.currentTimeMillis();
         Assert.notNull(TURN, "TURN cannot be null! " + Arrays.toString(agent_names));
 
         task_run = service.scheduleAtFixedRate(this::session_loop_container, 0, 100, TimeUnit.MILLISECONDS);
@@ -265,6 +264,16 @@ public class NegotiationSession
     @org.jetbrains.annotations.NotNull
     private String process_turn_make_action() {
         AgentHandler agent = agent_refs.get(TURN);
+/*
+        if (
+                Round >= Globals.NEGOTIATION_DEADLINE_ROUND ||
+                (System.currentTimeMillis() - start_time) >= Globals.NEGOTIATION_DEADLINE_MS
+        )
+        {
+            // todo tell agents that negotiation is over
+            return "";
+        }
+ */
 
         Action action = null;
         try {
@@ -288,6 +297,7 @@ public class NegotiationSession
 
             // Update TURN
             if (bid_order_queue.peek() == null) {   // QUEUE is empty!!
+                // UPDATE ROUND
                 Round = Round + 1;
                 shuffle_bid_order();
             }
