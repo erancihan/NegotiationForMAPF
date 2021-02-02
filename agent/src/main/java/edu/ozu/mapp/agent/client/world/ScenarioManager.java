@@ -1275,6 +1275,7 @@ public class ScenarioManager extends javax.swing.JFrame
 @SuppressWarnings({"FieldMayBeFinal", "unused"})
 class AgentsTableModel extends AbstractTableModel
 {
+    //<editor-fold defaultstate="collapsed" desc="implementation">
     private boolean[][] editable_cells; // 2d array to represent rows and columns
     private String[] columns = new String[]{"Agent Class", "Count"};
     private ArrayList<Object[]> rows = new ArrayList<>();
@@ -1330,11 +1331,13 @@ class AgentsTableModel extends AbstractTableModel
     {
         return this.editable_cells[row][column];
     }
+    //</editor-fold>
 }
 
 @SuppressWarnings({"FieldMayBeFinal", "unused"})
 class AgentDetailsTableModel extends AbstractTableModel
 {
+    //<editor-fold defaultstate="collapsed" desc="implementation">
     private final JSONAgentData[] agents;
     private boolean[][] editable_cells;
     private String[] columns = new String[]{"Agent Name", "Start", "Dest", "Path len", "# of Tokens"};
@@ -1419,4 +1422,5 @@ class AgentDetailsTableModel extends AbstractTableModel
     {
         return this.editable_cells[row][column];
     }
+    //</editor-fold>
 }
