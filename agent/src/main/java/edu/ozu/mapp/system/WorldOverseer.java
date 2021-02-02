@@ -71,6 +71,7 @@ public class WorldOverseer
     private Runnable                    UI_CanvasUpdateHook;
     private Runnable                    UI_LoopStoppedHook;
     private BiConsumer<String, WorldSnapshot> SNAPSHOT_HOOK;
+    private ScheduledFuture<?> main_sim_loop;
 
     private WorldOverseer()
     {
@@ -166,7 +167,7 @@ public class WorldOverseer
     public void Run()
     {
         service = Executors.newScheduledThreadPool(clients.size() + 1);
-        service.scheduleAtFixedRate(this::run_loop_container, 0, 250, TimeUnit.MILLISECONDS);
+        main_sim_loop = service.scheduleAtFixedRate(this::run_loop_container, 0, 250, TimeUnit.MILLISECONDS);
 
         for (String agent_name : clients.keySet())
         {
@@ -220,6 +221,7 @@ public class WorldOverseer
         if (active_agent_c == 0 && IsLooping)
         {   // there are no active agents left!
             IsLooping = false;
+            main_sim_loop.cancel(false);
             SIM_LOOP_FINISH_TIME = System.nanoTime();
 
             if (UI_LoopStoppedHook != null) { UI_LoopStoppedHook.run(); }
