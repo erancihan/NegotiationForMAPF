@@ -29,6 +29,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
@@ -763,8 +764,13 @@ public class ScenarioManager extends javax.swing.JFrame
         // switch to first page
         ((CardLayout) cards_container.getLayout()).show(cards_container, "create");
 
+        // define folder path
+        File mapp_folder = new File(java.nio.file.Paths.get(new JFileChooser().getFileSystemView().getDefaultDirectory().toString(), "MAPP").toString());
+        if (!mapp_folder.exists()) mapp_folder.mkdirs();
+
         // open file picker and select .json file to import scenario config from
         file_chooser.setFileFilter(new FileNameExtensionFilter("JSON", "json"));
+        file_chooser.setCurrentDirectory(mapp_folder);
         int return_val = file_chooser.showOpenDialog(this);
         if (return_val == JFileChooser.APPROVE_OPTION) {
             // open & import file
@@ -802,7 +808,12 @@ public class ScenarioManager extends javax.swing.JFrame
         // open file picker and select .json file to export scenario config to
         String wid = String.valueOf(System.currentTimeMillis());
 
+        // define folder path
+        File mapp_folder = new File(java.nio.file.Paths.get(new JFileChooser().getFileSystemView().getDefaultDirectory().toString(), "MAPP").toString());
+        if (!mapp_folder.exists()) mapp_folder.mkdirs();
+
         file_chooser.setSelectedFile(new File("world-scenario-"+wid+".json"));
+        file_chooser.setCurrentDirectory(mapp_folder);
         int return_val = file_chooser.showSaveDialog(this);
         if (return_val == JFileChooser.APPROVE_OPTION) {
             // open & write to file
