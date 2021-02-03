@@ -164,7 +164,7 @@
                 <Component class="javax.swing.JLabel" name="label_width">
                   <Properties>
                     <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                      <Font name="Ubuntu" size="14" style="0"/>
+                      <Font name="Tahoma" size="12" style="0"/>
                     </Property>
                     <Property name="horizontalAlignment" type="int" value="0"/>
                     <Property name="text" type="java.lang.String" value="Width"/>
@@ -185,7 +185,7 @@
                 <Component class="javax.swing.JLabel" name="label_height">
                   <Properties>
                     <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                      <Font name="Ubuntu" size="14" style="0"/>
+                      <Font name="Tahoma" size="12" style="0"/>
                     </Property>
                     <Property name="horizontalAlignment" type="int" value="0"/>
                     <Property name="text" type="java.lang.String" value="Height"/>
@@ -205,7 +205,9 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="label_MinPathLength">
                   <Properties>
-                    <Property name="horizontalAlignment" type="int" value="2"/>
+                    <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+                      <Font name="Tahoma" size="12" style="0"/>
+                    </Property>
                     <Property name="text" type="java.lang.String" value="Min Path Length"/>
                     <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                       <Dimension value="[165, 18]"/>
@@ -229,6 +231,9 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="label_MaxPathLength">
                   <Properties>
+                    <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+                      <Font name="Tahoma" size="12" style="0"/>
+                    </Property>
                     <Property name="text" type="java.lang.String" value="Max Path Length"/>
                     <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                       <Dimension value="[165, 18]"/>
@@ -252,7 +257,9 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="label_min_dist_bw_agents">
                   <Properties>
-                    <Property name="horizontalAlignment" type="int" value="2"/>
+                    <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+                      <Font name="Tahoma" size="12" style="0"/>
+                    </Property>
                     <Property name="text" type="java.lang.String" value="min dist b/w agents"/>
                     <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                       <Dimension value="[165, 18]"/>
@@ -276,6 +283,9 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="label_initial_tokens_per_agent">
                   <Properties>
+                    <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+                      <Font name="Tahoma" size="12" style="0"/>
+                    </Property>
                     <Property name="text" type="java.lang.String" value="Initial Tokens per Agent"/>
                     <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                       <Dimension value="[165, 18]"/>
@@ -538,6 +548,9 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="label_number_of_expected_conflicts">
                   <Properties>
+                    <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+                      <Font name="Tahoma" size="12" style="0"/>
+                    </Property>
                     <Property name="text" type="java.lang.String" value="no of expected conflicts"/>
                     <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                       <Dimension value="[165, 18]"/>
@@ -578,7 +591,7 @@
                 <Component class="javax.swing.JLabel" name="jLabel2">
                   <Properties>
                     <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                      <Font name="Ubuntu" size="14" style="0"/>
+                      <Font name="Tahoma" size="12" style="0"/>
                     </Property>
                     <Property name="text" type="java.lang.String" value="Field of View"/>
                   </Properties>
@@ -2085,7 +2098,6 @@
                 <Container class="javax.swing.JSplitPane" name="horizontal_spliter">
                   <Properties>
                     <Property name="dividerLocation" type="int" value="300"/>
-                    <Property name="dividerSize" type="int" value="5"/>
                     <Property name="cursor" type="java.awt.Cursor" editor="org.netbeans.modules.form.editors2.CursorEditor">
                       <Color id="Default Cursor"/>
                     </Property>
@@ -2123,7 +2135,6 @@
                         <Container class="javax.swing.JSplitPane" name="vertical_spliter">
                           <Properties>
                             <Property name="dividerLocation" type="int" value="300"/>
-                            <Property name="dividerSize" type="int" value="5"/>
                             <Property name="orientation" type="int" value="0"/>
                             <Property name="toolTipText" type="java.lang.String" value=""/>
                             <Property name="cursor" type="java.awt.Cursor" editor="org.netbeans.modules.form.editors2.CursorEditor">
@@ -2332,8 +2343,8 @@
                               <SubComponents>
                                 <Container class="edu.ozu.mapp.agent.client.world.LogDisplayPane" name="scenario_info_pane">
                                   <Properties>
-                                    <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                                      <Font name="Ubuntu Mono" size="14" style="0"/>
+                                    <Property name="font" type="java.awt.Font" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                                      <Connection code="meslolgs" type="code"/>
                                     </Property>
                                   </Properties>
                                   <AuxValues>
@@ -2389,8 +2400,8 @@
                               <SubComponents>
                                 <Component class="javax.swing.JTextPane" name="negotiation_info_pane">
                                   <Properties>
-                                    <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                                      <Font name="Ubuntu Mono" size="14" style="0"/>
+                                    <Property name="font" type="java.awt.Font" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                                      <Connection code="meslolgs" type="code"/>
                                     </Property>
                                   </Properties>
                                 </Component>

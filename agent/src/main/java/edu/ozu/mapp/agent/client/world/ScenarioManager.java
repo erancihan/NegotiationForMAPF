@@ -18,18 +18,15 @@ import edu.ozu.mapp.utils.*;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
+import org.springframework.util.Assert;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.AbstractTableModel;
 import java.awt.*;
 import java.awt.event.ItemEvent;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.lang.reflect.InvocationTargetException;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
@@ -43,6 +40,8 @@ import java.util.stream.Collectors;
 public class ScenarioManager extends javax.swing.JFrame
 {
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ScenarioManager.class);
+
+    private Font meslolgs;
 
     /**
      * Creates new form ScenarioManager
@@ -58,6 +57,14 @@ public class ScenarioManager extends javax.swing.JFrame
         if (is_headless) {
             logger.warn("HEADLESS DESIGN IS NOT FULLY IMPLEMENTED");
         } else {
+            try {
+                InputStream stream = ClassLoader.getSystemClassLoader().getResourceAsStream("fonts/MesloLGS NF Regular.ttf");
+                Assert.isTrue(stream != null, "file stream is null!");
+                meslolgs = Font.createFont(Font.TRUETYPE_FONT, stream).deriveFont(12f);
+            } catch (FontFormatException | IOException e) {
+                e.printStackTrace();
+            }
+
             initComponents();
         }
 
@@ -198,7 +205,7 @@ public class ScenarioManager extends javax.swing.JFrame
 
         inputs_container.setLayout(new java.awt.GridBagLayout());
 
-        label_width.setFont(new java.awt.Font("Ubuntu", 0, 14)); // NOI18N
+        label_width.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
         label_width.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         label_width.setText("Width");
         label_width.setPreferredSize(new java.awt.Dimension(80, 16));
@@ -207,7 +214,7 @@ public class ScenarioManager extends javax.swing.JFrame
         gridBagConstraints.gridy = 3;
         inputs_container.add(label_width, gridBagConstraints);
 
-        label_height.setFont(new java.awt.Font("Ubuntu", 0, 14)); // NOI18N
+        label_height.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
         label_height.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         label_height.setText("Height");
         label_height.setPreferredSize(new java.awt.Dimension(80, 16));
@@ -216,7 +223,7 @@ public class ScenarioManager extends javax.swing.JFrame
         gridBagConstraints.gridy = 6;
         inputs_container.add(label_height, gridBagConstraints);
 
-        label_MinPathLength.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        label_MinPathLength.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
         label_MinPathLength.setText("Min Path Length");
         label_MinPathLength.setMaximumSize(new java.awt.Dimension(165, 18));
         label_MinPathLength.setMinimumSize(new java.awt.Dimension(165, 18));
@@ -228,6 +235,7 @@ public class ScenarioManager extends javax.swing.JFrame
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         inputs_container.add(label_MinPathLength, gridBagConstraints);
 
+        label_MaxPathLength.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
         label_MaxPathLength.setText("Max Path Length");
         label_MaxPathLength.setMaximumSize(new java.awt.Dimension(165, 18));
         label_MaxPathLength.setMinimumSize(new java.awt.Dimension(165, 18));
@@ -237,7 +245,7 @@ public class ScenarioManager extends javax.swing.JFrame
         gridBagConstraints.gridy = 6;
         inputs_container.add(label_MaxPathLength, gridBagConstraints);
 
-        label_min_dist_bw_agents.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        label_min_dist_bw_agents.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
         label_min_dist_bw_agents.setText("min dist b/w agents");
         label_min_dist_bw_agents.setMaximumSize(new java.awt.Dimension(165, 18));
         label_min_dist_bw_agents.setMinimumSize(new java.awt.Dimension(165, 18));
@@ -248,6 +256,7 @@ public class ScenarioManager extends javax.swing.JFrame
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         inputs_container.add(label_min_dist_bw_agents, gridBagConstraints);
 
+        label_initial_tokens_per_agent.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
         label_initial_tokens_per_agent.setText("Initial Tokens per Agent");
         label_initial_tokens_per_agent.setMaximumSize(new java.awt.Dimension(165, 18));
         label_initial_tokens_per_agent.setMinimumSize(new java.awt.Dimension(165, 18));
@@ -335,6 +344,7 @@ public class ScenarioManager extends javax.swing.JFrame
         gridBagConstraints.gridy = 2;
         inputs_container.add(filler5, gridBagConstraints);
 
+        label_number_of_expected_conflicts.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
         label_number_of_expected_conflicts.setText("no of expected conflicts");
         label_number_of_expected_conflicts.setMaximumSize(new java.awt.Dimension(165, 18));
         label_number_of_expected_conflicts.setMinimumSize(new java.awt.Dimension(165, 18));
@@ -352,7 +362,7 @@ public class ScenarioManager extends javax.swing.JFrame
         gridBagConstraints.gridy = 2;
         inputs_container.add(input_number_of_expected_conflicts, gridBagConstraints);
 
-        jLabel2.setFont(new java.awt.Font("Ubuntu", 0, 14)); // NOI18N
+        jLabel2.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
         jLabel2.setText("Field of View");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -586,7 +596,6 @@ public class ScenarioManager extends javax.swing.JFrame
         scenario_info_container.setLayout(new java.awt.GridLayout(1, 0));
 
         horizontal_spliter.setDividerLocation(300);
-        horizontal_spliter.setDividerSize(5);
         horizontal_spliter.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
         horizontal_spliter.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
             public void propertyChange(java.beans.PropertyChangeEvent evt) {
@@ -600,7 +609,6 @@ public class ScenarioManager extends javax.swing.JFrame
         world_view_state_container.setLayout(new java.awt.BorderLayout());
 
         vertical_spliter.setDividerLocation(300);
-        vertical_spliter.setDividerSize(5);
         vertical_spliter.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
         vertical_spliter.setToolTipText("");
         vertical_spliter.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
@@ -660,7 +668,7 @@ public class ScenarioManager extends javax.swing.JFrame
         jScrollPane1.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
         jScrollPane1.setAutoscrolls(true);
 
-        scenario_info_pane.setFont(new java.awt.Font("Ubuntu Mono", 0, 14)); // NOI18N
+        scenario_info_pane.setFont(meslolgs);
         scenario_info_pane.SetScrollPane(jScrollPane1);
 
         javax.swing.GroupLayout scenario_info_paneLayout = new javax.swing.GroupLayout(scenario_info_pane);
@@ -682,7 +690,7 @@ public class ScenarioManager extends javax.swing.JFrame
 
         negotiation_logs.setLayout(new java.awt.BorderLayout());
 
-        negotiation_info_pane.setFont(new java.awt.Font("Ubuntu Mono", 0, 14)); // NOI18N
+        negotiation_info_pane.setFont(meslolgs);
         jScrollPane4.setViewportView(negotiation_info_pane);
 
         negotiation_logs.add(jScrollPane4, java.awt.BorderLayout.CENTER);
