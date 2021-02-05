@@ -41,6 +41,7 @@ public class ScenarioManager extends javax.swing.JFrame
 {
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ScenarioManager.class);
 
+    private boolean is_headless;
     private Font meslolgs;
 
     /**
@@ -54,6 +55,8 @@ public class ScenarioManager extends javax.swing.JFrame
 
     public ScenarioManager(boolean is_headless)
     {
+        this.is_headless = is_headless;
+
         if (is_headless) {
             logger.warn("HEADLESS DESIGN IS NOT FULLY IMPLEMENTED");
         } else {
@@ -1045,65 +1048,86 @@ public class ScenarioManager extends javax.swing.JFrame
             ex.printStackTrace();
             return;
         }
-        world_data = new JSONWorldData(wid, width, height, min_path_len, min_dist_bw);
+
+        number_of_expected_conflicts = input_number_of_expected_conflicts.getText().isEmpty() ? 0 : Integer.parseInt(input_number_of_expected_conflicts.getText());
+
+        Object[][] table_data = GetAgentCount();
+
+        generateScenario(wid, width, height, min_path_len, max_path_len, min_dist_bw, initial_token_c, number_of_expected_conflicts, table_data)
+            .thenAccept(data -> {
+                agents_data = data;
+
+                if (data != null && !is_headless) { ShowOverviewCard(); }
+                // todo do not switch if not ok
+            })
+        ;
+    }
+
+    public CompletableFuture<ArrayList<JSONAgentData>> generateScenario(String world_id, int width, int height, int min_path_len, int max_path_len, int min_dist_bw, int initial_token_c, int number_of_expected_conflicts, Object[][] table_data)
+    {
+        world_data = new JSONWorldData(world_id, width, height, min_path_len, min_dist_bw);
         world_data.max_path_len = max_path_len;
         world_data.initial_token_c = initial_token_c;
 
-        GetAgentCount();
-
-        if (agent_count == 0) return;
+        if (agent_count == 0) return CompletableFuture.supplyAsync(() -> null);
         world_data.agent_count = agent_count;
 
         // Get number of possible initial conflicts
         int max_number_of_possible_conflicts = (agent_count * (agent_count - 1)) / 2;
-        number_of_expected_conflicts = input_number_of_expected_conflicts.getText().isEmpty() ? 0 : Integer.parseInt(input_number_of_expected_conflicts.getText());
-
         if (number_of_expected_conflicts > max_number_of_possible_conflicts)
         {
             number_of_expected_conflicts = max_number_of_possible_conflicts;
         }
 
         // display loading
-        popup_generating.setLocationRelativeTo(this);
-        popup_generating.setVisible(true);
+        if (popup_generating != null) popup_generating.setLocationRelativeTo(this);
+        if (popup_generating != null) popup_generating.setVisible(true);
 
-        CompletableFuture
+        int final_number_of_expected_conflicts = number_of_expected_conflicts;
+        return CompletableFuture
             .supplyAsync(() -> {
                 boolean isOk;
 
-                ArrayList<Point[]> AgentLocationData = new LocationDataGenerator(world_data, number_of_expected_conflicts).GenerateAgentLocationData(width, height);
+                ArrayList<Point[]> AgentLocationData = new LocationDataGenerator(world_data, final_number_of_expected_conflicts).GenerateAgentLocationData(width, height);
                 isOk = AgentLocationData.size() > 0;
 
-                if (isOk) InitializeAgentData(AgentLocationData);
+                ArrayList<JSONAgentData> data = null;
+                if (isOk) {
+                    data = InitializeAgentData(AgentLocationData, table_data);
+                }
 
-                return isOk;
-            })
-            .thenAccept(isOk -> {
-                if (isOk) { ShowOverviewCard(); }
-                // todo do not switch if not ok
+                return data;
             });
     }
 
     //<editor-fold defaultstate="collapsed" desc="Generate Scenario functions">
-    private void GetAgentCount()
+    private Object[][] GetAgentCount()
     {
+        Object[][] table_data = new Object[agents_table.getRowCount()][2];
+
         int _ac = 0;
         for (int row = 0; row < agents_table.getRowCount(); row++)
         {
             int __ac = Integer.parseInt((String) agents_table.getValueAt(row, 1));
             _ac += __ac;
+
+            table_data[row][0] = agents_table.getValueAt(row, 0);
+            table_data[row][1] = __ac;
         }
         agent_count = _ac;
+
+        return table_data;
     }
 
-    private void InitializeAgentData(ArrayList<Point[]> AgentLocationData)
+    private ArrayList<JSONAgentData> InitializeAgentData(ArrayList<Point[]> AgentLocationData, Object[][] table_data)
     {
         int id_count = 0;
         Iterator<Point[]> AgentLocationDataIterator = AgentLocationData.iterator();
-        for (int row = 0; row < agents_table.getRowCount(); row++)
+        ArrayList<JSONAgentData> agents_data = new ArrayList<>();
+        for (int row = 0; row < table_data.length; row++)
         {
-            String agent_class_name = (String) agents_table.getValueAt(row, 0);
-            int agent_count = Integer.parseInt((String) agents_table.getValueAt(row, 1));
+            String agent_class_name = (String) table_data[row][0];
+            int agent_count = (int) table_data[row][1];
 
             for (int i = 0; i < agent_count; i++)
             {
@@ -1127,6 +1151,8 @@ public class ScenarioManager extends javax.swing.JFrame
                 agents_data.add(data);
             }
         }
+
+        return agents_data;
     }
     //</editor-fold>
 
@@ -1302,6 +1328,27 @@ public class ScenarioManager extends javax.swing.JFrame
         ShowOverviewCard();
     }
     //</editor-fold>
+
+    public JSONWorldData getWorldData()
+    {
+        return world_data;
+    }
+
+    public Object[][] getAgentClassesList()
+    {
+        Object[][] agents = new Object[agents_map.keySet().size()][2];
+
+        int idx = 0;
+        for (String key : agents_map.keySet())
+        {
+            agents[idx][0] = key;
+            agents[idx][1] = 0;
+
+            idx++;
+        }
+
+        return agents;
+    }
 }
 
 @SuppressWarnings({"FieldMayBeFinal", "unused"})
