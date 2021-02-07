@@ -837,7 +837,7 @@ public class ScenarioManager extends javax.swing.JFrame
 
             SaveScenario(
                 export_file,
-                agents_data.stream().peek(JSONAgentData::gen_path).toArray(JSONAgentData[]::new),
+                agents_data.stream().peek(AgentConfig::gen_path).toArray(AgentConfig[]::new),
                 world_data
             );
         }
@@ -1008,7 +1008,7 @@ public class ScenarioManager extends javax.swing.JFrame
     private JSONWorldData world_data;
     private int agent_count = 0; // track number of agents there should be
     private int number_of_expected_conflicts = 0;
-    private ArrayList<JSONAgentData> agents_data = new ArrayList<>();
+    private ArrayList<AgentConfig> agents_data = new ArrayList<>();
 
     /**
      * Invoked before switching to overview card.
@@ -1051,7 +1051,7 @@ public class ScenarioManager extends javax.swing.JFrame
         ;
     }
 
-    public CompletableFuture<ArrayList<JSONAgentData>> generateScenario(String world_id, int width, int height, int min_path_len, int max_path_len, int min_dist_bw, int initial_token_c, int number_of_expected_conflicts, Object[][] table_data)
+    public CompletableFuture<ArrayList<AgentConfig>> generateScenario(String world_id, int width, int height, int min_path_len, int max_path_len, int min_dist_bw, int initial_token_c, int number_of_expected_conflicts, Object[][] table_data)
     {
         world_data = new JSONWorldData(world_id, width, height, min_path_len, min_dist_bw);
         world_data.max_path_len = max_path_len;
@@ -1079,7 +1079,7 @@ public class ScenarioManager extends javax.swing.JFrame
                 ArrayList<Point[]> AgentLocationData = new LocationDataGenerator(world_data, final_number_of_expected_conflicts).GenerateAgentLocationData(width, height);
                 isOk = AgentLocationData.size() > 0;
 
-                ArrayList<JSONAgentData> data = null;
+                ArrayList<AgentConfig> data = null;
                 if (isOk) {
                     data = InitializeAgentData(AgentLocationData, table_data);
                 }
@@ -1107,11 +1107,11 @@ public class ScenarioManager extends javax.swing.JFrame
         return table_data;
     }
 
-    private ArrayList<JSONAgentData> InitializeAgentData(ArrayList<Point[]> AgentLocationData, Object[][] table_data)
+    private ArrayList<AgentConfig> InitializeAgentData(ArrayList<Point[]> AgentLocationData, Object[][] table_data)
     {
         int id_count = 0;
         Iterator<Point[]> AgentLocationDataIterator = AgentLocationData.iterator();
-        ArrayList<JSONAgentData> agents_data = new ArrayList<>();
+        ArrayList<AgentConfig> agents_data = new ArrayList<>();
         for (int row = 0; row < table_data.length; row++)
         {
             String agent_class_name = (String) table_data[row][0];
@@ -1135,7 +1135,7 @@ public class ScenarioManager extends javax.swing.JFrame
                 logger.info("Creating config for " + agent_name + " | " + start + "->" + dest);
                 if (world != null) world.Log(String.format("generated %s %s -> %s", agent_name, start.key, dest.key));
 
-                JSONAgentData data = new JSONAgentData(id_count++, agent_name, agent_class_name, world_data.initial_token_c, start, dest);
+                AgentConfig data = new AgentConfig(id_count++, agent_name, agent_class_name, world_data.initial_token_c, start, dest);
                 agents_data.add(data);
             }
         }
@@ -1173,7 +1173,7 @@ public class ScenarioManager extends javax.swing.JFrame
         // prepare overview
         PopulateOverviewCard();
         AgentDetailsTableModel table = new AgentDetailsTableModel(
-                agents_data.toArray(new JSONAgentData[0]),
+                agents_data.toArray(new AgentConfig[0]),
                 (index, data) -> {
                     agents_data.get(index).agent_name   = data.agent_name;
                     agents_data.get(index).start        = data.start;
@@ -1210,7 +1210,7 @@ public class ScenarioManager extends javax.swing.JFrame
         HashMap<Integer, String[]> agent_paths = new HashMap<>();
         for (int i = 0; i < agents_data.size(); i++)
         {
-            JSONAgentData a = agents_data.get(i);
+            AgentConfig a = agents_data.get(i);
             String[] a_path;
             if (agent_paths.containsKey(a.id)) {
                 a_path = agent_paths.get(a.id);
@@ -1231,7 +1231,7 @@ public class ScenarioManager extends javax.swing.JFrame
 
             for (int j = i + 1; j < agents_data.size(); j++)
             {
-                JSONAgentData b = agents_data.get(j);
+                AgentConfig b = agents_data.get(j);
                 String[] b_path;
                 if (agent_paths.containsKey(b.id)) {
                     b_path = agent_paths.get(b.id);
@@ -1266,7 +1266,7 @@ public class ScenarioManager extends javax.swing.JFrame
         world.Create(world_data.world_id, world_data.width, world_data.height);
 
         HashMap<String, AgentClient> agent_refs = new HashMap<>();
-        for (JSONAgentData data : agents_data) {
+        for (AgentConfig data : agents_data) {
             try {
                 world.Log(String.format("initializing %20s from %-10s -> to %-10s", data.agent_name, data.start, data.dest));
                 AgentClient client = new AgentClient(
@@ -1299,7 +1299,7 @@ public class ScenarioManager extends javax.swing.JFrame
         if (world == null) InitializeWorld();
 
         HashMap<String, Integer> agent_counts = new HashMap<>();
-        for (JSONAgentData data : agents_data) {
+        for (AgentConfig data : agents_data) {
             agent_counts.put(data.agent_class_name, agent_counts.getOrDefault(data.agent_class_name, 0) + 1);
             if (world != null) world.Log(String.format("imported %s %s -> %s", data.agent_name, data.start, data.dest));
         }
@@ -1317,7 +1317,7 @@ public class ScenarioManager extends javax.swing.JFrame
     }
     //</editor-fold>
 
-    public void SaveScenario(JSONAgentData[] agents_data, JSONWorldData world_data)
+    public void SaveScenario(AgentConfig[] agents_data, JSONWorldData world_data)
     {
         String timestamp = String.valueOf(System.currentTimeMillis());
 
@@ -1332,7 +1332,7 @@ public class ScenarioManager extends javax.swing.JFrame
         SaveScenario(file, agents_data, world_data);
     }
 
-    public void SaveScenario(File save_destination, JSONAgentData[] agents_data, JSONWorldData world_data)
+    public void SaveScenario(File save_destination, AgentConfig[] agents_data, JSONWorldData world_data)
     {
         JSONSessionConfig config = new JSONSessionConfig();
         config.agents = agents_data;
@@ -1442,14 +1442,14 @@ class AgentsTableModel extends AbstractTableModel
 class AgentDetailsTableModel extends AbstractTableModel
 {
     //<editor-fold defaultstate="collapsed" desc="implementation">
-    private final JSONAgentData[] agents;
+    private final AgentConfig[] agents;
     private boolean[][] editable_cells;
     private String[] columns = new String[]{"Agent Name", "Start", "Dest", "Path len", "# of Tokens"};
     private ArrayList<Object[]> rows = new ArrayList<>();
 
-    private BiConsumer<Integer, JSONAgentData> update_callback;
+    private BiConsumer<Integer, AgentConfig> update_callback;
 
-    AgentDetailsTableModel(JSONAgentData[] agents, BiConsumer<Integer, JSONAgentData> callback)
+    AgentDetailsTableModel(AgentConfig[] agents, BiConsumer<Integer, AgentConfig> callback)
     {
         this.agents = agents;
         update_callback = callback;

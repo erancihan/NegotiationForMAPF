@@ -3,7 +3,7 @@ package edu.ozu.mapp.utils;
 import java.util.Arrays;
 
 public class JSONSessionConfig {
-    public JSONAgentData[] agents;
+    public AgentConfig[] agents;
     public JSONWorldData world;
 
     @Override

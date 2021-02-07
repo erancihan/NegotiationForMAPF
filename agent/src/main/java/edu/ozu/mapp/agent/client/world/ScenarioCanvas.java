@@ -8,7 +8,7 @@ package edu.ozu.mapp.agent.client.world;
 import edu.ozu.mapp.agent.client.AgentClient;
 import edu.ozu.mapp.system.Colors;
 import edu.ozu.mapp.system.WorldOverseer;
-import edu.ozu.mapp.utils.JSONAgentData;
+import edu.ozu.mapp.utils.AgentConfig;
 import edu.ozu.mapp.utils.JSONWorldData;
 import edu.ozu.mapp.utils.Path;
 import edu.ozu.mapp.utils.Point;
@@ -69,7 +69,7 @@ public class ScenarioCanvas extends javax.swing.JPanel
 
     // { 'AGENT_ID': [ 'X-Y' , ... ] }
     private HashMap<String, Path>           history         = new HashMap<>();
-    private HashMap<String, JSONAgentData>  agents_data     = new HashMap<>();
+    private HashMap<String, AgentConfig>  agents_data     = new HashMap<>();
     private HashMap<String, AgentClient>    agent_refs      = new HashMap<>();
     private HashMap<String, Point[]>        agents          = new HashMap<>();
     private HashMap<String, String>         agent_colors    = new HashMap<>();
@@ -83,10 +83,10 @@ public class ScenarioCanvas extends javax.swing.JPanel
         logger.debug("world.world_id = " + world.world_id);
     }
 
-    public void SetAgentsData(ArrayList<JSONAgentData> agents_data)
+    public void SetAgentsData(ArrayList<AgentConfig> agents_data)
     {
         int idx = 0;
-        for (JSONAgentData agent_data : agents_data)
+        for (AgentConfig agent_data : agents_data)
         {
             String agent_key = agent_data.agent_name.replace("agent:", "");
 
