@@ -1339,7 +1339,9 @@ public class ScenarioManager extends javax.swing.JFrame
 
     public void SaveScenario(AgentConfig[] agents_config, WorldConfig world_config)
     {
-        String timestamp = String.valueOf(System.currentTimeMillis());
+        String timestamp = world_config.world_id.isEmpty()
+                            ? String.valueOf(System.currentTimeMillis())
+                            : world_config.world_id;
 
         File file = new File(
             java.nio.file.Paths.get(
