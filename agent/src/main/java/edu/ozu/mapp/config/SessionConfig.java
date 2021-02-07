@@ -1,7 +1,4 @@
-package edu.ozu.mapp.utils;
-
-import edu.ozu.mapp.config.AgentConfig;
-import edu.ozu.mapp.config.WorldConfig;
+package edu.ozu.mapp.config;
 
 import java.util.Arrays;
 
