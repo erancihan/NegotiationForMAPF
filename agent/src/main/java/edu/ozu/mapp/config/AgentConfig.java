@@ -1,4 +1,9 @@
-package edu.ozu.mapp.utils;
+package edu.ozu.mapp.config;
+
+import edu.ozu.mapp.utils.AStar;
+import edu.ozu.mapp.utils.Globals;
+import edu.ozu.mapp.utils.JSONPointData;
+import edu.ozu.mapp.utils.Point;
 
 import java.util.Arrays;
 
