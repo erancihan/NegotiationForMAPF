@@ -1060,7 +1060,7 @@ public class ScenarioManager extends javax.swing.JFrame
         config.max_path_len = max_path_len;
         config.initial_token_c = initial_token_c;
         config.number_of_expected_conflicts = number_of_expected_conflicts;
-        config.table_data = table_data;
+        config.instantiation_configuration = table_data;
         config.agent_count = agent_count;
 
         config.validate();
@@ -1101,7 +1101,7 @@ public class ScenarioManager extends javax.swing.JFrame
 
                 ArrayList<AgentConfig> data = null;
                 if (isOk) {
-                    data = InitializeAgentData(AgentLocationData, world_data.table_data);
+                    data = InitializeAgentData(AgentLocationData, world_data.instantiation_configuration);
                 }
 
                 return data;

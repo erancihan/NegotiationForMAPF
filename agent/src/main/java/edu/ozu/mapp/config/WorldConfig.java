@@ -14,7 +14,7 @@ public class WorldConfig {
     public int min_distance_between_agents;
     public int agent_count = 0;
     public int initial_token_c = 5;
-    public Object[][] table_data;
+    public Object[][] instantiation_configuration;
     public int number_of_expected_conflicts;
 
     public WorldConfig() {
@@ -43,11 +43,11 @@ public class WorldConfig {
     public void validate() {
         int c = 0;
 
-        for (Object[] row : table_data) {
+        for (Object[] row : instantiation_configuration) {
             c = c + (int) ((row[1] instanceof Integer) ? row[1] : Integer.parseInt(String.valueOf(row[1])));
         }
 
-        if (agent_count == 0) {
+        if (agent_count >= 0) {
             Assert.isTrue(agent_count == c, "Agent Count is not set correctly!");
         } else {
             agent_count = c;
