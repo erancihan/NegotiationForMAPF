@@ -1054,15 +1054,32 @@ public class ScenarioManager extends javax.swing.JFrame
         ;
     }
 
-    public CompletableFuture<ArrayList<AgentConfig>> generateScenario(String world_id, int width, int height, int min_path_len, int max_path_len, int min_dist_bw, int initial_token_c, int number_of_expected_conflicts, Object[][] table_data)
+    private CompletableFuture<ArrayList<AgentConfig>> generateScenario(String world_id, int width, int height, int min_path_len, int max_path_len, int min_dist_bw, int initial_token_c, int number_of_expected_conflicts, Object[][] table_data)
     {
-        world_data = new WorldConfig(world_id, width, height, min_path_len, min_dist_bw);
-        world_data.max_path_len = max_path_len;
-        world_data.initial_token_c = initial_token_c;
+        WorldConfig config = new WorldConfig(world_id, width, height, min_path_len, min_dist_bw);
+        config.max_path_len = max_path_len;
+        config.initial_token_c = initial_token_c;
+        config.number_of_expected_conflicts = number_of_expected_conflicts;
+        config.table_data = table_data;
+        config.agent_count = agent_count;
 
-        if (agent_count == 0) return CompletableFuture.supplyAsync(() -> null);
-        world_data.agent_count = agent_count;
+        config.validate();
 
+        if (config.agent_count == 0) return CompletableFuture.supplyAsync(() -> null);
+
+        return generateScenario(config);
+    }
+
+    public CompletableFuture<ArrayList<AgentConfig>> generateScenario(WorldConfig config)
+    {
+        config.validate();
+        world_data = config;
+
+        return generate_scenario();
+    }
+
+    private CompletableFuture<ArrayList<AgentConfig>> generate_scenario()
+    {
         // Get number of possible initial conflicts
         int max_number_of_possible_conflicts = (agent_count * (agent_count - 1)) / 2;
         if (number_of_expected_conflicts > max_number_of_possible_conflicts)
@@ -1079,12 +1096,12 @@ public class ScenarioManager extends javax.swing.JFrame
             .supplyAsync(() -> {
                 boolean isOk;
 
-                ArrayList<Point[]> AgentLocationData = new LocationDataGenerator(world_data, final_number_of_expected_conflicts).GenerateAgentLocationData(width, height);
+                ArrayList<Point[]> AgentLocationData = new LocationDataGenerator(world_data, final_number_of_expected_conflicts).GenerateAgentLocationData(world_data.width, world_data.height);
                 isOk = AgentLocationData.size() > 0;
 
                 ArrayList<AgentConfig> data = null;
                 if (isOk) {
-                    data = InitializeAgentData(AgentLocationData, table_data);
+                    data = InitializeAgentData(AgentLocationData, world_data.table_data);
                 }
 
                 return data;
