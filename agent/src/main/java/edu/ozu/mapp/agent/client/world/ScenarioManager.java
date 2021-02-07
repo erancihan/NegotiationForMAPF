@@ -796,7 +796,7 @@ public class ScenarioManager extends javax.swing.JFrame
                 FileReader reader = new FileReader(import_file);
                 Gson gson = new Gson();
 
-                JSONSessionConfig config = gson.fromJson(reader, JSONSessionConfig.class);
+                SessionConfig config = gson.fromJson(reader, SessionConfig.class);
                 reader.close();
 
                 world_data = config.world;
@@ -1336,7 +1336,7 @@ public class ScenarioManager extends javax.swing.JFrame
 
     public void SaveScenario(File save_destination, AgentConfig[] agents_data, WorldConfig world_data)
     {
-        JSONSessionConfig config = new JSONSessionConfig();
+        SessionConfig config = new SessionConfig();
         config.agents = agents_data;
         config.world  = world_data;
 

@@ -5,7 +5,7 @@ import edu.ozu.mapp.config.WorldConfig;
 
 import java.util.Arrays;
 
-public class JSONSessionConfig {
+public class SessionConfig {
     public AgentConfig[] agents;
     public WorldConfig world;
 
