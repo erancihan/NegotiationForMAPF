@@ -9,7 +9,7 @@ import edu.ozu.mapp.agent.client.AgentClient;
 import edu.ozu.mapp.system.Colors;
 import edu.ozu.mapp.system.WorldOverseer;
 import edu.ozu.mapp.config.AgentConfig;
-import edu.ozu.mapp.utils.WorldConfig;
+import edu.ozu.mapp.config.WorldConfig;
 import edu.ozu.mapp.utils.Path;
 import edu.ozu.mapp.utils.Point;
 

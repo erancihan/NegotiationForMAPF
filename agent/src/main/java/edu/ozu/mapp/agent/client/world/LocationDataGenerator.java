@@ -3,7 +3,7 @@ package edu.ozu.mapp.agent.client.world;
 import edu.ozu.mapp.agent.client.helpers.ConflictCheck;
 import edu.ozu.mapp.agent.client.helpers.ConflictInfo;
 import edu.ozu.mapp.utils.AStar;
-import edu.ozu.mapp.utils.WorldConfig;
+import edu.ozu.mapp.config.WorldConfig;
 import edu.ozu.mapp.utils.Point;
 
 import java.util.ArrayList;

@@ -13,6 +13,7 @@ import edu.ozu.mapp.agent.client.AgentClient;
 import edu.ozu.mapp.agent.client.helpers.ConflictCheck;
 import edu.ozu.mapp.agent.client.helpers.ConflictInfo;
 import edu.ozu.mapp.config.AgentConfig;
+import edu.ozu.mapp.config.WorldConfig;
 import edu.ozu.mapp.system.WorldOverseer;
 import edu.ozu.mapp.utils.Point;
 import edu.ozu.mapp.utils.*;

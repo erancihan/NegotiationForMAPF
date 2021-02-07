@@ -1,4 +1,4 @@
-package edu.ozu.mapp.utils;
+package edu.ozu.mapp.config;
 
 import com.google.gson.annotations.SerializedName;
 
