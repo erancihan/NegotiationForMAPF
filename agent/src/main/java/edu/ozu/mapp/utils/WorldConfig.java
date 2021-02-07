@@ -2,7 +2,7 @@ package edu.ozu.mapp.utils;
 
 import com.google.gson.annotations.SerializedName;
 
-public class JSONWorldData {
+public class WorldConfig {
     public String world_id;
     public int width;
     public int height;
@@ -14,10 +14,10 @@ public class JSONWorldData {
     public int agent_count = 0;
     public int initial_token_c = 5;
 
-    public JSONWorldData() {
+    public WorldConfig() {
     }
 
-    public JSONWorldData(String world_id, int width, int height, int min_path_len, int min_distance_between_agents) {
+    public WorldConfig(String world_id, int width, int height, int min_path_len, int min_distance_between_agents) {
         this.world_id = world_id;
         this.width = width;
         this.height = height;

@@ -6,7 +6,7 @@ import java.util.Arrays;
 
 public class JSONSessionConfig {
     public AgentConfig[] agents;
-    public JSONWorldData world;
+    public WorldConfig world;
 
     @Override
     public String toString() {

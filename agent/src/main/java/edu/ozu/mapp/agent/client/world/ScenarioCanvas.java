@@ -9,7 +9,7 @@ import edu.ozu.mapp.agent.client.AgentClient;
 import edu.ozu.mapp.system.Colors;
 import edu.ozu.mapp.system.WorldOverseer;
 import edu.ozu.mapp.config.AgentConfig;
-import edu.ozu.mapp.utils.JSONWorldData;
+import edu.ozu.mapp.utils.WorldConfig;
 import edu.ozu.mapp.utils.Path;
 import edu.ozu.mapp.utils.Point;
 
@@ -64,7 +64,7 @@ public class ScenarioCanvas extends javax.swing.JPanel
     // Variables declaration - do not modify//GEN-BEGIN:variables
     // End of variables declaration//GEN-END:variables
 
-    private JSONWorldData world;
+    private WorldConfig world;
     private WorldOverseer world_ref;
 
     // { 'AGENT_ID': [ 'X-Y' , ... ] }
@@ -77,7 +77,7 @@ public class ScenarioCanvas extends javax.swing.JPanel
     private int offset = 1;
     private String[] agent_keys;
 
-    public void SetWorldData(JSONWorldData world_data)
+    public void SetWorldData(WorldConfig world_data)
     {
         this.world = world_data;
         logger.debug("world.world_id = " + world.world_id);

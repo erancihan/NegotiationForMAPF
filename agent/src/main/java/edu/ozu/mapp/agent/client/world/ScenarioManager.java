@@ -1006,7 +1006,7 @@ public class ScenarioManager extends javax.swing.JFrame
     }
 
     private WorldOverseer world;
-    private JSONWorldData world_data;
+    private WorldConfig world_data;
     private int agent_count = 0; // track number of agents there should be
     private int number_of_expected_conflicts = 0;
     private ArrayList<AgentConfig> agents_data = new ArrayList<>();
@@ -1054,7 +1054,7 @@ public class ScenarioManager extends javax.swing.JFrame
 
     public CompletableFuture<ArrayList<AgentConfig>> generateScenario(String world_id, int width, int height, int min_path_len, int max_path_len, int min_dist_bw, int initial_token_c, int number_of_expected_conflicts, Object[][] table_data)
     {
-        world_data = new JSONWorldData(world_id, width, height, min_path_len, min_dist_bw);
+        world_data = new WorldConfig(world_id, width, height, min_path_len, min_dist_bw);
         world_data.max_path_len = max_path_len;
         world_data.initial_token_c = initial_token_c;
 
@@ -1318,7 +1318,7 @@ public class ScenarioManager extends javax.swing.JFrame
     }
     //</editor-fold>
 
-    public void SaveScenario(AgentConfig[] agents_data, JSONWorldData world_data)
+    public void SaveScenario(AgentConfig[] agents_config, WorldConfig world_config)
     {
         String timestamp = String.valueOf(System.currentTimeMillis());
 
@@ -1330,10 +1330,10 @@ public class ScenarioManager extends javax.swing.JFrame
             ).toString()
         );
 
-        SaveScenario(file, agents_data, world_data);
+        SaveScenario(file, agents_config, world_config);
     }
 
-    public void SaveScenario(File save_destination, AgentConfig[] agents_data, JSONWorldData world_data)
+    public void SaveScenario(File save_destination, AgentConfig[] agents_data, WorldConfig world_data)
     {
         JSONSessionConfig config = new JSONSessionConfig();
         config.agents = agents_data;
@@ -1355,7 +1355,7 @@ public class ScenarioManager extends javax.swing.JFrame
         }
     }
 
-    public JSONWorldData getWorldData()
+    public WorldConfig getWorldData()
     {
         return world_data;
     }

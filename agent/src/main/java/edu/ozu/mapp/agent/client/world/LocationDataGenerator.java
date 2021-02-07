@@ -3,7 +3,7 @@ package edu.ozu.mapp.agent.client.world;
 import edu.ozu.mapp.agent.client.helpers.ConflictCheck;
 import edu.ozu.mapp.agent.client.helpers.ConflictInfo;
 import edu.ozu.mapp.utils.AStar;
-import edu.ozu.mapp.utils.JSONWorldData;
+import edu.ozu.mapp.utils.WorldConfig;
 import edu.ozu.mapp.utils.Point;
 
 import java.util.ArrayList;
@@ -21,9 +21,9 @@ public class LocationDataGenerator
     private ArrayList<Point[]>  AgentLocationData   = new ArrayList<>();
 
     int number_of_expected_conflicts;
-    JSONWorldData world_data;
+    WorldConfig world_data;
 
-    public LocationDataGenerator(JSONWorldData world_data, int number_of_expected_conflicts)
+    public LocationDataGenerator(WorldConfig world_data, int number_of_expected_conflicts)
     {
         this.world_data = world_data;
         this.number_of_expected_conflicts   = number_of_expected_conflicts;
