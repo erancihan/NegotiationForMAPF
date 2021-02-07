@@ -834,24 +834,12 @@ public class ScenarioManager extends javax.swing.JFrame
             } else {
                 export_file = new File(file_chooser.getSelectedFile().getPath() + ".json");
             }
-            JSONSessionConfig config = new JSONSessionConfig();
-            config.agents = agents_data.stream().peek(JSONAgentData::gen_path).toArray(JSONAgentData[]::new);
-            config.world  = world_data;
 
-            try {
-                logger.debug("Writing config");
-                logger.debug(config.toString());
-                logger.debug("To file " + export_file);
-
-                FileWriter writer = new FileWriter(export_file);
-                Gson gson = new GsonBuilder().setPrettyPrinting().create();
-                gson.toJson(config, writer);
-                writer.append("\n");
-                writer.flush();
-                writer.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            SaveScenario(
+                export_file,
+                agents_data.stream().peek(JSONAgentData::gen_path).toArray(JSONAgentData[]::new),
+                world_data
+            );
         }
     }//GEN-LAST:event_export_btnActionPerformed
     //</editor-fold >
@@ -1328,6 +1316,43 @@ public class ScenarioManager extends javax.swing.JFrame
         ShowOverviewCard();
     }
     //</editor-fold>
+
+    public void SaveScenario(JSONAgentData[] agents_data, JSONWorldData world_data)
+    {
+        String timestamp = String.valueOf(System.currentTimeMillis());
+
+        File file = new File(
+            java.nio.file.Paths.get(
+                new JFileChooser().getFileSystemView().getDefaultDirectory().toString(),
+                "MAPP",
+                "world-scenario-" + timestamp + ".json"
+            ).toString()
+        );
+
+        SaveScenario(file, agents_data, world_data);
+    }
+
+    public void SaveScenario(File save_destination, JSONAgentData[] agents_data, JSONWorldData world_data)
+    {
+        JSONSessionConfig config = new JSONSessionConfig();
+        config.agents = agents_data;
+        config.world  = world_data;
+
+        try {
+            logger.debug("Writing config");
+            logger.debug(config.toString());
+            logger.debug("To file " + save_destination);
+
+            FileWriter writer = new FileWriter(save_destination);
+            Gson gson = new GsonBuilder().setPrettyPrinting().create();
+            gson.toJson(config, writer);
+            writer.append("\n");
+            writer.flush();
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     public JSONWorldData getWorldData()
     {
