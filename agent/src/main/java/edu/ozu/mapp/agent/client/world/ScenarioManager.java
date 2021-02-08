@@ -16,6 +16,7 @@ import edu.ozu.mapp.config.AgentConfig;
 import edu.ozu.mapp.config.SessionConfig;
 import edu.ozu.mapp.config.WorldConfig;
 import edu.ozu.mapp.system.WorldOverseer;
+import edu.ozu.mapp.system.WorldState;
 import edu.ozu.mapp.utils.Point;
 import edu.ozu.mapp.utils.*;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -68,6 +69,7 @@ public class ScenarioManager extends javax.swing.JFrame
                 Assert.isTrue(stream != null, "file stream is null!");
                 meslolgs = Font.createFont(Font.TRUETYPE_FONT, stream).deriveFont(12f);
             } catch (FontFormatException | IOException e) {
+                logger.error("SOMETHING WENT WRONG WHILE SETTING FONTS");
                 e.printStackTrace();
             }
 
@@ -790,29 +792,7 @@ public class ScenarioManager extends javax.swing.JFrame
             // open & import file
             File import_file = file_chooser.getSelectedFile();
 
-            // do not open if it is not a json file
-            if (!import_file.getAbsolutePath().endsWith(".json")) return;
-
-            try {
-                FileReader reader = new FileReader(import_file);
-                Gson gson = new Gson();
-
-                SessionConfig config = gson.fromJson(reader, SessionConfig.class);
-                reader.close();
-
-                world_data = config.world;
-                agents_data = new ArrayList<>();
-
-                for (int i = 0; i < config.agents.length; i++) {
-                    config.agents[i].agent_name = config.agents[i].agent_name.replaceAll("-", "_");
-                }
-
-                Collections.addAll(agents_data, config.agents);
-
-                DisplayImportedData();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            SetScenario(import_file);
         }
     }//GEN-LAST:event_import_btnActionPerformed
     //</editor-fold>
@@ -849,7 +829,7 @@ public class ScenarioManager extends javax.swing.JFrame
 
     private void run_btnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_run_btnActionPerformed
         ((CardLayout) cards_container.getLayout()).show(cards_container, "run");
-        RunScenario();
+        run_scenario();
     }//GEN-LAST:event_run_btnActionPerformed
 
     private void previous_btnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_previous_btnActionPerformed
@@ -902,7 +882,7 @@ public class ScenarioManager extends javax.swing.JFrame
     /**
      * @param args the command line arguments
      */
-    public static void main(String[] args) {
+    public static CompletableFuture<ScenarioManager> main(String[] args) {
         /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
         /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
@@ -930,8 +910,22 @@ public class ScenarioManager extends javax.swing.JFrame
         }
         //</editor-fold>
 
+        CompletableFuture<ScenarioManager> future = new CompletableFuture<>();
+
         /* Create and display the form */
-        java.awt.EventQueue.invokeLater(() -> new ScenarioManager().setVisible(true));
+        java.awt.EventQueue.invokeLater(() -> {
+            instance = new ScenarioManager();
+            instance.setVisible(true);
+
+            future.complete(instance);
+        });
+
+        return future;
+    }
+
+    private static ScenarioManager instance = null;
+    public static ScenarioManager getInstance() {
+        return instance;
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -1275,7 +1269,7 @@ public class ScenarioManager extends javax.swing.JFrame
         min_path_length_label.setText(String.valueOf(min_path_len));
     }
 
-    private void RunScenario()
+    private void run_scenario()
     {
         generate_scenario_btn.setEnabled(false);
 
@@ -1395,6 +1389,63 @@ public class ScenarioManager extends javax.swing.JFrame
         }
 
         return agents;
+    }
+
+    public ScenarioManager SetScenario(File scenario_file) {
+
+        // do not open if it is not a json file
+        if (!scenario_file.getAbsolutePath().endsWith(".json")) {
+            return instance;
+        }
+
+        try {
+            FileReader reader = new FileReader(scenario_file);
+            Gson gson = new Gson();
+
+            SessionConfig config = gson.fromJson(reader, SessionConfig.class);
+            reader.close();
+
+            world_data = config.world;
+            agents_data = new ArrayList<>();
+
+            for (int i = 0; i < config.agents.length; i++) {
+                config.agents[i].agent_name = config.agents[i].agent_name.replaceAll("-", "_");
+            }
+
+            Collections.addAll(agents_data, config.agents);
+
+            DisplayImportedData();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return instance;
+    }
+
+    public ScenarioManager RunScenario()
+    {
+        return RunScenario(false);
+    }
+
+    public ScenarioManager RunScenario(boolean cycle)
+    {
+        if (cycle)
+        {   // will cycle immediately
+            world.SCENARIO_MANAGER_HOOK_JOIN_UPDATE(agent_count -> {
+                if (agent_count == WorldState.JOINED) {
+                    logger.info("Agent Joins complete");
+
+                    world.Loop();
+                }
+            });
+            run_btnActionPerformed(null);   // send run btn click action
+        }
+        else
+        {   // will not cycle
+            run_btnActionPerformed(null);   // send run btn click action
+        }
+
+        return instance;
     }
 }
 
