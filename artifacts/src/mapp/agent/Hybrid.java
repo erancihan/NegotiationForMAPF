@@ -49,7 +49,7 @@ public class Hybrid extends Agent
         {   // GREED
             return run_greedy(contract);
         }
-   }
+    }
 
     private Action run_conceder(Contract contract)
     {
