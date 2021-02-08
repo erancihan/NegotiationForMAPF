@@ -3,6 +3,7 @@
 dump.rdb
 logs/*
 lib
+*.jar
 
 # Covers JetBrains IDEs
 .idea/*
