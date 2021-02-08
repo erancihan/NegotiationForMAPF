@@ -50,7 +50,7 @@ public class ScenarioManager extends javax.swing.JFrame
     /**
      * Creates new form ScenarioManager
      */
-    public ScenarioManager()
+    private ScenarioManager()
     {
         // default has gui, there for not headless
         this(false);
