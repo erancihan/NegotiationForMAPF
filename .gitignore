@@ -4,6 +4,10 @@ dump.rdb
 logs/*
 lib
 *.jar
+.vscode
+
+agent/.factorypath
+agent/.settings/*
 
 # Covers JetBrains IDEs
 .idea/*
