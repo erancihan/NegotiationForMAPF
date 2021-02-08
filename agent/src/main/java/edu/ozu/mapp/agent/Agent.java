@@ -268,7 +268,7 @@ public abstract class Agent {
 
     public final int GetMyRemainingPathLength()
     {
-        return (this.path.size()-1) - time;
+        return this.path.size() - time;
     }
 
     public final HashSet<String> getOwnBidHistory()
