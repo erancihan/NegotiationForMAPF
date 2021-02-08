@@ -35,6 +35,7 @@ public class WorldOverseer
     private     Globals.WorldState  prev_state;
 
     private boolean IsLooping = false;
+    private boolean join_update_hook_run_once = false;
 
     private ScheduledExecutorService service;
 
@@ -72,6 +73,8 @@ public class WorldOverseer
     private Runnable                    UI_LoopStoppedHook;
     private BiConsumer<String, WorldSnapshot> SNAPSHOT_HOOK;
     private ScheduledFuture<?> main_sim_loop;
+
+    private Consumer<WorldState> SCENARIO_MANAGER_HOOK_JOIN_UPDATE;
 
     private WorldOverseer()
     {
@@ -246,6 +249,15 @@ public class WorldOverseer
             case JOIN:
                 UI_CanvasUpdateHook.run();
 
+                if (SCENARIO_MANAGER_HOOK_JOIN_UPDATE != null && !join_update_hook_run_once)
+                {   // what the hell is this...
+                    SCENARIO_MANAGER_HOOK_JOIN_UPDATE.accept(WorldState.JOINING);
+
+                    if (FLAG_JOINS.size() == active_agent_c) {
+                        join_update_hook_run_once = true;
+                    }
+                }
+
                 if (FLAG_JOINS.size() == active_agent_c)
                 {   // ALL REGISTERED AGENTS ARE DONE JOINING
                     Log("- END OF JOIN STATE", logger::info);
@@ -258,6 +270,9 @@ public class WorldOverseer
                         generate_snapshot()
                     );
                     prev_state = curr_state;
+
+                    if (SCENARIO_MANAGER_HOOK_JOIN_UPDATE != null)
+                        SCENARIO_MANAGER_HOOK_JOIN_UPDATE.accept(WorldState.JOINED);
 
                     if (IsLooping) { Step(); }
                 }
@@ -750,5 +765,10 @@ public class WorldOverseer
         }
 
         return snapshot;
+    }
+
+    public void SCENARIO_MANAGER_HOOK_JOIN_UPDATE(Consumer<WorldState> hook)
+    {
+        SCENARIO_MANAGER_HOOK_JOIN_UPDATE = hook;
     }
 }
