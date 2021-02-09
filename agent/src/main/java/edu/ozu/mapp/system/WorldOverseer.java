@@ -27,15 +27,15 @@ public class WorldOverseer
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(WorldOverseer.class);
     private FileLogger file_logger;
 
-    protected   String              WorldID = "";
-    protected   int                 width   = 0;
-    protected   int                 height  = 0;
-    private     int                 active_agent_c = 0;
+    protected   String              WorldID;
+    protected   int                 width;
+    protected   int                 height;
+    private     int                 active_agent_c;
     private     Globals.WorldState  curr_state;
     private     Globals.WorldState  prev_state;
 
-    private boolean IsLooping = false;
-    private boolean join_update_hook_run_once = false;
+    private boolean IsLooping;
+    private boolean join_update_hook_run_once;
 
     private ScheduledExecutorService service;
 
@@ -76,6 +76,7 @@ public class WorldOverseer
     private ScheduledFuture<?> main_sim_loop;
 
     private Consumer<WorldState> SCENARIO_MANAGER_HOOK_JOIN_UPDATE;
+    private Runnable SCENARIO_MANAGER_HOOK_SIMULATION_FINISHED;
 
     private WorldOverseer()
     {
@@ -84,6 +85,14 @@ public class WorldOverseer
 
     private void construct()
     {
+        WorldID = "";
+        width   = 0;
+        height  = 0;
+        active_agent_c = 0;
+
+        IsLooping = false;
+        join_update_hook_run_once = false;
+
         clients             = new ConcurrentHashMap<>();
         curr_state          = Globals.WorldState.JOIN;
         prev_state          = Globals.WorldState.NONE;
@@ -130,11 +139,13 @@ public class WorldOverseer
 
     public WorldOverseer Flush()
     {
-        construct();
-        movement_handler.Flush();
-        negotiation_overseer.Flush();
+        System.out.println("Flushed INSTANCE : " + movement_handler + "     to : " + movement_handler.Flush());
+        System.out.println("Flushed INSTANCE : " + negotiation_overseer + " to : " + negotiation_overseer.Flush());
+        System.out.print  ("Flushed INSTANCE : " + instance);
+        instance = new WorldOverseer();
+        System.out.println("       to : " + instance);
 
-        return null;
+        return instance;
     }
 
     public void Create(String world_id, int width, int height)
@@ -242,6 +253,7 @@ public class WorldOverseer
             file_logger.WorldLogDone(WorldID, _t, (SIM_LOOP_DURATION / 1E9));
 
             ui_log_draw_callback_invoker(log_payload);
+            SCENARIO_MANAGER_HOOK_SIMULATION_FINISHED.run();
 
             return;
         }
@@ -794,5 +806,10 @@ public class WorldOverseer
     public void SCENARIO_MANAGER_HOOK_JOIN_UPDATE(Consumer<WorldState> hook)
     {
         SCENARIO_MANAGER_HOOK_JOIN_UPDATE = hook;
+    }
+
+    public void SCENARIO_MANAGER_HOOK_SIMULATION_FINISHED(Runnable runnable)
+    {
+        SCENARIO_MANAGER_HOOK_SIMULATION_FINISHED = runnable;
     }
 }

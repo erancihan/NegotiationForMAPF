@@ -23,6 +23,8 @@ public class MovementHandler
     {
         move_queue  = new ConcurrentHashMap<>();
         payloads    = new ConcurrentHashMap<>();
+
+        process_queue_lock = new ReentrantLock();
     }
 
     public static MovementHandler getInstance()
@@ -42,9 +44,11 @@ public class MovementHandler
         return instance;
     }
 
-    public void Flush()
+    public MovementHandler Flush()
     {
         instance = new MovementHandler();
+
+        return instance;
     }
 
     public void SetWorldReference(WorldOverseer world)
@@ -63,7 +67,7 @@ public class MovementHandler
         return move_queue.size();
     }
 
-    private static Lock process_queue_lock = new ReentrantLock();
+    private Lock process_queue_lock;
     public synchronized void ProcessQueue(Runnable runnable)
     {
         if (process_queue_lock.tryLock())
@@ -88,7 +92,7 @@ public class MovementHandler
 
     private synchronized void process_queue()
     {
-//        System.out.println("processing queue of size " + move_queue.size());
+        System.out.println("MovementHandler | processing queue of size : " + move_queue.size());
         Iterator<String> iterator = move_queue.keySet().iterator();
         while (iterator.hasNext())
         {
