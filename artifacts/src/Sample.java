@@ -1,25 +1,24 @@
 import edu.ozu.mapp.agent.client.world.ScenarioManager;
 import edu.ozu.mapp.config.AgentConfig;
 import edu.ozu.mapp.config.WorldConfig;
+import edu.ozu.mapp.utils.Glob;
+import edu.ozu.mapp.utils.TournamentRunner;
 
-public class Test {
+import javax.swing.filechooser.FileSystemView;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+
+public class Sample {
     public static void main(String[] args) {
-        ScenarioManager.main(args);
-    }
-
-    public void test()
-    {
-        ScenarioManager manager = new ScenarioManager(true);
-
-        for (Object[] o : manager.getAgentClassesList())
-        {
-            System.out.printf("%s%n", o[0]);
+        try {
+//            ScenarioManager.run(args);
+//            new Sample().gen_cases();
+//            new Sample().run_tournament();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-    }
-
-    public void run_gui()
-    {
-        new ScenarioManager();
     }
 
     public void gen_cases()
@@ -38,7 +37,7 @@ public class Test {
         world_config.initial_token_c = 10;
         world_config.number_of_expected_conflicts = 2;
         world_config.instantiation_configuration = new Object[][]{
-                {"mapp.agent.Hybrid", 40},
+                {"mapp.agent.RandomAgent", 40},
         };
 
         for (int i = 0; i < number_of_cases_to_generate; i++)
@@ -47,12 +46,19 @@ public class Test {
 
             world_config.world_id = timestamp + "-" + i;
             manager
-                .generateScenario(world_config)
+                .GenerateScenario(world_config)
                 .thenAccept(agentConfigs -> {
                     AgentConfig[] agent_config = agentConfigs.toArray(new AgentConfig[0]);
 
                     manager.SaveScenario(agent_config, world_config);
                 });
         }
+    }
+
+    public void run_tournament() throws IOException {
+        Path path = Paths.get(FileSystemView.getFileSystemView().getDefaultDirectory().getPath(), "MAPP");
+        ArrayList<String> scenarios = new Glob().glob(path, "*.json");
+
+        new TournamentRunner().run(scenarios);
     }
 }
