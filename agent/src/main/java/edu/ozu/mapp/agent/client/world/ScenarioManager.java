@@ -770,7 +770,7 @@ public class ScenarioManager extends javax.swing.JFrame
     //</editor-fold>
 
     private void generate_scenario_btnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_run_scenario_btnActionPerformed
-        GenerateScenario();
+        generate_scenario_btn_pressed();
     }//GEN-LAST:event_run_scenario_btnActionPerformed
 
     //<editor-fold defaultstate="collapsed" desc="Import BTN Action Performed">
@@ -1016,7 +1016,7 @@ public class ScenarioManager extends javax.swing.JFrame
      * Only input values are present when this function
      * is first invoked
      * */
-    private void GenerateScenario()
+    private void generate_scenario_btn_pressed()
     {
         String wid = String.valueOf(System.currentTimeMillis());
 
@@ -1042,7 +1042,7 @@ public class ScenarioManager extends javax.swing.JFrame
 
         Object[][] table_data = GetAgentCount();
 
-        generateScenario(wid, width, height, min_path_len, max_path_len, min_dist_bw, initial_token_c, number_of_expected_conflicts, table_data)
+        process_scenario_config(wid, width, height, min_path_len, max_path_len, min_dist_bw, initial_token_c, number_of_expected_conflicts, table_data)
             .thenAccept(data -> {
                 agents_data = data;
 
@@ -1052,7 +1052,7 @@ public class ScenarioManager extends javax.swing.JFrame
         ;
     }
 
-    private CompletableFuture<ArrayList<AgentConfig>> generateScenario(String world_id, int width, int height, int min_path_len, int max_path_len, int min_dist_bw, int initial_token_c, int number_of_expected_conflicts, Object[][] table_data)
+    private CompletableFuture<ArrayList<AgentConfig>> process_scenario_config(String world_id, int width, int height, int min_path_len, int max_path_len, int min_dist_bw, int initial_token_c, int number_of_expected_conflicts, Object[][] table_data)
     {
         WorldConfig config = new WorldConfig(world_id, width, height, min_path_len, min_dist_bw);
         config.max_path_len = max_path_len;
@@ -1065,10 +1065,10 @@ public class ScenarioManager extends javax.swing.JFrame
 
         if (config.agent_count == 0) return CompletableFuture.supplyAsync(() -> null);
 
-        return generateScenario(config);
+        return GenerateScenario(config);
     }
 
-    public CompletableFuture<ArrayList<AgentConfig>> generateScenario(WorldConfig config)
+    public CompletableFuture<ArrayList<AgentConfig>> GenerateScenario(WorldConfig config)
     {
         config.validate();
         world_data = config;
