@@ -3,6 +3,11 @@
 dump.rdb
 logs/*
 lib
+*.jar
+.vscode
+
+agent/.factorypath
+agent/.settings/*
 
 # Covers JetBrains IDEs
 .idea/*
@@ -12,6 +17,10 @@ cmake-build-*/
 out/
 *.ipr
 .idea_modules/
+
+# OK, dont ignore project's imls after all
+!agent/agent.iml
+!scripts/scripts.iml
 
 # JIRA plugin
 atlassian-ide-plugin.xml

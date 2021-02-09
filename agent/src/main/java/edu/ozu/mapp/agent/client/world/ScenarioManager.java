@@ -12,22 +12,25 @@ import edu.ozu.mapp.agent.MAPPAgent;
 import edu.ozu.mapp.agent.client.AgentClient;
 import edu.ozu.mapp.agent.client.helpers.ConflictCheck;
 import edu.ozu.mapp.agent.client.helpers.ConflictInfo;
+import edu.ozu.mapp.config.AgentConfig;
+import edu.ozu.mapp.config.SessionConfig;
+import edu.ozu.mapp.config.WorldConfig;
 import edu.ozu.mapp.system.WorldOverseer;
+import edu.ozu.mapp.system.WorldState;
 import edu.ozu.mapp.utils.Point;
 import edu.ozu.mapp.utils.*;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
+import org.springframework.util.Assert;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.AbstractTableModel;
 import java.awt.*;
 import java.awt.event.ItemEvent;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.awt.event.WindowEvent;
+import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -43,12 +46,42 @@ public class ScenarioManager extends javax.swing.JFrame
 {
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ScenarioManager.class);
 
+    private boolean is_headless;
+    private ScenarioManager instance = null;
+
+    private Font meslolgs;
+
     /**
      * Creates new form ScenarioManager
      */
-    public ScenarioManager()
+    private ScenarioManager()
     {
-        initComponents();
+        // default has gui, there for not headless
+        this(false);
+    }
+
+    public ScenarioManager(boolean is_headless)
+    {
+        this.is_headless = is_headless;
+        this.instance = this;
+
+        if (is_headless) {
+            logger.warn("HEADLESS DESIGN IS NOT FULLY IMPLEMENTED");
+        } else {
+            try {
+                InputStream stream = ClassLoader.getSystemClassLoader().getResourceAsStream("fonts/MesloLGS NF Regular.ttf");
+                Assert.isTrue(stream != null, "file stream is null!");
+                meslolgs = Font.createFont(Font.TRUETYPE_FONT, stream).deriveFont(12f);
+            } catch (FontFormatException | IOException e) {
+                logger.error("SOMETHING WENT WRONG WHILE SETTING FONTS");
+                e.printStackTrace();
+            }
+
+            initComponents();
+        }
+
+        // despite having no components, this is final step of creation function
+        // perhaps renaming is in order
         onComponentsDidMount();
     }
 
@@ -184,7 +217,7 @@ public class ScenarioManager extends javax.swing.JFrame
 
         inputs_container.setLayout(new java.awt.GridBagLayout());
 
-        label_width.setFont(new java.awt.Font("Ubuntu", 0, 14)); // NOI18N
+        label_width.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
         label_width.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         label_width.setText("Width");
         label_width.setPreferredSize(new java.awt.Dimension(80, 16));
@@ -193,7 +226,7 @@ public class ScenarioManager extends javax.swing.JFrame
         gridBagConstraints.gridy = 3;
         inputs_container.add(label_width, gridBagConstraints);
 
-        label_height.setFont(new java.awt.Font("Ubuntu", 0, 14)); // NOI18N
+        label_height.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
         label_height.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         label_height.setText("Height");
         label_height.setPreferredSize(new java.awt.Dimension(80, 16));
@@ -202,7 +235,7 @@ public class ScenarioManager extends javax.swing.JFrame
         gridBagConstraints.gridy = 6;
         inputs_container.add(label_height, gridBagConstraints);
 
-        label_MinPathLength.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        label_MinPathLength.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
         label_MinPathLength.setText("Min Path Length");
         label_MinPathLength.setMaximumSize(new java.awt.Dimension(165, 18));
         label_MinPathLength.setMinimumSize(new java.awt.Dimension(165, 18));
@@ -214,6 +247,7 @@ public class ScenarioManager extends javax.swing.JFrame
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         inputs_container.add(label_MinPathLength, gridBagConstraints);
 
+        label_MaxPathLength.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
         label_MaxPathLength.setText("Max Path Length");
         label_MaxPathLength.setMaximumSize(new java.awt.Dimension(165, 18));
         label_MaxPathLength.setMinimumSize(new java.awt.Dimension(165, 18));
@@ -223,7 +257,7 @@ public class ScenarioManager extends javax.swing.JFrame
         gridBagConstraints.gridy = 6;
         inputs_container.add(label_MaxPathLength, gridBagConstraints);
 
-        label_min_dist_bw_agents.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        label_min_dist_bw_agents.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
         label_min_dist_bw_agents.setText("min dist b/w agents");
         label_min_dist_bw_agents.setMaximumSize(new java.awt.Dimension(165, 18));
         label_min_dist_bw_agents.setMinimumSize(new java.awt.Dimension(165, 18));
@@ -234,6 +268,7 @@ public class ScenarioManager extends javax.swing.JFrame
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         inputs_container.add(label_min_dist_bw_agents, gridBagConstraints);
 
+        label_initial_tokens_per_agent.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
         label_initial_tokens_per_agent.setText("Initial Tokens per Agent");
         label_initial_tokens_per_agent.setMaximumSize(new java.awt.Dimension(165, 18));
         label_initial_tokens_per_agent.setMinimumSize(new java.awt.Dimension(165, 18));
@@ -321,6 +356,7 @@ public class ScenarioManager extends javax.swing.JFrame
         gridBagConstraints.gridy = 2;
         inputs_container.add(filler5, gridBagConstraints);
 
+        label_number_of_expected_conflicts.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
         label_number_of_expected_conflicts.setText("no of expected conflicts");
         label_number_of_expected_conflicts.setMaximumSize(new java.awt.Dimension(165, 18));
         label_number_of_expected_conflicts.setMinimumSize(new java.awt.Dimension(165, 18));
@@ -338,7 +374,7 @@ public class ScenarioManager extends javax.swing.JFrame
         gridBagConstraints.gridy = 2;
         inputs_container.add(input_number_of_expected_conflicts, gridBagConstraints);
 
-        jLabel2.setFont(new java.awt.Font("Ubuntu", 0, 14)); // NOI18N
+        jLabel2.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
         jLabel2.setText("Field of View");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -572,7 +608,6 @@ public class ScenarioManager extends javax.swing.JFrame
         scenario_info_container.setLayout(new java.awt.GridLayout(1, 0));
 
         horizontal_spliter.setDividerLocation(300);
-        horizontal_spliter.setDividerSize(5);
         horizontal_spliter.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
         horizontal_spliter.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
             public void propertyChange(java.beans.PropertyChangeEvent evt) {
@@ -586,7 +621,6 @@ public class ScenarioManager extends javax.swing.JFrame
         world_view_state_container.setLayout(new java.awt.BorderLayout());
 
         vertical_spliter.setDividerLocation(300);
-        vertical_spliter.setDividerSize(5);
         vertical_spliter.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
         vertical_spliter.setToolTipText("");
         vertical_spliter.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
@@ -646,7 +680,7 @@ public class ScenarioManager extends javax.swing.JFrame
         jScrollPane1.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
         jScrollPane1.setAutoscrolls(true);
 
-        scenario_info_pane.setFont(new java.awt.Font("Ubuntu Mono", 0, 14)); // NOI18N
+        scenario_info_pane.setFont(meslolgs);
         scenario_info_pane.SetScrollPane(jScrollPane1);
 
         javax.swing.GroupLayout scenario_info_paneLayout = new javax.swing.GroupLayout(scenario_info_pane);
@@ -668,7 +702,7 @@ public class ScenarioManager extends javax.swing.JFrame
 
         negotiation_logs.setLayout(new java.awt.BorderLayout());
 
-        negotiation_info_pane.setFont(new java.awt.Font("Ubuntu Mono", 0, 14)); // NOI18N
+        negotiation_info_pane.setFont(meslolgs);
         jScrollPane4.setViewportView(negotiation_info_pane);
 
         negotiation_logs.add(jScrollPane4, java.awt.BorderLayout.CENTER);
@@ -740,7 +774,7 @@ public class ScenarioManager extends javax.swing.JFrame
     //</editor-fold>
 
     private void generate_scenario_btnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_run_scenario_btnActionPerformed
-        GenerateScenario();
+        generate_scenario_btn_pressed();
     }//GEN-LAST:event_run_scenario_btnActionPerformed
 
     //<editor-fold defaultstate="collapsed" desc="Import BTN Action Performed">
@@ -750,36 +784,19 @@ public class ScenarioManager extends javax.swing.JFrame
         // switch to first page
         ((CardLayout) cards_container.getLayout()).show(cards_container, "create");
 
+        // define folder path
+        File mapp_folder = new File(java.nio.file.Paths.get(new JFileChooser().getFileSystemView().getDefaultDirectory().toString(), "MAPP").toString());
+        if (!mapp_folder.exists()) mapp_folder.mkdirs();
+
         // open file picker and select .json file to import scenario config from
         file_chooser.setFileFilter(new FileNameExtensionFilter("JSON", "json"));
+        file_chooser.setCurrentDirectory(mapp_folder);
         int return_val = file_chooser.showOpenDialog(this);
         if (return_val == JFileChooser.APPROVE_OPTION) {
             // open & import file
             File import_file = file_chooser.getSelectedFile();
 
-            // do not open if it is not a json file
-            if (!import_file.getAbsolutePath().endsWith(".json")) return;
-
-            try {
-                FileReader reader = new FileReader(import_file);
-                Gson gson = new Gson();
-
-                JSONSessionConfig config = gson.fromJson(reader, JSONSessionConfig.class);
-                reader.close();
-
-                world_data = config.world;
-                agents_data = new ArrayList<>();
-
-                for (int i = 0; i < config.agents.length; i++) {
-                    config.agents[i].agent_name = config.agents[i].agent_name.replaceAll("-", "_");
-                }
-
-                Collections.addAll(agents_data, config.agents);
-
-                DisplayImportedData();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            SetScenario(import_file);
         }
     }//GEN-LAST:event_import_btnActionPerformed
     //</editor-fold>
@@ -789,7 +806,12 @@ public class ScenarioManager extends javax.swing.JFrame
         // open file picker and select .json file to export scenario config to
         String wid = String.valueOf(System.currentTimeMillis());
 
+        // define folder path
+        File mapp_folder = new File(java.nio.file.Paths.get(new JFileChooser().getFileSystemView().getDefaultDirectory().toString(), "MAPP").toString());
+        if (!mapp_folder.exists()) mapp_folder.mkdirs();
+
         file_chooser.setSelectedFile(new File("world-scenario-"+wid+".json"));
+        file_chooser.setCurrentDirectory(mapp_folder);
         int return_val = file_chooser.showSaveDialog(this);
         if (return_val == JFileChooser.APPROVE_OPTION) {
             // open & write to file
@@ -799,31 +821,19 @@ public class ScenarioManager extends javax.swing.JFrame
             } else {
                 export_file = new File(file_chooser.getSelectedFile().getPath() + ".json");
             }
-            JSONSessionConfig config = new JSONSessionConfig();
-            config.agents = agents_data.stream().peek(JSONAgentData::gen_path).toArray(JSONAgentData[]::new);
-            config.world  = world_data;
 
-            try {
-                logger.debug("Writing config");
-                logger.debug(config.toString());
-                logger.debug("To file " + export_file);
-
-                FileWriter writer = new FileWriter(export_file);
-                Gson gson = new GsonBuilder().setPrettyPrinting().create();
-                gson.toJson(config, writer);
-                writer.append("\n");
-                writer.flush();
-                writer.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            SaveScenario(
+                export_file,
+                agents_data.stream().peek(AgentConfig::gen_path).toArray(AgentConfig[]::new),
+                world_data
+            );
         }
     }//GEN-LAST:event_export_btnActionPerformed
     //</editor-fold >
 
     private void run_btnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_run_btnActionPerformed
         ((CardLayout) cards_container.getLayout()).show(cards_container, "run");
-        RunScenario();
+        run_scenario();
     }//GEN-LAST:event_run_btnActionPerformed
 
     private void previous_btnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_previous_btnActionPerformed
@@ -877,6 +887,10 @@ public class ScenarioManager extends javax.swing.JFrame
      * @param args the command line arguments
      */
     public static void main(String[] args) {
+        run(args);
+    }
+
+    public static CompletableFuture<ScenarioManager> run(String[] args) {
         /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
         /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
@@ -904,8 +918,17 @@ public class ScenarioManager extends javax.swing.JFrame
         }
         //</editor-fold>
 
+        CompletableFuture<ScenarioManager> future = new CompletableFuture<>();
+
         /* Create and display the form */
-        java.awt.EventQueue.invokeLater(() -> new ScenarioManager().setVisible(true));
+        java.awt.EventQueue.invokeLater(() -> {
+            ScenarioManager instance = new ScenarioManager();
+            instance.setVisible(true);
+
+            future.complete(instance);
+        });
+
+        return future;
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -949,7 +972,7 @@ public class ScenarioManager extends javax.swing.JFrame
         logger.debug(agents_map.toString());
 
         AgentsTableModel table = new AgentsTableModel(agents_map.keySet().toArray(new String[0]));
-        agents_table.setModel(table);
+        if (agents_table != null) agents_table.setModel(table);
     }
 
     //<editor-fold defaultstate="collapsed" desc="Find Agent Classes">
@@ -979,20 +1002,22 @@ public class ScenarioManager extends javax.swing.JFrame
     {
 //        if (world_listener != null)  world_listener.close();
         if (scenario_canvas != null) scenario_canvas.Destroy();
+
+        if (ON_WINDOW_CLOSED != null) ON_WINDOW_CLOSED.run();
     }
 
     private WorldOverseer world;
-    private JSONWorldData world_data;
+    private WorldConfig world_data;
     private int agent_count = 0; // track number of agents there should be
     private int number_of_expected_conflicts = 0;
-    private ArrayList<JSONAgentData> agents_data = new ArrayList<>();
+    private ArrayList<AgentConfig> agents_data = new ArrayList<>();
 
     /**
      * Invoked before switching to overview card.
      * Only input values are present when this function
      * is first invoked
      * */
-    private void GenerateScenario()
+    private void generate_scenario_btn_pressed()
     {
         String wid = String.valueOf(System.currentTimeMillis());
 
@@ -1013,65 +1038,103 @@ public class ScenarioManager extends javax.swing.JFrame
             ex.printStackTrace();
             return;
         }
-        world_data = new JSONWorldData(wid, width, height, min_path_len, min_dist_bw);
-        world_data.max_path_len = max_path_len;
-        world_data.initial_token_c = initial_token_c;
 
-        GetAgentCount();
-
-        if (agent_count == 0) return;
-        world_data.agent_count = agent_count;
-
-        // Get number of possible initial conflicts
-        int max_number_of_possible_conflicts = (agent_count * (agent_count - 1)) / 2;
         number_of_expected_conflicts = input_number_of_expected_conflicts.getText().isEmpty() ? 0 : Integer.parseInt(input_number_of_expected_conflicts.getText());
 
+        Object[][] table_data = GetAgentCount();
+
+        process_scenario_config(wid, width, height, min_path_len, max_path_len, min_dist_bw, initial_token_c, number_of_expected_conflicts, table_data)
+            .thenAccept(data -> {
+                agents_data = data;
+
+                if (data != null && !is_headless) { ShowOverviewCard(); }
+                // todo do not switch if not ok
+            })
+        ;
+    }
+
+    private CompletableFuture<ArrayList<AgentConfig>> process_scenario_config(String world_id, int width, int height, int min_path_len, int max_path_len, int min_dist_bw, int initial_token_c, int number_of_expected_conflicts, Object[][] table_data)
+    {
+        WorldConfig config = new WorldConfig(world_id, width, height, min_path_len, min_dist_bw);
+        config.max_path_len = max_path_len;
+        config.initial_token_c = initial_token_c;
+        config.number_of_expected_conflicts = number_of_expected_conflicts;
+        config.instantiation_configuration = table_data;
+        config.agent_count = agent_count;
+
+        config.validate();
+
+        if (config.agent_count == 0) return CompletableFuture.supplyAsync(() -> null);
+
+        return GenerateScenario(config);
+    }
+
+    public CompletableFuture<ArrayList<AgentConfig>> GenerateScenario(WorldConfig config)
+    {
+        config.validate();
+        world_data = config;
+
+        return generate_scenario();
+    }
+
+    private CompletableFuture<ArrayList<AgentConfig>> generate_scenario()
+    {
+        // Get number of possible initial conflicts
+        int max_number_of_possible_conflicts = (agent_count * (agent_count - 1)) / 2;
         if (number_of_expected_conflicts > max_number_of_possible_conflicts)
         {
             number_of_expected_conflicts = max_number_of_possible_conflicts;
         }
 
         // display loading
-        popup_generating.setLocationRelativeTo(this);
-        popup_generating.setVisible(true);
+        if (popup_generating != null) popup_generating.setLocationRelativeTo(this);
+        if (popup_generating != null) popup_generating.setVisible(true);
 
-        CompletableFuture
+        int final_number_of_expected_conflicts = number_of_expected_conflicts;
+        return CompletableFuture
             .supplyAsync(() -> {
                 boolean isOk;
 
-                ArrayList<Point[]> AgentLocationData = new LocationDataGenerator(world_data, number_of_expected_conflicts).GenerateAgentLocationData(width, height);
+                ArrayList<Point[]> AgentLocationData = new LocationDataGenerator(world_data, final_number_of_expected_conflicts).GenerateAgentLocationData(world_data.width, world_data.height);
                 isOk = AgentLocationData.size() > 0;
 
-                if (isOk) InitializeAgentData(AgentLocationData);
+                ArrayList<AgentConfig> data = null;
+                if (isOk) {
+                    data = InitializeAgentData(AgentLocationData, world_data.instantiation_configuration);
+                }
 
-                return isOk;
-            })
-            .thenAccept(isOk -> {
-                if (isOk) { ShowOverviewCard(); }
-                // todo do not switch if not ok
+                return data;
             });
     }
 
     //<editor-fold defaultstate="collapsed" desc="Generate Scenario functions">
-    private void GetAgentCount()
+    private Object[][] GetAgentCount()
     {
+        Object[][] table_data = new Object[agents_table.getRowCount()][2];
+
         int _ac = 0;
         for (int row = 0; row < agents_table.getRowCount(); row++)
         {
             int __ac = Integer.parseInt((String) agents_table.getValueAt(row, 1));
             _ac += __ac;
+
+            table_data[row][0] = agents_table.getValueAt(row, 0);
+            table_data[row][1] = __ac;
         }
         agent_count = _ac;
+
+        return table_data;
     }
 
-    private void InitializeAgentData(ArrayList<Point[]> AgentLocationData)
+    private ArrayList<AgentConfig> InitializeAgentData(ArrayList<Point[]> AgentLocationData, Object[][] table_data)
     {
         int id_count = 0;
         Iterator<Point[]> AgentLocationDataIterator = AgentLocationData.iterator();
-        for (int row = 0; row < agents_table.getRowCount(); row++)
+        ArrayList<AgentConfig> agents_data = new ArrayList<>();
+        for (int row = 0; row < table_data.length; row++)
         {
-            String agent_class_name = (String) agents_table.getValueAt(row, 0);
-            int agent_count = Integer.parseInt((String) agents_table.getValueAt(row, 1));
+            String agent_class_name = (String) table_data[row][0];
+            int agent_count = (int) table_data[row][1];
 
             for (int i = 0; i < agent_count; i++)
             {
@@ -1091,10 +1154,12 @@ public class ScenarioManager extends javax.swing.JFrame
                 logger.info("Creating config for " + agent_name + " | " + start + "->" + dest);
                 if (world != null) world.Log(String.format("generated %s %s -> %s", agent_name, start.key, dest.key));
 
-                JSONAgentData data = new JSONAgentData(id_count++, agent_name, agent_class_name, world_data.initial_token_c, start, dest);
+                AgentConfig data = new AgentConfig(id_count++, agent_name, agent_class_name, world_data.initial_token_c, start, dest);
                 agents_data.add(data);
             }
         }
+
+        return agents_data;
     }
     //</editor-fold>
 
@@ -1127,7 +1192,7 @@ public class ScenarioManager extends javax.swing.JFrame
         // prepare overview
         PopulateOverviewCard();
         AgentDetailsTableModel table = new AgentDetailsTableModel(
-                agents_data.toArray(new JSONAgentData[0]),
+                agents_data.toArray(new AgentConfig[0]),
                 (index, data) -> {
                     agents_data.get(index).agent_name   = data.agent_name;
                     agents_data.get(index).start        = data.start;
@@ -1164,7 +1229,7 @@ public class ScenarioManager extends javax.swing.JFrame
         HashMap<Integer, String[]> agent_paths = new HashMap<>();
         for (int i = 0; i < agents_data.size(); i++)
         {
-            JSONAgentData a = agents_data.get(i);
+            AgentConfig a = agents_data.get(i);
             String[] a_path;
             if (agent_paths.containsKey(a.id)) {
                 a_path = agent_paths.get(a.id);
@@ -1185,7 +1250,7 @@ public class ScenarioManager extends javax.swing.JFrame
 
             for (int j = i + 1; j < agents_data.size(); j++)
             {
-                JSONAgentData b = agents_data.get(j);
+                AgentConfig b = agents_data.get(j);
                 String[] b_path;
                 if (agent_paths.containsKey(b.id)) {
                     b_path = agent_paths.get(b.id);
@@ -1209,7 +1274,7 @@ public class ScenarioManager extends javax.swing.JFrame
         min_path_length_label.setText(String.valueOf(min_path_len));
     }
 
-    private void RunScenario()
+    private void run_scenario()
     {
         generate_scenario_btn.setEnabled(false);
 
@@ -1220,7 +1285,7 @@ public class ScenarioManager extends javax.swing.JFrame
         world.Create(world_data.world_id, world_data.width, world_data.height);
 
         HashMap<String, AgentClient> agent_refs = new HashMap<>();
-        for (JSONAgentData data : agents_data) {
+        for (AgentConfig data : agents_data) {
             try {
                 world.Log(String.format("initializing %20s from %-10s -> to %-10s", data.agent_name, data.start, data.dest));
                 AgentClient client = new AgentClient(
@@ -1253,7 +1318,7 @@ public class ScenarioManager extends javax.swing.JFrame
         if (world == null) InitializeWorld();
 
         HashMap<String, Integer> agent_counts = new HashMap<>();
-        for (JSONAgentData data : agents_data) {
+        for (AgentConfig data : agents_data) {
             agent_counts.put(data.agent_class_name, agent_counts.getOrDefault(data.agent_class_name, 0) + 1);
             if (world != null) world.Log(String.format("imported %s %s -> %s", data.agent_name, data.start, data.dest));
         }
@@ -1270,11 +1335,147 @@ public class ScenarioManager extends javax.swing.JFrame
         ShowOverviewCard();
     }
     //</editor-fold>
+
+    public void SaveScenario(AgentConfig[] agents_config, WorldConfig world_config)
+    {
+        String timestamp = world_config.world_id.isEmpty()
+                            ? String.valueOf(System.currentTimeMillis())
+                            : world_config.world_id;
+
+        File file = new File(
+            java.nio.file.Paths.get(
+                new JFileChooser().getFileSystemView().getDefaultDirectory().toString(),
+                "MAPP",
+                "world-scenario-" + timestamp + ".json"
+            ).toString()
+        );
+
+        SaveScenario(file, agents_config, world_config);
+    }
+
+    public void SaveScenario(File save_destination, AgentConfig[] agents_data, WorldConfig world_data)
+    {
+        SessionConfig config = new SessionConfig();
+        config.agents = agents_data;
+        config.world  = world_data;
+
+        try {
+            logger.debug("Writing config");
+            logger.debug(config.toString());
+            logger.debug("To file " + save_destination);
+
+            FileWriter writer = new FileWriter(save_destination);
+            Gson gson = new GsonBuilder().setPrettyPrinting().create();
+            gson.toJson(config, writer);
+            writer.append("\n");
+            writer.flush();
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public WorldConfig getWorldData()
+    {
+        return world_data;
+    }
+
+    public Object[][] getAgentClassesList()
+    {
+        Object[][] agents = new Object[agents_map.keySet().size()][2];
+
+        int idx = 0;
+        for (String key : agents_map.keySet())
+        {
+            agents[idx][0] = key;
+            agents[idx][1] = 0;
+
+            idx++;
+        }
+
+        return agents;
+    }
+
+    public ScenarioManager SetScenario(File scenario_file) {
+
+        // do not open if it is not a json file
+        if (!scenario_file.getAbsolutePath().endsWith(".json")) {
+            return instance;
+        }
+
+        try {
+            FileReader reader = new FileReader(scenario_file);
+            Gson gson = new Gson();
+
+            SessionConfig config = gson.fromJson(reader, SessionConfig.class);
+            reader.close();
+
+            world_data = config.world;
+            agents_data = new ArrayList<>();
+
+            for (int i = 0; i < config.agents.length; i++) {
+                config.agents[i].agent_name = config.agents[i].agent_name.replaceAll("-", "_");
+            }
+
+            Collections.addAll(agents_data, config.agents);
+
+            DisplayImportedData();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return instance;
+    }
+
+    public ScenarioManager RunScenario()
+    {
+        return RunScenario(false);
+    }
+
+    public ScenarioManager RunScenario(boolean cycle)
+    {
+        if (cycle)
+        {   // will cycle immediately
+            world.SCENARIO_MANAGER_HOOK_JOIN_UPDATE(agent_count -> {
+                if (agent_count == WorldState.JOINED) {
+                    logger.info("Agent Joins complete");
+
+                    world.Loop();
+                }
+            });
+            world.SCENARIO_MANAGER_HOOK_SIMULATION_FINISHED(() -> {
+                world.Flush();
+
+                this.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+                this.dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
+            });
+            run_btnActionPerformed(null);   // send run btn click action
+        }
+        else
+        {   // will not cycle
+            run_btnActionPerformed(null);   // send run btn click action
+        }
+
+        return instance;
+    }
+
+    private Runnable ON_SIMULATION_FINISHED;
+    public void OnSimulationFinished(Runnable runnable)
+    {
+        ON_SIMULATION_FINISHED = runnable;
+    }
+
+    private Runnable ON_WINDOW_CLOSED;
+    public void OnWindowClosed(Runnable runnable)
+    {
+        ON_WINDOW_CLOSED = runnable;
+    }
 }
 
 @SuppressWarnings({"FieldMayBeFinal", "unused"})
 class AgentsTableModel extends AbstractTableModel
 {
+    //<editor-fold defaultstate="collapsed" desc="implementation">
     private boolean[][] editable_cells; // 2d array to represent rows and columns
     private String[] columns = new String[]{"Agent Class", "Count"};
     private ArrayList<Object[]> rows = new ArrayList<>();
@@ -1330,19 +1531,21 @@ class AgentsTableModel extends AbstractTableModel
     {
         return this.editable_cells[row][column];
     }
+    //</editor-fold>
 }
 
 @SuppressWarnings({"FieldMayBeFinal", "unused"})
 class AgentDetailsTableModel extends AbstractTableModel
 {
-    private final JSONAgentData[] agents;
+    //<editor-fold defaultstate="collapsed" desc="implementation">
+    private final AgentConfig[] agents;
     private boolean[][] editable_cells;
     private String[] columns = new String[]{"Agent Name", "Start", "Dest", "Path len", "# of Tokens"};
     private ArrayList<Object[]> rows = new ArrayList<>();
 
-    private BiConsumer<Integer, JSONAgentData> update_callback;
+    private BiConsumer<Integer, AgentConfig> update_callback;
 
-    AgentDetailsTableModel(JSONAgentData[] agents, BiConsumer<Integer, JSONAgentData> callback)
+    AgentDetailsTableModel(AgentConfig[] agents, BiConsumer<Integer, AgentConfig> callback)
     {
         this.agents = agents;
         update_callback = callback;
@@ -1419,4 +1622,5 @@ class AgentDetailsTableModel extends AbstractTableModel
     {
         return this.editable_cells[row][column];
     }
+    //</editor-fold>
 }

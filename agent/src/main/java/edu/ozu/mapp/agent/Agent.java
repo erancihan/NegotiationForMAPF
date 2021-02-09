@@ -26,7 +26,7 @@ public abstract class Agent {
     public History history;
 
     public int initial_tokens = Globals.INITIAL_TOKEN_BALANCE;
-    public int initial_path = -1;
+    public List<String> initial_path;
 
     public int current_tokens;
     public String current_opponent;
@@ -107,9 +107,10 @@ public abstract class Agent {
 
     public final void run()
     {
-        logger.info("calculating path");
+        logger.info(AGENT_ID + " calculating path");
         path = calculatePath();
-        this.initial_path = path.size();
+        logger.info(AGENT_ID + " calculation done");
+        this.initial_path = new ArrayList<>(path);
 
         POS = new Point(path.get(0).split("-"));
         history = new History(AGENT_ID);
@@ -197,7 +198,8 @@ public abstract class Agent {
         String[] broadcast = GetOwnBroadcastPath();
 
         // find the last point that is within FoV
-        Point to = null;
+        Point to = new Point(broadcast[broadcast.length-1], "-");// null;
+        /*
         for (int i = broadcast.length-1; i >= 0; i--) {
             // iterate in reverse
             Point point = new Point(broadcast[i], "-");
@@ -206,6 +208,7 @@ public abstract class Agent {
                 break;
             }
         }
+        */
 
         if (to != null) {
             return GetBidSpace(POS, to, Globals.FIELD_OF_VIEW_SIZE);
@@ -268,7 +271,7 @@ public abstract class Agent {
 
     public final int GetMyRemainingPathLength()
     {
-        return (this.path.size()-1) - time;
+        return this.path.size() - time;
     }
 
     public final HashSet<String> getOwnBidHistory()

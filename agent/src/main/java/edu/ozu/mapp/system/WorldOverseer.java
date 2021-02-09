@@ -27,14 +27,15 @@ public class WorldOverseer
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(WorldOverseer.class);
     private FileLogger file_logger;
 
-    protected   String              WorldID = "";
-    protected   int                 width   = 0;
-    protected   int                 height  = 0;
-    private     int                 active_agent_c = 0;
+    protected   String              WorldID;
+    protected   int                 width;
+    protected   int                 height;
+    private     int                 active_agent_c;
     private     Globals.WorldState  curr_state;
     private     Globals.WorldState  prev_state;
 
-    private boolean IsLooping = false;
+    private boolean IsLooping;
+    private boolean join_update_hook_run_once;
 
     private ScheduledExecutorService service;
 
@@ -62,6 +63,7 @@ public class WorldOverseer
 
     private ConcurrentHashMap<String, String> FLAG_JOINS;
     private ConcurrentHashMap<String, String> FLAG_COLLISION_CHECKS;
+    private ConcurrentHashMap<String, String> FLAG_NEGOTIATION_REGISTERED;
     private ConcurrentHashMap<String, String> FLAG_NEGOTIATIONS_DONE;
     private ConcurrentHashMap<String, String> FLAG_NEGOTIATIONS_VERIFIED;
     private ConcurrentHashMap<String, String> FLAG_INACTIVE;
@@ -71,6 +73,10 @@ public class WorldOverseer
     private Runnable                    UI_CanvasUpdateHook;
     private Runnable                    UI_LoopStoppedHook;
     private BiConsumer<String, WorldSnapshot> SNAPSHOT_HOOK;
+    private ScheduledFuture<?> main_sim_loop;
+
+    private Consumer<WorldState> SCENARIO_MANAGER_HOOK_JOIN_UPDATE;
+    private Runnable SCENARIO_MANAGER_HOOK_SIMULATION_FINISHED;
 
     private WorldOverseer()
     {
@@ -79,6 +85,14 @@ public class WorldOverseer
 
     private void construct()
     {
+        WorldID = "";
+        width   = 0;
+        height  = 0;
+        active_agent_c = 0;
+
+        IsLooping = false;
+        join_update_hook_run_once = false;
+
         clients             = new ConcurrentHashMap<>();
         curr_state          = Globals.WorldState.JOIN;
         prev_state          = Globals.WorldState.NONE;
@@ -99,6 +113,7 @@ public class WorldOverseer
 
         FLAG_JOINS            = new ConcurrentHashMap<>();
         FLAG_COLLISION_CHECKS = new ConcurrentHashMap<>();
+        FLAG_NEGOTIATION_REGISTERED = new ConcurrentHashMap<>();
         FLAG_NEGOTIATIONS_DONE = new ConcurrentHashMap<>();
         FLAG_NEGOTIATIONS_VERIFIED = new ConcurrentHashMap<>();
         FLAG_INACTIVE         = new ConcurrentHashMap<>();
@@ -124,11 +139,13 @@ public class WorldOverseer
 
     public WorldOverseer Flush()
     {
-        construct();
-        movement_handler.Flush();
-        negotiation_overseer.Flush();
+        System.out.println("Flushed INSTANCE : " + movement_handler + "     to : " + movement_handler.Flush());
+        System.out.println("Flushed INSTANCE : " + negotiation_overseer + " to : " + negotiation_overseer.Flush());
+        System.out.print  ("Flushed INSTANCE : " + instance);
+        instance = new WorldOverseer();
+        System.out.println("       to : " + instance);
 
-        return null;
+        return instance;
     }
 
     public void Create(String world_id, int width, int height)
@@ -166,7 +183,7 @@ public class WorldOverseer
     public void Run()
     {
         service = Executors.newScheduledThreadPool(clients.size() + 1);
-        service.scheduleAtFixedRate(this::run_loop_container, 0, 250, TimeUnit.MILLISECONDS);
+        main_sim_loop = service.scheduleAtFixedRate(this::run_loop_container, 0, 250, TimeUnit.MILLISECONDS);
 
         for (String agent_name : clients.keySet())
         {
@@ -220,6 +237,7 @@ public class WorldOverseer
         if (active_agent_c == 0 && IsLooping)
         {   // there are no active agents left!
             IsLooping = false;
+            main_sim_loop.cancel(false);
             SIM_LOOP_FINISH_TIME = System.nanoTime();
 
             if (UI_LoopStoppedHook != null) { UI_LoopStoppedHook.run(); }
@@ -235,6 +253,7 @@ public class WorldOverseer
             file_logger.WorldLogDone(WorldID, _t, (SIM_LOOP_DURATION / 1E9));
 
             ui_log_draw_callback_invoker(log_payload);
+            SCENARIO_MANAGER_HOOK_SIMULATION_FINISHED.run();
 
             return;
         }
@@ -243,6 +262,15 @@ public class WorldOverseer
         {
             case JOIN:
                 UI_CanvasUpdateHook.run();
+
+                if (SCENARIO_MANAGER_HOOK_JOIN_UPDATE != null && !join_update_hook_run_once)
+                {   // what the hell is this...
+                    SCENARIO_MANAGER_HOOK_JOIN_UPDATE.accept(WorldState.JOINING);
+
+                    if (FLAG_JOINS.size() == active_agent_c) {
+                        join_update_hook_run_once = true;
+                    }
+                }
 
                 if (FLAG_JOINS.size() == active_agent_c)
                 {   // ALL REGISTERED AGENTS ARE DONE JOINING
@@ -256,6 +284,9 @@ public class WorldOverseer
                         generate_snapshot()
                     );
                     prev_state = curr_state;
+
+                    if (SCENARIO_MANAGER_HOOK_JOIN_UPDATE != null)
+                        SCENARIO_MANAGER_HOOK_JOIN_UPDATE.accept(WorldState.JOINED);
 
                     if (IsLooping) { Step(); }
                 }
@@ -288,6 +319,9 @@ public class WorldOverseer
                 {   // NEGOTIATIONS ARE COMPLETE
                     Log("- NEGOTIATIONS ARE COMPLETE", logger::info);
 
+                    FLAG_NEGOTIATION_REGISTERED.clear();
+                    FLAG_COLLISION_CHECKS.clear();
+
                     /* VERIFY NEGOTIATIONS
                      *
                      * Request verification from all agents.
@@ -305,6 +339,7 @@ public class WorldOverseer
                 if (active_agent_c == movement_handler.size())
                 {
                     // flush previous state checks
+                    FLAG_NEGOTIATION_REGISTERED.clear();
                     FLAG_NEGOTIATIONS_DONE.clear();
                     FLAG_NEGOTIATIONS_VERIFIED.clear();
 
@@ -531,18 +566,36 @@ public class WorldOverseer
      * */
     public synchronized void OnCollisionCheckDone(String agent_name, String[] agent_ids)
     {
-        if (FLAG_COLLISION_CHECKS.containsKey(agent_name) || FLAG_INACTIVE.containsKey(agent_name))
+        if (FLAG_INACTIVE.containsKey(agent_name)) return;
+
+        Arrays.sort(agent_ids);
+
+        if (
+            FLAG_COLLISION_CHECKS.containsKey(agent_name) &&
+            FLAG_COLLISION_CHECKS.get(agent_name).equals(Arrays.toString(agent_ids))
+        )
         {
             return;
         }
 
-        FLAG_COLLISION_CHECKS.put(agent_name, "");
+        FLAG_COLLISION_CHECKS.put(agent_name, Arrays.toString(agent_ids));
         if (agent_ids.length > 1)
         {
+            // check if ids are already queued for negotiation
+            boolean is_bad = false;
+            for (String id : agent_ids) {
+                is_bad = is_bad || FLAG_NEGOTIATION_REGISTERED.containsKey(id);
+            }
+            if (is_bad) return;
+
             Log(agent_name + " reported collision : " + Arrays.toString(agent_ids));
             negotiation_overseer.RegisterCollisionNotification(agent_ids);
 
-            for (String id : agent_ids) FLAG_NEGOTIATIONS_DONE.remove(id);
+            for (String id : agent_ids) {
+                FLAG_COLLISION_CHECKS.put(id, Arrays.toString(agent_ids));
+                FLAG_NEGOTIATIONS_DONE.remove(id);
+                FLAG_NEGOTIATION_REGISTERED.put(id, "");
+            }
         }
     }
 
@@ -748,5 +801,15 @@ public class WorldOverseer
         }
 
         return snapshot;
+    }
+
+    public void SCENARIO_MANAGER_HOOK_JOIN_UPDATE(Consumer<WorldState> hook)
+    {
+        SCENARIO_MANAGER_HOOK_JOIN_UPDATE = hook;
+    }
+
+    public void SCENARIO_MANAGER_HOOK_SIMULATION_FINISHED(Runnable runnable)
+    {
+        SCENARIO_MANAGER_HOOK_SIMULATION_FINISHED = runnable;
     }
 }

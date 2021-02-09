@@ -27,12 +27,14 @@ public class NegotiationOverseer
     // { SESSION_HASH : [ NEGOTIATION_SESSION , ... ] }
     private ConcurrentHashMap<String, NegotiationSession> sessions;
 
-    private int cumulative_negotiation_count = 0;
+    private int cumulative_negotiation_count;
 
     private NegotiationOverseer()
     {
         session_keys = new ConcurrentHashMap<>();
         sessions     = new ConcurrentHashMap<>();
+
+        cumulative_negotiation_count = 0;
     }
 
     public static NegotiationOverseer getInstance()
@@ -51,9 +53,11 @@ public class NegotiationOverseer
         return instance;
     }
 
-    public void Flush()
+    public NegotiationOverseer Flush()
     {
         instance = new NegotiationOverseer();
+
+        return instance;
     }
 
     public synchronized void RegisterCollisionNotification(String[] agent_ids)

@@ -4,6 +4,7 @@ import edu.ozu.mapp.agent.Agent;
 import edu.ozu.mapp.agent.client.AgentHandler;
 import edu.ozu.mapp.utils.Action;
 
+import javax.swing.*;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -22,8 +23,15 @@ public class FileLogger
 
     private static FileLogger instance;
     private final LinkedBlockingDeque<FileData> write_queue;
+    private final File mapp_folder;
+
     private FileLogger()
     {
+        // define folder path
+        mapp_folder = new File(java.nio.file.Paths.get(new JFileChooser().getFileSystemView().getDefaultDirectory().toString(), "MAPP").toString());
+        if (!mapp_folder.exists()) //noinspection ResultOfMethodCallIgnored
+            mapp_folder.mkdirs();
+
         write_queue = new LinkedBlockingDeque<>();
     }
 
@@ -55,7 +63,7 @@ public class FileLogger
             {
                 try {
                     FileData data = iterator.next();
-                    File file = new File(data.file);
+                    File file = new File(java.nio.file.Paths.get(String.valueOf(mapp_folder), data.file).toString());
 
                     // create file if not exists
                     //noinspection ResultOfMethodCallIgnored

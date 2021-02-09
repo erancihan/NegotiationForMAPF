@@ -1,8 +1,13 @@
-package edu.ozu.mapp.utils;
+package edu.ozu.mapp.config;
+
+import edu.ozu.mapp.utils.AStar;
+import edu.ozu.mapp.utils.Globals;
+import edu.ozu.mapp.utils.JSONPointData;
+import edu.ozu.mapp.utils.Point;
 
 import java.util.Arrays;
 
-public class JSONAgentData {
+public class AgentConfig {
     private String path;
     public int id;
     public String agent_name;
@@ -12,13 +17,13 @@ public class JSONAgentData {
     public int token_c = -1;        // un-initialized
     public int path_length = -1;    // un-initialized
 
-    public JSONAgentData() {
+    public AgentConfig() {
     }
-    public JSONAgentData(int id, String agent_name, String agent_class_name, Point start, Point dest) {
+    public AgentConfig(int id, String agent_name, String agent_class_name, Point start, Point dest) {
         this(id, agent_name, agent_class_name, Globals.INITIAL_TOKEN_BALANCE, start, dest);
     }
 
-    public JSONAgentData(int id, String agent_name, String agent_class_name, int initial_token_count, Point start, Point dest)
+    public AgentConfig(int id, String agent_name, String agent_class_name, int initial_token_count, Point start, Point dest)
     {
         this.id                 = id;
         this.agent_name         = agent_name;

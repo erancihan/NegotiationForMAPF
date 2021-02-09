@@ -1,10 +1,10 @@
-package edu.ozu.mapp.utils;
+package edu.ozu.mapp.config;
 
 import java.util.Arrays;
 
-public class JSONSessionConfig {
-    public JSONAgentData[] agents;
-    public JSONWorldData world;
+public class SessionConfig {
+    public AgentConfig[] agents;
+    public WorldConfig world;
 
     @Override
     public String toString() {

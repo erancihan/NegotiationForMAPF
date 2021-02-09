@@ -32,14 +32,12 @@ public class Hybrid extends Agent
     @Override
     public Action onMakeAction(Contract contract)
     {
-        int bid_token_count = contract.GetTokenCountOf(this);
+        double bid_token_count = contract.GetTokenCountOf(this);
 
-        int token_rate = (this.current_tokens - bid_token_count) / this.initial_tokens;
-        int token_path = GetMyRemainingPathLength() / this.initial_path;
+        double token_rate = (this.current_tokens - bid_token_count) / this.initial_tokens;
+        double path_rate = (double) GetMyRemainingPathLength() / (double) this.initial_path.size();
 
-        int rate = token_rate / token_path;
-
-        // todo AC-Next
+        double rate = token_rate / path_rate;
 
         if (rate < 1)
         {   // CONCEDE
@@ -49,7 +47,7 @@ public class Hybrid extends Agent
         {   // GREED
             return run_greedy(contract);
         }
-   }
+    }
 
     private Action run_conceder(Contract contract)
     {
