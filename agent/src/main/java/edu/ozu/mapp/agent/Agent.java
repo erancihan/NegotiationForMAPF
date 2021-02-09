@@ -198,7 +198,8 @@ public abstract class Agent {
         String[] broadcast = GetOwnBroadcastPath();
 
         // find the last point that is within FoV
-        Point to = null;
+        Point to = new Point(broadcast[broadcast.length-1], "-");// null;
+        /*
         for (int i = broadcast.length-1; i >= 0; i--) {
             // iterate in reverse
             Point point = new Point(broadcast[i], "-");
@@ -207,6 +208,7 @@ public abstract class Agent {
                 break;
             }
         }
+        */
 
         if (to != null) {
             return GetBidSpace(POS, to, Globals.FIELD_OF_VIEW_SIZE);

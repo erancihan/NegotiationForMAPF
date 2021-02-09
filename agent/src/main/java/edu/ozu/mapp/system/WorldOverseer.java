@@ -63,6 +63,7 @@ public class WorldOverseer
 
     private ConcurrentHashMap<String, String> FLAG_JOINS;
     private ConcurrentHashMap<String, String> FLAG_COLLISION_CHECKS;
+    private ConcurrentHashMap<String, String> FLAG_NEGOTIATION_REGISTERED;
     private ConcurrentHashMap<String, String> FLAG_NEGOTIATIONS_DONE;
     private ConcurrentHashMap<String, String> FLAG_NEGOTIATIONS_VERIFIED;
     private ConcurrentHashMap<String, String> FLAG_INACTIVE;
@@ -103,6 +104,7 @@ public class WorldOverseer
 
         FLAG_JOINS            = new ConcurrentHashMap<>();
         FLAG_COLLISION_CHECKS = new ConcurrentHashMap<>();
+        FLAG_NEGOTIATION_REGISTERED = new ConcurrentHashMap<>();
         FLAG_NEGOTIATIONS_DONE = new ConcurrentHashMap<>();
         FLAG_NEGOTIATIONS_VERIFIED = new ConcurrentHashMap<>();
         FLAG_INACTIVE         = new ConcurrentHashMap<>();
@@ -305,6 +307,9 @@ public class WorldOverseer
                 {   // NEGOTIATIONS ARE COMPLETE
                     Log("- NEGOTIATIONS ARE COMPLETE", logger::info);
 
+                    FLAG_NEGOTIATION_REGISTERED.clear();
+                    FLAG_COLLISION_CHECKS.clear();
+
                     /* VERIFY NEGOTIATIONS
                      *
                      * Request verification from all agents.
@@ -322,6 +327,7 @@ public class WorldOverseer
                 if (active_agent_c == movement_handler.size())
                 {
                     // flush previous state checks
+                    FLAG_NEGOTIATION_REGISTERED.clear();
                     FLAG_NEGOTIATIONS_DONE.clear();
                     FLAG_NEGOTIATIONS_VERIFIED.clear();
 
@@ -550,6 +556,8 @@ public class WorldOverseer
     {
         if (FLAG_INACTIVE.containsKey(agent_name)) return;
 
+        Arrays.sort(agent_ids);
+
         if (
             FLAG_COLLISION_CHECKS.containsKey(agent_name) &&
             FLAG_COLLISION_CHECKS.get(agent_name).equals(Arrays.toString(agent_ids))
@@ -558,13 +566,24 @@ public class WorldOverseer
             return;
         }
 
-        FLAG_COLLISION_CHECKS.put(agent_name, "");
+        FLAG_COLLISION_CHECKS.put(agent_name, Arrays.toString(agent_ids));
         if (agent_ids.length > 1)
         {
+            // check if ids are already queued for negotiation
+            boolean is_bad = false;
+            for (String id : agent_ids) {
+                is_bad = is_bad || FLAG_NEGOTIATION_REGISTERED.containsKey(id);
+            }
+            if (is_bad) return;
+
             Log(agent_name + " reported collision : " + Arrays.toString(agent_ids));
             negotiation_overseer.RegisterCollisionNotification(agent_ids);
 
-            for (String id : agent_ids) FLAG_NEGOTIATIONS_DONE.remove(id);
+            for (String id : agent_ids) {
+                FLAG_COLLISION_CHECKS.put(id, Arrays.toString(agent_ids));
+                FLAG_NEGOTIATIONS_DONE.remove(id);
+                FLAG_NEGOTIATION_REGISTERED.put(id, "");
+            }
         }
     }
 

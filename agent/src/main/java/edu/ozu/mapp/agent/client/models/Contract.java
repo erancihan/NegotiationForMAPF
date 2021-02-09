@@ -63,7 +63,7 @@ public class Contract implements Cloneable {
         {
             return HAS_ENCRYPTION ? agent.Decrypt(offers.get(agent.AGENT_ID)) : offers.get(agent.AGENT_ID);
         }
-
+        System.err.println(agent.AGENT_ID + " : " + offers);
         return null;
     }
 
@@ -132,7 +132,7 @@ public class Contract implements Cloneable {
     {
         return Arrays
                 .stream(Ox.replaceAll("([\\[\\]]*)", "").split(","))
-                .map(item -> new Point(item.trim(), "-"))
+                .map(item -> item.isEmpty() ? null : new Point(item.trim(), "-"))
                 .toArray(Point[]::new)
                 ;
     }
