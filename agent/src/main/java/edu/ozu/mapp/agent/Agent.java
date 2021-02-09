@@ -26,7 +26,7 @@ public abstract class Agent {
     public History history;
 
     public int initial_tokens = Globals.INITIAL_TOKEN_BALANCE;
-    public int initial_path = -1;
+    public List<String> initial_path;
 
     public int current_tokens;
     public String current_opponent;
@@ -107,9 +107,10 @@ public abstract class Agent {
 
     public final void run()
     {
-        logger.info("calculating path");
+        logger.info(AGENT_ID + " calculating path");
         path = calculatePath();
-        this.initial_path = path.size();
+        logger.info(AGENT_ID + " calculation done");
+        this.initial_path = new ArrayList<>(path);
 
         POS = new Point(path.get(0).split("-"));
         history = new History(AGENT_ID);
