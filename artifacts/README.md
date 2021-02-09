@@ -5,7 +5,7 @@ Proper way to run `ScenarioManager` is to call the `main` _static_ member functi
 ```java
 class Sample {
     public static void main(String[] args) {
-        ScenarioManager.main(args);
+        ScenarioManager.run(args);
     }
 }
 ```
