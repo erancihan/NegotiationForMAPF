@@ -1,7 +1,7 @@
 # How to use MAPP.jar
 
 ## Running Scenario Manager interface
-Proper way to run `ScenarioManager` is to call the `main` _static_ member function of it.<br>
+Proper way to run `ScenarioManager` is to call the `run` _static_ member function of it.<br>
 ```java
 class Sample {
     public static void main(String[] args) {
@@ -22,9 +22,10 @@ package mapp.agent;
 import ...
 
 @edu.ozu.mapp.agent.MAPPAgent
-public class AgentTest extends edu.ozu.mapp.agent.Agent {
-    public AgentTest(String agentName, String agentID, Point start, Point dest) {
-        super(agentName, agentID, start, dest);
+public class AgentSample extends edu.ozu.mapp.agent.Agent {
+    // System uses the following constructor. Any other constructor will fail 
+    public AgentTest(String agentName, String agentID, Point start, Point dest, int initial_tokes) {
+        super(agentName, agentID, start, dest, initial_tokes);
     }
 
     @Override
@@ -53,7 +54,7 @@ class Sample {
         world_config.number_of_expected_conflicts = 2;
         world_config.instantiation_configuration = new Object[][]{
             // add agent full name and number of instances to configure for
-            {"mapp.agent.Hybrid", 40},
+            {"mapp.agent.RandomAgent", 40},
         };
 
         for (int i = 0; i < number_of_cases_to_generate; i++) {
@@ -66,7 +67,7 @@ class Sample {
             //  can use "String.valueOf(System.currentTimeMillis());" instead as well.
             world_config.world_id = timestamp + "-" + i;
             manager
-                .generateScenario(world_config) // ASYNC function, returns Promise
+                .GenerateScenario(world_config) // ASYNC function, returns Promise
                 .thenAccept(agentConfigs -> {
                     AgentConfig[] agent_config = agentConfigs.toArray(new AgentConfig[0]);
 
@@ -76,3 +77,20 @@ class Sample {
     }
 }
 ```
+
+## Running Tournament
+To run a tournament setup, simply create an ArrayList of paths to scenario configurations, and provide it to TournamentRunner like in the example below.<br>
+_Glob_ class used in the example is a helper class bundled in jar file.
+```java
+import edu.ozu.mapp.utils.TournamentRunner;
+
+class Sample {
+    public static void main(String[] args) {
+        Path path = ...; // Path to directory where scenario configurations are
+        ArrayList<String> scenarios = new Glob().glob(path, "*.json");
+
+        new TournamentRunner().run(scenarios);
+    }
+}
+```
+Once the process is done, runner will exit on its own.
