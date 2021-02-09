@@ -30,7 +30,7 @@ public class Glob {
                 return FileVisitResult.CONTINUE;
             }
         });
-        System.out.println(pattern);
+//        System.out.println(pattern);
 
         return matches;
     }
