@@ -548,7 +548,12 @@ public class WorldOverseer
      * */
     public synchronized void OnCollisionCheckDone(String agent_name, String[] agent_ids)
     {
-        if (FLAG_COLLISION_CHECKS.containsKey(agent_name) || FLAG_INACTIVE.containsKey(agent_name))
+        if (FLAG_INACTIVE.containsKey(agent_name)) return;
+
+        if (
+            FLAG_COLLISION_CHECKS.containsKey(agent_name) &&
+            FLAG_COLLISION_CHECKS.get(agent_name).equals(Arrays.toString(agent_ids))
+        )
         {
             return;
         }
