@@ -29,6 +29,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.AbstractTableModel;
 import java.awt.*;
 import java.awt.event.ItemEvent;
+import java.awt.event.WindowEvent;
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -46,6 +47,8 @@ public class ScenarioManager extends javax.swing.JFrame
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ScenarioManager.class);
 
     private boolean is_headless;
+    private ScenarioManager instance = null;
+
     private Font meslolgs;
 
     /**
@@ -60,6 +63,7 @@ public class ScenarioManager extends javax.swing.JFrame
     public ScenarioManager(boolean is_headless)
     {
         this.is_headless = is_headless;
+        this.instance = this;
 
         if (is_headless) {
             logger.warn("HEADLESS DESIGN IS NOT FULLY IMPLEMENTED");
@@ -918,18 +922,13 @@ public class ScenarioManager extends javax.swing.JFrame
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(() -> {
-            instance = new ScenarioManager();
+            ScenarioManager instance = new ScenarioManager();
             instance.setVisible(true);
 
             future.complete(instance);
         });
 
         return future;
-    }
-
-    private static ScenarioManager instance = null;
-    public static ScenarioManager getInstance() {
-        return instance;
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -1003,6 +1002,8 @@ public class ScenarioManager extends javax.swing.JFrame
     {
 //        if (world_listener != null)  world_listener.close();
         if (scenario_canvas != null) scenario_canvas.Destroy();
+
+        if (ON_WINDOW_CLOSED != null) ON_WINDOW_CLOSED.run();
     }
 
     private WorldOverseer world;
@@ -1442,6 +1443,12 @@ public class ScenarioManager extends javax.swing.JFrame
                     world.Loop();
                 }
             });
+            world.SCENARIO_MANAGER_HOOK_SIMULATION_FINISHED(() -> {
+                world.Flush();
+
+                this.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+                this.dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
+            });
             run_btnActionPerformed(null);   // send run btn click action
         }
         else
@@ -1450,6 +1457,18 @@ public class ScenarioManager extends javax.swing.JFrame
         }
 
         return instance;
+    }
+
+    private Runnable ON_SIMULATION_FINISHED;
+    public void OnSimulationFinished(Runnable runnable)
+    {
+        ON_SIMULATION_FINISHED = runnable;
+    }
+
+    private Runnable ON_WINDOW_CLOSED;
+    public void OnWindowClosed(Runnable runnable)
+    {
+        ON_WINDOW_CLOSED = runnable;
     }
 }
 
