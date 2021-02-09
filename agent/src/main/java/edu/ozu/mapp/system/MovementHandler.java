@@ -93,7 +93,7 @@ public class MovementHandler
         while (iterator.hasNext())
         {
             String agent_name = iterator.next();
-            System.out.println(agent_name);
+//            System.out.println(agent_name);
 
             DATA_REQUEST_PAYLOAD_WORLD_MOVE payload = payloads.get(agent_name);
 
@@ -104,7 +104,7 @@ public class MovementHandler
 
             // todo handle this operation after all points are freed
             world.point_to_agent.put(payload.NEXT_LOCATION.key, agent_name);
-            System.out.println(agent_name + " " + Arrays.toString(payload.BROADCAST));
+//            System.out.println(agent_name + " " + Arrays.toString(payload.BROADCAST));
             world.broadcasts.put(agent_name, payload.BROADCAST);
 
             AgentHandler agent_ref = move_queue.get(agent_name);

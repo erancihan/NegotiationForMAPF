@@ -39,9 +39,7 @@ public class ConflictCheck {
             }
         }
 
-        if (conflicts.size() > 0) {
-            System.out.println(">>" + conflicts);
-        }
+//        if (conflicts.size() > 0) { System.out.println(">>" + conflicts); }
 
         return conflicts.values().toArray(new ConflictInfo[0]);
     }

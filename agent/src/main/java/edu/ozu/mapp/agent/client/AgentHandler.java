@@ -297,7 +297,7 @@ public class AgentHandler {
         if (is_moving == 0) return;
 
         if (agent.time + 1 < agent.path.size()) {
-            System.out.println("moving " + agent.AGENT_ID);
+//            System.out.println("moving " + agent.AGENT_ID);
 
             // make Agent move
             DATA_REQUEST_PAYLOAD_WORLD_MOVE payload = new DATA_REQUEST_PAYLOAD_WORLD_MOVE();
@@ -308,7 +308,7 @@ public class AgentHandler {
 
             WORLD_OVERSEER_MOVE.accept(this, payload);
         } else {
-            System.out.println(agent.AGENT_ID + " stopping t:" + agent.time + " path: " + agent.path);
+//            System.out.println(agent.AGENT_ID + " stopping t:" + agent.time + " path: " + agent.path);
             // no more moves left, agent should stop
             is_moving = 0;
 
@@ -577,6 +577,7 @@ public class AgentHandler {
         WORLD_OVERSEER_CALLBACK_VERIFY_NEGOTIATIONS.accept(agent.AGENT_ID, is_ok);
 
         agent_handler_verify_negotiations_lock.unlock();
+        logger.debug(agent.AGENT_ID + " | verified negotiation is_ok:" + is_ok);
     }
 
     public int UpdateTokenCountBy(int i)
