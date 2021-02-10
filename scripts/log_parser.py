@@ -31,6 +31,7 @@ class _Base:
 class NegotiationAction(_Base):
     timestamp: str
     negotiation_id: str
+    type: str
     bidder: str
     A: str
     T_a: str
@@ -38,6 +39,7 @@ class NegotiationAction(_Base):
     T_b: str
     Ox: str
     x: str
+    round: str
 
     def __init__(self):
         super().__init__()
@@ -68,7 +70,7 @@ class NegotiationAction(_Base):
     __repr__ = __str__
 
 
-class NegotiationSummaries(_Base):
+class NegotiationSummary(_Base):
     negotiation_id: str = None
     opponent_id: str = None
     own_path_before: str = None
@@ -105,6 +107,11 @@ class NegotiationSummaries(_Base):
         _str = _str + "}\n".rjust(padd + 3)
 
         return _str
+
+    def process_actions(self):
+        self.actions.sort(key=lambda x: x.timestamp)
+        for i, action in enumerate(self.actions):
+            self.actions[i].round = str(i + 1)
 
 
 class Negotiation(_Base):
@@ -146,7 +153,7 @@ class Agent(_Base):
     negotiations_lost: str
     token_count_initial: str
     token_count_final: str
-    negotiations: Dict[str, NegotiationSummaries]
+    negotiations: Dict[str, NegotiationSummary]
 
     def __init__(self):
         super().__init__()
@@ -248,32 +255,42 @@ def parse_agent_negotiation_log(file_path: str, data_dict: ExcelData):
 
     with open(file_path, 'r') as log:
         line: str
+        session_id: str
+        session_key: str  # session id will only change if entry is PRE
+        session_ids: Dict[str, int] = {}
         for line in log:
             timestamp, entry = line.strip().split(';')
             data: dict = json.loads(entry)
 
             if data['name'] == 'PRE':
-                session_id = data['session_id']
-                if session_id not in data_dict.negotiations:
-                    data_dict.negotiations[session_id] = Negotiation()
-                    data_dict.negotiations[session_id].timestamp = timestamp
-                    data_dict.negotiations[session_id].session_id = session_id
-                    data_dict.negotiations[session_id].conflict_location = data['conflict_location']
-                data_dict.negotiations[session_id].agent_ids.append(agent_id)
+                # update session id on every new PRE entry
+                session_id  = data['session_id']
+                session_key = data['session_id'] + "_" + str(session_ids.get(session_id, 0))
+                session_ids[session_id] = session_ids.get(session_id, 0) + 1
 
-                if session_id not in data_dict.agents[agent_id].negotiations:
-                    data_dict.agents[agent_id].negotiations[session_id] = NegotiationSummaries()
-                    data_dict.agents[agent_id].negotiations[session_id].negotiation_id = session_id
-                    data_dict.agents[agent_id].negotiations[session_id].own_path_before = data['path']
-                    data_dict.agents[agent_id].negotiations[session_id].own_path_before_len = len(data['path'].split(','))
-                    data_dict.agents[agent_id].negotiations[session_id].conflict_location = data['conflict_location']
-                    data_dict.agents[agent_id].negotiations[session_id].own_token_balance_diff = int(data['token'])
+                if session_key not in data_dict.negotiations:
+                    data_dict.negotiations[session_key] = Negotiation()
+                    data_dict.negotiations[session_key].timestamp = timestamp
+                    data_dict.negotiations[session_key].session_id = session_key
+                    data_dict.negotiations[session_key].conflict_location = ""
+                if data_dict.negotiations[session_key].conflict_location == "":
+                    data_dict.negotiations[session_key].conflict_location = data['conflict_location']
+                data_dict.negotiations[session_key].agent_ids.append(agent_id)
 
-            if data['name'] == 'OFFER':
+                if session_key not in data_dict.agents[agent_id].negotiations:
+                    data_dict.agents[agent_id].negotiations[session_key] = NegotiationSummary()
+                data_dict.agents[agent_id].negotiations[session_key].negotiation_id = session_key
+                data_dict.agents[agent_id].negotiations[session_key].own_path_before = data['path']
+                data_dict.agents[agent_id].negotiations[session_key].own_path_before_len = len(data['path'].split(','))
+                data_dict.agents[agent_id].negotiations[session_key].conflict_location = data['conflict_location']
+                data_dict.agents[agent_id].negotiations[session_key].own_token_balance_diff = int(data['token'])
+
+            if data['name'] == 'OFFER' or data['name'] == 'ACCEPT':
                 action = NegotiationAction()
                 action.timestamp = timestamp
                 action.bidder = data['turn']
-                action.negotiation_id = data['contract']['sess_id']
+                action.type = data['name']
+                action.negotiation_id = session_key
                 action.Ox = data['contract']['Ox']
                 action.x = data['contract']['x']
                 action.A = data['contract']['A']
@@ -281,18 +298,21 @@ def parse_agent_negotiation_log(file_path: str, data_dict: ExcelData):
                 action.B = data['contract']['B']
                 action.T_b = data['contract']['ETb']
 
-                data_dict.agents[agent_id].negotiations[data['contract']['sess_id']].actions.append(action)
-            if data['name'] == 'ACCEPT':
-                pass
+                if session_key not in data_dict.agents[action.A].negotiations:
+                    data_dict.agents[action.A].negotiations[session_key] = NegotiationSummary()
+                data_dict.agents[action.A].negotiations[session_key].actions.append(action)
+
+                if session_key not in data_dict.agents[action.B].negotiations:
+                    data_dict.agents[action.B].negotiations[session_key] = NegotiationSummary()
+                data_dict.agents[action.B].negotiations[session_key].actions.append(action)
+
             if data['name'] == 'POST':
-                session_id = data['session_id']
+                data_dict.agents[agent_id].negotiations[session_key].own_path_after = data['path']
+                data_dict.agents[agent_id].negotiations[session_key].own_path_after_len = len(data['path'].split(','))
 
-                data_dict.agents[agent_id].negotiations[session_id].own_path_after = data['path']
-                data_dict.agents[agent_id].negotiations[session_id].own_path_after_len = len(data['path'].split(','))
-
-                tb = data_dict.agents[agent_id].negotiations[session_id].own_token_balance_diff
-                data_dict.agents[agent_id].negotiations[session_id].own_token_balance_diff = int(data['token']) - tb
-                data_dict.agents[agent_id].negotiations[session_id].is_win = data['is_win']
+                tb = data_dict.agents[agent_id].negotiations[session_key].own_token_balance_diff
+                data_dict.agents[agent_id].negotiations[session_key].own_token_balance_diff = int(data['token']) - tb
+                data_dict.agents[agent_id].negotiations[session_key].is_win = data['is_win']
 
 
 def parse_world_log(file_path: str, data_dict: ExcelData):
@@ -343,7 +363,6 @@ def run(scenarios_folder_path):
         data_dict = ExcelData()
 
         log_files = glob(join(world_folder, '*.log'))
-        print(log_files)
         for i, log_file in enumerate(log_files):
             file_name = basename(log_file)
             if i < len(log_files) - 1:
@@ -430,7 +449,7 @@ def run(scenarios_folder_path):
             aws_nego_sum_c = 0
             aws_nego_sum_h = ['negotiation_id', 'opponent id', 'own_path_before', 'own_path_after',
                               'own_path_before_len', 'own_path_after_len', 'duration', 'conflict location',
-                              'scaled time', 'own_token_balance_diff', 'is win', 'is lose']
+                              '# of rounds', 'own_token_balance_diff', 'is win', 'is lose']
             aws_nego_sum = awb.add_worksheet('Negotiation Summaries')
 
             for item in aws_nego_sum_h:
@@ -439,7 +458,8 @@ def run(scenarios_folder_path):
             aws_nego_sum_r += 1
 
             for nego_key in aws_agent.negotiations:
-                aws_agent_nego_sum: NegotiationSummaries = aws_agent.negotiations[nego_key]
+                aws_agent_nego_sum: NegotiationSummary = aws_agent.negotiations[nego_key]
+                aws_agent_nego_sum.process_actions()
 
                 # find opponent
                 opponent = copy.copy(data_dict.negotiations[nego_key].agent_ids)
@@ -454,10 +474,10 @@ def run(scenarios_folder_path):
                 aws_nego_sum.write(aws_nego_sum_r, 5, aws_agent_nego_sum.own_path_after_len)
                 aws_nego_sum.write(aws_nego_sum_r, 6, aws_agent_nego_sum.duration)
                 aws_nego_sum.write(aws_nego_sum_r, 7, aws_agent_nego_sum.conflict_location)
-                aws_nego_sum.write(aws_nego_sum_r, 8, '')
+                aws_nego_sum.write(aws_nego_sum_r, 8, len(aws_agent_nego_sum.actions))
                 aws_nego_sum.write(aws_nego_sum_r, 9, aws_agent_nego_sum.own_token_balance_diff)
-                aws_nego_sum.write(aws_nego_sum_r, 10, aws_agent_nego_sum.is_win)
-                aws_nego_sum.write(aws_nego_sum_r, 11, "1" if aws_agent_nego_sum.is_win == "0" else "0")
+                aws_nego_sum.write(aws_nego_sum_r, 10, "1" if aws_agent_nego_sum.is_win == "true"  else "0")
+                aws_nego_sum.write(aws_nego_sum_r, 11, "1" if aws_agent_nego_sum.is_win == "false" else "0")
 
                 aws_nego_sum_r += 1
             # END
@@ -465,7 +485,7 @@ def run(scenarios_folder_path):
             # BEGIN AGENT NEGOTIATION ACTIONS
             aws_nego_act_r = 0
             aws_nego_act_c = 0
-            aws_nego_act_h = ['timestamp', 'negotiation_id', 'bidder', 'A', 'T_a', 'B', 'T_b', 'Ox', 'x', 'scaled time']
+            aws_nego_act_h = ['timestamp', 'negotiation_id', 'bidder', 'A', 'T_a', 'B', 'T_b', 'Ox', 'x', 'round', 'type']
             aws_nego_act = awb.add_worksheet('Negotiation Actions')
 
             for item in aws_nego_act_h:
@@ -474,7 +494,7 @@ def run(scenarios_folder_path):
             aws_nego_act_r += 1
 
             for nego_key in aws_agent.negotiations:
-                nego_data: NegotiationSummaries
+                nego_data: NegotiationSummary
                 nego_data = aws_agent.negotiations[nego_key]
 
                 for action in nego_data.actions:
@@ -487,7 +507,8 @@ def run(scenarios_folder_path):
                     aws_nego_act.write(aws_nego_act_r, 6, action.T_b)
                     aws_nego_act.write(aws_nego_act_r, 7, action.Ox)
                     aws_nego_act.write(aws_nego_act_r, 8, action.x)
-                    aws_nego_act.write(aws_nego_act_r, 9, "")
+                    aws_nego_act.write(aws_nego_act_r, 9, action.round)
+                    aws_nego_act.write(aws_nego_act_r, 10, action.type)
 
                     aws_nego_act_r += 1
             # END
