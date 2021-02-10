@@ -27,6 +27,7 @@ class _Base:
     def asdict(self):
         return asdict(self)
 
+
 class NegotiationAction(_Base):
     timestamp: str
     negotiation_id: str
@@ -40,15 +41,15 @@ class NegotiationAction(_Base):
 
     def __init__(self):
         super().__init__()
-        self.timestamp          = None
-        self.negotiation_id     = None
-        self.bidder             = None
-        self.A                  = None
-        self.T_a                = None
-        self.B                  = None
-        self.T_b                = None
-        self.Ox                 = None
-        self.x                  = None
+        self.timestamp = None
+        self.negotiation_id = None
+        self.bidder = None
+        self.A = None
+        self.T_a = None
+        self.B = None
+        self.T_b = None
+        self.Ox = None
+        self.x = None
 
     def __str__(self):
         return "{{ timestamp: {}, negotiation_id: {}, bidder: {}, A: {}, Ta: {}, B: {}, Tb: {}, Ox: {}, x: {} }}" \
@@ -66,32 +67,33 @@ class NegotiationAction(_Base):
 
     __repr__ = __str__
 
+
 class NegotiationSummaries(_Base):
-    negotiation_id: str                 = None
-    opponent_id: str                    = None
-    own_path_before: str                = None
-    own_path_before_len: str            = None
-    own_path_after: str                 = None
-    own_path_after_len: str             = None
-    own_token_balance_diff: int         = None
-    duration: str                       = None
-    conflict_location: str              = None
-    is_win: str                         = None
+    negotiation_id: str = None
+    opponent_id: str = None
+    own_path_before: str = None
+    own_path_before_len: str = None
+    own_path_after: str = None
+    own_path_after_len: str = None
+    own_token_balance_diff: int = None
+    duration: str = None
+    conflict_location: str = None
+    is_win: str = None
     actions: List[NegotiationAction]
 
     def __init__(self):
         super().__init__()
         self.actions = []
-        self.negotiation_id                 = None
-        self.opponent_id                    = None
-        self.own_path_before                = None
-        self.own_path_before_len            = None
-        self.own_path_after                 = None
-        self.own_path_after_len             = None
-        self.own_token_balance_diff         = None
-        self.duration                       = None
-        self.conflict_location              = None
-        self.is_win                         = None
+        self.negotiation_id = None
+        self.opponent_id = None
+        self.own_path_before = None
+        self.own_path_before_len = None
+        self.own_path_after = None
+        self.own_path_after_len = None
+        self.own_token_balance_diff = None
+        self.duration = None
+        self.conflict_location = None
+        self.is_win = None
 
     def __str__(self, padd=0):
         _str = "{\n"
@@ -103,6 +105,7 @@ class NegotiationSummaries(_Base):
         _str = _str + "}\n".rjust(padd + 3)
 
         return _str
+
 
 class Negotiation(_Base):
     timestamp: str
@@ -128,6 +131,7 @@ class Negotiation(_Base):
 
     __repr__ = __str__
 
+
 class Agent(_Base):
     agent_id: str
     agent_name: str
@@ -147,19 +151,19 @@ class Agent(_Base):
     def __init__(self):
         super().__init__()
         self.negotiations = {}
-        self.agent_id                        = None
-        self.agent_name                      = None
-        self.starting_point                  = None
-        self.destination                     = None
-        self.planned_initial_path            = None
-        self.planned_initial_path_length     = None
-        self.taken_path                      = None
-        self.taken_path_length               = None
-        self.negotiation_count               = None
-        self.negotiations_won                = None
-        self.negotiations_lost               = None
-        self.token_count_initial             = None
-        self.token_count_final               = None
+        self.agent_id = None
+        self.agent_name = None
+        self.starting_point = None
+        self.destination = None
+        self.planned_initial_path = None
+        self.planned_initial_path_length = None
+        self.taken_path = None
+        self.taken_path_length = None
+        self.negotiation_count = None
+        self.negotiations_won = None
+        self.negotiations_lost = None
+        self.token_count_initial = None
+        self.token_count_final = None
 
     def __str__(self, padd=0):
         _str = "{\n"
@@ -186,9 +190,11 @@ class Agent(_Base):
 
     __repr__ = __str__
 
+
 class World(_Base):
     def __str__(self):
         return super().__str__()
+
 
 class ExcelData(_Base):
     world: World
@@ -214,6 +220,7 @@ class ExcelData(_Base):
 
         return _str
 
+
 def parse_agent_info_log(file_path: str, data_dict: ExcelData):
     agent_id = basename(file_path).replace('AGENT-INFO-', '').replace('.log', '')
 
@@ -235,8 +242,9 @@ def parse_agent_info_log(file_path: str, data_dict: ExcelData):
             if data['step'] == 'LEAVE':
                 data_dict.agents[agent_id].token_count_final = data['token_count']
 
+
 def parse_agent_negotiation_log(file_path: str, data_dict: ExcelData):
-    agent_id = basename(file_path).replace('AGENT-NEGOTIATIONS-', '').replace('.log', '')
+    agent_id = basename(file_path).replace('AGENT-NEGOTIATION-', '').replace('.log', '')
 
     with open(file_path, 'r') as log:
         line: str
@@ -254,24 +262,24 @@ def parse_agent_negotiation_log(file_path: str, data_dict: ExcelData):
                 data_dict.negotiations[session_id].agent_ids.append(agent_id)
 
                 if session_id not in data_dict.agents[agent_id].negotiations:
-                    data_dict.agents[agent_id].negotiations[session_id]                         = NegotiationSummaries()
-                    data_dict.agents[agent_id].negotiations[session_id].negotiation_id          = session_id
-                    data_dict.agents[agent_id].negotiations[session_id].own_path_before         = data['path']
-                    data_dict.agents[agent_id].negotiations[session_id].own_path_before_len     = len(data['path'].split(','))
-                    data_dict.agents[agent_id].negotiations[session_id].conflict_location       = data['conflict_location']
-                    data_dict.agents[agent_id].negotiations[session_id].own_token_balance_diff  = int(data['token'])
+                    data_dict.agents[agent_id].negotiations[session_id] = NegotiationSummaries()
+                    data_dict.agents[agent_id].negotiations[session_id].negotiation_id = session_id
+                    data_dict.agents[agent_id].negotiations[session_id].own_path_before = data['path']
+                    data_dict.agents[agent_id].negotiations[session_id].own_path_before_len = len(data['path'].split(','))
+                    data_dict.agents[agent_id].negotiations[session_id].conflict_location = data['conflict_location']
+                    data_dict.agents[agent_id].negotiations[session_id].own_token_balance_diff = int(data['token'])
 
             if data['name'] == 'OFFER':
                 action = NegotiationAction()
                 action.timestamp = timestamp
                 action.bidder = data['turn']
                 action.negotiation_id = data['contract']['sess_id']
-                action.Ox   = data['contract']['Ox']
-                action.x    = data['contract']['x']
-                action.A    = data['contract']['A']
-                action.T_a  = data['contract']['ETa']
-                action.B    = data['contract']['B']
-                action.T_b  = data['contract']['ETb']
+                action.Ox = data['contract']['Ox']
+                action.x = data['contract']['x']
+                action.A = data['contract']['A']
+                action.T_a = data['contract']['ETa']
+                action.B = data['contract']['B']
+                action.T_b = data['contract']['ETb']
 
                 data_dict.agents[agent_id].negotiations[data['contract']['sess_id']].actions.append(action)
             if data['name'] == 'ACCEPT':
@@ -279,12 +287,13 @@ def parse_agent_negotiation_log(file_path: str, data_dict: ExcelData):
             if data['name'] == 'POST':
                 session_id = data['session_id']
 
-                data_dict.agents[agent_id].negotiations[session_id].own_path_after      = data['path']
-                data_dict.agents[agent_id].negotiations[session_id].own_path_after_len  = len(data['path'].split(','))
+                data_dict.agents[agent_id].negotiations[session_id].own_path_after = data['path']
+                data_dict.agents[agent_id].negotiations[session_id].own_path_after_len = len(data['path'].split(','))
 
                 tb = data_dict.agents[agent_id].negotiations[session_id].own_token_balance_diff
-                data_dict.agents[agent_id].negotiations[session_id].own_token_balance_diff  = int(data['token']) - tb
-                data_dict.agents[agent_id].negotiations[session_id].is_win                  = data['is_win']
+                data_dict.agents[agent_id].negotiations[session_id].own_token_balance_diff = int(data['token']) - tb
+                data_dict.agents[agent_id].negotiations[session_id].is_win = data['is_win']
+
 
 def parse_world_log(file_path: str, data_dict: ExcelData):
     with open(file_path, 'r') as log:
@@ -297,11 +306,11 @@ def parse_world_log(file_path: str, data_dict: ExcelData):
             if data['name'] == 'CREATE':
                 pass
             if data['name'] == 'AGENT_JOIN':
-                data_dict.agents[data['agent_id']].agent_name                   = data['agent_name']
-                data_dict.agents[data['agent_id']].starting_point               = data['start']
-                data_dict.agents[data['agent_id']].destination                  = data['dest']
-                data_dict.agents[data['agent_id']].planned_initial_path         = data['path']
-                data_dict.agents[data['agent_id']].planned_initial_path_length  = data['path_len']
+                data_dict.agents[data['agent_id']].agent_name = data['agent_name']
+                data_dict.agents[data['agent_id']].starting_point = data['start']
+                data_dict.agents[data['agent_id']].destination = data['dest']
+                data_dict.agents[data['agent_id']].planned_initial_path = data['path']
+                data_dict.agents[data['agent_id']].planned_initial_path_length = data['path_len']
             if data['name'] == 'JOIN':
                 pass
             if data['name'] == 'BROADCAST':
@@ -316,15 +325,16 @@ def parse_world_log(file_path: str, data_dict: ExcelData):
             if data['name'] == 'DONE':
                 pass
             if data['name'] == 'LEAVE':
-                data_dict.agents[data['agent_id']].taken_path           = data['path']
-                data_dict.agents[data['agent_id']].taken_path_length    = data['path_len']
-                data_dict.agents[data['agent_id']].negotiation_count    = data['negoC']
-                data_dict.agents[data['agent_id']].negotiations_won     = data['winC']
-                data_dict.agents[data['agent_id']].negotiations_lost    = data['loseC']
-                data_dict.agents[data['agent_id']].negotiation_count    = data['negoC']
+                data_dict.agents[data['agent_id']].taken_path = data['path']
+                data_dict.agents[data['agent_id']].taken_path_length = data['path_len']
+                data_dict.agents[data['agent_id']].negotiation_count = data['negoC']
+                data_dict.agents[data['agent_id']].negotiations_won = data['winC']
+                data_dict.agents[data['agent_id']].negotiations_lost = data['loseC']
+                data_dict.agents[data['agent_id']].negotiation_count = data['negoC']
 
-def run():
-    for world_folder in glob(join(dirname(__file__), '..', 'logs', 'WORLD-*')):
+
+def run(scenarios_folder_path):
+    for world_folder in glob(join(scenarios_folder_path, 'WORLD-*')):
         if os.path.exists(join(world_folder, '.parsed')):
             continue
 
@@ -333,9 +343,9 @@ def run():
         data_dict = ExcelData()
 
         log_files = glob(join(world_folder, '*.log'))
+        print(log_files)
         for i, log_file in enumerate(log_files):
             file_name = basename(log_file)
-
             if i < len(log_files) - 1:
                 debug(' ├', file_name)
             else:
@@ -343,12 +353,12 @@ def run():
 
             if 'AGENT-INFO-' in file_name:
                 parse_agent_info_log(log_file, data_dict)
-            if 'AGENT-NEGOTIATIONS-' in file_name:
+            if 'AGENT-NEGOTIATION-' in file_name:
                 parse_agent_negotiation_log(log_file, data_dict)
             if 'WORLD' in file_name:
                 parse_world_log(log_file, data_dict)
 
-        debug(data_dict)
+        # debug(data_dict)
         debug()
 
         # create world workbook
@@ -357,7 +367,9 @@ def run():
         wws_agents = wwb.add_worksheet('Agents')
         wws_agents_r = 0
         wws_agents_c = 0
-        wws_agents_h = ['id', 'name', 'starting point', 'destination', 'planned path', 'planned path len', 'taken path', 'taken path len', 'negotiation count', 'sum win', 'sum lose', 'initial token count', 'final token count']
+        wws_agents_h = ['id', 'name', 'starting point', 'destination', 'planned path', 'planned path len', 'taken path',
+                        'taken path len', 'negotiation count', 'sum win', 'sum lose', 'initial token count',
+                        'final token count']
         for item in wws_agents_h:
             wws_agents.write(wws_agents_r, wws_agents_c, item)
             wws_agents_c += 1
@@ -416,7 +428,9 @@ def run():
             # BEGIN AGENT WORKSHEET NEGOTIATION SUMMARIES
             aws_nego_sum_r = 0
             aws_nego_sum_c = 0
-            aws_nego_sum_h = ['negotiation_id', 'opponent id', 'own_path_before', 'own_path_after', 'own_path_before_len', 'own_path_after_len', 'duration', 'conflict location', 'scaled time', 'own_token_balance_diff', 'is win', 'is lose']
+            aws_nego_sum_h = ['negotiation_id', 'opponent id', 'own_path_before', 'own_path_after',
+                              'own_path_before_len', 'own_path_after_len', 'duration', 'conflict location',
+                              'scaled time', 'own_token_balance_diff', 'is win', 'is lose']
             aws_nego_sum = awb.add_worksheet('Negotiation Summaries')
 
             for item in aws_nego_sum_h:
@@ -488,4 +502,4 @@ def run():
 
 
 if __name__ == '__main__':
-    run()
+    run("C:\\Users\\cihan\\Documents\\MAPP\\saved\\world-scenario-1612835561665-0")
