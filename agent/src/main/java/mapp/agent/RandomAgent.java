@@ -43,14 +43,18 @@ public class RandomAgent extends Agent {
         }
         else
         {   // counter offer
+            Bid next_bid = bid_space_iterator.next();
 
-            // check if i have any tokens left
-            if (contract.GetTokenCountOf(this) == current_tokens)
-            {   // i dont have anymore tokens, just accept it
-                return new Action(this, ActionType.ACCEPT);
+            if (next_bid.path.equals(new Path(history.GetLastOwnBid().Ox)))
+            {   // insisting
+                // check if i have any tokens left
+                if (contract.GetTokenCountOf(this) == current_tokens)
+                {   // i dont have anymore tokens, i cant insist, just accept
+                    return new Action(this, ActionType.ACCEPT);
+                }
             }
 
-            return new Action(this, ActionType.OFFER, bid_space_iterator.next());
+            return new Action(this, ActionType.OFFER, next_bid);
         }
     }
 }
