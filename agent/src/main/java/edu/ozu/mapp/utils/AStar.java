@@ -4,24 +4,13 @@ import java.util.*;
 
 public class AStar {
     public static void main(String[] args) {
-        HashMap<String, String[]> occupied = new HashMap<>();
+        HashMap<String, ArrayList<String>> constraints = new HashMap<>();
+        constraints.put("11-12", new ArrayList<String>(){{ add("inf"); }});
+        constraints.put("10-11", new ArrayList<String>(){{ add("inf"); }});
 
-        ArrayList<String[]> paths = new ArrayList<>();
+        List<String> a = new AStar().calculate(new Point(11, 11), new Point(1, 15), constraints, "16x16", 10);
 
-        for (int i = 0; i < 5; i++) {
-            ArrayList<String[]> _o = new ArrayList<>();
-            for (String key: occupied.keySet()) {
-                _o.add(occupied.get(key));
-            }
-
-            List<String> a = new AStar().calculate(new Point(5, 5), new Point(10, 10), _o.toArray(new String[0][0]), "", 0);
-
-            paths.add(a.toArray(new String[0]));
-
-            occupied.put("9-10", new String[]{"9-10", "inf"});
-        }
-
-        System.out.println(Arrays.deepToString(paths.toArray(new String[0][])));
+        System.out.println(a);
     }
 
     public List<String> calculate(Point start, Point dest, String[][] constraints_with_time, String dimensions, int t)
@@ -74,6 +63,7 @@ public class AStar {
     }
 
     //<editor-fold defaultstate="collapsed" desc="A-Star implementation">
+    @SuppressWarnings("DuplicatedCode")
     private List<String> run(Point start, Point goal, HashMap<String, ArrayList<String>> occupiedList, String Dimensions, int T)
     {
         if (start.equals(goal))
@@ -130,11 +120,13 @@ public class AStar {
         return null;
     }
 
-    // todo retrieve env dims
-    private List<Node> getNeighbours(Point point, int t, HashMap<String, ArrayList<String>> occupiedList, int width, int height) {
+    @SuppressWarnings("DuplicatedCode")
+    private List<Node> getNeighbours(Point point, int t, HashMap<String, ArrayList<String>> occupiedList, int width, int height)
+    {
         List<Node> nodes = new ArrayList<>();
 
-        for (int i = 0; i < 9; i++) { // position of point
+        for (int i = 0; i < 9; i++)
+        {   // position of point
             if (i % 2 == 0) continue;
 
             int x = point.x + (i % 3) - 1;
@@ -146,11 +138,10 @@ public class AStar {
             Node node = new Node(new Point(x, y), t);
             if (occupiedList.containsKey(node.point.key))
             {
-                if (
-                    occupiedList.get(node.point.key).contains(String.valueOf(t)) ||
-                    occupiedList.get(node.point.key).contains("inf")
-                )
+                if (occupiedList.get(node.point.key).contains(String.valueOf(t)) || occupiedList.get(node.point.key).contains("inf"))
+                {
                     continue;
+                }
             }
             nodes.add(node);
         }
