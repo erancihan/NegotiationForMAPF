@@ -8,6 +8,7 @@ lib
 
 agent/.factorypath
 agent/.settings/*
+artifacts/configs
 
 # Covers JetBrains IDEs
 .idea/*
