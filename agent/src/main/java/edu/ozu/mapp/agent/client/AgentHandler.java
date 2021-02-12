@@ -561,6 +561,10 @@ public class AgentHandler {
         // calculate rest of the path
         List<String> rest = agent.calculatePath(agent.POS, agent.DEST);
 
+        if (rest == null) {
+            System.exit(1);
+        }
+
         // ensure that connection points match
         Assert.isTrue(agent.POS.key.equals(rest.get(0)), "Something went wrong while accepting last bids!");
         Assert.isTrue(agent.DEST.key.equals(rest.get(rest.size() - 1)), "Something went wrong while accepting last bids!");
