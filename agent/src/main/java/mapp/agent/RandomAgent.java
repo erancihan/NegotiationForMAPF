@@ -45,7 +45,8 @@ public class RandomAgent extends Agent {
         {   // counter offer
             Bid next_bid = bid_space_iterator.next();
 
-            if (next_bid.path.equals(new Path(history.GetLastOwnBid().Ox)))
+            Contract last = history.GetLastOwnBid();
+            if (last != null && next_bid.path.equals(new Path(last.Ox)))
             {   // insisting
                 // check if i have any tokens left
                 if (contract.GetTokenCountOf(this) == current_tokens)
