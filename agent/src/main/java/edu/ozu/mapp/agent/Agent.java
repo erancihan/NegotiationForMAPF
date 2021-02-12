@@ -142,7 +142,7 @@ public abstract class Agent {
             constraints.put(constraint.location.key, c);
         }
 
-//        logger.debug("calculating A* {" + start + ", " + dest + ", " + constraints + ", " + dimensions + ", " + time + "}");
+        logger.debug("calculating A* {" + start + ", " + dest + ", " + constraints + ", " + dimensions + ", " + time + "}");
         return new AStar().calculate(start, dest, constraints, dimensions, time);
     }
 
