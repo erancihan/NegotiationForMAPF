@@ -91,7 +91,7 @@ public class LocationDataGenerator
 
             number_of_conflicts_remaining = getNumber_of_conflicts_remaining(number_of_conflicts_remaining, data);
             logger.debug("# of conflicts left " + number_of_conflicts_remaining);
-        } while (number_of_conflicts_remaining > 0);
+        } while (number_of_conflicts_remaining > 0 && data.size() > 0);
 
         // append to Agent Location Data
         AgentLocationData.addAll(data);
