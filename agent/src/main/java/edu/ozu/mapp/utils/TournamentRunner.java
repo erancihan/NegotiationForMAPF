@@ -25,6 +25,8 @@ public class TournamentRunner {
 
     public void run(ArrayList<String> scenarios)
     {
+        for (String path : scenarios) System.out.println("> " + path);
+
         Iterator<String> iterator = scenarios.iterator();
         while (iterator.hasNext())
         {
