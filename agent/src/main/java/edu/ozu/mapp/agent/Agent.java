@@ -39,7 +39,7 @@ public abstract class Agent {
 
     public String WORLD_ID;
     public AgentKeys keys;
-    private String conflictLocation;
+    private HashMap<String, String> conflict_locations;
 
     public int winC = 0;
     public int loseC = 0;
@@ -80,6 +80,7 @@ public abstract class Agent {
         this.current_tokens = initial_tokens;
 
         this.constraints    = new ArrayList<>();
+        this.conflict_locations = new HashMap<>();
 
         this.isHeadless = true; // unless client says so
         file_logger = FileLogger.getInstance();//.CreateAgentLogger(AGENT_ID);
@@ -120,11 +121,12 @@ public abstract class Agent {
         return calculatePath(START, DEST);
     }
 
-    public List<String> calculatePath(Point start, Point dest)
+    public final List<String> calculatePath(Point start, Point dest)
     {
         return calculatePath(start, dest, new HashMap<>());
     }
 
+    @SuppressWarnings("DuplicatedCode")
     public final List<String> calculatePath(Point start, Point dest, HashMap<String, ArrayList<String>> constraints)
     {
         String[][] world_constraints = WorldOverseer.getInstance().GetLocationConstraints();
@@ -140,6 +142,7 @@ public abstract class Agent {
             constraints.put(constraint.location.key, c);
         }
 
+//        logger.debug("calculating A* {" + start + ", " + dest + ", " + constraints + ", " + dimensions + ", " + time + "}");
         return new AStar().calculate(start, dest, constraints, dimensions, time);
     }
 

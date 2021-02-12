@@ -517,6 +517,7 @@ public class WorldOverseer
         client.SetJoinNegotiationSession(this::JoinNegotiationSession);
         client.SetNegotiatedCallback(this::Negotiated);
         client.SetVerifyNegotiationsCallback(this::verify_negotiations_callback);
+        client.SetInvalidateHook(this::invalidate_hook);
         client.SetMoveCallback(this::Move);
         client.SetLeaveHook(this::Leave);
         client.SetUpdateBroadcastHook(this::update_broadcast_hook);
@@ -645,7 +646,7 @@ public class WorldOverseer
 
                     CompletableFuture
                         .runAsync(client::VerifyNegotiations)
-                        .whenComplete((entity, ex) -> { if (ex != null) ex.printStackTrace(); })
+                        .exceptionally(ex -> { ex.printStackTrace(); return null; })
                     ;
                 }
             })
@@ -693,6 +694,31 @@ public class WorldOverseer
     private synchronized void update_broadcast_hook(String agent_name, String[] broadcast)
     {
         broadcasts.put(agent_name, broadcast);
+    }
+
+    private synchronized void invalidate_hook(String agent_name)
+    {
+        if (curr_state == Globals.WorldState.NEGOTIATE)
+        {
+            // check if there is a negotiation to agent's name
+            String[] sessions = negotiation_overseer.GetNegotiations(agent_name);
+            if (sessions.length > 0)
+            {   // there is a negotiation
+                // decouple negotiations registrations related to agent(s)
+                // there will be (should be) only one instance
+                String[] agents = negotiation_overseer.InvalidateSession(sessions[0]);
+                // need to do 2 passes synchronously to prevent unwanted effects
+                for (String identifier : agents)
+                    FLAG_NEGOTIATION_REGISTERED.remove(identifier);
+                // invoke validate on all participant agents again
+                for (String identifier : agents)
+                    clients.get(identifier).VerifyNegotiations();
+            }
+            else
+            {   // ensure invoke validate [Verify Negotiations]  on `agent_name`
+                clients.get(agent_name).VerifyNegotiations();
+            }
+        }
     }
 
     public synchronized void Log(String str, Consumer<String> logger)

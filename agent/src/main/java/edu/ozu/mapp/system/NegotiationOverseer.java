@@ -16,6 +16,8 @@ import java.util.function.Consumer;
 
 public class NegotiationOverseer
 {
+    private static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(NegotiationOverseer.class);
+
     private static NegotiationOverseer instance;
 
     protected BiConsumer<String, Integer> bank_update_hook;
@@ -141,6 +143,9 @@ public class NegotiationOverseer
             log_payload_hook.accept(String.format("%s-%s",  session_id, timestamp), String.format("%-23s %s", timestamp, "DELETED"));
             world_log_callback.accept(String.format("Negotiation Session %s TERMINATED", session_id.substring(0, 7)));
         }
+
+        logger.debug(agent_name + " leaving session " + session_id);
+        logger.debug("remaining negotiation sessions " + sessions);
     }
 
     public int CumulativeCount()
@@ -151,5 +156,19 @@ public class NegotiationOverseer
     public int ActiveCount()
     {
         return sessions.keySet().size();
+    }
+
+    public String[] GetSessionAgents(String session)
+    {
+        return sessions.get(session).GetAgentNames();
+    }
+
+    public String[] InvalidateSession(String session) {
+        String[] agent_names = sessions.get(session).GetAgentNames();
+
+        sessions.get(session).invalidate();
+        sessions.remove(session);
+
+        return agent_names;
     }
 }

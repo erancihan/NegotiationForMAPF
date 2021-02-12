@@ -47,6 +47,8 @@ public class AgentHandler {
     private Consumer<AgentHandler>                              WORLD_OVERSEER_HOOK_LEAVE;
     private BiConsumer<String, String[]>                        WORLD_OVERSEER_HOOK_UPDATE_BROADCAST;
     private Consumer<String>                                    WORLD_OVERSEER_HOOK_LOG;
+    private Consumer<String>                                    WORLD_OVERSEER_HOOK_INVALIDATE;
+
 
     private String[][] fov;
 
@@ -204,6 +206,7 @@ public class AgentHandler {
                 agent.path = update_agent_path_from_pos_to_dest();
                 // I have updated my path, make broadcast
                 WORLD_OVERSEER_HOOK_UPDATE_BROADCAST.accept(agent.AGENT_ID, agent.GetOwnBroadcastPath());
+                WORLD_OVERSEER_HOOK_INVALIDATE.accept(agent.AGENT_ID);
 
                 return false;
             case NONE:
@@ -232,10 +235,11 @@ public class AgentHandler {
 
             if (broadcast[2].equals("inf"))
             {   // OBSTACLE IN FoV
+                // always register obstacle
+                agent.constraints.add(new Constraint(new Point(broadcast[1], "-")));
+
                 if (Arrays.asList(own_path).contains(broadcast[1]))
                 {   // OBSTACLE IS IN WAY
-                    agent.constraints.add(new Constraint(new Point(broadcast[1], "-")));
-
                     return new ReturnType(ReturnType.Type.OBSTACLE);
                 }
             }
@@ -279,7 +283,7 @@ public class AgentHandler {
             {
                 if (sid.isEmpty()) { continue; }
 
-                agent.SetConflictLocation(conflict_location);
+                agent.SetConflictLocation(sid, conflict_location);
 
                 WORLD_OVERSEER_JOIN_NEGOTIATION_SESSION.accept(sid, this);
 
@@ -409,7 +413,9 @@ public class AgentHandler {
 
     public final Action OnMakeAction(Contract contract)
     {
+        logger.debug(agent.AGENT_ID + " | Making Action | " + contract.sess_id);
         Action action = agent.onMakeAction(contract);
+        logger.debug(agent.AGENT_ID + " | Taking Action | " + contract.sess_id + " " + action);
 
         file_logger.AgentLogNegotiationAction(this, action);
 
@@ -541,7 +547,7 @@ public class AgentHandler {
         }
 
         // calculate rest of the path
-        List<String> rest = agent.calculatePath(agent.POS, agent.DEST, new HashMap<>());
+        List<String> rest = agent.calculatePath(agent.POS, agent.DEST);
 
         // ensure that connection points match
         Assert.isTrue(agent.POS.key.equals(rest.get(0)), "Something went wrong while accepting last bids!");
@@ -661,5 +667,10 @@ public class AgentHandler {
     public void SET_WORLD_OVERSEER_VERIFY_NEGOTIATIONS_CALLBACK(BiConsumer<String, Boolean> verify_negotiations_callback)
     {
         WORLD_OVERSEER_CALLBACK_VERIFY_NEGOTIATIONS = verify_negotiations_callback;
+    }
+
+    public void SET_WORLD_OVERSEER_HOOK_INVALIDATE(Consumer<String> hook)
+    {
+        WORLD_OVERSEER_HOOK_INVALIDATE = hook;
     }
 }

@@ -414,4 +414,21 @@ public class NegotiationSession
         System.out.println("unlocking SESSION LOOP LOCK");
         session_loop_agent_invoke_lock.unlock();
     }
+
+    public void invalidate() {
+        if (task_join_await != null) {
+            task_join_await.cancel(false);
+        }
+        if (task_run != null) {
+            task_run.cancel(false);
+        }
+        if (service != null) {
+            service.shutdownNow();
+        }
+    }
+
+    @Override
+    public String toString() {
+        return "{" + Arrays.toString(_agent_names) + "}";
+    }
 }

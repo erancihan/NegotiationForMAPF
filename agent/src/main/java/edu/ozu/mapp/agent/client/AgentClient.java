@@ -169,4 +169,9 @@ public class AgentClient {
     {
         handler.SET_WORLD_OVERSEER_HOOK_UPDATE_BROADCAST(update_broadcast_hook);
     }
+
+    public void SetInvalidateHook(Consumer<String> hook)
+    {
+        handler.SET_WORLD_OVERSEER_HOOK_INVALIDATE(hook);
+    }
 }
