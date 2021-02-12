@@ -83,7 +83,7 @@ public class LocationDataGenerator
                 if (isPathLengthOk(start, destination))
                 {
                     AgentStartLocations.add(start.key);
-                    AgentDestinations.add(start.key);
+                    AgentDestinations.add(destination.key);
                     data.add(new Point[]{ start, destination });
                     index++;
                 }
