@@ -302,14 +302,14 @@ public abstract class Agent {
         this.WORLD_ID = WORLD_ID;
     }
 
-    public final void SetConflictLocation(String conflictLocation)
+    public final void SetConflictLocation(String session_id, String conflictLocation)
     {
-        this.conflictLocation = conflictLocation;
+        this.conflict_locations.put(session_id, conflictLocation);
     }
 
-    public final String GetConflictLocation()
+    public final String GetConflictLocation(String session_id)
     {
-        return conflictLocation;
+        return this.conflict_locations.get(session_id);
     }
 
     public final void OnContractUpdated(Contract contract)

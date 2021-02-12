@@ -255,7 +255,7 @@ public class FileLogger
                 session_id,                         // negotiation session id
                 agent_ref.path.toString(),          // agents path before negotiation session
                 agent_ref.GetCurrentTokenC(),       // print token count
-                agent_ref.GetConflictLocation(),    // conflict location
+                agent_ref.GetConflictLocation(session_id),    // conflict location
                 System.lineSeparator()
         );
 
