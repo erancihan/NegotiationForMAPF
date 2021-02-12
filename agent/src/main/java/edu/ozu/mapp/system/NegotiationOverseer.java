@@ -169,6 +169,9 @@ public class NegotiationOverseer
         sessions.get(session).invalidate();
         sessions.remove(session);
 
+        for (String key : agent_names)
+            session_keys.getOrDefault(key, new ArrayList<>()).remove(session);
+
         return agent_names;
     }
 }
