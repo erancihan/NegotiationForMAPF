@@ -225,6 +225,8 @@ public class AgentHandler {
         Set<String> agent_ids = new HashSet<>();
         String[] own_path = agent.GetOwnBroadcastPath();
 
+        ArrayList<ReturnType> conflicts = new ArrayList<>();
+
         agent_ids.add(agent.AGENT_ID); // add own data
         for (String[] broadcast : broadcasts)
         {
@@ -238,9 +240,10 @@ public class AgentHandler {
                 // always register obstacle
                 agent.constraints.add(new Constraint(new Point(broadcast[1], "-")));
 
-                if (Arrays.asList(own_path).contains(broadcast[1]))
+                int idx = Arrays.asList(own_path).indexOf(broadcast[1]);
+                if (idx > 0)
                 {   // OBSTACLE IS IN WAY
-                    return new ReturnType(ReturnType.Type.OBSTACLE);
+                    conflicts.add(new ReturnType(idx, ReturnType.Type.OBSTACLE));
                 }
             }
 
@@ -249,6 +252,7 @@ public class AgentHandler {
             if (conflict_info.hasConflict)
             {
                 agent_ids.add(broadcast[0]);
+                String conflict_location = "";
                 // TODO
                 // since first Vertex Conflict or Swap Conflict found
                 // is immediately returned
@@ -262,13 +266,21 @@ public class AgentHandler {
 
                 ReturnType ret = new ReturnType(ReturnType.Type.COLLISION);
                 ret.agent_ids = agent_ids.toArray(new String[0]);
+                ret.index = conflict_info.index;
+                ret.conflict_location = conflict_location;
 
-                return ret;
+                conflicts.add(ret);
             }
         }
 
-        conflict_location = "";
-        return new ReturnType();
+        Arrays.sort(conflicts.toArray(new ReturnType[0]), Comparator.comparing(a -> a.index));
+        if (conflicts.size() > 0) {
+            conflict_location = conflicts.get(0).conflict_location;
+            return conflicts.get(0);
+        } else {
+            conflict_location = "";
+            return new ReturnType();
+        }
     }
 
     private void negotiate()
