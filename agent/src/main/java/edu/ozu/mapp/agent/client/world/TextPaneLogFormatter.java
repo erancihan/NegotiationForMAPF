@@ -11,10 +11,13 @@ import javax.swing.text.Element;
 import javax.swing.text.SimpleAttributeSet;
 import java.lang.annotation.Documented;
 import java.util.ArrayList;
+import java.util.ConcurrentModificationException;
 import java.util.stream.Collectors;
 
 public class TextPaneLogFormatter
 {
+    private static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(TextPaneLogFormatter.class);
+
     public LogDisplayPane scenario_info_pane;
     public JTextPane negotiation_info_pane;
 
@@ -28,10 +31,17 @@ public class TextPaneLogFormatter
     public void format(DATA_LOG_DISPLAY data)
     {
         try {
-            parse_scenario_pane_log(data.clone());
-            negotiation_info_pane.setText(parse_negotiation_pane_log(data));
-        } catch (Exception e) {
-            e.printStackTrace();
+            DATA_LOG_DISPLAY __data = data.clone();
+            parse_scenario_pane_log(__data);
+            negotiation_info_pane.setText(parse_negotiation_pane_log(__data));
+        } catch (ConcurrentModificationException exception) {
+            // this is a non-critical GUI only component
+            // tolerate ConcurrentModificationException
+            logger.error("Encountered ConcurrentModificationException, flushing JTextPane");
+            exception.printStackTrace();
+            negotiation_info_pane.setText("");
+        } catch (Exception exception) {
+            exception.printStackTrace();
             System.exit(1);
         }
     }
