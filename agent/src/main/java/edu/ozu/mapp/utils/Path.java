@@ -77,4 +77,13 @@ public class Path extends ArrayList<Point> implements Cloneable
 
         return info.hasConflict;
     }
+
+    public String string() {
+        return "[" + this.stream().map(point -> point.key).collect(Collectors.joining(",")) + "]";
+    }
+
+    public static void main(String[] args) {
+        Path path = new Path("[0-1,0-2,0-3,0-4]");
+        System.out.println(path.string());
+    }
 }
