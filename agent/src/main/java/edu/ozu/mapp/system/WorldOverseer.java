@@ -407,6 +407,10 @@ public class WorldOverseer
 
     public String[][] GetFoV(String agent_name)
     {
+        // it will be null if agent hasn't joined yet
+        if (agent_to_point.get(agent_name) == null)
+            return new String[0][3];
+
         return GetAgentFoV(agent_name);
     }
 
