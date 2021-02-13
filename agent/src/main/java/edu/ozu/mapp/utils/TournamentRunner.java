@@ -13,7 +13,11 @@ import java.util.concurrent.CountDownLatch;
 public class TournamentRunner {
     public static void main(String[] arg) {
         try {
-            Path path = Paths.get(FileSystemView.getFileSystemView().getDefaultDirectory().getPath(), "MAPP");
+            System.out.println(FileSystemView.getFileSystemView().getDefaultDirectory().getPath());
+            System.out.println(System.getProperty("user.dir"));
+
+//        Path path = Paths.get(FileSystemView.getFileSystemView().getDefaultDirectory().getPath(), "MAPP");
+            Path path = Paths.get(System.getProperty("user.dir"), "artifacts", "configs");
             ArrayList<String> scenarios = new Glob().glob(path, "*.json");
 
             new TournamentRunner().run(scenarios);
