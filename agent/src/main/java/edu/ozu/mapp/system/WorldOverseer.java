@@ -253,7 +253,8 @@ public class WorldOverseer
             file_logger.WorldLogDone(WorldID, _t, (SIM_LOOP_DURATION / 1E9));
 
             ui_log_draw_callback_invoker(log_payload);
-            SCENARIO_MANAGER_HOOK_SIMULATION_FINISHED.run();
+            if (SCENARIO_MANAGER_HOOK_SIMULATION_FINISHED != null)
+                SCENARIO_MANAGER_HOOK_SIMULATION_FINISHED.run();
 
             return;
         }
