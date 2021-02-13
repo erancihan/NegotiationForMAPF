@@ -97,6 +97,8 @@ public class WorldHistoryPanel extends javax.swing.JPanel {
 
     private void display_snapshot(String key)
     {
+        if (!history_store.containsKey(key)) return;
+
         String[] agent_keys = history_store.get(key).agent_keys.toArray(new String[0]);
         Arrays.sort(agent_keys);
 

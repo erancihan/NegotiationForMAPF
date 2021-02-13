@@ -16,8 +16,8 @@ public class Sample {
             System.out.println(FileSystemView.getFileSystemView().getDefaultDirectory().getPath());
             System.out.println(System.getProperty("user.dir"));
 //            ScenarioManager.run(args);
-//            new Sample().gen_cases();
-            new Sample().run_tournament();
+            new Sample().gen_cases();
+//            new Sample().run_tournament();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -25,7 +25,7 @@ public class Sample {
 
     public void gen_cases()
     {
-        int number_of_cases_to_generate = 5;
+        int number_of_cases_to_generate = 1;
         String timestamp = String.valueOf(System.currentTimeMillis());
 
         for (int i = 0; i < number_of_cases_to_generate; i++)
