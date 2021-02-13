@@ -3,12 +3,13 @@ package edu.ozu.mapp.utils;
 import java.util.*;
 
 public class AStar {
+    private static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(AStar.class);
+
     public static void main(String[] args) {
         HashMap<String, ArrayList<String>> constraints = new HashMap<>();
-        constraints.put("11-12", new ArrayList<String>(){{ add("inf"); }});
-        constraints.put("10-11", new ArrayList<String>(){{ add("inf"); }});
+        constraints.put("1-3", new ArrayList<String>(){{ add("15"); }});
 
-        List<String> a = new AStar().calculate(new Point(11, 11), new Point(1, 15), constraints, "16x16", 10);
+        List<String> a = new AStar().calculate(new Point(1, 3), new Point(0, 4), constraints, "16x16", 15);
 
         System.out.println(a);
     }
@@ -116,6 +117,9 @@ public class AStar {
                 }
             }
         }
+
+        logger.error("!!! oh no, gonna return null");
+        logger.error("!!! A*{" + start + ", " + goal + ", " + occupiedList + ", " + Dimensions + ", " + T + "}");
 
         return null;
     }
