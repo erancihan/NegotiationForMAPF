@@ -34,7 +34,12 @@ public class RandomAgent extends Agent {
     public Action onMakeAction(Contract contract) {
         if (contract.Ox.isEmpty())
         {   // i am the first one bidding, i have to make an offer
-            return new Action(this, ActionType.OFFER, bid_space_iterator.next());
+            Action action;
+            do {
+                // get a valid first action
+                action = new Action(this, ActionType.OFFER, bid_space_iterator.next());
+            } while (!action.validate());
+            return action;
         }
 
         if (random.nextDouble() < 0.5)
@@ -45,16 +50,16 @@ public class RandomAgent extends Agent {
         {   // counter offer
             Bid next_bid = bid_space_iterator.next();
 
-            if (getOwnBidHistory().contains(next_bid.path.string()))
+            Action action = new Action(this, ActionType.OFFER, next_bid);
+
+            if (!action.validate())
             {   // insisting
-                // check if i have any tokens left
-                if (contract.GetTokenCountOf(this) == current_tokens)
-                {   // i dont have anymore tokens, i cant insist, just accept
-                    return new Action(this, ActionType.ACCEPT);
-                }
+                // if action is invalid, send accept
+                // it is possible to loop through though...
+                return new Action(this, ActionType.ACCEPT);
             }
 
-            return new Action(this, ActionType.OFFER, next_bid);
+            return action;
         }
     }
 }
