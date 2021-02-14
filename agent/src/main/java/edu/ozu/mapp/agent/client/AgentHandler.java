@@ -203,7 +203,7 @@ public class AgentHandler {
                 // There is an obstacle in the path! Update route according to constraints
                 logger.debug(agent.AGENT_ID + " | found obstacle");
                 // Re-calculate path starting from here on out
-                agent.path = update_agent_path_from_pos_to_dest();
+                agent.path = update_agent_path_from_pos_to_dest(new ArrayList<>());
                 // I have updated my path, make broadcast
                 WORLD_OVERSEER_HOOK_UPDATE_BROADCAST.accept(agent.AGENT_ID, agent.GetOwnBroadcastPath());
                 WORLD_OVERSEER_HOOK_INVALIDATE.accept(agent.AGENT_ID);
@@ -427,6 +427,7 @@ public class AgentHandler {
     {
         logger.debug(agent.AGENT_ID + " | Making Action | " + contract.sess_id);
         Action action = agent.onMakeAction(contract);
+        action.take();
         logger.debug(agent.AGENT_ID + " | Taking Action | " + contract.sess_id + " " + action);
 
         file_logger.AgentLogNegotiationAction(this, action);
@@ -524,31 +525,39 @@ public class AgentHandler {
     @NotNull
     private List<String> handle_lose_condition(Contract contract)
     {   // LOSE condition
-        update_agent_constraints(contract);
+        ArrayList<Constraint> constraints = update_agent_constraints(contract);
         logger.debug(String.format("%s | LOST | %s", agent.AGENT_ID, contract.print()));
         agent.loseC++;
 
-        return update_agent_path_from_pos_to_dest();
+        return update_agent_path_from_pos_to_dest(constraints);
     }
 
     /**
      * Run when agent is lost to set accepted Ox points as constraints
      * */
-    private void update_agent_constraints(Contract contract)
+    private ArrayList<Constraint> update_agent_constraints(Contract contract)
     {
+        if (agent.constraints == null)
+            agent.constraints = new ArrayList<>();
+
         // create constraints, add Ox as constraint
         int i = 0;
         for (Point point : contract.GetOx())
         {
-            agent.constraints.add(new Constraint(point, agent.time + i));
+            Constraint constraint = new Constraint(point, agent.time + i);
+            if (!agent.constraints.contains(constraint))
+                agent.constraints.add(constraint);
             logger.debug(String.format("%s | ADDED CONSTRAINT %s:%s", agent.AGENT_ID, point, agent.time + i));
             i++;
         }
+
+        return agent.constraints;
     }
     //</editor-fold>
 
     @NotNull
-    private List<String> update_agent_path_from_pos_to_dest() {
+    private List<String> update_agent_path_from_pos_to_dest(ArrayList<Constraint> constraints)
+    {
         logger.debug(String.format("%s | current location : %s", agent.AGENT_ID, agent.POS));
 
         List<String> path_next = new ArrayList<>();
@@ -559,9 +568,10 @@ public class AgentHandler {
         }
 
         // calculate rest of the path
-        List<String> rest = agent.calculatePath(agent.POS, agent.DEST);
+        List<String> rest = agent.calculatePath(agent.POS, agent.DEST, constraints);
 
         if (rest == null) {
+            logger.error("REST cannot be null!");
             System.exit(1);
         }
 

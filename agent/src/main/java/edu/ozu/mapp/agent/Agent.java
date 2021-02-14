@@ -126,23 +126,46 @@ public abstract class Agent {
         return calculatePath(start, dest, new HashMap<>());
     }
 
+    public final List<String> calculatePath(Point start, Point dest, ArrayList<Constraint> constraints)
+    {
+        HashMap<String, ArrayList<String>> _map = new HashMap<>();
+        for (Constraint constraint : constraints) {
+            if (!_map.containsKey(constraint.location.key)) {
+                _map.put(constraint.location.key, new ArrayList<>());
+            }
+            _map.get(constraint.location.key).add(String.valueOf(constraint.at_t));
+        }
+
+        return calculatePath(start, dest, _map);
+    }
+
     @SuppressWarnings("DuplicatedCode")
     public final List<String> calculatePath(Point start, Point dest, HashMap<String, ArrayList<String>> constraints)
     {
-        String[][] world_constraints = WorldOverseer.getInstance().GetLocationConstraints();
-        for(String[] wc : world_constraints) {
-            ArrayList<String> c = constraints.getOrDefault(wc[0], new ArrayList<>());
-            c.add(wc[1]);
-            constraints.put(wc[0], c);
-        }
-        for (Constraint constraint : this.constraints) {
-            ArrayList<String> c = constraints.getOrDefault(constraint.location.key, new ArrayList<>());
-            if (constraint.at_t >= 0) c.add(String.valueOf(constraint.at_t));
-            else c.add("inf");
-            constraints.put(constraint.location.key, c);
+        String[][] fov = WorldOverseer.getInstance().GetFoV(this.AGENT_ID);
+        for (String[] fov_data : fov) {
+            Point point = new Point(fov_data[1], "-");
+            String loc_ = fov_data[2];
+
+            if (loc_.equals("inf")) {
+                constraints.put(point.key, new ArrayList<>());
+                constraints.get(point.key).add(loc_);
+            }
+            /*
+            else {
+                Path path = new Path(loc_);
+                for (int i = 0; i < path.size(); i++) {
+                    Point p = path.get(i);
+                    if (!constraints.containsKey(p.key)) {
+                        constraints.put(p.key, new ArrayList<>());
+                    }
+                    constraints.get(p.key).add(String.valueOf(time + i));
+                }
+            }
+            */
         }
 
-        logger.debug("calculating A* {" + start + ", " + dest + ", " + constraints + ", " + dimensions + ", " + time + "}");
+        logger.debug(AGENT_ID + " | calculating A* {" + start + ", " + dest + ", " + constraints + ", " + dimensions + ", " + time + "}");
         return new AStar().calculate(start, dest, constraints, dimensions, time);
     }
 
