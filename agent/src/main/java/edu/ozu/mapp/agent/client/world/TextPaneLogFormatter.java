@@ -66,6 +66,8 @@ public class TextPaneLogFormatter
 
                     ArrayList<String> values = data.negotiation_logs.get(key);
 
+                    if (values == null) values = new ArrayList<>();
+
                     return
                         // write session key
                         String.format("> %s %s \n", key_data[0].substring(0, 7), key_data[1]) +
