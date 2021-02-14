@@ -2,15 +2,18 @@ package edu.ozu.mapp.utils;
 
 import edu.ozu.mapp.agent.client.models.Contract;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedDeque;
 
 public class History
 {
     private String agent_id;
     private String current_negotiation_id;
 
-    public ConcurrentHashMap<String, List<Contract>> history;
+    public ConcurrentHashMap<String, ConcurrentLinkedDeque<Contract>> history;
 
     public History(String agent_id)
     {
@@ -27,7 +30,7 @@ public class History
         return current_negotiation_id;
     }
 
-    public HashSet<Contract> get(String agent_id)
+    public synchronized HashSet<Contract> get(String agent_id)
     {   // return bid history of AGENT_ID as HashSet
         HashSet<Contract> agent_history = new HashSet<>();
 
@@ -35,13 +38,14 @@ public class History
             return agent_history;
         }
         if (!history.containsKey(current_negotiation_id)) {
-            history.put(current_negotiation_id, new ArrayList<Contract>());
+            history.put(current_negotiation_id, new ConcurrentLinkedDeque<>());
         }
 
-        for (Contract contract : history.get(current_negotiation_id))
+        Iterator<Contract> iterator = history.get(current_negotiation_id).iterator();
+        while (iterator.hasNext())
         {
+            Contract contract = iterator.next();
             if (!contract.x.equals(agent_id)) continue;
-
             agent_history.add(contract);
         }
 
@@ -60,12 +64,10 @@ public class History
             return;
         }
         if (!history.containsKey(current_negotiation_id)) {
-            history.put(current_negotiation_id, new ArrayList<Contract>());
+            history.put(current_negotiation_id, new ConcurrentLinkedDeque<>());
         }
-        if (
-            history.get(current_negotiation_id).size() > 0 &&
-            history.get(current_negotiation_id).get(history.get(current_negotiation_id).size() - 1).equals(contract)
-        ) {
+        if (Objects.equals(history.get(current_negotiation_id).peekLast(), contract))
+        {
             // last entry for current negotiation's history is the same
             return;
         }
@@ -83,10 +85,8 @@ public class History
         if (current_negotiation_id == null) {
             return null;
         }
-        if (history.get(current_negotiation_id).size() == 0) {
-            return null;
-        }
-        return history.get(current_negotiation_id).get(history.get(current_negotiation_id).size() - 1);
+
+        return history.get(current_negotiation_id).peekLast();
     }
 
     public Contract GetLastBid()
@@ -100,17 +100,18 @@ public class History
             return null;
         }
 
-        int current_history_size = history.getOrDefault(current_negotiation_id, new ArrayList<>()).size();
-        ListIterator<Contract> iterator = history.get(current_negotiation_id).listIterator(current_history_size);
-        while (iterator.hasPrevious())
+        Contract contract = null;
+        Iterator<Contract> iterator = history.get(current_negotiation_id).iterator();
+        while (iterator.hasNext())
         {
-            Contract contract = iterator.previous();
-            if (contract.x.replace("agent:", "").equals(id)) {
-                return contract;
+            Contract next = iterator.next();
+            if (next.x.replace("agent:", "").equals(id)) {
+                try { contract = next.clone(); }
+                catch (CloneNotSupportedException e) { e.printStackTrace(); System.exit(1); }
             }
         }
 
-        return null;
+        return contract;
     }
 
     public Contract GetLastOwnBid()
@@ -121,5 +122,13 @@ public class History
     public Contract GetLastOpponentBid(String opponent_id)
     {
         return GetLastAgentBid(opponent_id);
+    }
+
+    public static void main(String[] args) {
+        ConcurrentLinkedDeque<String> queue = new ConcurrentLinkedDeque<>();
+        queue.add("0");
+        queue.add("1");
+
+        System.out.println(queue.peekLast());
     }
 }
