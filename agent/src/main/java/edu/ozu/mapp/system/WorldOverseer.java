@@ -4,10 +4,7 @@ import edu.ozu.mapp.agent.client.AgentClient;
 import edu.ozu.mapp.agent.client.AgentHandler;
 import edu.ozu.mapp.agent.client.helpers.FileLogger;
 import edu.ozu.mapp.dataTypes.WorldSnapshot;
-import edu.ozu.mapp.utils.Globals;
-import edu.ozu.mapp.utils.JSONWorldWatch;
-import edu.ozu.mapp.utils.Point;
-import edu.ozu.mapp.utils.Utils;
+import edu.ozu.mapp.utils.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -117,6 +114,8 @@ public class WorldOverseer
         FLAG_NEGOTIATIONS_DONE = new ConcurrentHashMap<>();
         FLAG_NEGOTIATIONS_VERIFIED = new ConcurrentHashMap<>();
         FLAG_INACTIVE         = new ConcurrentHashMap<>();
+
+        agents_verify_lock = new PseudoLock();
 
         TIME = 0;
     }
@@ -312,6 +311,7 @@ public class WorldOverseer
                     FLAG_NEGOTIATIONS_VERIFIED.clear();
 
                     prev_state = curr_state;
+                    agents_verify_lock.unlock();    // ensure unlock
 
                     if (IsLooping) { Step(); }
                     break;
@@ -636,22 +636,26 @@ public class WorldOverseer
             bank_data.put(agent_name, new_balance);
     }
 
-    private final Lock agents_verify_lock = new ReentrantLock();
+    private PseudoLock agents_verify_lock;
     private synchronized void agents_verify_paths_after_negotiation()
     {
         if (!agents_verify_lock.tryLock()) return;
+        logger.debug("acquired agents_verify_lock");
 
         CompletableFuture
             .runAsync(() -> {
+                logger.debug("verifying agent paths after negotiations");
                 for (String agent_id : clients.keySet())
                 {
                     AgentClient client = clients.get(agent_id);
 
                     if (passive_agents.containsKey(agent_id)) continue;
 
+                    logger.debug(agent_id + " | verifying negotiations");
+
                     CompletableFuture
                         .runAsync(client::VerifyNegotiations)
-                        .exceptionally(ex -> { ex.printStackTrace(); return null; })
+                        .whenComplete((entity, ex) -> { if (ex != null) ex.printStackTrace(); })
                     ;
                 }
             })
@@ -659,6 +663,7 @@ public class WorldOverseer
                 if (ex != null) ex.printStackTrace();
 
                 agents_verify_lock.unlock();
+                logger.debug("unlock agents_verify_lock");
             })
         ;
     }
