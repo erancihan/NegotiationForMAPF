@@ -119,6 +119,7 @@ class Negotiation(_Base):
     session_id: str
     agent_ids: List
     conflict_location: str
+    amount_of_tokens_exchanged: str
 
     def __init__(self):
         super().__init__()
@@ -283,6 +284,8 @@ def parse_agent_negotiation_log(file_path: str, data_dict: ExcelData):
                 data_dict.agents[agent_id].negotiations[session_key].own_path_before = data['path']
                 data_dict.agents[agent_id].negotiations[session_key].own_path_before_len = len(data['path'].split(','))
                 data_dict.agents[agent_id].negotiations[session_key].conflict_location = data['conflict_location']
+                # set number of tokens owned before negotiation starts
+                # so that it is possible to compare against the token count in POST
                 data_dict.agents[agent_id].negotiations[session_key].own_token_balance_diff = int(data['token'])
 
             if data['name'] == 'OFFER' or data['name'] == 'ACCEPT':
@@ -310,9 +313,16 @@ def parse_agent_negotiation_log(file_path: str, data_dict: ExcelData):
                 data_dict.agents[agent_id].negotiations[session_key].own_path_after = data['path']
                 data_dict.agents[agent_id].negotiations[session_key].own_path_after_len = len(data['path'].split(','))
 
+                # calculate token balance diff
                 tb = data_dict.agents[agent_id].negotiations[session_key].own_token_balance_diff
-                data_dict.agents[agent_id].negotiations[session_key].own_token_balance_diff = int(data['token']) - tb
+                tb_diff = int(data['token']) - tb
+
+                data_dict.agents[agent_id].negotiations[session_key].own_token_balance_diff = tb_diff
                 data_dict.agents[agent_id].negotiations[session_key].is_win = data['is_win']
+
+                # absolute value of token balance diff is the amount of tokens
+                # exchanged for both parties of negotiation in this setup
+                data_dict.negotiations[session_key].amount_of_tokens_exchanged = abs(tb_diff)
 
 
 def parse_world_log(file_path: str, data_dict: ExcelData):
@@ -381,8 +391,10 @@ def run(scenarios_folder_path):
         debug()
 
         # create world workbook
+        # BEGIN:WORLD.XLSX
         wwb = xlsxwriter.Workbook(join(world_folder, 'World.xlsx'))
 
+        # BEGIN:WORLD.XLSX AGENT SHEET
         wws_agents = wwb.add_worksheet('Agents')
         wws_agents_r = 0
         wws_agents_c = 0
@@ -413,12 +425,14 @@ def run(scenarios_folder_path):
             wws_agents.write(wws_agents_r, 12, wws_agent.token_count_final)
 
             wws_agents_r += 1
+        # END:WORLD.XLSX AGENT SHEET
 
+        # BEGIN:WORLD.XLSX NEGOTIATIONS SHEET
         wws_negotiations = wwb.add_worksheet('Negotiations')
 
         wws_negotiations_r = 0
         wws_negotiations_c = 0
-        wws_negotiations_h = ['timestamp', 'negotiation_id', 'agents', 'conflict_location']
+        wws_negotiations_h = ['timestamp', 'negotiation_id', 'agents', 'conflict_location', 'amount of tokens exchanged']
         for item in wws_negotiations_h:
             wws_negotiations.write(wws_negotiations_r, wws_negotiations_c, item)
             wws_negotiations_c += 1
@@ -432,11 +446,14 @@ def run(scenarios_folder_path):
             wws_negotiations.write(wws_negotiations_r, 1, wws_negotiation.session_id)
             wws_negotiations.write(wws_negotiations_r, 2, ",".join(wws_negotiation.agent_ids))
             wws_negotiations.write(wws_negotiations_r, 3, wws_negotiation.conflict_location)
+            wws_negotiations.write(wws_negotiations_r, 4, wws_negotiation.amount_of_tokens_exchanged)
 
             wws_negotiations_r += 1
+        # END:WORLD.XLSX NEGOTIATIONS SHEET
 
         wwb.close()
         del wwb
+        # END:WORLD.XLSX
 
         for agent_key in data_dict.agents:
             aws_agent: Agent
