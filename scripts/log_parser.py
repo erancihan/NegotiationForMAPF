@@ -368,6 +368,9 @@ def run(scenarios_folder_path):
         if os.path.exists(join(world_folder, '.parsed')):
             continue
 
+        if os.path.isfile(world_folder):
+            continue
+
         debug(' ┬', world_folder)
 
         data_dict = ExcelData()
@@ -540,4 +543,4 @@ def run(scenarios_folder_path):
 
 
 if __name__ == '__main__':
-    run("C:\\Users\\cihan\\Documents\\MAPP\\saved\\world-scenario-1613004119997-0")
+    run("C:\\Users\\cihan\\Documents\\MAPP\\saved\\16x16_40-4")
