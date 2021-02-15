@@ -119,10 +119,16 @@ class Negotiation(_Base):
     session_id: str
     agent_ids: List
     conflict_location: str
+    conflict_time: str
     amount_of_tokens_exchanged: str
+    paths: Dict[str, Dict[str, List[str]]]
+    contract: str
 
     def __init__(self):
         super().__init__()
+        self.contract = None
+        self.paths = None
+        self.conflict_time = None
         self.timestamp = None
         self.session_id = None
         self.conflict_location = None
@@ -155,6 +161,7 @@ class Agent(_Base):
     token_count_initial: str
     token_count_final: str
     negotiations: Dict[str, NegotiationSummary]
+    amount_of_tokens_exchanged: int
 
     def __init__(self):
         super().__init__()
@@ -172,6 +179,7 @@ class Agent(_Base):
         self.negotiations_lost = None
         self.token_count_initial = None
         self.token_count_final = None
+        self.amount_of_tokens_exchanged = 0
 
     def __str__(self, padd=0):
         _str = "{\n"
@@ -200,6 +208,8 @@ class Agent(_Base):
 
 
 class World(_Base):
+    id: str
+
     def __str__(self):
         return super().__str__()
 
@@ -274,9 +284,13 @@ def parse_agent_negotiation_log(file_path: str, data_dict: ExcelData):
                     data_dict.negotiations[session_key].timestamp = timestamp
                     data_dict.negotiations[session_key].session_id = session_key
                     data_dict.negotiations[session_key].conflict_location = ""
+                    data_dict.negotiations[session_key].conflict_time = data['world_time']
+                    data_dict.negotiations[session_key].paths = {}
                 if data_dict.negotiations[session_key].conflict_location == "":
                     data_dict.negotiations[session_key].conflict_location = data['conflict_location']
                 data_dict.negotiations[session_key].agent_ids.append(agent_id)
+                data_dict.negotiations[session_key].paths[agent_id] = {}
+                data_dict.negotiations[session_key].paths[agent_id]["BEFORE"] = [__point.strip().replace('-', ',') for __point in str(data['path']).replace('[', '').replace(']', '').split(',')]
 
                 if session_key not in data_dict.agents[agent_id].negotiations:
                     data_dict.agents[agent_id].negotiations[session_key] = NegotiationSummary()
@@ -308,6 +322,10 @@ def parse_agent_negotiation_log(file_path: str, data_dict: ExcelData):
                 if session_key not in data_dict.agents[action.B].negotiations:
                     data_dict.agents[action.B].negotiations[session_key] = NegotiationSummary()
                 data_dict.agents[action.B].negotiations[session_key].actions.append(action)
+                data_dict.negotiations[session_key].paths[agent_id]["ACCEPT"] = agent_id if data['name'] == 'ACCEPT' else ""
+
+                if data['name'] == 'ACCEPT':
+                    data_dict.negotiations[session_key].contract = str(data['contract'])
 
             if data['name'] == 'POST':
                 data_dict.agents[agent_id].negotiations[session_key].own_path_after = data['path']
@@ -322,7 +340,9 @@ def parse_agent_negotiation_log(file_path: str, data_dict: ExcelData):
 
                 # absolute value of token balance diff is the amount of tokens
                 # exchanged for both parties of negotiation in this setup
+                data_dict.agents[agent_id].amount_of_tokens_exchanged += abs(tb_diff)
                 data_dict.negotiations[session_key].amount_of_tokens_exchanged = abs(tb_diff)
+                data_dict.negotiations[session_key].paths[agent_id]["AFTER"] = [__point.strip().replace('-', ',') for __point in str(data['path']).replace('[', '').replace(']', '').split(',')]
 
 
 def parse_world_log(file_path: str, data_dict: ExcelData):
@@ -334,7 +354,7 @@ def parse_world_log(file_path: str, data_dict: ExcelData):
 
             # debug(timestamp, data)
             if data['name'] == 'CREATE':
-                pass
+                data_dict.world.id = data["world_id"]
             if data['name'] == 'AGENT_JOIN':
                 data_dict.agents[data['agent_id']].agent_name = data['agent_name']
                 data_dict.agents[data['agent_id']].starting_point = data['start']
@@ -363,9 +383,9 @@ def parse_world_log(file_path: str, data_dict: ExcelData):
                 data_dict.agents[data['agent_id']].negotiation_count = data['negoC']
 
 
-def run(scenarios_folder_path):
+def run(scenarios_folder_path, force_reparse: bool = False):
     for world_folder in glob(join(scenarios_folder_path, 'WORLD-*')):
-        if os.path.exists(join(world_folder, '.parsed')):
+        if not force_reparse and os.path.exists(join(world_folder, '.parsed')):
             continue
 
         if os.path.isfile(world_folder):
@@ -395,7 +415,8 @@ def run(scenarios_folder_path):
 
         # create world workbook
         # BEGIN:WORLD.XLSX
-        wwb = xlsxwriter.Workbook(join(world_folder, 'World.xlsx'))
+        wwb = xlsxwriter.Workbook(join(world_folder, "World-{}.xlsx".format(data_dict.world.id)))
+        __font_format = wwb.add_format({'font_name': 'Courier New', 'font_size': '10', 'align': 'center' })
 
         # BEGIN:WORLD.XLSX AGENT SHEET
         wws_agents = wwb.add_worksheet('Agents')
@@ -403,7 +424,7 @@ def run(scenarios_folder_path):
         wws_agents_c = 0
         wws_agents_h = ['id', 'name', 'starting point', 'destination', 'planned path', 'planned path len', 'taken path',
                         'taken path len', 'negotiation count', 'sum win', 'sum lose', 'initial token count',
-                        'final token count']
+                        'final token count', 'amount of tokens exchanged']
         for item in wws_agents_h:
             wws_agents.write(wws_agents_r, wws_agents_c, item)
             wws_agents_c += 1
@@ -426,6 +447,7 @@ def run(scenarios_folder_path):
             wws_agents.write(wws_agents_r, 10, wws_agent.negotiations_lost)
             wws_agents.write(wws_agents_r, 11, wws_agent.token_count_initial)
             wws_agents.write(wws_agents_r, 12, wws_agent.token_count_final)
+            wws_agents.write(wws_agents_r, 13, wws_agent.amount_of_tokens_exchanged)
 
             wws_agents_r += 1
         # END:WORLD.XLSX AGENT SHEET
@@ -435,23 +457,45 @@ def run(scenarios_folder_path):
 
         wws_negotiations_r = 0
         wws_negotiations_c = 0
-        wws_negotiations_h = ['timestamp', 'negotiation_id', 'agents', 'conflict_location', 'amount of tokens exchanged']
+        wws_negotiations_h = ['timestamp', 'negotiation_id', 'agents', 'conflict_location', 'time conflict found at', 'amount of tokens exchanged', 'path']
         for item in wws_negotiations_h:
             wws_negotiations.write(wws_negotiations_r, wws_negotiations_c, item)
             wws_negotiations_c += 1
         wws_negotiations_r += 1
 
         wws_negotiation: Negotiation
-        for negotiation_key in data_dict.negotiations:
+        wws_negotiation_keys = data_dict.negotiations.keys()
+        wws_negotiation_keys = sorted(wws_negotiation_keys, key=lambda x: data_dict.negotiations[x].timestamp)
+
+        for negotiation_key in wws_negotiation_keys:
             wws_negotiation = data_dict.negotiations[negotiation_key]
 
             wws_negotiations.write(wws_negotiations_r, 0, wws_negotiation.timestamp)
             wws_negotiations.write(wws_negotiations_r, 1, wws_negotiation.session_id)
             wws_negotiations.write(wws_negotiations_r, 2, ",".join(wws_negotiation.agent_ids))
             wws_negotiations.write(wws_negotiations_r, 3, wws_negotiation.conflict_location)
-            wws_negotiations.write(wws_negotiations_r, 4, wws_negotiation.amount_of_tokens_exchanged)
+            # wws_negotiations.write(wws_negotiations_r, 5, wws_negotiation.amount_of_tokens_exchanged)
+            for __agent_key in wws_negotiation.paths:
+                wws_negotiations.write(wws_negotiations_r, 4, __agent_key)
+                wws_negotiations.write(wws_negotiations_r, 5, "BEFORE")
 
+                for __i, __point in enumerate(wws_negotiation.paths[__agent_key]["BEFORE"]):
+                    wws_negotiations.write_string(wws_negotiations_r, 6 + __i, __point, __font_format)
+                wws_negotiations_r += 1
+
+                wws_negotiations.write(wws_negotiations_r, 4, "accepted" if wws_negotiation.paths[__agent_key]["ACCEPT"] is __agent_key else "")
+                wws_negotiations.write(wws_negotiations_r, 5, "AFTER")
+                for __i, __point in enumerate(wws_negotiation.paths[__agent_key]["AFTER"]):
+                    wws_negotiations.write_string(wws_negotiations_r, 6 + __i, __point, __font_format)
+                wws_negotiations_r += 1
+
+            wws_negotiations.write(wws_negotiations_r, 5, "CONTRACT")
+            wws_negotiations.write(wws_negotiations_r, 6, wws_negotiation.contract)
             wws_negotiations_r += 1
+            wws_negotiations.write(wws_negotiations_r, 5, "CURR T")
+            wws_negotiations.write(wws_negotiations_r, 6, wws_negotiation.conflict_time)
+
+            wws_negotiations_r += 2
         # END:WORLD.XLSX NEGOTIATIONS SHEET
 
         wwb.close()
@@ -543,4 +587,4 @@ def run(scenarios_folder_path):
 
 
 if __name__ == '__main__':
-    run("C:\\Users\\cihan\\Documents\\MAPP\\saved\\16x16_40-4")
+    run("C:\\Users\\cihan\\Documents\\MAPP\\logs", True)
