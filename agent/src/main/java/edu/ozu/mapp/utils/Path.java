@@ -3,10 +3,7 @@ package edu.ozu.mapp.utils;
 import edu.ozu.mapp.agent.client.helpers.ConflictCheck;
 import edu.ozu.mapp.agent.client.helpers.ConflictInfo;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class Path extends ArrayList<Point> implements Cloneable
@@ -82,8 +79,40 @@ public class Path extends ArrayList<Point> implements Cloneable
         return "[" + this.stream().map(point -> point.key).collect(Collectors.joining(",")) + "]";
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Path)) return false;
+        if (!super.equals(o)) return false;
+        Path points = (Path) o;
+        return Objects.equals(entries, points.entries);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), entries);
+    }
+
     public static void main(String[] args) {
-        Path path = new Path("[0-1,0-2,0-3,0-4]");
-        System.out.println(path.string());
+        Path p1 = new Path("[0-1,0-2,0-3,0-4,0-4]");
+        System.out.println(p1.string());
+
+        System.out.println();
+        Path p2 = new Path("[0-1,0-2,0-3,0-4]");
+        p2.add(new Point(0, 4));
+        System.out.println("equality test");
+        System.out.println("p1: " + p1);
+        System.out.println("p2: " + p2);
+        System.out.println(
+                "p1@" + Integer.toHexString(System.identityHashCode(p1.hashCode())) + " == p2@" + Integer.toHexString(System.identityHashCode(p2.hashCode())) +
+                " ? " + (p1.equals(p2))
+        );
+
+        System.out.println();
+        System.out.println("HashSet insert test");
+        HashSet<Path> set = new HashSet<>();
+        System.out.println("add p1: " + set.add(p1));
+        System.out.println("set contains p2? " + set.contains(p2));
+        System.out.println("add p2: " + set.add(p2));
     }
 }
