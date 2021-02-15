@@ -252,13 +252,14 @@ public class FileLogger
         FileData data = new FileData();
         data.file     = String.format("logs/WORLD-%s/AGENT-%s-%s.log", agent_ref.WORLD_ID, NEGOTIATION, agent_ref.AGENT_ID);
         data.payload  = String.format(
-                "%s;{\"name\":\"%s\", \"session_id\":\"%s\", \"path\":\"%s\", \"token\":\"%s\", \"conflict_location\":\"%s\"}%s",
+                "%s;{\"name\":\"%s\", \"session_id\":\"%s\", \"path\":\"%s\", \"token\":\"%s\", \"conflict_location\":\"%s\", \"world_time\":\"%s\"}%s",
                 new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date()),
                 "PRE",
                 session_id,                         // negotiation session id
                 agent_ref.path.toString(),          // agents path before negotiation session
                 agent_ref.GetCurrentTokenC(),       // print token count
                 agent_ref.GetConflictLocation(session_id),    // conflict location
+                agent_ref.time,
                 System.lineSeparator()
         );
 
