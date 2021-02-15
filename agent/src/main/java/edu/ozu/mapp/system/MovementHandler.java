@@ -4,12 +4,10 @@ import edu.ozu.mapp.agent.client.AgentHandler;
 import edu.ozu.mapp.utils.JSONAgent;
 import edu.ozu.mapp.utils.PseudoLock;
 
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.CountDownLatch;
 
 public class MovementHandler
 {
@@ -21,6 +19,7 @@ public class MovementHandler
     private WorldOverseer world;
 
     private final PseudoLock process_queue_lock;
+    private CountDownLatch process_queue_unlock_latch;
 
     private MovementHandler()
     {
@@ -72,23 +71,29 @@ public class MovementHandler
 
     public synchronized void ProcessQueue(Runnable runnable)
     {
-        if (process_queue_lock.tryLock())
-        {
-            try {
-                CompletableFuture
-                    .runAsync(this::process_queue)
-                    .exceptionally(ex -> { ex.printStackTrace(); return null; })
-                    .whenCompleteAsync((entity, ex) -> {
-                        if (ex != null) ex.printStackTrace();
+        if (!process_queue_lock.tryLock()) return;
 
-                        runnable.run();
+        process_queue_unlock_latch = new CountDownLatch(move_queue.size());
+
+        try {
+            CompletableFuture
+                .runAsync(this::process_queue)
+                .exceptionally(ex -> { ex.printStackTrace(); return null; })
+                .whenCompleteAsync((entity, ex) -> {
+                    if (ex != null) ex.printStackTrace();
+
+                    runnable.run();
+                    try {
+                        process_queue_unlock_latch.await();
                         process_queue_lock.unlock();
-                    })
-                ;
-            } catch (Exception exception) {
-                exception.printStackTrace();
-                process_queue_lock.unlock();
-            }
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                })
+            ;
+        } catch (Exception exception) {
+            exception.printStackTrace();
+            process_queue_lock.unlock();
         }
     }
 
@@ -122,6 +127,7 @@ public class MovementHandler
                 response.agent_y = String.valueOf(payload.NEXT_LOCATION.y);
 
                 agent_ref.DoMove(response);
+                process_queue_unlock_latch.countDown();
             });
 
             iterator.remove();
