@@ -7,6 +7,15 @@ public class BFS
     @SuppressWarnings("Duplicates")
     public static void main(String[] args)
     {
+        BFS search = new BFS(new Point(3, 3), new Point(5, 5), 5/2, 5, 5, 5).init();
+        try {
+            java.io.FileWriter writer = new java.io.FileWriter("output.txt");
+
+            for (Path path: search.paths) writer.write(path.string() + System.lineSeparator());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         /*
         // TODO get Utility function in BFS to cut off search on a branch once utility is 0
         // TODO dont spawn after 0
@@ -47,37 +56,37 @@ public class BFS
     public ArrayList<Path> paths;
     public int max_paths = -1;
 
-    private Point _f;
-    private Point _t;
+    private Point start;
+    private Point goal;
 
-    private int FoV = -1;
+    private int fov_r = -1;
     private boolean DEBUG = false;
-    private int deadline;
+    private int depth;
     private int Width = Integer.MAX_VALUE;
     private int Height = Integer.MAX_VALUE;
 
-    public BFS(Point From, Point To, int FieldOfViewRadius, int deadline, boolean IsDebug, int Width, int Height)
+    public BFS(Point From, Point To, int FieldOfViewRadius, int depth, boolean IsDebug, int Width, int Height)
     {
-        _f = From;
-        _t = To;
+        start = From;
+        goal = To;
 
         paths = new ArrayList<Path>();
 
         DEBUG = IsDebug;
-        FoV = FieldOfViewRadius;
-        this.deadline = deadline;
+        fov_r = FieldOfViewRadius;
+        this.depth = depth;
         this.Width = Width == 0 ? Integer.MAX_VALUE : Width;
         this.Height = Height == 0 ? Integer.MAX_VALUE : Height;
     }
 
-    public BFS(Point From, Point To, int FieldOfView, int deadline, int Width, int Height)
+    public BFS(Point From, Point To, int FieldOfViewRadius, int depth, int Width, int Height)
     {
-        this(From, To, FieldOfView, deadline, false, Width, Height);
+        this(From, To, FieldOfViewRadius, depth, false, Width, Height);
     }
 
-    public BFS(Point From, Point To, int FieldOfView, int deadline)
+    public BFS(Point From, Point To, int FieldOfView, int depth)
     {
-        this(From, To, FieldOfView, deadline, false, Integer.MAX_VALUE, Integer.MAX_VALUE);
+        this(From, To, FieldOfView, depth, false, Integer.MAX_VALUE, Integer.MAX_VALUE);
     }
 
     public BFS(Point From, Point To, int FieldOfView, int Width, int Height)
@@ -85,9 +94,9 @@ public class BFS
         this(From, To, FieldOfView, (int) (From.ManhattanDistTo(To)*2), false, Width, Height);
     }
 
-    public BFS(Point From, Point To, int FieldOfView)
+    public BFS(Point From, Point To, int FieldOfViewRadius)
     {
-        this(From, To, FieldOfView, (int) (From.ManhattanDistTo(To)*2), false, Integer.MAX_VALUE, Integer.MAX_VALUE);
+        this(From, To, FieldOfViewRadius, (int) (From.ManhattanDistTo(To)*2), false, Integer.MAX_VALUE, Integer.MAX_VALUE);
     }
 
     public BFS init()
@@ -99,23 +108,23 @@ public class BFS
 
     public List<Path> GeneratePaths()
     {
-        if (DEBUG) System.out.println(_f + " ... " + _t + " :" + FoV);
+        if (DEBUG) System.out.println(start + " ... " + goal + " :" + fov_r);
 
         Queue<Path> queue = new LinkedList<>();
 
         // add starting node to queue
-        queue.add(new Path(){{add(_f);}});
+        queue.add(new Path(){{add(start);}});
 
         while (!queue.isEmpty())
         {
-            Path CurrentPath = queue.remove(); // pop
-            if (CurrentPath.contains(_t) || CurrentPath.size() >= deadline)
+            Path path = queue.remove(); // pop
+            if (path.contains(goal) || path.size() >= depth)
             {   // Destination is reached || min path length requirement satisfied
-                paths.add(CurrentPath);
+                paths.add(path);
 
                 // update max path length
-                if (CurrentPath.size() > Max) Max = CurrentPath.size();
-                if (CurrentPath.size() < Min) Min = CurrentPath.size();
+                if (path.size() > Max) Max = path.size();
+                if (path.size() < Min) Min = path.size();
 
                 if (max_paths > 0 && paths.size() >= max_paths)
                     return paths;
@@ -123,18 +132,18 @@ public class BFS
 //                continue;
             }
 
-            Point CurrentNode = CurrentPath.getLast();
+            Point current = path.getLast();
 
-            // get hood
-            List<Point> hood = GetNeighborhood(CurrentNode);
-            for (Point neighbor : hood)
+            // get neighbourhood
+            List<Point> neighbourhood = GetNeighbourhood(current);
+            for (Point neighbour : neighbourhood)
             {
-                // if the neighbor is in the path
+                // if the neighbour is in the path
                 // current is also in the path, so checks that too
-                if (CurrentPath.contains(neighbor)) continue;
+                if (path.contains(neighbour)) continue;
 
-                Path NewPath = new Path(CurrentPath);
-                NewPath.add(neighbor);
+                Path NewPath = new Path(path);
+                NewPath.add(neighbour);
                 queue.add(NewPath);
             }
         }
@@ -143,20 +152,20 @@ public class BFS
     }
 
     @SuppressWarnings("Duplicates")
-    private List<Point> GetNeighborhood(Point curr)
+    private List<Point> GetNeighbourhood(Point curr)
     {
         List<Point> hood = new ArrayList<>();
 
-        if (curr.x > 0 && curr.x - 1 >= _f.x - FoV) {
+        if (curr.x > 0 && curr.x - 1 >= start.x - fov_r) {
             hood.add(new Point(curr.x - 1, curr.y));
         }
-        if (curr.y > 0 && curr.y - 1 >= _f.y - FoV) {
+        if (curr.y > 0 && curr.y - 1 >= start.y - fov_r) {
             hood.add(new Point(curr.x, curr.y - 1));
         }
-        if (curr.x < Width && curr.x + 1 <= _f.x + FoV) {
+        if (curr.x < Width && curr.x + 1 <= start.x + fov_r) {
             hood.add(new Point(curr.x + 1, curr.y));
         }
-        if (curr.y < Height && curr.y + 1 <= _f.y + FoV) {
+        if (curr.y < Height && curr.y + 1 <= start.y + fov_r) {
             hood.add(new Point(curr.x, curr.y + 1));
         }
         hood.add(curr);  // we are in the hood too
@@ -166,6 +175,6 @@ public class BFS
 
     public void SetMinimumPathLength(int i)
     {
-        deadline = i;
+        depth = i;
     }
 }
