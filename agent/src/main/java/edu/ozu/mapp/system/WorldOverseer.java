@@ -637,10 +637,12 @@ public class WorldOverseer
     }
 
     private PseudoLock agents_verify_lock;
+    private CountDownLatch agents_verify_unlock_latch;
     private synchronized void agents_verify_paths_after_negotiation()
     {
         if (!agents_verify_lock.tryLock()) return;
         logger.debug("acquired agents_verify_lock");
+        agents_verify_unlock_latch = new CountDownLatch(active_agent_c);
 
         CompletableFuture
             .runAsync(() -> {
@@ -655,15 +657,25 @@ public class WorldOverseer
 
                     CompletableFuture
                         .runAsync(client::VerifyNegotiations)
-                        .whenComplete((entity, ex) -> { if (ex != null) ex.printStackTrace(); })
+                        .whenComplete((entity, ex) -> {
+                            if (ex != null) ex.printStackTrace();
+
+                            agents_verify_unlock_latch.countDown();
+                        })
                     ;
                 }
             })
             .whenComplete((entity, ex) -> {
                 if (ex != null) ex.printStackTrace();
 
-                agents_verify_lock.unlock();
-                logger.debug("unlock agents_verify_lock");
+                try {
+                    agents_verify_unlock_latch.await();
+
+                    agents_verify_lock.unlock();
+                    logger.debug("unlock agents_verify_lock");
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             })
         ;
     }
