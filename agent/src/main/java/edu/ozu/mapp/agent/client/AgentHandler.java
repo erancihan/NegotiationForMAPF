@@ -16,8 +16,6 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.util.Assert;
 
 import java.util.*;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -49,6 +47,8 @@ public class AgentHandler {
     private Consumer<String>                                    WORLD_OVERSEER_HOOK_LOG;
     private Consumer<String>                                    WORLD_OVERSEER_HOOK_INVALIDATE;
 
+    private final PseudoLock handle_state_run_once_at_a_time_lock;
+    private final PseudoLock agent_handler_verify_negotiations_lock;
 
     private String[][] fov;
 
@@ -65,6 +65,9 @@ public class AgentHandler {
         AGENT_NAME = client.AGENT_NAME;
 
         gson = new Gson();
+
+        handle_state_run_once_at_a_time_lock = new PseudoLock();
+        agent_handler_verify_negotiations_lock = new PseudoLock();
     }
 
     public String getAgentName()
@@ -124,7 +127,6 @@ public class AgentHandler {
      * @param watch: JSONWorldWatch
      */
     private int[] state_flag = new int[2];
-    private final Lock handle_state_run_once_at_a_time_lock = new ReentrantLock();
     private void handleState(JSONWorldWatch watch) {
         if (!handle_state_run_once_at_a_time_lock.tryLock()) return;
 
@@ -597,7 +599,6 @@ public class AgentHandler {
         }
     }
 
-    private final Lock agent_handler_verify_negotiations_lock = new ReentrantLock();
     public void VerifyNegotiations()
     {
         if (!agent_handler_verify_negotiations_lock.tryLock()) return;
