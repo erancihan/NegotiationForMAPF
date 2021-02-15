@@ -3,6 +3,7 @@ package edu.ozu.mapp.agent.client.helpers;
 import edu.ozu.mapp.agent.Agent;
 import edu.ozu.mapp.agent.client.AgentHandler;
 import edu.ozu.mapp.utils.Action;
+import edu.ozu.mapp.utils.PseudoLock;
 
 import javax.swing.*;
 import java.io.File;
@@ -25,6 +26,8 @@ public class FileLogger
     private final LinkedBlockingDeque<FileData> write_queue;
     private final File mapp_folder;
 
+    private final PseudoLock file_logger_process_queue_lock;
+
     private FileLogger()
     {
         // define folder path
@@ -33,6 +36,7 @@ public class FileLogger
             mapp_folder.mkdirs();
 
         write_queue = new LinkedBlockingDeque<>();
+        file_logger_process_queue_lock = new PseudoLock();
     }
 
     public static FileLogger getInstance()
@@ -51,7 +55,6 @@ public class FileLogger
         return instance;
     }
 
-    private final Lock file_logger_process_queue_lock = new ReentrantLock();
     private void process_queue()
     {
         if (!file_logger_process_queue_lock.tryLock()) return;
