@@ -15,6 +15,8 @@ import java.util.function.Consumer;
 
 public class NegotiationSession
 {
+    private static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(NegotiationSession.class);
+
     private BiConsumer<String, Integer> bank_update_hook;
     private Consumer<String> world_log_callback;
     private BiConsumer<String, String> log_hook;
@@ -26,6 +28,8 @@ public class NegotiationSession
     private ScheduledExecutorService service;
     private ScheduledFuture<?> task_join_await;
     private ScheduledFuture<?> task_run;
+
+    private final PseudoLock session_loop_agent_invoke_lock;
 
     private int T = 0;
     private int Round = 0;
@@ -76,7 +80,7 @@ public class NegotiationSession
         this.contract.apply(this);
 
         // initialize LOCKs
-        session_loop_agent_invoke_lock = new ReentrantLock();
+        session_loop_agent_invoke_lock = new PseudoLock();
 
         // LOG
         log_hook.accept(session_hash, String.format("%-23s %-7s %s", new java.sql.Timestamp(System.currentTimeMillis()), "INIT", Arrays.toString(agent_names)));
@@ -194,7 +198,6 @@ public class NegotiationSession
         }
     }
 
-    private Lock session_loop_agent_invoke_lock;
     private void session_loop() throws CloneNotSupportedException
     {
         if (!session_loop_agent_invoke_lock.tryLock()) return;
@@ -294,9 +297,12 @@ public class NegotiationSession
             action = agent.OnMakeAction(contract.clone());
         } catch (CloneNotSupportedException e) {
             e.printStackTrace();
+            System.exit(1);
         }
 
+        Assert.notNull(action, "Action cannot be null!");
         log_hook.accept(session_hash, String.format("%-23s %-7s %s", new java.sql.Timestamp(System.currentTimeMillis()), action.type, action.bid.print()));
+        assert action.validate();
 
         if (action.type.equals(ActionType.OFFER))
         {   // Bidding agent made an offer
@@ -339,16 +345,31 @@ public class NegotiationSession
                 action.bid.apply(this);
             }
 
-            // `agent` accepted `opponents` bid
-            int T_a = Integer.parseInt(contract.getTokenCountOf(opponent.GetAgent()));
-            int T_b = Integer.parseInt(contract.getTokenCountOf(agent.GetAgent()));
+            logger.debug(
+                agent.GetAgentID() + " ACCEPTED " + contract.print()
+            );
 
-            int diff = Math.max(T_a - T_b, 0);
+            // BEGIN: TOKEN EXCHANGE LOGIC
+            // if action is accept, `agent` is accepting
+            int T_accepting = Integer.parseInt(contract.getTokenCountOf(agent.GetAgent()));
+            int T_opponent  = Integer.parseInt(contract.getTokenCountOf(opponent.GetAgent()));
 
-            int T_a_next = agent.UpdateTokenCountBy(-1 * diff);
-            bank_update_hook.accept(agent.getAgentName(), T_a_next);
-            int T_b_next = opponent.UpdateTokenCountBy(diff);
-            bank_update_hook.accept(opponent.getAgentName(), T_b_next);
+            if (T_accepting < T_opponent)
+            {   // opponent has higher tokens in contract
+                // accepting (agent) will receive tokens from opponent
+                int diff = T_opponent - T_accepting;
+
+                int T_opponent_next = opponent.UpdateTokenCountBy(-1 * diff);
+                int T_accepting_next = agent.UpdateTokenCountBy(diff);
+
+                logger.debug(
+                    "ACCEPTING " + agent.GetAgentID() + " NEXT : " + T_accepting_next + " | OPPONENT " + opponent.GetAgentID() + " NEXT : " + T_opponent_next
+                );
+
+                bank_update_hook.accept(opponent.GetAgentID(), T_opponent_next);
+                bank_update_hook.accept(agent.GetAgentID(), T_accepting_next);
+            }
+            // END
 
             this.state = NegotiationState.DONE;
 
