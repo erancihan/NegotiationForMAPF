@@ -1,17 +1,47 @@
 package edu.ozu.mapp.utils;
 
+import edu.ozu.mapp.utils.path.Node;
+
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class AStar {
     private static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(AStar.class);
 
     public static void main(String[] args) {
         HashMap<String, ArrayList<String>> constraints = new HashMap<>();
-        constraints.put("1-3", new ArrayList<String>(){{ add("15"); }});
 
-        List<String> a = new AStar().calculate(new Point(1, 3), new Point(0, 4), constraints, "16x16", 15);
+        List<String> a = new AStar().calculate(new Point(7, 5), new Point(10, 15), constraints, "16x16", 7);
+        System.out.println("a >: " + a);
 
-        System.out.println(a);
+        constraints.put("5-1", new ArrayList<String>(){{ add("3"); }});
+        constraints.put("3-3", new ArrayList<String>(){{ add("3"); }});
+        constraints.put("3-4", new ArrayList<String>(){{ add("2"); }});
+        constraints.put("4-3", new ArrayList<String>(){{ add("4"); }});
+        constraints.put("6-1", new ArrayList<String>(){{ add("2"); }});
+        constraints.put("5-2", new ArrayList<String>(){{ add("4"); }});
+        constraints.put("5-3", new ArrayList<String>(){{ add("5"); }});
+        constraints.put("6-2", new ArrayList<String>(){{ add("5"); }});
+        constraints.put("5-4", new ArrayList<String>(){{ add("6"); }});
+        constraints.put("6-3", new ArrayList<String>(){{ add("6"); }});
+        constraints.put("6-4", new ArrayList<String>(){{ add("9"); }});
+        constraints.put("7-4", new ArrayList<String>(){{ add("8"); }});
+        constraints.put("8-4", new ArrayList<String>(){{ add("7"); }});
+        constraints.put("6-7", new ArrayList<String>(){{ add("10"); }});
+        constraints.put("9-5", new ArrayList<String>(){{ add("7"); }});
+        constraints.put("7-7", new ArrayList<String>(){{ add("11"); }});
+        constraints.put("9-6", new ArrayList<String>(){{ add("8"); }});
+        constraints.put("8-8", new ArrayList<String>(){{ add("9"); }});
+        constraints.put("6-5", new ArrayList<String>(){{ add("8"); add("10"); }});
+        constraints.put("7-5", new ArrayList<String>(){{ add("7"); add("9"); }});
+        constraints.put("6-6", new ArrayList<String>(){{ add("9"); add("11"); }});
+        constraints.put("8-5", new ArrayList<String>(){{ add("6"); add("8"); }});
+        constraints.put("7-6", new ArrayList<String>(){{ add("8"); add("10"); }});
+        constraints.put("8-6", new ArrayList<String>(){{ add("7"); add("9"); }});
+        constraints.put("8-7", new ArrayList<String>(){{ add("8"); add("10"); }});
+
+        List<String> b = new AStar().calculate(new Point(7, 5), new Point(10, 15), constraints, "16x16", 7);
+        System.out.println("b >: " + b);
     }
 
     public List<String> calculate(Point start, Point dest, String[][] constraints_with_time, String dimensions, int t)
@@ -76,41 +106,41 @@ public class AStar {
         int width  = (ds.length == 2 && !ds[0].isEmpty() && !ds[0].equals("0")) ? Integer.parseInt(ds[0]) : Integer.MAX_VALUE;
         int height = (ds.length == 2 && !ds[1].isEmpty() && !ds[1].equals("0")) ? Integer.parseInt(ds[1]) : Integer.MAX_VALUE;
 
-        HashMap<String, String> links = new HashMap<>();
-
         PriorityQueue<Node> open = new PriorityQueue<>();
         List<Node> closed = new ArrayList<>();
-        HashMap<String, Double> g = new HashMap<>();
-        g.put(start.key, 0.0);
+        HashMap<Node, Double> graph = new HashMap<>();
 
-        open.add(new Node(start, start.ManhattanDistTo(goal), T));
+        graph.put(new Node(start, start.ManhattanDistTo(goal), T), 0.0);
+        open.add( new Node(start, start.ManhattanDistTo(goal), T));
 
         while (!open.isEmpty())
         {
             Node current = open.remove();
-
-            if (closed.contains(current)) continue;
+            if (closed.contains(current))
+            {
+                continue;
+            }
 
             closed.add(current);
 
             if (current.point.equals(goal))
             {
-                return constructPath(links, start, goal);
+                return new Node(goal).linkTo(current).stream().map(item -> item.point.key).collect(Collectors.toList());
             }
 
-            List<Node> neighbours = getNeighbours(current.point, current.t + 1, occupiedList, width, height);
+            List<Node> neighbours = getNeighbours(current.point, current.time + 1, occupiedList, width, height);
             for (Node neighbour : neighbours)
             {
                 if (closed.contains(neighbour)) continue;
 
                 // d <- g[current] + COST(current, neighbour, g)
-                double d = g.getOrDefault(current.point.key, inf) + current.point.ManhattanDistTo(neighbour.point);
-                if (d < g.getOrDefault(neighbour.point.key, inf))
+                double d = graph.get(current) + Math.max(current.point.ManhattanDistTo(neighbour.point), 1);
+                if (d < graph.getOrDefault(neighbour, inf))
                 {
-                    g.put(neighbour.point.key, d);
-
-                    links.put(neighbour.point.key, current.point.key);
                     neighbour.dist = d + neighbour.point.ManhattanDistTo(goal);
+                    graph.put(neighbour, d);
+
+                    neighbour.linkTo(current);
 
                     try { open.add(neighbour.clone()); }
                     catch (CloneNotSupportedException e) { e.printStackTrace(); }
@@ -152,83 +182,6 @@ public class AStar {
 
         return nodes;
     }
-
-    private List<String> constructPath(HashMap<String, String> links, Point start, Point goal) {
-        List<String> path = new ArrayList<>();
-
-        if (links.isEmpty()) {
-            return path;
-        }
-
-        String next = goal.key;
-        while (!next.equals(start.key)) {
-            path.add(next);
-            next = links.get(next);
-        }
-        path.add(start.key);
-
-        Collections.reverse(path);
-
-        return path;
-    }
     //</editor-fold>
 }
 
-class Node implements Comparable<Node>, Cloneable {
-    Point point;
-    double dist;
-
-    int t;
-
-    Node(Point point)
-    {
-        this.point = point;
-    }
-
-    Node(Point point, int t)
-    {
-        this.point = point;
-        this.t     = t;
-    }
-
-    Node(Point point, double dist)
-    {
-        this(point);
-        this.dist = dist;
-    }
-
-    Node(Point point, double dist, int t)
-    {
-        this(point, dist);
-        this.t = t;
-    }
-
-    @Override
-    protected Node clone() throws CloneNotSupportedException {
-        return (Node) super.clone();
-    }
-
-    @Override
-    public boolean equals(Object that) {
-        if (this == that) return true;
-        if (!(that instanceof Node)) return false;
-
-        Node node = (Node) that;
-        return Double.compare(node.dist, dist) == 0 && t == node.t && point.equals(node.point);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(point, dist, t);
-    }
-
-    @Override
-    public int compareTo(Node o) {
-        return Double.compare(this.dist, o.dist);
-    }
-
-    @Override
-    public String toString() {
-        return String.format("%s:%.2f", point.key, dist);
-    }
-}
