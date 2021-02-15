@@ -66,6 +66,8 @@ public class Action
         if (will_increase_tokens) {
             own_token_offer += 1;
 
+            logger.debug(agent.AGENT_ID + " action: " + owned_tokens + " < " + own_token_offer);
+
             if (owned_tokens <= 0 || owned_tokens < own_token_offer) {
                 logger.debug(agent.AGENT_ID + " invalid action: " + owned_tokens + " < " + own_token_offer);
                 return false;
