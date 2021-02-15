@@ -2,6 +2,7 @@ package edu.ozu.mapp.system;
 
 import edu.ozu.mapp.agent.client.AgentHandler;
 import edu.ozu.mapp.utils.JSONAgent;
+import edu.ozu.mapp.utils.PseudoLock;
 
 import java.util.Arrays;
 import java.util.Iterator;
@@ -19,12 +20,14 @@ public class MovementHandler
 
     private WorldOverseer world;
 
+    private final PseudoLock process_queue_lock;
+
     private MovementHandler()
     {
         move_queue  = new ConcurrentHashMap<>();
         payloads    = new ConcurrentHashMap<>();
 
-        process_queue_lock = new ReentrantLock();
+        process_queue_lock = new PseudoLock();
     }
 
     public static MovementHandler getInstance()
@@ -67,7 +70,6 @@ public class MovementHandler
         return move_queue.size();
     }
 
-    private Lock process_queue_lock;
     public synchronized void ProcessQueue(Runnable runnable)
     {
         if (process_queue_lock.tryLock())
