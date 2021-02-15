@@ -614,6 +614,10 @@ public class AgentHandler {
 
     public int UpdateTokenCountBy(int i)
     {
+        if (agent.current_tokens + i < 0) {
+            logger.error(agent.AGENT_ID + " | OH NO!!! AGENT CANNOT HAVE NEGATIVE TOKEN COUNT");
+            System.exit(1);
+        }
         agent.current_tokens += i;
 
         return agent.current_tokens;
