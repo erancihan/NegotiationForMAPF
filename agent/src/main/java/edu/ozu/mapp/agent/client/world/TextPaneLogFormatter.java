@@ -38,7 +38,6 @@ public class TextPaneLogFormatter
             // this is a non-critical GUI only component
             // tolerate ConcurrentModificationException
             logger.error("Encountered ConcurrentModificationException, flushing JTextPane");
-            exception.printStackTrace();
             negotiation_info_pane.setText("");
         } catch (Exception exception) {
             exception.printStackTrace();
