@@ -754,7 +754,9 @@ public class WorldOverseer
 
     public synchronized void Log(String str, java.sql.Timestamp timestamp)
     {
-        if (log_payload.world_log.getLast()[0].equals(str)) return;
+        if (log_payload == null) return;
+        if (log_payload.world_log == null) return;
+        if (!log_payload.world_log.isEmpty() && log_payload.world_log.getLast()[0].equals(str)) return;
 
         log_payload.world_log.add(new Object[]{str, timestamp});
     }
