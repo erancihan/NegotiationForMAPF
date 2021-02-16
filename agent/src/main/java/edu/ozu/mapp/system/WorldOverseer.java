@@ -741,21 +741,21 @@ public class WorldOverseer
         }
     }
 
-    public synchronized void Log(String str, Consumer<String> logger)
-    {
-        if (log_payload.world_log.getLast()[0].equals(str)) return;
-
-        logger.accept(str);
-        Log(str);
-    }
-
     public synchronized void Log(String str)
     {
+        Log(str, logger::debug);
+    }
+
+    public synchronized void Log(String str, Consumer<String> logger)
+    {
+        logger.accept(str);
         Log(str, new java.sql.Timestamp(System.currentTimeMillis()));
     }
 
     public synchronized void Log(String str, java.sql.Timestamp timestamp)
     {
+        if (log_payload.world_log.getLast()[0].equals(str)) return;
+
         log_payload.world_log.add(new Object[]{str, timestamp});
     }
 
