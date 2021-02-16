@@ -560,8 +560,6 @@ public class WorldOverseer
     }
 
     /**
-     * @function OnCollisionCheckDone
-     *
      * Invoked at the end of collision check / broadcast state
      * to indicate tasks related to collision checks are done.
      *
@@ -614,14 +612,14 @@ public class WorldOverseer
     }
 
     /**
-     * @function Negotiate
-     *
      * Invoked at the end of Negotiation sessions to indicate
      * task related to negotiations are done.
      * */
     public synchronized void Negotiated(String agent_name, String session_id)
     {
         FLAG_NEGOTIATIONS_DONE.put(agent_name, "");
+        logger.debug(agent_name + " | negotiation done | " + FLAG_NEGOTIATIONS_DONE.size() + " == " + active_agent_c);
+        broadcasts.put(agent_name, clients.get(agent_name).GetBroadcastSTR());
         if (!session_id.isEmpty())
         {
             negotiation_overseer.AgentLeaveSession(agent_name, session_id);
@@ -720,19 +718,24 @@ public class WorldOverseer
     {
         if (curr_state == Globals.WorldState.NEGOTIATE)
         {
+            logger.debug(agent_name + " | invalidating...");
             // check if there is a negotiation to agent's name
             String[] sessions = negotiation_overseer.GetNegotiations(agent_name);
+            logger.debug(agent_name + " | invalidating for sessions: " + Arrays.toString(sessions));
             if (sessions.length > 0)
             {   // there is a negotiation
                 // decouple negotiations registrations related to agent(s)
                 // there will be (should be) only one instance
                 String[] agents = negotiation_overseer.InvalidateSession(sessions[0]);
                 // need to do 2 passes synchronously to prevent unwanted effects
-                for (String identifier : agents)
+                for (String identifier : agents) {
                     FLAG_NEGOTIATION_REGISTERED.remove(identifier);
+                }
                 // invoke validate on all participant agents again
-                for (String identifier : agents)
+                for (String identifier : agents) {
+                    logger.debug(identifier + " | re-verify negotiations");
                     clients.get(identifier).VerifyNegotiations();
+                }
             }
             else
             {   // ensure invoke validate [Verify Negotiations]  on `agent_name`
