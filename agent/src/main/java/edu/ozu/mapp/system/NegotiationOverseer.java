@@ -62,7 +62,7 @@ public class NegotiationOverseer
         return instance;
     }
 
-    public synchronized void RegisterCollisionNotification(String[] agent_ids)
+    public synchronized String RegisterCollisionNotification(String[] agent_ids)
     {
         // sort data first
         Arrays.sort(agent_ids);
@@ -99,6 +99,8 @@ public class NegotiationOverseer
             sessions.put(session_hash, new NegotiationSession(session_hash, agent_ids, bank_update_hook, world_log_callback, log_payload_hook));
             cumulative_negotiation_count++;
         }
+
+        return session_hash;
     }
 
     public String[] GetNegotiations(String agent_name)
