@@ -3,7 +3,9 @@ package edu.ozu.mapp.utils.path;
 import edu.ozu.mapp.utils.Point;
 
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class Node implements Comparable<Node>, Cloneable {
     public Point point;
@@ -43,7 +45,7 @@ public class Node implements Comparable<Node>, Cloneable {
         if (!(that instanceof Node)) return false;
 
         Node node = (Node) that;
-        return node.dist == dist && time == node.time && point.equals(node.point);
+        return time == node.time && point.equals(node.point);
     }
 
     @Override
@@ -66,5 +68,15 @@ public class Node implements Comparable<Node>, Cloneable {
         path.add(current);
 
         return path;
+    }
+
+    public Point[] Path2Array()
+    {
+        return path.stream().map(node -> node.point).toArray(Point[]::new);
+    }
+
+    public List<Point> Path2List()
+    {
+        return path.stream().map(node -> node.point).collect(Collectors.toList());
     }
 }
