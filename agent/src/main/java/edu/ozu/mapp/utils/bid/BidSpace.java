@@ -68,7 +68,8 @@ public class BidSpace
             if (closed.contains(current)) continue;
             closed.add(current);
 
-            if (current.path.size() + 1 == this.depth) {
+            if (current.path.size() + 1 == this.depth || current.point.equals(goal))
+            {
                 current.linkTo(current);
                 cursor = current;
                 return;
@@ -192,24 +193,35 @@ public class BidSpace
         System.out.println(set);
         System.out.println();
 
-        Point from = new Point(2, 2);
-        Point to   = new Point(4, 4);
-        BidSpace space = new BidSpace(from, to, 5, new HashMap<>(), "11x11", 3);
+        Point f1 = new Point(4, 6);
+        Point t1 = new Point(6, 6);
+        BidSpace bs1 = new BidSpace(f1, t1, 5, new HashMap<>(), "16x16", 10);
+
+        System.out.println("NEXT: " + bs1.next());
+        System.out.println("NEXT: " + bs1.next());
+        System.out.println("NEXT: " + bs1.next());
+        System.out.println("NEXT: " + bs1.next());
+        System.out.println("NEXT: " + bs1.next());
+
+        System.out.println();
+
+        Point f2 = new Point(2, 2);
+        Point t2 = new Point(4, 4);
+        BidSpace bs2 = new BidSpace(f2, t2, 5, new HashMap<>(), "11x11", 3);
 
         double max = Double.MIN_VALUE;
         double min = Double.MAX_VALUE;
-        for (int i = 0; i < 100; i++)
+        for (int i = 0; i < 5; i++)
         {
-            Path next = space.next();
+            Path next = bs2.next();
             System.out.println("NEXT:" + next);
 
-            double _max = next.size() + next.getLast().ManhattanDistTo(to);
-            double _min = next.size() + next.getLast().ManhattanDistTo(to);
+            double _max = next.size() + next.getLast().ManhattanDistTo(t2);
+            double _min = next.size() + next.getLast().ManhattanDistTo(t2);
 
             if (_max > max) max = _max;
             if (_min < min) min = _min;
         }
-
         System.out.println("MIN: "+ min);
         System.out.println("MAX: "+ max);
     }
