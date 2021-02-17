@@ -240,8 +240,8 @@ public class AgentHandler {
         agent_ids.add(agent.AGENT_ID); // add own data
         for (String[] broadcast : broadcasts)
         {
-            if (broadcast[2].equals("-"))
-            { // own data
+            if (broadcast[0].equals(agent.AGENT_ID))
+            {   // own data
                 continue;
             }
 
@@ -255,9 +255,10 @@ public class AgentHandler {
                 {   // OBSTACLE IS IN WAY
                     conflicts.add(new CollisionCheckResult(idx, CollisionCheckResult.Type.OBSTACLE));
                 }
+                continue;
             }
 
-            String[] path = broadcast[2].replaceAll("[\\[\\]]", "").split(",");
+            String[] path = new Path(broadcast[2]).toStringArray();
             ConflictInfo conflict_info = new ConflictCheck().check(own_path, path);
             if (conflict_info.hasConflict)
             {
@@ -361,7 +362,7 @@ public class AgentHandler {
 
         // update current position
         agent.POS = next_point;
-        logger.debug("moving to " + next_point.key);
+        logger.debug(agent.AGENT_ID + " | moving to " + next_point.key);
 
         agent.OnMove(response);
     }
