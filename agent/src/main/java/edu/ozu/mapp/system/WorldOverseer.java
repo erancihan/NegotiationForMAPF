@@ -934,8 +934,7 @@ public class WorldOverseer
                 {
                     logger.warn("THREAD HAS BEEN STALE FOR 10 SECONDS");
 
-                    if (negotiation_overseer.ActiveCount() != 0)
-                    {
+                    if (negotiation_overseer.ActiveCount() != 0) {
                         logger.warn("THERE ARE STILL ACTIVE NEGOTIATIONS, WAITING");
                         STALE_NEGOTIATE_STATE_WAIT_COUNTER = 0;
                         break;
@@ -946,8 +945,7 @@ public class WorldOverseer
                     FLAG_NEGOTIATIONS_DONE.clear();
 
                     logger.warn("INVOKE client::VerifyNegotiations");
-                    for (String agent_id : clients.keySet())
-                    {
+                    for (String agent_id : clients.keySet()) {
                         AgentClient client = clients.get(agent_id);
                         client.VerifyNegotiations();
                     }
