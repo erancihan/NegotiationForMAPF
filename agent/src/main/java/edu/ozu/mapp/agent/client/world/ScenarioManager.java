@@ -69,7 +69,7 @@ public class ScenarioManager extends javax.swing.JFrame
             logger.warn("HEADLESS DESIGN IS NOT FULLY IMPLEMENTED");
         } else {
             try {
-                InputStream stream = ClassLoader.getSystemClassLoader().getResourceAsStream("fonts/MesloLGS NF Regular.ttf");
+                InputStream stream = ClassLoader.getSystemClassLoader().getResourceAsStream("fonts/Sauce Code Pro Nerd Font Complete Mono Windows Compatible.ttf");
                 Assert.isTrue(stream != null, "file stream is null!");
                 meslolgs = Font.createFont(Font.TRUETYPE_FONT, stream).deriveFont(12f);
             } catch (FontFormatException | IOException e) {
