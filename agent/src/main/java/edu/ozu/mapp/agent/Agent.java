@@ -9,6 +9,7 @@ import edu.ozu.mapp.keys.KeyHandler;
 import edu.ozu.mapp.system.NegotiationOverseer;
 import edu.ozu.mapp.system.WorldOverseer;
 import edu.ozu.mapp.utils.*;
+import edu.ozu.mapp.utils.bid.BidSpace;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -123,10 +124,18 @@ public abstract class Agent {
 
     public final List<String> calculatePath(Point start, Point dest)
     {
-        return calculatePath(start, dest, new HashMap<>());
+        return calculatePath(start, dest, new ArrayList<>());
     }
 
     public final List<String> calculatePath(Point start, Point dest, ArrayList<Constraint> constraints)
+    {
+        HashMap<String, ArrayList<String>> _constraints = process_constraints(constraints);
+
+        logger.debug(AGENT_ID + " | calculating A* {" + start + ", " + dest + ", " + _constraints + ", " + dimensions + ", " + time + "}");
+        return new AStar().calculate(start, dest, _constraints, dimensions, time);
+    }
+
+    private HashMap<String, ArrayList<String>> process_constraints(ArrayList<Constraint> constraints)
     {
         HashMap<String, ArrayList<String>> _map = new HashMap<>();
         for (Constraint constraint : constraints) {
@@ -136,20 +145,14 @@ public abstract class Agent {
             _map.get(constraint.location.key).add(String.valueOf(constraint.at_t));
         }
 
-        return calculatePath(start, dest, _map);
-    }
-
-    @SuppressWarnings("DuplicatedCode")
-    public final List<String> calculatePath(Point start, Point dest, HashMap<String, ArrayList<String>> constraints)
-    {
         String[][] fov = WorldOverseer.getInstance().GetFoV(this.AGENT_ID);
         for (String[] fov_data : fov) {
             Point point = new Point(fov_data[1], "-");
             String loc_ = fov_data[2];
 
             if (loc_.equals("inf")) {
-                constraints.put(point.key, new ArrayList<>());
-                constraints.get(point.key).add(loc_);
+                _map.put(point.key, new ArrayList<>());
+                _map.get(point.key).add(loc_);
             }
             /*
             else {
@@ -165,31 +168,45 @@ public abstract class Agent {
             */
         }
 
-        logger.debug(AGENT_ID + " | calculating A* {" + start + ", " + dest + ", " + constraints + ", " + dimensions + ", " + time + "}");
-        return new AStar().calculate(start, dest, constraints, dimensions, time);
+        return _map;
     }
 
     public final List<Bid> GetBidSpace(Point From, Point To, int deadline)
     {
-        BFS search;
-        if (this.dimensions.isEmpty()) {
-            search = new BFS(From, To, Globals.FIELD_OF_VIEW_SIZE).init();
-        } else {
-            String[] ds = dimensions.split("x");
-            int width = Integer.parseInt(ds[0]);
-            int height = Integer.parseInt(ds[1]);
+        BidSpace space = new BidSpace(
+                From,
+                To,
+                deadline,
+                process_constraints(this.constraints),
+                this.dimensions.isEmpty() ? "0x0" : this.dimensions,
+                time
+        );
 
-            search = new BFS(From, To, Globals.FIELD_OF_VIEW_SIZE / 2, deadline, width, height);
-            search.SetMinimumPathLength(Globals.BROADCAST_SIZE);
-            search.init();
+        double max = Double.MIN_VALUE;
+        double min = Double.MAX_VALUE;
+        List<Path> paths = new ArrayList<>();
+        for (int i = 0; i < 100; i++)
+        {
+            Path next = space.next();
+            if (next == null) break;
+
+            double _max = next.size() + next.getLast().ManhattanDistTo(To);
+            double _min = next.size() + next.getLast().ManhattanDistTo(To);
+
+            if (_max > max) max = _max;
+            if (_min < min) min = _min;
+
+            paths.add(next);
         }
 
         PriorityQueue<Bid> bids = new PriorityQueue<>(Comparator.reverseOrder());
-        for (Path path : search.paths)
+        for (Path path : paths)
         {
-            bids.add(
-                    new Bid(AGENT_ID, path, UtilityFunction.apply(new SearchInfo(search.Max, search.Min, path)))
-            );
+            bids.add(new Bid(
+                    AGENT_ID,
+                    path,
+                    UtilityFunction.apply(new SearchInfo(max, min, path))
+            ));
         }
 
         List<Bid> results = new ArrayList<>();
