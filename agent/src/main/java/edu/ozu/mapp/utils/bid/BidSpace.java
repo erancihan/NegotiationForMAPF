@@ -20,6 +20,7 @@ public class BidSpace
     private int depth;
     private int time;
 
+    private int invoke_count;
     private final PathCollection explored;
     private final Stack<Node> stack;
 
@@ -45,6 +46,7 @@ public class BidSpace
         this.depth = depth;
         this.time  = time;
 
+        invoke_count = 0;
         explored   = new PathCollection();
         stack = new Stack<>();
 
@@ -140,9 +142,25 @@ public class BidSpace
         return peek();
     }
 
-    public Path next() // pop
+    public Path next()
     {
-        if (stack.isEmpty())
+        Path path = null;
+        try
+        {
+            path = __next();
+            invoke_count++;
+        }
+        catch (EmptyStackException exception)
+        {
+            System.err.println("Stack is empty " + start.point + " -> " + goal + " w/ " + constraints + " @ t: " + time + " | invoke:" + invoke_count);
+        }
+
+        return path;
+    }
+
+    private Path __next() // pop
+    {
+        if (explored.isEmpty())
         {   // hasn't returned anything yet
             for (int i = 0; i < cursor.path.size(); i++) {
                 //noinspection UseBulkOperation
@@ -168,6 +186,7 @@ public class BidSpace
                 stack.push(next);
             }
         }
+        // END
 
         cursor.path = new LinkedList<>(stack);
 
