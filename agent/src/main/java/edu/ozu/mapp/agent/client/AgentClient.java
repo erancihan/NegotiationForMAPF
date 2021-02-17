@@ -1,7 +1,6 @@
 package edu.ozu.mapp.agent.client;
 
 import edu.ozu.mapp.agent.Agent;
-import edu.ozu.mapp.agent.client.models.Contract;
 import edu.ozu.mapp.agent.client.ui.AgentUI;
 import edu.ozu.mapp.system.DATA_REQUEST_PAYLOAD_WORLD_JOIN;
 import edu.ozu.mapp.system.DATA_REQUEST_PAYLOAD_WORLD_MOVE;
@@ -174,5 +173,14 @@ public class AgentClient {
     public void SetInvalidateHook(Consumer<String> hook)
     {
         handler.SET_WORLD_OVERSEER_HOOK_INVALIDATE(hook);
+    }
+
+    public String[] GetBroadcastSTR() {
+        return handler.GetBroadcastSTR();
+    }
+
+    public boolean IsActive()
+    {
+        return handler.IsActive();
     }
 }

@@ -400,6 +400,11 @@ public class AgentHandler {
         return Arrays.stream(agent.GetOwnBroadcastPath()).map(p -> new Point(p, "-")).toArray(Point[]::new);
     }
 
+    public String[] GetBroadcastSTR()
+    {
+        return agent.GetOwnBroadcastPath();
+    }
+
     public void OnReceiveState(State state)
     {
         // New state received
@@ -642,6 +647,23 @@ public class AgentHandler {
     public String GetCurrentLocation()
     {
         return agent.POS.key;
+    }
+
+    public boolean IsActive()
+    {
+        // is agent out of move to make?
+        if (agent.time >= (agent.path.size()-1))
+        {   // are you marked
+            if (is_moving == 1) {
+                // why are you still moving?
+                is_moving = 0;
+                leave();
+            }
+
+            return false;
+        }
+
+        return true;
     }
 
     /** ================================================================================================================ **/
