@@ -20,7 +20,6 @@ public class BidSpace
     private int depth;
     private int time;
 
-    private final PathCollection collection;
     private final PathCollection explored;
     private final Stack<Node> stack;
 
@@ -46,7 +45,6 @@ public class BidSpace
         this.depth = depth;
         this.time  = time;
 
-        collection = new PathCollection();
         explored   = new PathCollection();
         stack = new Stack<>();
 
@@ -150,7 +148,6 @@ public class BidSpace
                 stack.add(cursor.path.get(i));
             }
             Path path = new Path(new ArrayList<>(stack).stream().map(node -> node.point).collect(Collectors.toList()));
-            collection.add(path);
             explored.add(path);
 
             return new ArrayList<>(stack).stream().map(node -> node.point).toArray(Point[]::new);
@@ -176,7 +173,6 @@ public class BidSpace
         cursor.path = new LinkedList<>(stack);
 
         Path path = new Path(cursor.path.stream().map(node -> node.point).collect(Collectors.toList()));
-        collection.add(path);
 
         return path.toArray(new Point[0]);
     }
