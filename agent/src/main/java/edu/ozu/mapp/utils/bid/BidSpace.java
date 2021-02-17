@@ -145,6 +145,7 @@ public class BidSpace
         if (stack.isEmpty())
         {   // hasn't returned anything yet
             for (int i = 0; i < cursor.path.size(); i++) {
+                //noinspection UseBulkOperation
                 stack.add(cursor.path.get(i));
             }
             Path path = new Path(new ArrayList<>(stack).stream().map(node -> node.point).collect(Collectors.toList()));
@@ -160,12 +161,10 @@ public class BidSpace
         {
             Node current = stack.peek();
             Node next = getNextNode(current);
-            if (next == null)
-            {   // exhausted neighbourhood of current
+            if (next == null) {
+                // exhausted neighbourhood of current
                 stack.pop();
-            }
-            else
-            {
+            } else {
                 stack.push(next);
             }
         }
