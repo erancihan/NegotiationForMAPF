@@ -498,6 +498,35 @@ def run(scenarios_folder_path, force_reparse: bool = False):
             wws_negotiations_r += 2
         # END:WORLD.XLSX NEGOTIATIONS SHEET
 
+        # BEGIN:WORLD.XLSX PATH SHEET
+        wws_paths = wwb.add_worksheet('Paths')
+
+        wws_paths_r = 0
+        wws_paths_c = 0
+        wws_paths_h = ['agent id']
+        for item in wws_paths_h:
+            wws_paths.write(wws_paths_r, wws_paths_c, item)
+        wws_paths_c += 1
+        wws_paths_r += 1
+
+        wws_path_agent: Agent
+        for wws_path_agent_key in data_dict.agents:
+            wws_path_agent = data_dict.agents[wws_path_agent_key]
+
+            wws_paths.write(wws_paths_r, 0, wws_path_agent.agent_id)
+            wws_paths.write(wws_paths_r, 1, "INITIAL", __font_format)
+            for __j, __loc in enumerate(wws_path_agent.planned_initial_path.replace('[', '').replace(']', '').split(',')):
+                wws_paths.write_string(wws_paths_r, 2 + __j, __loc.strip().replace('-', ','), __font_format)
+            wws_paths_r += 1
+
+            wws_paths.write(wws_paths_r, 1, "FINAL", __font_format)
+            for __j, __loc in enumerate(wws_path_agent.taken_path.replace('[', '').replace(']', '').split(',')):
+                wws_paths.write_string(wws_paths_r, 2 + __j, __loc.strip().replace('-', ','), __font_format)
+            wws_paths_r += 1
+
+            wws_paths_r += 1
+        # END
+
         wwb.close()
         del wwb
         # END:WORLD.XLSX
@@ -587,4 +616,4 @@ def run(scenarios_folder_path, force_reparse: bool = False):
 
 
 if __name__ == '__main__':
-    run("C:\\Users\\cihan\\Documents\\MAPP\\logs", False)
+    run("C:\\Users\\cihan\\Documents\\MAPP\\logs", True)
