@@ -10,20 +10,26 @@ import java.util.stream.Collectors;
 
 public class BidSpace
 {
-    private boolean CAN_HOVER = false;
+    @SuppressWarnings("FieldCanBeLocal")
+    private final boolean CAN_HOVER = false;
+    @SuppressWarnings("FieldCanBeLocal")
+    private final double INF = Double.MAX_VALUE;
 
-    private double INF = Double.MAX_VALUE;
     private int width, height;
 
     private int depth;
     private int time;
 
-    private final HashMap<String, ArrayList<String>> constraints;
+    private final PathCollection collection;
+    private final PathCollection explored;
+    private final Stack<Node> stack;
 
     private Node cursor;
 
     private Node start;
     private Point goal;
+
+    private final HashMap<String, ArrayList<String>> constraints;
 
     public BidSpace(Point from, Point destination, int depth, HashMap<String, ArrayList<String>> constraints, String dimensions, int time)
     {
@@ -39,6 +45,10 @@ public class BidSpace
 
         this.depth = depth;
         this.time  = time;
+
+        collection = new PathCollection();
+        explored   = new PathCollection();
+        stack = new Stack<>();
 
         calculate();
     }
@@ -132,9 +142,6 @@ public class BidSpace
         return cursor.path.stream().map(node -> node.point).toArray(Point[]::new);
     }
 
-    PathCollection collection = new PathCollection();
-    PathCollection explored   = new PathCollection();
-    Stack<Node> stack = new Stack<>();
     public Point[] next() // pop
     {
         if (stack.isEmpty())
