@@ -83,15 +83,22 @@ public class NegotiationOverseer
             e.printStackTrace();
         }
 
+        boolean is_ok = true;
         for (String agent_name : agent_ids)
         {
             ArrayList<String> sessions = session_keys.getOrDefault(agent_name, new ArrayList<>());
 
-            if (sessions.contains(session_hash)) continue;
+            is_ok = is_ok && sessions.isEmpty();
+        }
 
-            sessions.add(session_hash);
-
-            session_keys.put(agent_name, sessions);
+        if (is_ok)
+        {
+            for (String agent_id : agent_ids)
+            {
+                ArrayList<String> sessions = session_keys.getOrDefault(agent_id, new ArrayList<>());
+                sessions.add(session_hash);
+                session_keys.put(agent_id, sessions);
+            }
         }
 
         if (!sessions.containsKey(session_hash))
@@ -108,12 +115,45 @@ public class NegotiationOverseer
         return session_keys.getOrDefault(agent_name, new ArrayList<>()).toArray(new String[0]);
     }
 
-    public void AgentJoinSession(String session_id, AgentHandler agent)
+    public void AgentJoinSession(String session_hash, AgentHandler agent)
     {
-        sessions.get(session_id).RegisterAgentREF(agent);
+        // get session members
+        String[] agents = sessions.get(session_hash).GetAgentNames();
+        if (!Arrays.asList(agents).contains(agent.GetAgentID()))
+        {
+            logger.error(agent.GetAgentID() + " does not belong to session " + session_hash + " | " + Arrays.toString(agents));
+            System.exit(1);
+        }
+
+        // are these ids present in session info
+        for (String agent_id : agents)
+        {
+            if (agent_id.equals(agent.GetAgentID()))
+            {   // this is me, i am already joining.
+                // the problem might be with my partners
+                continue;
+            }
+
+            ArrayList<String> keys = session_keys.getOrDefault(agent_id, new ArrayList<>());
+
+            if (!keys.contains(session_hash))
+            {   // i am supposed to be in this negotiation
+                if (keys.size() > 0)
+                {   // oh wait there is another negotiation i am supposed to attend
+                    continue;
+                }
+
+                logger.warn(agent_id + " | for some reason I am not in session " + session_hash);
+                keys.add(session_hash);
+                session_keys.put(agent_id, keys);
+                System.exit(1);
+            }
+        }
+
+        sessions.get(session_hash).RegisterAgentREF(agent);
 
         world_log_callback.accept(
-                String.format("%s joining %s | %s", agent.getAgentName(), session_id.substring(0, 7), Arrays.toString(sessions.get(session_id).GetAgentNames()))
+                String.format("%s joining %s | %s", agent.getAgentName(), session_hash.substring(0, 7), Arrays.toString(sessions.get(session_hash).GetAgentNames()))
         );
     }
 
