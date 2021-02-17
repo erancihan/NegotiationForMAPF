@@ -11,8 +11,11 @@ public class AStar {
     public static void main(String[] args) {
         HashMap<String, ArrayList<String>> constraints = new HashMap<>();
 
-        List<String> a = new AStar().calculate(new Point(7, 5), new Point(10, 15), constraints, "16x16", 7);
-        System.out.println("a >: " + a);
+        List<String> b = new AStar().calculate(new Point(7, 5), new Point(7, 6), constraints, "16x16", 7);
+        System.out.println("b >: " + b);
+
+        List<String> c = new AStar().calculate(new Point(7, 5), new Point(10, 15), constraints, "16x16", 7);
+        System.out.println("c >: " + c);
 
         constraints.put("5-1", new ArrayList<String>(){{ add("3"); }});
         constraints.put("3-3", new ArrayList<String>(){{ add("3"); }});
@@ -40,8 +43,8 @@ public class AStar {
         constraints.put("8-6", new ArrayList<String>(){{ add("7"); add("9"); }});
         constraints.put("8-7", new ArrayList<String>(){{ add("8"); add("10"); }});
 
-        List<String> b = new AStar().calculate(new Point(7, 5), new Point(10, 15), constraints, "16x16", 7);
-        System.out.println("b >: " + b);
+        List<String> d = new AStar().calculate(new Point(7, 5), new Point(10, 15), constraints, "16x16", 7);
+        System.out.println("d >: " + d);
     }
 
     public List<String> calculate(Point start, Point dest, String[][] constraints_with_time, String dimensions, int t)
@@ -179,6 +182,9 @@ public class AStar {
             }
             nodes.add(node);
         }
+
+        // add self for cyclic dep
+//        nodes.add(new Node(point, t));
 
         return nodes;
     }
