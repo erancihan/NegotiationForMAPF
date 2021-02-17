@@ -87,7 +87,7 @@ public class LogDisplayPane extends javax.swing.JTextPane
             .forEach(key -> {
                 String[] _data = world_overseer.GetAgentData(key);
 
-                sb.append(String.format("%s POS: %s TOKEN: %s REMAINING_PATH_LEN: %S\n", key, _data[0], _data[1], _data[2]));
+                sb.append(String.format("%-15s POS: %5s TOKEN: %3s REMAINING_PATH_LEN: %S\n", key, _data[0], _data[1], _data[2]));
             });
         sb.append("-------------\n");
         for (Object[] item : data.world_log)
