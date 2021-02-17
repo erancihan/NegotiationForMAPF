@@ -144,6 +144,9 @@ public class BidSpace
         while (stack.size() < depth)
         {
             Node current = stack.peek();
+
+            if (current.point.equals(goal)) break;
+
             Node next = getNextNode(current);
             if (next == null) {
                 // exhausted neighbourhood of current
@@ -194,14 +197,12 @@ public class BidSpace
         System.out.println();
 
         Point f1 = new Point(4, 6);
-        Point t1 = new Point(6, 6);
+        Point t1 = new Point(5, 6);
         BidSpace bs1 = new BidSpace(f1, t1, 5, new HashMap<>(), "16x16", 10);
 
-        System.out.println("NEXT: " + bs1.next());
-        System.out.println("NEXT: " + bs1.next());
-        System.out.println("NEXT: " + bs1.next());
-        System.out.println("NEXT: " + bs1.next());
-        System.out.println("NEXT: " + bs1.next());
+        for (int i = 0; i < 50; i++) {
+            System.out.println("NEXT: " + bs1.next());
+        }
 
         System.out.println();
 
