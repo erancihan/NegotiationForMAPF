@@ -60,4 +60,15 @@ public class Point implements Comparable<Point> {
     public String toString() {
         return "{x:" + x + ", y:" + y + "}";
     }
+
+/** ================================================================================================================ **/
+//<editor-folds desc="TESTS" defaultstate="collapsed">
+    public static void main(String[] args)
+    {
+        Point p1 = new Point(11, 6);
+        Point p2 = new Point(11, 6);
+
+        System.out.println(p1 + " == " + p2 + " ? " + p1.equals(p2));
+    }
+//</editor-folds>
 }
