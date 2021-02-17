@@ -83,9 +83,8 @@ public class Path extends ArrayList<Point> implements Cloneable
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof Path)) return false;
-        if (!super.equals(o)) return false;
-        Path points = (Path) o;
-        return Objects.equals(entries, points.entries);
+
+        return super.equals(o);
     }
 
     @Override
@@ -114,5 +113,17 @@ public class Path extends ArrayList<Point> implements Cloneable
         System.out.println("add p1: " + set.add(p1));
         System.out.println("set contains p2? " + set.contains(p2));
         System.out.println("add p2: " + set.add(p2));
+        System.out.println(set);
+
+        System.out.println();
+        Path p3 = new Path("[0-1,0-2,0-3,0-4]");
+        p3.add(new Point(0, 3));
+        System.out.println("p1: " + p1);
+        System.out.println("p3: " + p3);
+        System.out.println(
+                "p1@" + Integer.toHexString(System.identityHashCode(p1.hashCode())) + " == p3@" + Integer.toHexString(System.identityHashCode(p3.hashCode())) +
+                        " ? " + (p1.equals(p3))
+        );
+
     }
 }
