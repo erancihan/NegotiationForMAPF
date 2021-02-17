@@ -132,13 +132,11 @@ public class NegotiationSession
                         state.contract = contract.clone();
 
                         agent_refs.get(agent_name).PreNegotiation(session_hash, state);
+
+                        AGENTS_READY.add(agent_name);
                     } catch (CloneNotSupportedException e) {
                         e.printStackTrace();
                     }
-                })
-                .exceptionally(ex -> { ex.printStackTrace(); return null; })
-                .thenRun(() -> {
-                    AGENTS_READY.add(agent_name);
                 })
                 .exceptionally(ex -> { ex.printStackTrace(); return null; })
                 ;
