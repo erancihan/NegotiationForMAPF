@@ -491,26 +491,30 @@ public class AgentHandler {
         Point[] Ox = contract.GetOx();
 
         logger.debug(String.format("%s | ASSERT POS{%s} == Ox[0]{%s}", agent.AGENT_ID, agent.POS.key, Ox[0]));
-        Assert.isTrue(agent.POS.equals(Ox[0]), "inconsistent bid location");
+        Assert.isTrue(agent.POS.equals(Ox[0]), agent.AGENT_ID + "inconsistent bid location for " + agent.POS + " & " + Ox[0]);
 
         logger.debug(String.format("%s | ACCEPTED PATH %s", agent.AGENT_ID, Arrays.toString(Ox)));
-
-        List<String> path_next = new ArrayList<>();
 
         // acknowledge negotiation result.
         // since i have won, the path that i have chosen for my self is locked
 
-        // add past path locations
-        for (int idx = 0; idx < agent.path.size() && !agent.path.get(idx).equals(agent.POS.key); idx++)
-        {
-        logger.debug(String.format("%s | PATH UPDATE | ADDING %s %s", agent.AGENT_ID, idx, agent.path.get(idx)));
+        List<String> path_next = new ArrayList<>();
+        // add path up till now, including now
+        for (int idx = 0; idx < agent.path.size() && idx <= agent.time; idx++) {
+            logger.debug(String.format("%s | PATH UPDATE | ADDING %s %s", agent.AGENT_ID, idx, agent.path.get(idx)));
             path_next.add(agent.path.get(idx));
         }
+
+        assert agent.path.get(agent.time).equals(agent.POS.key);
+        assert agent.path.get(agent.path.size()-1).equals(agent.POS.key);
+        // double assert path end and agreed path start are linked
+        assert path_next.get(path_next.size()-1).equals(Ox[0].key);
+
         // add Ox
-        for (int idx = 0; idx < Ox.length; idx++)
-        {
+        for (int idx = 1; idx < Ox.length; idx++) {
             path_next.add(Ox[idx].key);
         }
+
         // calculate path from last to destination
         // i do not have to worry about opponent's path since i won
         Point end = new Point(path_next.get(path_next.size()-1), "-");
@@ -519,6 +523,10 @@ public class AgentHandler {
         logger.debug(String.format("%s | FROM %s TO %s", agent.AGENT_ID, end, agent.DEST));
 
         List<String> rest = agent.calculatePath(end, agent.DEST);
+        if (rest == null) {
+            logger.error(agent.AGENT_ID + " | REST cannot be null!");
+            System.exit(1);
+        }
 
         logger.debug(String.format("%s | CALCULATED PATH", agent.AGENT_ID));
         logger.debug(String.format("%s | %s", agent.AGENT_ID, Arrays.toString(rest.toArray())));
@@ -576,17 +584,19 @@ public class AgentHandler {
         logger.debug(String.format("%s | current location : %s", agent.AGENT_ID, agent.POS));
 
         List<String> path_next = new ArrayList<>();
-        // add path up until now
-        for (int idx = 0; idx < agent.path.size() && !agent.path.get(idx).equals(agent.POS.key); idx++)
+        // add path up until now, including now
+        for (int idx = 0; idx < agent.path.size() && idx <= agent.time; idx++)
         {
             path_next.add(agent.path.get(idx));
         }
 
+        assert agent.path.get(agent.time).equals(agent.POS.key);
+        assert agent.path.get(agent.path.size()-1).equals(agent.POS.key);
+
         // calculate rest of the path
         List<String> rest = agent.calculatePath(agent.POS, agent.DEST, constraints);
-
         if (rest == null) {
-            logger.error("REST cannot be null!");
+            logger.error(agent.AGENT_ID + " | REST cannot be null!");
             System.exit(1);
         }
 
@@ -596,7 +606,9 @@ public class AgentHandler {
 
         // merge...
         // since current POS is already in 'rest'@0, we can just add it
-        path_next.addAll(rest);
+        for (int idx = 1; idx < rest.size(); idx++) {
+            path_next.add(rest.get(idx));
+        }
 
         return path_next;
     }
