@@ -14,7 +14,6 @@ import java.util.Random;
 public class RandomAgent extends Agent {
     public Random random;
 
-    private List<Bid> bid_space = new ArrayList<>();
     private Iterator<Bid> bid_space_iterator;
 
     public RandomAgent(String agentName, String agentID, Point start, Point dest, int initial_tokes) {
@@ -26,8 +25,7 @@ public class RandomAgent extends Agent {
     @Override
     public void PreNegotiation(State state)
     {
-        bid_space = GetCurrentBidSpace();
-        bid_space_iterator = bid_space.iterator();
+        bid_space_iterator = GetCurrentBidSpace().iterator();
     }
 
     @Override
