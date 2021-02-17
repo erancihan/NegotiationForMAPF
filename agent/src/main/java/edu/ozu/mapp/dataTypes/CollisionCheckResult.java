@@ -1,6 +1,6 @@
 package edu.ozu.mapp.dataTypes;
 
-public class ReturnType
+public class CollisionCheckResult
 {
     public enum Type {
         OBSTACLE, COLLISION, NONE;
@@ -11,17 +11,17 @@ public class ReturnType
     public String[] agent_ids;
     public String conflict_location;
 
-    public ReturnType() {
+    public CollisionCheckResult() {
         this.type = Type.NONE;
     }
 
-    public ReturnType(int index, Type type)
+    public CollisionCheckResult(int index, Type type)
     {
         this.index = index;
         this.type = type;
     }
 
-    public ReturnType(Type type) {
+    public CollisionCheckResult(Type type) {
         this.type = type;
     }
 }

@@ -7,7 +7,7 @@ import edu.ozu.mapp.agent.client.helpers.ConflictInfo;
 import edu.ozu.mapp.agent.client.helpers.FileLogger;
 import edu.ozu.mapp.agent.client.models.Contract;
 import edu.ozu.mapp.dataTypes.Constraint;
-import edu.ozu.mapp.dataTypes.ReturnType;
+import edu.ozu.mapp.dataTypes.CollisionCheckResult;
 import edu.ozu.mapp.system.DATA_REQUEST_PAYLOAD_WORLD_JOIN;
 import edu.ozu.mapp.system.DATA_REQUEST_PAYLOAD_WORLD_MOVE;
 import edu.ozu.mapp.system.WorldOverseer;
@@ -140,7 +140,7 @@ public class AgentHandler {
                 {
                     fov = watch.fov;
 
-                    collision_check(watch.fov);
+                    collision_check();
                     state_flag[1] = watch.time_tick;
                 }
                 break;
@@ -181,11 +181,17 @@ public class AgentHandler {
      *
      * @return is_ok
      * */
-    private boolean collision_check(String[][] fov_data)
+    private CollisionCheckResult collision_check()
     {
-        if (is_moving == 0) return true;
+        if (is_moving == 0) return new CollisionCheckResult();
 
-        ReturnType result = getCollidingAgents(fov_data);
+        logger.debug(agent.AGENT_ID + " | checking for collisions...");
+
+        CollisionCheckResult result = null;
+        try {
+            String[][] fov_data = WorldOverseer.getInstance().GetFoV(agent.AGENT_ID);
+            result = getCollidingAgents(fov_data);
+        } catch (Exception ex) { ex.printStackTrace(); System.exit(1); }
         switch (result.type) {
             case COLLISION:
                 // There is a collision in path! Resolve this first
@@ -200,7 +206,7 @@ public class AgentHandler {
                 state_flag[0] = 1;
                 WORLD_HANDLER_COLLISION_CHECK_DONE.apply(agent.AGENT_ID, result.agent_ids);
 
-                return false;
+                return result;
             case OBSTACLE:
                 // TODO LOG OBSTACLE UPDATE
                 // There is an obstacle in the path! Update route according to constraints
@@ -208,27 +214,28 @@ public class AgentHandler {
                 // Re-calculate path starting from here on out
                 agent.path = update_agent_path_from_pos_to_dest(new ArrayList<>());
                 // I have updated my path, make broadcast
+                logger.debug(agent.AGENT_ID + " | updated path, invalidate");
                 WORLD_OVERSEER_HOOK_UPDATE_BROADCAST.accept(agent.AGENT_ID, agent.GetOwnBroadcastPath());
                 WORLD_OVERSEER_HOOK_INVALIDATE.accept(agent.AGENT_ID);
 
-                return false;
+                return result;
             case NONE:
             default:
                 state_flag[0] = 1;
                 WORLD_HANDLER_COLLISION_CHECK_DONE.apply(agent.AGENT_ID, new String[]{agent.AGENT_ID});
 
-                return true;
+                return new CollisionCheckResult();
         }
     }
 
-    private ReturnType getCollidingAgents(String[][] data)
+    private CollisionCheckResult getCollidingAgents(String[][] data)
     {
         Arrays.sort(data, Comparator.comparing(a -> a[0]));
         List<String[]> broadcasts = Arrays.stream(data).collect(Collectors.toList());
         Set<String> agent_ids = new HashSet<>();
         String[] own_path = agent.GetOwnBroadcastPath();
 
-        ArrayList<ReturnType> conflicts = new ArrayList<>();
+        ArrayList<CollisionCheckResult> conflicts = new ArrayList<>();
 
         agent_ids.add(agent.AGENT_ID); // add own data
         for (String[] broadcast : broadcasts)
@@ -246,7 +253,7 @@ public class AgentHandler {
                 int idx = Arrays.asList(own_path).indexOf(broadcast[1]);
                 if (idx > 0)
                 {   // OBSTACLE IS IN WAY
-                    conflicts.add(new ReturnType(idx, ReturnType.Type.OBSTACLE));
+                    conflicts.add(new CollisionCheckResult(idx, CollisionCheckResult.Type.OBSTACLE));
                 }
             }
 
@@ -265,9 +272,9 @@ public class AgentHandler {
                 else
                     conflict_location = own_path[conflict_info.index];
 
-                logger.info("found " + conflict_info.type + " at " + conflict_location + " | " + Arrays.toString(broadcast));
+                logger.info(agent.AGENT_ID + " | found " + conflict_info.type + " at " + conflict_location + " | " + Arrays.toString(broadcast));
 
-                ReturnType ret = new ReturnType(ReturnType.Type.COLLISION);
+                CollisionCheckResult ret = new CollisionCheckResult(CollisionCheckResult.Type.COLLISION);
                 ret.agent_ids = agent_ids.toArray(new String[0]);
                 ret.index = conflict_info.index;
                 ret.conflict_location = conflict_location;
@@ -276,13 +283,13 @@ public class AgentHandler {
             }
         }
 
-        Arrays.sort(conflicts.toArray(new ReturnType[0]), Comparator.comparing(a -> a.index));
+        Arrays.sort(conflicts.toArray(new CollisionCheckResult[0]), Comparator.comparing(a -> a.index));
         if (conflicts.size() > 0) {
             conflict_location = conflicts.get(0).conflict_location;
             return conflicts.get(0);
         } else {
             conflict_location = "";
-            return new ReturnType();
+            return new CollisionCheckResult();
         }
     }
 
@@ -610,8 +617,8 @@ public class AgentHandler {
         if (!agent_handler_verify_negotiations_lock.tryLock()) return;
 
         // verify path is conflict free at the moment
-        String[][] fov_data = WorldOverseer.getInstance().GetFoV(agent.AGENT_ID);
-        boolean is_ok = collision_check(fov_data);
+        CollisionCheckResult result = collision_check();
+        boolean is_ok = result.type == CollisionCheckResult.Type.NONE;
 
         WORLD_OVERSEER_CALLBACK_VERIFY_NEGOTIATIONS.accept(agent.AGENT_ID, is_ok);
 
