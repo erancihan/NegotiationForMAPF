@@ -69,6 +69,7 @@ public class WorldOverseer
     private Runnable                    UI_LoopStoppedHook;
     private BiConsumer<String, WorldSnapshot> SNAPSHOT_HOOK;
     private ScheduledFuture<?> main_sim_loop;
+    private ScheduledFuture<?> overseer_validation_job;
 
     private Consumer<WorldState> SCENARIO_MANAGER_HOOK_JOIN_UPDATE;
     private Runnable SCENARIO_MANAGER_HOOK_SIMULATION_FINISHED;
@@ -179,8 +180,9 @@ public class WorldOverseer
 
     public void Run()
     {
-        service = Executors.newScheduledThreadPool(clients.size() + 1);
+        service = Executors.newScheduledThreadPool(clients.size() + 2);
         main_sim_loop = service.scheduleAtFixedRate(this::run_loop_container, 0, 250, TimeUnit.MILLISECONDS);
+        overseer_validation_job = service.scheduleAtFixedRate(this::overseer_validator, 0, 1, TimeUnit.SECONDS);
 
         for (String agent_name : clients.keySet())
         {
@@ -320,6 +322,7 @@ public class WorldOverseer
 
                     FLAG_NEGOTIATION_REGISTERED.clear();
                     FLAG_COLLISION_CHECKS.clear();
+                    FLAG_NEGOTIATIONS_DONE.clear();
 
                     /* VERIFY NEGOTIATIONS
                      *
@@ -461,6 +464,8 @@ public class WorldOverseer
                 break;
             case 1:
                 file_logger.WorldLogBroadcast(WorldID);
+
+                STALE_NEGOTIATE_STATE_WAIT_COUNTER = 0;
 
                 // COLLISION_CHECK | BROADCAST state, switch to NEGOTIATION state
                 logger.debug("switching to NEGOTIATE");
@@ -644,6 +649,7 @@ public class WorldOverseer
         if (!agents_verify_lock.tryLock()) return;
         logger.debug("acquired agents_verify_lock");
         agents_verify_unlock_latch = new CountDownLatch(active_agent_c);
+        STALE_NEGOTIATE_STATE_WAIT_COUNTER = 0;
 
         CompletableFuture
             .runAsync(() -> {
@@ -657,11 +663,18 @@ public class WorldOverseer
                     logger.debug(agent_id + " | verifying negotiations");
 
                     CompletableFuture
-                        .runAsync(client::VerifyNegotiations)
-                        .whenComplete((entity, ex) -> {
-                            if (ex != null) ex.printStackTrace();
+                        .runAsync(() -> {
+                            try
+                            {
+                                client.VerifyNegotiations();
 
-                            agents_verify_unlock_latch.countDown();
+                                agents_verify_unlock_latch.countDown();
+                                logger.debug(agent_id + " | PAST@VerifyNegotiations | " + FLAG_NEGOTIATIONS_DONE.size() + " == " + active_agent_c);
+                            }
+                            catch (Exception exception)
+                            {
+                                exception.printStackTrace();
+                            }
                         })
                     ;
                 }
@@ -673,7 +686,7 @@ public class WorldOverseer
                     agents_verify_unlock_latch.await();
 
                     agents_verify_lock.unlock();
-                    logger.debug("unlock agents_verify_lock");
+                    logger.debug("unlock agents_verify_lock " + FLAG_NEGOTIATIONS_DONE.size() + " == " + active_agent_c);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -867,5 +880,87 @@ public class WorldOverseer
     public void SCENARIO_MANAGER_HOOK_SIMULATION_FINISHED(Runnable runnable)
     {
         SCENARIO_MANAGER_HOOK_SIMULATION_FINISHED = runnable;
+    }
+
+    private int STALE_NEGOTIATE_STATE_WAIT_COUNTER = 0;
+    private void overseer_validator()
+    {
+        int client_c = clients.size();
+        int inactive_client_c = 0;
+
+        // Get status of all agents
+        for (String agent_id : clients.keySet())
+        {
+            AgentClient client = clients.get(agent_id);
+
+            if (client.IsActive())
+            {   // client is active
+                FLAG_INACTIVE.remove(agent_id); // you dont belong in here
+
+                // todo
+                // are you in inactive?
+            }
+            else
+            {   // client is inactive
+                // is it marked like that as well?
+                if (FLAG_INACTIVE.containsKey(agent_id))
+                {   // good
+                    // let's remove you from other flags
+                    FLAG_COLLISION_CHECKS.remove(agent_id);
+                    FLAG_NEGOTIATION_REGISTERED.remove(agent_id);
+                    FLAG_NEGOTIATIONS_DONE.remove(agent_id);
+                    FLAG_NEGOTIATIONS_VERIFIED.remove(agent_id);
+                }
+                else
+                {   // why arent you marked inactive
+                    FLAG_INACTIVE.put(agent_id, "");
+                }
+
+                inactive_client_c += 1;
+            }
+        }
+
+        int expected_active_agent_c = client_c - inactive_client_c;
+        if (active_agent_c != expected_active_agent_c)
+        {   // this should not be possible
+            logger.warn("UPDATING ACTIVE_AGENT_C " + active_agent_c + " -> " + expected_active_agent_c);
+            active_agent_c = expected_active_agent_c;
+        }
+
+        switch (curr_state)
+        {
+            case NEGOTIATE:
+                if (STALE_NEGOTIATE_STATE_WAIT_COUNTER == 10)
+                {
+                    logger.warn("THREAD HAS BEEN STALE FOR 10 SECONDS");
+
+                    if (negotiation_overseer.ActiveCount() != 0)
+                    {
+                        logger.warn("THERE ARE STILL ACTIVE NEGOTIATIONS, WAITING");
+                        STALE_NEGOTIATE_STATE_WAIT_COUNTER = 0;
+                        break;
+                    }
+
+                    logger.warn("FORCE REVALIDATE ACTIVE NEGOTIATE STATE");
+                    logger.warn("INVALIDATE FLAG_NEGOTIATIONS_DONE");
+                    FLAG_NEGOTIATIONS_DONE.clear();
+
+                    logger.warn("INVOKE client::VerifyNegotiations");
+                    for (String agent_id : clients.keySet())
+                    {
+                        AgentClient client = clients.get(agent_id);
+                        client.VerifyNegotiations();
+                    }
+
+                    STALE_NEGOTIATE_STATE_WAIT_COUNTER = 0;
+                }
+                else
+                {
+                    STALE_NEGOTIATE_STATE_WAIT_COUNTER += 1;
+                }
+
+                break;
+            default:
+        }
     }
 }
