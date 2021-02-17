@@ -17,6 +17,7 @@ import org.springframework.util.Assert;
 
 import java.util.*;
 import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -35,7 +36,7 @@ public class AgentHandler {
     private String conflict_location = "";
 
     private Function<DATA_REQUEST_PAYLOAD_WORLD_JOIN, String[]> WORLD_HANDLER_JOIN;
-    private BiConsumer<String, String[]>                        WORLD_HANDLER_COLLISION_CHECK_DONE;
+    private BiFunction<String, String[], String>                WORLD_HANDLER_COLLISION_CHECK_DONE;
     private Function<String, Contract>                          WORLD_OVERSEER_HOOK_GET_NEGOTIATION_CONTRACT;
     private Function<String, String[]>                          WORLD_HANDLER_GET_NEGOTIATION_SESSIONS;
     private BiConsumer<String, AgentHandler>                    WORLD_OVERSEER_JOIN_NEGOTIATION_SESSION;
@@ -197,7 +198,7 @@ public class AgentHandler {
                  *  will make negotiate state run again.
                  *  */
                 state_flag[0] = 1;
-                WORLD_HANDLER_COLLISION_CHECK_DONE.accept(agent.AGENT_ID, result.agent_ids);
+                WORLD_HANDLER_COLLISION_CHECK_DONE.apply(agent.AGENT_ID, result.agent_ids);
 
                 return false;
             case OBSTACLE:
@@ -214,7 +215,7 @@ public class AgentHandler {
             case NONE:
             default:
                 state_flag[0] = 1;
-                WORLD_HANDLER_COLLISION_CHECK_DONE.accept(agent.AGENT_ID, new String[]{agent.AGENT_ID});
+                WORLD_HANDLER_COLLISION_CHECK_DONE.apply(agent.AGENT_ID, new String[]{agent.AGENT_ID});
 
                 return true;
         }
@@ -650,7 +651,7 @@ public class AgentHandler {
         WORLD_HANDLER_JOIN = function;
     }
 
-    public void SET_COLLISION_CHECK_DONE(BiConsumer<String, String[]> function)
+    public void SET_COLLISION_CHECK_DONE(BiFunction<String, String[], String> function)
     {
         WORLD_HANDLER_COLLISION_CHECK_DONE = function;
     }

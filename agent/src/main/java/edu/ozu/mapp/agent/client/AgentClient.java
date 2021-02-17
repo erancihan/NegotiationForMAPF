@@ -13,6 +13,7 @@ import org.springframework.util.Assert;
 import javax.swing.*;
 import java.util.ArrayList;
 import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -120,7 +121,7 @@ public class AgentClient {
         handler.SetJoinCallback(callback);
     }
 
-    public void SetOnCollisionCheckDoneCallback(BiConsumer<String, String[]> callback)
+    public void SetOnCollisionCheckDoneCallback(BiFunction<String, String[], String> callback)
     {
         handler.SET_COLLISION_CHECK_DONE(callback);
     }

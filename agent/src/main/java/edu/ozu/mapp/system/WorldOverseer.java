@@ -566,9 +566,9 @@ public class WorldOverseer
      * Payload includes
      *
      * */
-    public synchronized void OnCollisionCheckDone(String agent_name, String[] agent_ids)
+    public synchronized String OnCollisionCheckDone(String agent_name, String[] agent_ids)
     {
-        if (FLAG_INACTIVE.containsKey(agent_name)) return;
+        if (FLAG_INACTIVE.containsKey(agent_name)) return "";
 
         Arrays.sort(agent_ids);
 
@@ -576,8 +576,8 @@ public class WorldOverseer
             FLAG_COLLISION_CHECKS.containsKey(agent_name) &&
             FLAG_COLLISION_CHECKS.get(agent_name).equals(Arrays.toString(agent_ids))
         )
-        {
-            return;
+        {   // Entry for agent_name already exists
+            return FLAG_NEGOTIATION_REGISTERED.get(agent_name);
         }
 
         FLAG_COLLISION_CHECKS.put(agent_name, Arrays.toString(agent_ids));
@@ -588,17 +588,22 @@ public class WorldOverseer
             for (String id : agent_ids) {
                 is_bad = is_bad || FLAG_NEGOTIATION_REGISTERED.containsKey(id);
             }
-            if (is_bad) return;
+            if (is_bad) return FLAG_NEGOTIATION_REGISTERED.getOrDefault(agent_name, "");
 
             Log(agent_name + " reported collision : " + Arrays.toString(agent_ids));
-            negotiation_overseer.RegisterCollisionNotification(agent_ids);
+            String session_hash = negotiation_overseer.RegisterCollisionNotification(agent_ids);
 
-            for (String id : agent_ids) {
+            if (session_hash == null) return "";
+
+            for (String id : agent_ids)
+            {
                 FLAG_COLLISION_CHECKS.put(id, Arrays.toString(agent_ids));
                 FLAG_NEGOTIATIONS_DONE.remove(id);
-                FLAG_NEGOTIATION_REGISTERED.put(id, "");
+                FLAG_NEGOTIATION_REGISTERED.put(id, session_hash);
             }
         }
+
+        return FLAG_NEGOTIATION_REGISTERED.get(agent_name);
     }
 
     public synchronized String[] GetNegotiations(String agent_name)

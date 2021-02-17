@@ -587,4 +587,4 @@ def run(scenarios_folder_path, force_reparse: bool = False):
 
 
 if __name__ == '__main__':
-    run("C:\\Users\\cihan\\Documents\\MAPP\\logs", True)
+    run("C:\\Users\\cihan\\Documents\\MAPP\\logs", False)
