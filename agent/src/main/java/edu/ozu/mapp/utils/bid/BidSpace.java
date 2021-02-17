@@ -11,8 +11,6 @@ import java.util.stream.Collectors;
 public class BidSpace
 {
     @SuppressWarnings("FieldCanBeLocal")
-    private final boolean CAN_HOVER = false;
-    @SuppressWarnings("FieldCanBeLocal")
     private final double INF = Double.MAX_VALUE;
 
     private int width, height;
@@ -76,7 +74,7 @@ public class BidSpace
                 return;
             }
 
-            List<Node> neighbours = get_neighbours(current, current.time + 1);
+            List<Node> neighbours = current.getNeighbours(goal, constraints, width, height);
             for (Node neighbour : neighbours)
             {
                 if (closed.contains(neighbour)) continue;
@@ -97,39 +95,6 @@ public class BidSpace
                 }
             }
         }
-    }
-
-    private List<Node> get_neighbours(Node current, int time)
-    {
-        List<Node> nodes = new ArrayList<>();
-
-        for (int i = 0; i < 9; i++) {
-            if (i % 2 == 0) continue;
-
-            int x = (current.point.x + (i % 3) - 1);
-            int y = (current.point.y + (i / 3) - 1);
-
-            if ((x < 0 || x >= width) || (y < 0 || y >= height)) continue;
-
-            Point next = new Point(x, y);
-            if (constraints.containsKey(next.key))
-            {
-                if (
-                    constraints.get(next.key).contains(String.valueOf(time)) ||
-                    constraints.get(next.key).contains("inf")
-                )
-                    continue;
-            }
-            nodes.add(new Node(next, next.ManhattanDistTo(goal), time));
-        }
-
-        // add self for cyclic dep
-        if (CAN_HOVER)
-        {
-            nodes.add(new Node(current.point, time));
-        }
-
-        return nodes;
     }
 
     public Path peek()
@@ -195,7 +160,7 @@ public class BidSpace
 
     private Node getNextNode(Node current)
     {
-        PriorityQueue<Node> neighbours = new PriorityQueue<>(get_neighbours(current, current.time + 1));
+        PriorityQueue<Node> neighbours = new PriorityQueue<>(current.getNeighbours(goal, constraints, width, height));
         while (!neighbours.isEmpty())
         {
             Node neighbour = neighbours.poll();

@@ -131,7 +131,7 @@ public class AStar {
                 return new Node(goal).linkTo(current).stream().map(item -> item.point.key).collect(Collectors.toList());
             }
 
-            List<Node> neighbours = getNeighbours(current.point, current.time + 1, occupiedList, width, height);
+            List<Node> neighbours = current.getNeighbours(occupiedList, width, height);
             for (Node neighbour : neighbours)
             {
                 if (closed.contains(neighbour)) continue;
@@ -157,37 +157,6 @@ public class AStar {
         return null;
     }
 
-    @SuppressWarnings("DuplicatedCode")
-    private List<Node> getNeighbours(Point point, int t, HashMap<String, ArrayList<String>> occupiedList, int width, int height)
-    {
-        List<Node> nodes = new ArrayList<>();
-
-        for (int i = 0; i < 9; i++)
-        {   // position of point
-            if (i % 2 == 0) continue;
-
-            int x = point.x + (i % 3) - 1;
-            int y = point.y + (i / 3) - 1;
-
-            if (x < 0 || x >= width) continue;  // x out of bounds
-            if (y < 0 || y >= height) continue; // y out of bounds
-
-            Node node = new Node(new Point(x, y), t);
-            if (occupiedList.containsKey(node.point.key))
-            {
-                if (occupiedList.get(node.point.key).contains(String.valueOf(t)) || occupiedList.get(node.point.key).contains("inf"))
-                {
-                    continue;
-                }
-            }
-            nodes.add(node);
-        }
-
-        // add self for cyclic dep
-//        nodes.add(new Node(point, t));
-
-        return nodes;
-    }
     //</editor-fold>
 }
 
