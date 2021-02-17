@@ -130,17 +130,17 @@ public class BidSpace
         return nodes;
     }
 
-    public Point[] peek()
+    public Path peek()
     {
-        return cursor.path.stream().map(node -> node.point).toArray(Point[]::new);
+        return new Path(cursor.path.stream().map(node -> node.point).collect(Collectors.toList()));
     }
 
-    public Point[] current()
+    public Path current()
     {
-        return cursor.path.stream().map(node -> node.point).toArray(Point[]::new);
+        return peek();
     }
 
-    public Point[] next() // pop
+    public Path next() // pop
     {
         if (stack.isEmpty())
         {   // hasn't returned anything yet
@@ -151,7 +151,7 @@ public class BidSpace
             Path path = new Path(new ArrayList<>(stack).stream().map(node -> node.point).collect(Collectors.toList()));
             explored.add(path);
 
-            return new ArrayList<>(stack).stream().map(node -> node.point).toArray(Point[]::new);
+            return path;
         }
 
         // BEGIN : CALCULATE NEXT
@@ -171,9 +171,7 @@ public class BidSpace
 
         cursor.path = new LinkedList<>(stack);
 
-        Path path = new Path(cursor.path.stream().map(node -> node.point).collect(Collectors.toList()));
-
-        return path.toArray(new Point[0]);
+        return new Path(cursor.path.stream().map(node -> node.point).collect(Collectors.toList()));
     }
 
     private Node getNextNode(Node current)
@@ -210,12 +208,26 @@ public class BidSpace
         System.out.println(set);
         System.out.println();
 
-        BidSpace bid = new BidSpace(new Point(2, 2), new Point(10, 10), 5, new HashMap<>(), "11x11", 3);
+        Point from = new Point(2, 2);
+        Point to   = new Point(4, 4);
+        BidSpace space = new BidSpace(from, to, 5, new HashMap<>(), "11x11", 3);
 
-        System.out.println("PEEK: " + Arrays.toString(bid.peek()));
-        for (int i = 0; i < 20; i++) {
-            System.out.println("NEXT: " + Arrays.toString(bid.next()));
+        double max = Double.MIN_VALUE;
+        double min = Double.MAX_VALUE;
+        for (int i = 0; i < 100; i++)
+        {
+            Path next = space.next();
+            System.out.println("NEXT:" + next);
+
+            double _max = next.size() + next.getLast().ManhattanDistTo(to);
+            double _min = next.size() + next.getLast().ManhattanDistTo(to);
+
+            if (_max > max) max = _max;
+            if (_min < min) min = _min;
         }
+
+        System.out.println("MIN: "+ min);
+        System.out.println("MAX: "+ max);
     }
 
 //</editor-folds>
