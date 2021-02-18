@@ -361,8 +361,8 @@ public class AgentHandler {
         );
 
         // update current position
+        logger.debug(agent.AGENT_ID + " | moving | " + agent.POS.key + " -> " + next_point.key);
         agent.POS = next_point;
-        logger.debug(agent.AGENT_ID + " | moving to " + next_point.key);
 
         agent.OnMove(response);
     }
