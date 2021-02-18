@@ -20,13 +20,14 @@ public class NegotiationSession
     private BiConsumer<String, String> log_hook;
 
     private ConcurrentHashMap<String, AgentHandler> agent_refs;
-    private ConcurrentSkipListSet<String> AGENTS_READY;
+    private ConcurrentSkipListSet<String> active_agent_ids;
     private String[] agent_ids;
     private ScheduledExecutorService service;
     private ScheduledFuture<?> task_join_await;
     private ScheduledFuture<?> task_run;
 
     private final PseudoLock session_loop_agent_invoke_lock;
+    private final PseudoLock join_task_lock;
 
     private int T = 0;
     private int Round = 0;
@@ -47,7 +48,7 @@ public class NegotiationSession
         this.agent_refs   = new ConcurrentHashMap<>();
         this.agent_ids = agent_ids.clone();
         this.service      = Executors.newScheduledThreadPool(2);
-        this.AGENTS_READY = new ConcurrentSkipListSet<>();
+        this.active_agent_ids = new ConcurrentSkipListSet<>();
 
         this.bank_update_hook   = bank_update_hook;
         this.world_log_callback = world_log_callback;
@@ -77,6 +78,7 @@ public class NegotiationSession
 
         // initialize LOCKs
         session_loop_agent_invoke_lock = new PseudoLock();
+        join_task_lock = new PseudoLock();
 
         // LOG
         log_hook.accept(session_hash, String.format("%-23s %-7s %s", new java.sql.Timestamp(System.currentTimeMillis()), "INIT", Arrays.toString(agent_ids)));
@@ -94,9 +96,10 @@ public class NegotiationSession
         String agent_id = agent.GetAgentID();
         if (!this.agent_refs.containsKey(agent_id))
         {
-            Assert.isTrue(Arrays.asList(agent_ids).contains(agent_id), "AGENT " + agent_id+ " DOES NOT BELONG HERE");
+            Assert.isTrue(Arrays.asList(agent_ids).contains(agent_id), "AGENT " + agent_id + " DOES NOT BELONG HERE");
 
             this.agent_refs.put(agent.getAgentName(), agent);
+            this.active_agent_ids.add(agent_id);
             this.log_hook.accept(session_hash, String.format("%-23s %s JOIN {BROADCAST: %s }", new java.sql.Timestamp(System.currentTimeMillis()), agent_id, Arrays.toString(agent.GetBroadcast())));
         }
 
@@ -117,36 +120,49 @@ public class NegotiationSession
         task_join_await = service.scheduleAtFixedRate(this::await_init, 0, 250, TimeUnit.MILLISECONDS);
     }
 
+    private CountDownLatch join_task_unlock_latch;
     private void join_task()
     {
-        CompletableFuture.runAsync(() -> {
-            for (String agent_id : agent_ids)
-            {
-                CompletableFuture.runAsync(() -> {
-                    try {
-                        State state = new State();
-                        state.agents = agent_ids.clone();
-                        state.contract = contract.clone();
+        if (!join_task_lock.tryLock()) return;
+        join_task_unlock_latch = new CountDownLatch(agent_ids.length);
 
-                        agent_refs.get(agent_id).PreNegotiation(session_hash, state);
+        for (String agent_id : agent_ids)
+        {
+            CompletableFuture.runAsync(() -> {
+                assert active_agent_ids.contains(agent_id);
 
-                        AGENTS_READY.add(agent_id);
-                    } catch (CloneNotSupportedException e) {
-                        e.printStackTrace();
-                    }
-                })
-                .exceptionally(ex -> { ex.printStackTrace(); return null; })
-                ;
-            }
-        })
-        .exceptionally(ex -> { ex.printStackTrace(); return null; })
-        ;
+                try {
+                    State state = new State();
+                    state.agents = agent_ids.clone();
+                    state.contract = contract.clone();
+
+                    agent_refs.get(agent_id).PreNegotiation(session_hash, state);
+
+                    join_task_unlock_latch.countDown();
+                } catch (CloneNotSupportedException e) {
+                    e.printStackTrace();
+                }
+            })
+            .exceptionally(ex -> { ex.printStackTrace(); return null; })
+            ;
+        }
+
+        try
+        {
+            join_task_unlock_latch.await();
+            join_task_lock.unlock();
+        }
+        catch (InterruptedException e)
+        {
+            e.printStackTrace();
+            System.exit(500);
+        }
     }
 
     private void await_init()
     {
         try {
-            if (AGENTS_READY.size() == agent_ids.length)
+            if (active_agent_ids.size() == agent_ids.length)
             {   // ALL AGENTS ARE READY
                 run();
             }
@@ -397,14 +413,34 @@ public class NegotiationSession
         return agent_ids;
     }
 
-    public String[] GetActiveAgentNames()
+    public String[] GetActiveAgentIDs()
     {
-        return agent_ids == null ? new String[0] : agent_ids;
+        return active_agent_ids.toArray(new String[0]);
+    }
+
+    public String GetSessionID() {
+        return session_hash;
+    }
+
+    public String GetSessionHash() {
+        return session_hash;
+    }
+
+    public boolean HasAgentJoined(String agent_id) {
+        return active_agent_ids.contains(agent_id);
+    }
+
+    public boolean IsJoining() {
+        return state.equals(NegotiationState.JOIN);
+    }
+
+    public boolean IsRunning() {
+        return state.equals(NegotiationState.RUNNING);
     }
 
     public synchronized void RegisterAgentLeaving(String agent_id)
     {
-        agent_ids = ArrayUtils.remove(agent_ids, agent_id);
+        active_agent_ids.remove(agent_id);
     }
 
     /**
