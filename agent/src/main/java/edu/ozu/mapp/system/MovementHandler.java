@@ -103,7 +103,7 @@ public class MovementHandler
 
             if (world.point_to_agent.get(payload.CURRENT_LOCATION.key).equals(agent_id)) {
                 // location has not been cleared
-                world.point_to_agent.remove(payload.CURRENT_LOCATION.key);
+                world.point_to_agent.put(payload.CURRENT_LOCATION.key, "");
             } else {
                 logger.error(
                         "THIS SHOULD HAVE NEVER HAPPENED. " +
@@ -122,7 +122,7 @@ public class MovementHandler
             String agent_name = iterator.next();
             DATA_REQUEST_PAYLOAD_WORLD_MOVE payload = payloads.get(agent_name);
 
-            if (world.point_to_agent.get(payload.NEXT_LOCATION.key) != null)
+            if (!world.point_to_agent.getOrDefault(payload.NEXT_LOCATION.key, "").isEmpty())
             {   // ensure location is OPEN
                 logger.error(
                     payload.NEXT_LOCATION.key + " WAS NOT OPEN FOR " + agent_name + ". OCCUPIED BY " +
