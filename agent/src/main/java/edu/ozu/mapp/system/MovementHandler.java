@@ -135,11 +135,6 @@ public class MovementHandler
 
             world.broadcasts.put(agent_name, payload.BROADCAST);
 
-            System.out.println(
-                agent_name + " | " +
-                payload.CURRENT_LOCATION.key + " -> " + payload.NEXT_LOCATION.key
-            );
-
             AgentHandler agent_ref = move_queue.get(agent_name);
 
             CompletableFuture.runAsync(() -> {
