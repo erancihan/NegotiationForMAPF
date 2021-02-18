@@ -439,15 +439,15 @@ def run(scenarios_folder_path, force_reparse: bool = False):
             wws_agents.write(wws_agents_r, 2, wws_agent.starting_point)
             wws_agents.write(wws_agents_r, 3, wws_agent.destination)
             wws_agents.write(wws_agents_r, 4, wws_agent.planned_initial_path)
-            wws_agents.write(wws_agents_r, 5, wws_agent.planned_initial_path_length)
+            wws_agents.write_number(wws_agents_r, 5, int(wws_agent.planned_initial_path_length))
             wws_agents.write(wws_agents_r, 6, wws_agent.taken_path)
-            wws_agents.write(wws_agents_r, 7, wws_agent.taken_path_length)
-            wws_agents.write(wws_agents_r, 8, wws_agent.negotiation_count)
-            wws_agents.write(wws_agents_r, 9, wws_agent.negotiations_won)
-            wws_agents.write(wws_agents_r, 10, wws_agent.negotiations_lost)
-            wws_agents.write(wws_agents_r, 11, wws_agent.token_count_initial)
-            wws_agents.write(wws_agents_r, 12, wws_agent.token_count_final)
-            wws_agents.write(wws_agents_r, 13, wws_agent.amount_of_tokens_exchanged)
+            wws_agents.write_number(wws_agents_r, 7, int(wws_agent.taken_path_length))
+            wws_agents.write_number(wws_agents_r, 8, int(wws_agent.negotiation_count))
+            wws_agents.write_number(wws_agents_r, 9, int(wws_agent.negotiations_won))
+            wws_agents.write_number(wws_agents_r, 10, int(wws_agent.negotiations_lost))
+            wws_agents.write_number(wws_agents_r, 11, int(wws_agent.token_count_initial))
+            wws_agents.write_number(wws_agents_r, 12, int(wws_agent.token_count_final))
+            wws_agents.write_number(wws_agents_r, 13, int(wws_agent.amount_of_tokens_exchanged))
 
             wws_agents_r += 1
         # END:WORLD.XLSX AGENT SHEET
