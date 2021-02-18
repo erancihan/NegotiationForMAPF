@@ -17,8 +17,9 @@ import edu.ozu.mapp.config.SessionConfig;
 import edu.ozu.mapp.config.WorldConfig;
 import edu.ozu.mapp.system.WorldOverseer;
 import edu.ozu.mapp.system.WorldState;
+import edu.ozu.mapp.utils.AStar;
+import edu.ozu.mapp.utils.Globals;
 import edu.ozu.mapp.utils.Point;
-import edu.ozu.mapp.utils.*;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
@@ -35,6 +36,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
@@ -1039,11 +1041,9 @@ public class ScenarioManager extends javax.swing.JFrame
             return;
         }
 
-        number_of_expected_conflicts = input_number_of_expected_conflicts.getText().isEmpty() ? 0 : Integer.parseInt(input_number_of_expected_conflicts.getText());
-
         Object[][] table_data = GetAgentCount();
 
-        process_scenario_config(wid, width, height, min_path_len, max_path_len, min_dist_bw, initial_token_c, number_of_expected_conflicts, table_data)
+        process_scenario_config(wid, width, height, min_path_len, max_path_len, min_dist_bw, initial_token_c, table_data)
             .thenAccept(data -> {
                 agents_data = data;
 
@@ -1053,12 +1053,12 @@ public class ScenarioManager extends javax.swing.JFrame
         ;
     }
 
-    private CompletableFuture<ArrayList<AgentConfig>> process_scenario_config(String world_id, int width, int height, int min_path_len, int max_path_len, int min_dist_bw, int initial_token_c, int number_of_expected_conflicts, Object[][] table_data)
+    private CompletableFuture<ArrayList<AgentConfig>> process_scenario_config(String world_id, int width, int height, int min_path_len, int max_path_len, int min_dist_bw, int initial_token_c, Object[][] table_data)
     {
         WorldConfig config = new WorldConfig(world_id, width, height, min_path_len, min_dist_bw);
         config.max_path_len = max_path_len;
         config.initial_token_c = initial_token_c;
-        config.number_of_expected_conflicts = number_of_expected_conflicts;
+        config.number_of_expected_conflicts = input_number_of_expected_conflicts.getText().isEmpty() ? 0 : Integer.parseInt(input_number_of_expected_conflicts.getText());
         config.instantiation_configuration = table_data;
         config.agent_count = agent_count;
 
@@ -1080,17 +1080,17 @@ public class ScenarioManager extends javax.swing.JFrame
     private CompletableFuture<ArrayList<AgentConfig>> generate_scenario()
     {
         // Get number of possible initial conflicts
-        int max_number_of_possible_conflicts = (agent_count * (agent_count - 1)) / 2;
-        if (number_of_expected_conflicts > max_number_of_possible_conflicts)
+        int max_number_of_possible_conflicts = (world_data.agent_count * (world_data.agent_count - 1)) / 2;
+        if (world_data.number_of_expected_conflicts > max_number_of_possible_conflicts)
         {
-            number_of_expected_conflicts = max_number_of_possible_conflicts;
+            world_data.number_of_expected_conflicts = max_number_of_possible_conflicts;
         }
 
         // display loading
         if (popup_generating != null) popup_generating.setLocationRelativeTo(this);
         if (popup_generating != null) popup_generating.setVisible(true);
 
-        int final_number_of_expected_conflicts = number_of_expected_conflicts;
+        int final_number_of_expected_conflicts = world_data.number_of_expected_conflicts;
         return CompletableFuture
             .supplyAsync(() -> {
                 boolean isOk;
