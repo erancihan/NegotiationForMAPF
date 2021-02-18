@@ -392,7 +392,7 @@ public class NegotiationSession
         this.contract = contract;
     }
 
-    public String[] GetAgentNames()
+    public String[] GetAgentIDs()
     {
         return agent_ids;
     }

@@ -118,7 +118,7 @@ public class NegotiationOverseer
     public void AgentJoinSession(String session_hash, AgentHandler agent)
     {
         // get session members
-        String[] agents = sessions.get(session_hash).GetAgentNames();
+        String[] agents = sessions.get(session_hash).GetAgentIDs();
         if (!Arrays.asList(agents).contains(agent.GetAgentID()))
         {
             logger.error(agent.GetAgentID() + " does not belong to session " + session_hash + " | " + Arrays.toString(agents));
@@ -153,7 +153,7 @@ public class NegotiationOverseer
         sessions.get(session_hash).RegisterAgentREF(agent);
 
         world_log_callback.accept(
-                String.format("%s joining %s | %s", agent.getAgentName(), session_hash.substring(0, 7), Arrays.toString(sessions.get(session_hash).GetAgentNames()))
+                String.format("%s joining %s | %s", agent.getAgentName(), session_hash.substring(0, 7), Arrays.toString(sessions.get(session_hash).GetAgentIDs()))
         );
     }
 
@@ -202,11 +202,11 @@ public class NegotiationOverseer
 
     public String[] GetSessionAgents(String session)
     {
-        return sessions.get(session).GetAgentNames();
+        return sessions.get(session).GetAgentIDs();
     }
 
     public String[] InvalidateSession(String session) {
-        String[] agent_names = sessions.get(session).GetAgentNames();
+        String[] agent_names = sessions.get(session).GetAgentIDs();
 
         sessions.get(session).invalidate();
         sessions.remove(session);
