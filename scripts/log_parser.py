@@ -71,6 +71,7 @@ class NegotiationAction(_Base):
 
 
 class NegotiationSummary(_Base):
+    timestamp: str = None
     negotiation_id: str = None
     opponent_id: str = None
     own_path_before: str = None
@@ -294,6 +295,7 @@ def parse_agent_negotiation_log(file_path: str, data_dict: ExcelData):
 
                 if session_key not in data_dict.agents[agent_id].negotiations:
                     data_dict.agents[agent_id].negotiations[session_key] = NegotiationSummary()
+                data_dict.agents[agent_id].negotiations[session_key].timestamp = timestamp
                 data_dict.agents[agent_id].negotiations[session_key].negotiation_id = session_key
                 data_dict.agents[agent_id].negotiations[session_key].own_path_before = data['path']
                 data_dict.agents[agent_id].negotiations[session_key].own_path_before_len = len(data['path'].split(','))
@@ -540,7 +542,7 @@ def run(scenarios_folder_path, force_reparse: bool = False):
             # BEGIN AGENT WORKSHEET NEGOTIATION SUMMARIES
             aws_nego_sum_r = 0
             aws_nego_sum_c = 0
-            aws_nego_sum_h = ['negotiation_id', 'opponent id', 'own_path_before', 'own_path_after',
+            aws_nego_sum_h = ['timestamp', 'negotiation_id', 'opponent id', 'own_path_before', 'own_path_after',
                               'own_path_before_len', 'own_path_after_len', 'duration', 'conflict location',
                               '# of rounds', 'own_token_balance_diff', 'is win', 'is lose']
             aws_nego_sum = awb.add_worksheet('Negotiation Summaries')
@@ -550,8 +552,12 @@ def run(scenarios_folder_path, force_reparse: bool = False):
                 aws_nego_sum_c += 1
             aws_nego_sum_r += 1
 
-            for nego_key in aws_agent.negotiations:
-                aws_agent_nego_sum: NegotiationSummary = aws_agent.negotiations[nego_key]
+            aws_agent_nego_sum: NegotiationSummary
+            aws_agent_nego_keys = aws_agent.negotiations.keys()
+            aws_agent_nego_keys = sorted(aws_agent_nego_keys, key=lambda x: aws_agent.negotiations[x].timestamp)
+
+            for nego_key in aws_agent_nego_keys:
+                aws_agent_nego_sum = aws_agent.negotiations[nego_key]
                 aws_agent_nego_sum.process_actions()
 
                 # find opponent
@@ -559,18 +565,19 @@ def run(scenarios_folder_path, force_reparse: bool = False):
                 opponent.remove(agent_key)
                 data_dict.agents[agent_key].negotiations[nego_key].opponent_id = opponent[0]
 
-                aws_nego_sum.write(aws_nego_sum_r, 0, aws_agent_nego_sum.negotiation_id)
-                aws_nego_sum.write(aws_nego_sum_r, 1, aws_agent_nego_sum.opponent_id)
-                aws_nego_sum.write(aws_nego_sum_r, 2, aws_agent_nego_sum.own_path_before)
-                aws_nego_sum.write(aws_nego_sum_r, 3, aws_agent_nego_sum.own_path_after)
-                aws_nego_sum.write(aws_nego_sum_r, 4, aws_agent_nego_sum.own_path_before_len)
-                aws_nego_sum.write(aws_nego_sum_r, 5, aws_agent_nego_sum.own_path_after_len)
-                aws_nego_sum.write(aws_nego_sum_r, 6, aws_agent_nego_sum.duration)
-                aws_nego_sum.write(aws_nego_sum_r, 7, aws_agent_nego_sum.conflict_location)
-                aws_nego_sum.write(aws_nego_sum_r, 8, len(aws_agent_nego_sum.actions))
-                aws_nego_sum.write(aws_nego_sum_r, 9, aws_agent_nego_sum.own_token_balance_diff)
-                aws_nego_sum.write(aws_nego_sum_r, 10, "1" if aws_agent_nego_sum.is_win == "true"  else "0")
-                aws_nego_sum.write(aws_nego_sum_r, 11, "1" if aws_agent_nego_sum.is_win == "false" else "0")
+                aws_nego_sum.write(aws_nego_sum_r, 0, aws_agent_nego_sum.timestamp)
+                aws_nego_sum.write(aws_nego_sum_r, 1, aws_agent_nego_sum.negotiation_id)
+                aws_nego_sum.write(aws_nego_sum_r, 2, aws_agent_nego_sum.opponent_id)
+                aws_nego_sum.write(aws_nego_sum_r, 3, aws_agent_nego_sum.own_path_before)
+                aws_nego_sum.write(aws_nego_sum_r, 4, aws_agent_nego_sum.own_path_after)
+                aws_nego_sum.write(aws_nego_sum_r, 5, aws_agent_nego_sum.own_path_before_len)
+                aws_nego_sum.write(aws_nego_sum_r, 6, aws_agent_nego_sum.own_path_after_len)
+                aws_nego_sum.write(aws_nego_sum_r, 7, aws_agent_nego_sum.duration)
+                aws_nego_sum.write(aws_nego_sum_r, 8, aws_agent_nego_sum.conflict_location)
+                aws_nego_sum.write(aws_nego_sum_r, 9, len(aws_agent_nego_sum.actions))
+                aws_nego_sum.write(aws_nego_sum_r, 10, aws_agent_nego_sum.own_token_balance_diff)
+                aws_nego_sum.write(aws_nego_sum_r, 11, "1" if aws_agent_nego_sum.is_win == "true"  else "0")
+                aws_nego_sum.write(aws_nego_sum_r, 12, "1" if aws_agent_nego_sum.is_win == "false" else "0")
 
                 aws_nego_sum_r += 1
             # END
