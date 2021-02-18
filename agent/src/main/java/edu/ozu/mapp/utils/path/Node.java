@@ -68,9 +68,9 @@ public class Node implements Comparable<Node>, Cloneable {
             if (y < bound_t || bound_b <= y) continue;  // y : [bound_t, bound_b) | i.e. [0, 16) -> y : 0, 1, ... 15
 
             Point neighbour = new Point(x, y);
-            // Check for Vertex Constraint
             if (constraints.containsKey(neighbour.key))
             {
+                // Check for Vertex Constraint
                 // There is an entry in constraints for this location
                 // When navigated to next neighbour, neighbour will be in next time step
                 if (
@@ -79,10 +79,18 @@ public class Node implements Comparable<Node>, Cloneable {
                 ) {
                     continue;
                 }
-            }
 
-            // Check for Swap Constraint
-            // todo
+                // Check for Swap Constraint
+                if (constraints.containsKey(this.point.key))
+                {
+                    if (
+                        constraints.get(neighbour.key).contains(String.valueOf(time)) &&
+                        constraints.get(this.point.key).contains(String.valueOf(time + 1))
+                    ) {
+                        continue;
+                    }
+                }
+            }
 
             // When navigated to next neighbour, they will
             //  be in the next time step from this node.
@@ -147,4 +155,93 @@ public class Node implements Comparable<Node>, Cloneable {
     {
         return path.stream().map(node -> node.point).collect(Collectors.toList());
     }
+
+/** ================================================================================================================ **/
+//<editor-folds desc="TESTS" defaultstate="collapsed">
+
+    public static void main(String[] args)
+    {
+        List<Node> nodes;
+        HashMap<String, ArrayList<String>> constraints;
+
+        Node n1 = new Node(new Point(4, 6), 2);
+
+
+        constraints = new HashMap<>();
+        nodes = n1.getNeighbours(constraints, 16, 16);
+        System.out.println(n1);
+        System.out.println(" : " + constraints);
+        System.out.println(" : " + nodes);
+        System.out.println();
+
+        constraints = new HashMap<>();
+        constraints.put("4-6", new ArrayList<String>(){{ add("2"); }});
+        nodes = n1.getNeighbours(constraints, 16, 16);
+        System.out.println(n1);
+        System.out.println(" : " + constraints);
+        System.out.println(" : " + nodes);
+        System.out.println();
+
+        constraints = new HashMap<>();
+        constraints.put("4-6", new ArrayList<String>(){{ add("3"); }});
+        nodes = n1.getNeighbours(constraints, 16, 16);
+        System.out.println(n1);
+        System.out.println(" : " + constraints);
+        System.out.println(" : " + nodes);
+        System.out.println();
+
+        constraints = new HashMap<>();
+        constraints.put("3-6", new ArrayList<String>(){{ add("2"); }});
+        nodes = n1.getNeighbours(constraints, 16, 16);
+        System.out.println(n1);
+        System.out.println(" : " + constraints);
+        System.out.println(" : " + nodes);
+        System.out.println();
+
+        constraints = new HashMap<>();
+        constraints.put("3-6", new ArrayList<String>(){{ add("3"); }});
+        nodes = n1.getNeighbours(constraints, 16, 16);
+        System.out.println(n1);
+        System.out.println(" : " + constraints);
+        System.out.println(" : " + nodes);
+        System.out.println();
+
+        constraints = new HashMap<>();
+        constraints.put("4-6", new ArrayList<String>(){{ add("2"); }});
+        constraints.put("3-6", new ArrayList<String>(){{ add("2"); }});
+        nodes = n1.getNeighbours(constraints, 16, 16);
+        System.out.println(n1);
+        System.out.println(" : " + constraints);
+        System.out.println(" : " + nodes);
+        System.out.println();
+
+        constraints = new HashMap<>();
+        constraints.put("4-6", new ArrayList<String>(){{ add("2"); }});
+        constraints.put("3-6", new ArrayList<String>(){{ add("3"); }});
+        nodes = n1.getNeighbours(constraints, 16, 16);
+        System.out.println(n1);
+        System.out.println(" : " + constraints);
+        System.out.println(" : " + nodes);
+        System.out.println();
+
+        constraints = new HashMap<>();
+        constraints.put("4-6", new ArrayList<String>(){{ add("3"); }});
+        constraints.put("3-6", new ArrayList<String>(){{ add("2"); }});
+        nodes = n1.getNeighbours(constraints, 16, 16);
+        System.out.println(n1);
+        System.out.println(" : " + constraints);
+        System.out.println(" : " + nodes);
+        System.out.println();
+
+        constraints = new HashMap<>();
+        constraints.put("4-6", new ArrayList<String>(){{ add("3"); }});
+        constraints.put("3-6", new ArrayList<String>(){{ add("3"); }});
+        nodes = n1.getNeighbours(constraints, 16, 16);
+        System.out.println(n1);
+        System.out.println(" : " + constraints);
+        System.out.println(" : " + nodes);
+        System.out.println();
+    }
+
+    //</editor-folds>
 }
