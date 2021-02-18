@@ -935,7 +935,26 @@ public class WorldOverseer
                     logger.warn("THREAD HAS BEEN STALE FOR 10 SECONDS");
 
                     if (negotiation_overseer.ActiveCount() != 0) {
-                        logger.warn("THERE ARE STILL ACTIVE NEGOTIATIONS, WAITING");
+                        logger.warn("> THERE ARE STILL ACTIVE NEGOTIATIONS");
+
+                        // if there are active sessions...
+                        // check if their agents have joined
+                        logger.warn("> CHECKING IF SESSIONS ARE ACTIVE");
+                        negotiation_overseer.ActiveSessions().values()
+                            .forEach(session -> {
+                                // has session started??
+                                if (session.IsJoining())
+                                {   // session has not started...
+                                    // make agents leave and force validate
+                                    logger.warn("> SESSION " + session + " HAS NOT STARTED! TERMINATE");
+                                    for (String agent_id : session.GetAgentIDs())
+                                    {
+                                        negotiation_overseer.AgentLeaveSession(agent_id, session.GetSessionID());
+                                        clients.get(agent_id).VerifyNegotiations();
+                                    }
+                                }
+                            });
+
                         STALE_NEGOTIATE_STATE_WAIT_COUNTER = 0;
                         break;
                     }
