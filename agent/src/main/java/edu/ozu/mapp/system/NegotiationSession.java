@@ -21,8 +21,7 @@ public class NegotiationSession
 
     private ConcurrentHashMap<String, AgentHandler> agent_refs;
     private ConcurrentSkipListSet<String> AGENTS_READY;
-    private String[] _agent_names;
-    private String[] agent_names;
+    private String[] agent_ids;
     private ScheduledExecutorService service;
     private ScheduledFuture<?> task_join_await;
     private ScheduledFuture<?> task_run;
@@ -43,11 +42,10 @@ public class NegotiationSession
         JOIN, RUNNING, DONE;
     }
 
-    public NegotiationSession(String session_hash, String[] agent_names, BiConsumer<String, Integer> bank_update_hook, Consumer<String> world_log_callback, BiConsumer<String, String> log_payload_hook)
+    public NegotiationSession(String session_hash, String[] agent_ids, BiConsumer<String, Integer> bank_update_hook, Consumer<String> world_log_callback, BiConsumer<String, String> log_payload_hook)
     {
         this.agent_refs   = new ConcurrentHashMap<>();
-        this._agent_names = agent_names.clone();
-        this.agent_names  = agent_names.clone();
+        this.agent_ids = agent_ids.clone();
         this.service      = Executors.newScheduledThreadPool(2);
         this.AGENTS_READY = new ConcurrentSkipListSet<>();
 
@@ -69,8 +67,8 @@ public class NegotiationSession
         session_data.put("x", "");
 
         // todo make this more... flexible
-        session_data.put("A", agent_names[0]);
-        session_data.put("B", agent_names[1]);
+        session_data.put("A", agent_ids[0]);
+        session_data.put("B", agent_ids[1]);
 
         session_data.put("_session_id", session_hash);
 
@@ -81,7 +79,7 @@ public class NegotiationSession
         session_loop_agent_invoke_lock = new PseudoLock();
 
         // LOG
-        log_hook.accept(session_hash, String.format("%-23s %-7s %s", new java.sql.Timestamp(System.currentTimeMillis()), "INIT", Arrays.toString(agent_names)));
+        log_hook.accept(session_hash, String.format("%-23s %-7s %s", new java.sql.Timestamp(System.currentTimeMillis()), "INIT", Arrays.toString(agent_ids)));
     }
 
     public NegotiationState GetState()
@@ -93,17 +91,16 @@ public class NegotiationSession
     {
         if (!this.state.equals(NegotiationState.JOIN)) return;
 
-        String agent_name = agent.getAgentName();
-
-        if (!this.agent_refs.containsKey(agent_name))
+        String agent_id = agent.GetAgentID();
+        if (!this.agent_refs.containsKey(agent_id))
         {
-            Assert.isTrue(Arrays.asList(agent_names).contains(agent_name), "AGENT " + agent_name+ " DOES NOT BELONG HERE");
+            Assert.isTrue(Arrays.asList(agent_ids).contains(agent_id), "AGENT " + agent_id+ " DOES NOT BELONG HERE");
 
             this.agent_refs.put(agent.getAgentName(), agent);
-            this.log_hook.accept(session_hash, String.format("%-23s %s JOIN {BROADCAST: %s }", new java.sql.Timestamp(System.currentTimeMillis()), agent_name, Arrays.toString(agent.GetBroadcast())));
+            this.log_hook.accept(session_hash, String.format("%-23s %s JOIN {BROADCAST: %s }", new java.sql.Timestamp(System.currentTimeMillis()), agent_id, Arrays.toString(agent.GetBroadcast())));
         }
 
-        if (this.agent_refs.size() == this.agent_names.length)
+        if (this.agent_refs.size() == this.agent_ids.length)
         {
             conclude_join_process();
         }
@@ -111,7 +108,7 @@ public class NegotiationSession
 
     private void conclude_join_process()
     {
-        world_log_callback.accept(String.format("Negotiation Session %s STARTING | %s", session_hash.substring(0, 7), Arrays.toString(_agent_names)));
+        world_log_callback.accept(String.format("Negotiation Session %s STARTING | %s", session_hash.substring(0, 7), Arrays.toString(agent_ids)));
         log_hook.accept(session_hash, String.format("%-23s %-7s", new java.sql.Timestamp(System.currentTimeMillis()), "START"));
 
         join_task();
@@ -123,17 +120,17 @@ public class NegotiationSession
     private void join_task()
     {
         CompletableFuture.runAsync(() -> {
-            for (String agent_name : agent_names)
+            for (String agent_id : agent_ids)
             {
                 CompletableFuture.runAsync(() -> {
                     try {
                         State state = new State();
-                        state.agents = agent_names.clone();
+                        state.agents = agent_ids.clone();
                         state.contract = contract.clone();
 
-                        agent_refs.get(agent_name).PreNegotiation(session_hash, state);
+                        agent_refs.get(agent_id).PreNegotiation(session_hash, state);
 
-                        AGENTS_READY.add(agent_name);
+                        AGENTS_READY.add(agent_id);
                     } catch (CloneNotSupportedException e) {
                         e.printStackTrace();
                     }
@@ -149,7 +146,7 @@ public class NegotiationSession
     private void await_init()
     {
         try {
-            if (AGENTS_READY.size() == agent_names.length)
+            if (AGENTS_READY.size() == agent_ids.length)
             {   // ALL AGENTS ARE READY
                 run();
             }
@@ -167,7 +164,7 @@ public class NegotiationSession
 
         state = NegotiationState.RUNNING;
         start_time = System.currentTimeMillis();
-        Assert.notNull(TURN, "TURN cannot be null! " + Arrays.toString(agent_names));
+        Assert.notNull(TURN, "TURN cannot be null! " + Arrays.toString(agent_ids));
 
         task_run = service.scheduleAtFixedRate(this::session_loop_container, 0, 100, TimeUnit.MILLISECONDS);
     }
@@ -176,7 +173,7 @@ public class NegotiationSession
     {
         List<String> bid_order;
         do {
-            bid_order = Arrays.asList(agent_names);
+            bid_order = Arrays.asList(agent_ids);
             Collections.shuffle(bid_order);
         } while (bid_order.get(0).equals(TURN));
         // DON'T ALLOW SAME AGENT TO BID OVER AND OVER AND OVER AND OVER AGAIN
@@ -219,10 +216,10 @@ public class NegotiationSession
     {
 //        log_hook.accept(session_hash, String.format("%-23s %-7s %s", new java.sql.Timestamp(System.currentTimeMillis()), state, contract.print()));
         try {
-            for (String agent_name : agent_names)
+            for (String agent_id : agent_ids)
             {
                 CompletableFuture
-                    .runAsync(() -> send_current_state_to_agent(agent_name))
+                    .runAsync(() -> send_current_state_to_agent(agent_id))
                     .exceptionally(ex -> { ex.printStackTrace(); return null; })
                 ;
             }
@@ -246,12 +243,12 @@ public class NegotiationSession
         Contract contract = this.contract.clone();
 
         log_hook.accept(session_hash, String.format("%-23s %-7s %s", new java.sql.Timestamp(System.currentTimeMillis()), state, contract.print()));
-        for (String agent_name : agent_names)
+        for (String agent_id : agent_ids)
         {
             CompletableFuture
                 .runAsync(() -> {
-                    agent_refs.get(agent_name).AcceptLastBids(contract);
-                    agent_refs.get(agent_name).PostNegotiation(contract);
+                    agent_refs.get(agent_id).AcceptLastBids(contract);
+                    agent_refs.get(agent_id).PostNegotiation(contract);
                 })
                 .exceptionally(ex -> { ex.printStackTrace(); return null; })
             ;
@@ -261,14 +258,14 @@ public class NegotiationSession
         task_run.cancel(false);
     }
 
-    private void send_current_state_to_agent(String agent_name)
+    private void send_current_state_to_agent(String agent_id)
     {
         try {
             State state = new State();
-            state.agents = agent_names.clone();
+            state.agents = agent_ids.clone();
             state.contract = contract.clone();
 
-            agent_refs.get(agent_name).OnReceiveState(state);
+            agent_refs.get(agent_id).OnReceiveState(state);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -377,7 +374,7 @@ public class NegotiationSession
 
     // TODO update contract functions
 
-    public Contract GetAgentContract(String agent_name)
+    public Contract GetAgentContract(String agent_id)
     {
         // TODO verify agent name
         try {
@@ -397,17 +394,17 @@ public class NegotiationSession
 
     public String[] GetAgentNames()
     {
-        return _agent_names;
+        return agent_ids;
     }
 
     public String[] GetActiveAgentNames()
     {
-        return agent_names == null ? new String[0] : agent_names;
+        return agent_ids == null ? new String[0] : agent_ids;
     }
 
-    public synchronized void RegisterAgentLeaving(String agent_name)
+    public synchronized void RegisterAgentLeaving(String agent_id)
     {
-        agent_names = ArrayUtils.remove(agent_names, agent_name);
+        agent_ids = ArrayUtils.remove(agent_ids, agent_id);
     }
 
     /**
@@ -446,6 +443,6 @@ public class NegotiationSession
 
     @Override
     public String toString() {
-        return "{" + Arrays.toString(_agent_names) + "}";
+        return "{" + Arrays.toString(agent_ids) + "}";
     }
 }
