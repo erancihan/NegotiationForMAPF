@@ -171,12 +171,14 @@ public class NegotiationOverseer
     {
         NegotiationSession session = sessions.get(session_id);
 
-        if (session.GetState().equals(NegotiationSession.NegotiationState.DONE))
-        {
+        if (
+            session.GetState().equals(NegotiationSession.NegotiationState.DONE) ||
+            session.GetState().equals(NegotiationSession.NegotiationState.JOIN)
+        ) {
             session.RegisterAgentLeaving(agent_name);
             session_keys.get(agent_name).remove(session_id);
         }
-        if (session.GetActiveAgentNames().length == 0)
+        if (session.GetActiveAgentIDs().length == 0)
         {
 //            session.destroy();
             sessions.remove(session_id);
@@ -215,5 +217,10 @@ public class NegotiationOverseer
             session_keys.getOrDefault(key, new ArrayList<>()).remove(session);
 
         return agent_names;
+    }
+
+    public ConcurrentHashMap<String, NegotiationSession> ActiveSessions()
+    {
+        return sessions;
     }
 }
