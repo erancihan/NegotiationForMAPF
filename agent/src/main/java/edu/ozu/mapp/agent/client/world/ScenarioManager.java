@@ -15,6 +15,7 @@ import edu.ozu.mapp.agent.client.helpers.ConflictInfo;
 import edu.ozu.mapp.config.AgentConfig;
 import edu.ozu.mapp.config.SessionConfig;
 import edu.ozu.mapp.config.WorldConfig;
+import edu.ozu.mapp.system.SystemExit;
 import edu.ozu.mapp.system.WorldOverseer;
 import edu.ozu.mapp.system.WorldState;
 import edu.ozu.mapp.utils.AStar;
@@ -1469,6 +1470,10 @@ public class ScenarioManager extends javax.swing.JFrame
     public void OnWindowClosed(Runnable runnable)
     {
         ON_WINDOW_CLOSED = runnable;
+    }
+
+    public void OnRunCrash(Consumer<Integer> runnable) {
+        SystemExit.ExitHook = runnable;
     }
 }
 
