@@ -932,6 +932,8 @@ public class WorldOverseer
 
         switch (curr_state)
         {
+            case JOIN:
+                break;
             case NEGOTIATE:
                 if (STALE_NEGOTIATE_STATE_WAIT_COUNTER >= 10)
                 {
