@@ -176,7 +176,7 @@ public class NegotiationOverseer
             session.GetState().equals(NegotiationSession.NegotiationState.JOIN)
         ) {
             session.RegisterAgentLeaving(agent_name);
-            session_keys.get(agent_name).remove(session_id);
+            if (session_keys.containsKey(agent_name)) session_keys.get(agent_name).remove(session_id);
         }
         if (session.GetActiveAgentIDs().length == 0)
         {
