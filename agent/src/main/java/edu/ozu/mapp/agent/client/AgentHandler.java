@@ -441,12 +441,23 @@ public class AgentHandler {
 
     public final Action OnMakeAction(Contract contract)
     {
-        logger.debug(agent.AGENT_ID + " | Making Action | " + contract.sess_id);
-        Action action = agent.onMakeAction(contract);
-        action.take();
-        logger.debug(agent.AGENT_ID + " | Taking Action | " + contract.sess_id + " " + action);
+        Action action = null;
+        try
+        {
+            logger.debug(agent.AGENT_ID + " | Making Action | " + contract.sess_id);
+            action = agent.onMakeAction(contract);
+            action.take();
+            logger.debug(agent.AGENT_ID + " | Taking Action | " + contract.sess_id + " " + action);
 
-        file_logger.AgentLogNegotiationAction(this, action);
+            file_logger.AgentLogNegotiationAction(this, action);
+        }
+        catch (Exception exception)
+        {
+            System.err.println(agent.AGENT_ID + " " + agent.POS + " -> " + agent.DEST);
+            System.err.println(agent.constraints);
+            exception.printStackTrace();
+            System.exit(500);
+        }
 
         return action;
     }
