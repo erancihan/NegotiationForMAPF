@@ -142,7 +142,22 @@ public abstract class Agent {
             if (!_map.containsKey(constraint.location.key)) {
                 _map.put(constraint.location.key, new ArrayList<>());
             }
-            _map.get(constraint.location.key).add(constraint.at_t == -1 ? "inf" : String.valueOf(constraint.at_t));
+
+            String __t = constraint.at_t == -1 ? "inf" : String.valueOf(constraint.at_t);
+            if (!_map.get(constraint.location.key).contains(__t)) {
+                _map.get(constraint.location.key).add(__t);
+            }
+        }
+
+        for (Constraint constraint : this.constraints) {
+            if (!_map.containsKey(constraint.location.key)) {
+                _map.put(constraint.location.key, new ArrayList<>());
+            }
+
+            String __t = constraint.at_t == -1 ? "inf" : String.valueOf(constraint.at_t);
+            if (!_map.get(constraint.location.key).contains(__t)) {
+                _map.get(constraint.location.key).add(__t);
+            }
         }
 
         String[][] fov = WorldOverseer.getInstance().GetFoV(this.AGENT_ID);
