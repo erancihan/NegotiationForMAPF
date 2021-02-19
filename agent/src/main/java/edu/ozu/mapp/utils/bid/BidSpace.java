@@ -120,6 +120,13 @@ public class BidSpace
         {
             System.err.println("Stack is empty " + start.point + " -> " + goal + " w/ " + constraints + " @ t: " + time + " | invoke:" + invoke_count);
         }
+        catch (NullPointerException exception)
+        {
+            System.err.println("nullptr " + start.point + " -> " + goal + " w/ " + constraints + " @ t: " + time + " | invoke:" + invoke_count);
+            System.err.println("cursor: " + cursor);
+            exception.printStackTrace();
+            System.exit(500);
+        }
 
         return path;
     }
