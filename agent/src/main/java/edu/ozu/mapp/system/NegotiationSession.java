@@ -240,17 +240,11 @@ public class NegotiationSession
                 ;
             }
 
-            CompletableFuture
-                .supplyAsync(this::process_turn_make_action)
-                .whenCompleteAsync((entity, ex) -> {
-                    if (ex != null) ex.printStackTrace();
-
-                    session_loop_agent_invoke_lock.unlock();
-                }, service)
-            ;
+            process_turn_make_action();
+            session_loop_agent_invoke_lock.unlock();
         } catch (Exception exception) {
             exception.printStackTrace();
-            session_loop_agent_invoke_lock.unlock();
+            System.exit(500);
         }
     }
 
