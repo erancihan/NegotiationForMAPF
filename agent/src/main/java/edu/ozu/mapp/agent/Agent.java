@@ -268,7 +268,8 @@ public abstract class Agent {
         }
         */
 
-        if (to != null) {
+        if (to != null && !to.equals(POS))
+        {
             return GetBidSpace(POS, to, Globals.FIELD_OF_VIEW_SIZE);
         }
 
