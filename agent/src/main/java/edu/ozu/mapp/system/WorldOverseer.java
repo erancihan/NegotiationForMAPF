@@ -979,7 +979,10 @@ public class WorldOverseer
                 }
 
                 break;
+            case BROADCAST:
+            case MOVE:
             default:
+                STALE_NEGOTIATE_STATE_WAIT_COUNTER = 0;
         }
 
         overseer_validator_invoke_lock.unlock();
