@@ -932,6 +932,7 @@ public class WorldOverseer
             case NEGOTIATE:
                 if (STALE_NEGOTIATE_STATE_WAIT_COUNTER == 10)
                 {
+                    STALE_NEGOTIATE_STATE_WAIT_COUNTER = 0;
                     logger.warn("THREAD HAS BEEN STALE FOR 10 SECONDS");
 
                     if (negotiation_overseer.ActiveCount() != 0) {
@@ -968,8 +969,6 @@ public class WorldOverseer
                         AgentClient client = clients.get(agent_id);
                         client.VerifyNegotiations();
                     }
-
-                    STALE_NEGOTIATE_STATE_WAIT_COUNTER = 0;
                 }
                 else
                 {
