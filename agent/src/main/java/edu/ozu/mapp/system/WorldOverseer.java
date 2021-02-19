@@ -883,8 +883,11 @@ public class WorldOverseer
     }
 
     private int STALE_NEGOTIATE_STATE_WAIT_COUNTER = 0;
+    private PseudoLock overseer_validator_invoke_lock = new PseudoLock();
     private void overseer_validator()
     {
+        if (!overseer_validator_invoke_lock.tryLock()) return;
+
         int client_c = clients.size();
         int inactive_client_c = 0;
 
@@ -930,7 +933,7 @@ public class WorldOverseer
         switch (curr_state)
         {
             case NEGOTIATE:
-                if (STALE_NEGOTIATE_STATE_WAIT_COUNTER == 10)
+                if (STALE_NEGOTIATE_STATE_WAIT_COUNTER >= 10)
                 {
                     STALE_NEGOTIATE_STATE_WAIT_COUNTER = 0;
                     logger.warn("THREAD HAS BEEN STALE FOR 10 SECONDS");
@@ -978,5 +981,7 @@ public class WorldOverseer
                 break;
             default:
         }
+
+        overseer_validator_invoke_lock.unlock();
     }
 }
