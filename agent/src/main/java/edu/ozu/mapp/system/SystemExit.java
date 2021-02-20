@@ -4,17 +4,31 @@ import java.util.function.Consumer;
 
 public class SystemExit
 {
-    public static Consumer<Integer> ExitHook;
+    public static Consumer<Integer> ExitHook = null;
+
     public static boolean SHUTDOWN_ON_EXIT = true;
+    public static int EXIT_CODE = -1;
+
+    enum Status {
+        TIMEOUT(501), FATAL(500);
+
+        int value;
+        Status(int status) {
+            this.value = status;
+        }
+    }
+
+    public static void exit(Status status) {
+        exit(status.value);
+    }
 
     public static void exit(int status)
     {
-        if (ExitHook != null) {
-            ExitHook.accept(status);
+        if (ExitHook == null) {
+            // default behaviour
+            System.exit(status);
         }
 
-//        if (SHUTDOWN_ON_EXIT) {
-            System.exit(status);
-//        }
+        ExitHook.accept(status);
     }
 }
