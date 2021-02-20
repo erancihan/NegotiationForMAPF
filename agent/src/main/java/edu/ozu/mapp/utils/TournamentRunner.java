@@ -26,7 +26,7 @@ public class TournamentRunner {
     public static void main(String[] arg) {
         try {
             ch.qos.logback.classic.Logger root = (ch.qos.logback.classic.Logger) org.slf4j.LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME);
-            root.setLevel(ch.qos.logback.classic.Level.INFO);
+//            root.setLevel(ch.qos.logback.classic.Level.INFO);
 
             System.out.println(FileSystemView.getFileSystemView().getDefaultDirectory().getPath());
             System.out.println(System.getProperty("user.dir"));
