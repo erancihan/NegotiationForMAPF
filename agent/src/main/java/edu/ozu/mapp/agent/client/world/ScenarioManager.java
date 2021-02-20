@@ -1006,7 +1006,10 @@ public class ScenarioManager extends javax.swing.JFrame
 //        if (world_listener != null)  world_listener.close();
         if (scenario_canvas != null) scenario_canvas.Destroy();
 
-        if (ON_WINDOW_CLOSED != null) ON_WINDOW_CLOSED.run();
+        if (ON_WINDOW_CLOSED != null)
+        {
+            if (SystemExit.EXIT_CODE == 0) ON_WINDOW_CLOSED.run();
+        }
     }
 
     private WorldOverseer world;
@@ -1142,7 +1145,7 @@ public class ScenarioManager extends javax.swing.JFrame
                 if (!AgentLocationDataIterator.hasNext()) {
                     // error
                     logger.error("NOT ENOUGH LOCATIONS WERE GENERATED");
-                    System.exit(1);
+                    SystemExit.exit(500);
                 }
                 Point[] locPair = AgentLocationDataIterator.next();
 
@@ -1473,7 +1476,14 @@ public class ScenarioManager extends javax.swing.JFrame
     }
 
     public void OnRunCrash(Consumer<Integer> runnable) {
-        SystemExit.ExitHook = runnable;
+        SystemExit.ExitHook = (status) -> {
+            world.Flush();
+
+            this.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+            this.dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
+
+            runnable.accept(SystemExit.EXIT_CODE);
+        };
     }
 }
 

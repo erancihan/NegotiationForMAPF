@@ -2,6 +2,7 @@ package edu.ozu.mapp.utils;
 
 import edu.ozu.mapp.agent.Agent;
 import edu.ozu.mapp.agent.client.models.Contract;
+import edu.ozu.mapp.system.SystemExit;
 
 public class Action
 {
@@ -113,7 +114,7 @@ public class Action
 
             if (owned_tokens < own_token_offer) {
                 logger.error(agent.AGENT_ID + " cannot demand same path without tokens: " + owned_tokens + " < " + own_token_offer);
-                System.exit(1);
+                SystemExit.exit(500);
             }
         }
         logger.debug("token offer : " + own_token_offer);

@@ -1,5 +1,6 @@
 package edu.ozu.mapp.utils.bid;
 
+import edu.ozu.mapp.system.SystemExit;
 import edu.ozu.mapp.utils.Path;
 import edu.ozu.mapp.utils.PathCollection;
 import edu.ozu.mapp.utils.Point;
@@ -125,7 +126,7 @@ public class BidSpace
             System.err.println("nullptr " + start.point + " -> " + goal + " w/ " + constraints + " @ t: " + time + " | invoke:" + invoke_count);
             System.err.println("cursor: " + cursor);
             exception.printStackTrace();
-            System.exit(500);
+            SystemExit.exit(500);
         }
 
         return path;

@@ -117,6 +117,8 @@ public class WorldOverseer
         agents_verify_lock = new PseudoLock();
 
         TIME = 0;
+
+        System.out.println(string());
     }
 
     public static WorldOverseer getInstance()
@@ -139,11 +141,27 @@ public class WorldOverseer
     {
         System.out.println("Flushed INSTANCE : " + movement_handler + "     to : " + movement_handler.Flush());
         System.out.println("Flushed INSTANCE : " + negotiation_overseer + " to : " + negotiation_overseer.Flush());
-        System.out.print  ("Flushed INSTANCE : " + instance);
+
+        try {
+            System.out.println(" > main_sim_loop cancel");
+            main_sim_loop.cancel(true);
+            System.out.println(" > overseer_validator cancel");
+            overseer_validation_job.cancel(true);
+        } catch (Exception exception) {
+            exception.printStackTrace();
+        }
+
+        System.out.print  ("Flushed INSTANCE : " + instance + "       to : ");
         instance = new WorldOverseer();
-        System.out.println("       to : " + instance);
 
         return instance;
+    }
+
+    public String string() {
+        return this.getClass().getSimpleName() + "@" + Integer.toHexString(System.identityHashCode(this)) +
+                "\n clients: " + clients +
+                "\n map: " + point_to_agent +
+                "\n main_sim_loop: " + (main_sim_loop == null ? "null" : String.valueOf(main_sim_loop.isDone()));
     }
 
     public void Create(String world_id, int width, int height)
@@ -181,6 +199,8 @@ public class WorldOverseer
     public void Run()
     {
         service = Executors.newScheduledThreadPool(clients.size() + 2);
+        System.out.println(" > init service: " + service);
+
         main_sim_loop = service.scheduleAtFixedRate(this::run_loop_container, 0, 250, TimeUnit.MILLISECONDS);
         overseer_validation_job = service.scheduleAtFixedRate(this::overseer_validator, 0, 1, TimeUnit.SECONDS);
 
@@ -189,6 +209,7 @@ public class WorldOverseer
             AgentClient client = clients.get(agent_name);
             service.scheduleAtFixedRate(update_state_func_generator(client), 100, 500, TimeUnit.MILLISECONDS);
         }
+        System.out.println(" > init service: " + service);
     }
 
     private void run_loop_container()
@@ -366,7 +387,7 @@ public class WorldOverseer
                             if (ex != null)
                             {
                                 ex.printStackTrace();
-                                System.exit(1);
+                                SystemExit.exit(500);
                             }
 
                             SNAPSHOT_HOOK.accept(
@@ -391,7 +412,7 @@ public class WorldOverseer
             UI_LogDrawCallback.accept(log_payload.clone());
         } catch (CloneNotSupportedException e) {
             e.printStackTrace();
-            System.exit(1);
+            SystemExit.exit(500);
         }
     }
 
@@ -491,6 +512,8 @@ public class WorldOverseer
                 break;
             default:
         }
+
+        STATE_SIMULATION_PROCESS_COUNTER = 0;
     }
 
     public void Loop()
@@ -797,7 +820,7 @@ public class WorldOverseer
              *  In such case, the log data will be overwritten.
              *  To prevent this from happening, remove the previous key, and
              *  instead create a new key with the updated data.
-             *  Key for the negotiation session instance will be timestamped,
+             *  Key for the negotiation session instance will be timestamped
              *  separated by `-` in this case. Directly use the key.
              *
              * As this is the case only run when agents end their negotiation session
@@ -883,6 +906,7 @@ public class WorldOverseer
     }
 
     private int STALE_NEGOTIATE_STATE_WAIT_COUNTER = 0;
+    private int STATE_SIMULATION_PROCESS_COUNTER = 0;
     private PseudoLock overseer_validator_invoke_lock = new PseudoLock();
     private void overseer_validator()
     {
@@ -984,7 +1008,13 @@ public class WorldOverseer
             case BROADCAST:
             case MOVE:
             default:
-                STALE_NEGOTIATE_STATE_WAIT_COUNTER = 0;
+                if (STATE_SIMULATION_PROCESS_COUNTER < 300) {
+                    STATE_SIMULATION_PROCESS_COUNTER += 1;
+                } else {
+                    STATE_SIMULATION_PROCESS_COUNTER = 0;
+
+                    SystemExit.exit(SystemExit.Status.TIMEOUT);
+                }
         }
 
         overseer_validator_invoke_lock.unlock();

@@ -29,6 +29,8 @@ public class MovementHandler
         payloads    = new ConcurrentHashMap<>();
 
         process_queue_lock = new PseudoLock();
+
+        System.out.println(string());
     }
 
     public static MovementHandler getInstance()
@@ -89,7 +91,7 @@ public class MovementHandler
         catch (Exception ex)
         {
             ex.printStackTrace();
-            System.exit(1);
+            SystemExit.exit(500);
         }
     }
 
@@ -112,7 +114,7 @@ public class MovementHandler
                         agent_id +
                         " HAVE THE SAME LOCATION KEYS"
                 );
-                System.exit(500);
+                SystemExit.exit(500);
             }
         }
 
@@ -128,7 +130,7 @@ public class MovementHandler
                     payload.NEXT_LOCATION.key + " WAS NOT OPEN FOR " + agent_name + ". OCCUPIED BY " +
                     world.point_to_agent.get(payload.NEXT_LOCATION.key)
                 );
-                System.exit(500);
+                SystemExit.exit(500);
             }
             world.point_to_agent.put(payload.NEXT_LOCATION.key, agent_name);    // CLOSE
             world.agent_to_point.put(agent_name, payload.NEXT_LOCATION.key);    // UPDATE
@@ -149,5 +151,10 @@ public class MovementHandler
 
             iterator.remove();
         }
+    }
+
+    public String string() {
+        return this.getClass().getSimpleName() + "@" + Integer.toHexString(System.identityHashCode(this)) +
+                "\n queue: " + move_queue.toString();
     }
 }

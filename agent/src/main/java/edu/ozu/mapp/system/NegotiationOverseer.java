@@ -37,6 +37,8 @@ public class NegotiationOverseer
         sessions     = new ConcurrentHashMap<>();
 
         cumulative_negotiation_count = 0;
+
+        System.out.println(string());
     }
 
     public static NegotiationOverseer getInstance()
@@ -122,7 +124,7 @@ public class NegotiationOverseer
         if (!Arrays.asList(agents).contains(agent.GetAgentID()))
         {
             logger.error(agent.GetAgentID() + " does not belong to session " + session_hash + " | " + Arrays.toString(agents));
-            System.exit(1);
+            SystemExit.exit(500);
         }
 
         // are these ids present in session info
@@ -146,7 +148,7 @@ public class NegotiationOverseer
                 logger.warn(agent_id + " | for some reason I am not in session " + session_hash);
                 keys.add(session_hash);
                 session_keys.put(agent_id, keys);
-                System.exit(1);
+                SystemExit.exit(500);
             }
         }
 
@@ -222,5 +224,11 @@ public class NegotiationOverseer
     public ConcurrentHashMap<String, NegotiationSession> ActiveSessions()
     {
         return sessions;
+    }
+
+    public String string() {
+        return this.getClass().getSimpleName() + "@" + Integer.toHexString(System.identityHashCode(this)) +
+                "\n sessions: " + sessions +
+                "\n session keys: " + session_keys;
     }
 }

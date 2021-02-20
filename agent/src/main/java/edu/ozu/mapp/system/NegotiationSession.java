@@ -155,7 +155,7 @@ public class NegotiationSession
         catch (InterruptedException e)
         {
             e.printStackTrace();
-            System.exit(500);
+            SystemExit.exit(500);
         }
     }
 
@@ -203,7 +203,7 @@ public class NegotiationSession
             session_loop();
         } catch (CloneNotSupportedException e) {
             e.printStackTrace();
-            System.exit(1);
+            SystemExit.exit(500);
         }
     }
 
@@ -222,7 +222,7 @@ public class NegotiationSession
                 break;
             default:
                 System.err.printf("UNHANDLED STATE: %s %s", state, System.lineSeparator());
-                System.exit(1);
+                SystemExit.exit(505);
         }
 
         T = T + 1;
@@ -244,7 +244,7 @@ public class NegotiationSession
             session_loop_agent_invoke_lock.unlock();
         } catch (Exception exception) {
             exception.printStackTrace();
-            System.exit(500);
+            SystemExit.exit(500);
         }
     }
 
@@ -300,7 +300,7 @@ public class NegotiationSession
             action = agent.OnMakeAction(contract.clone());
         } catch (CloneNotSupportedException e) {
             e.printStackTrace();
-            System.exit(1);
+            SystemExit.exit(500);
         }
 
         Assert.notNull(action, "Action cannot be null!");
@@ -391,7 +391,7 @@ public class NegotiationSession
             return contract.clone();
         } catch (CloneNotSupportedException e) {
             e.printStackTrace();
-            System.exit(1);
+            SystemExit.exit(500);
         }
 
         return null;
@@ -442,20 +442,21 @@ public class NegotiationSession
      * */
     public void destroy()
     {
+        System.out.println("> destroy " + this.getClass().getSimpleName() + "@" + System.identityHashCode(this));
         if (task_join_await != null)
         {
-            System.out.println("canceling task_join_await");
-            task_join_await.cancel(false);
+            System.out.println("> canceling task_join_await");
+            task_join_await.cancel(true);
         }
         if (task_run != null)
         {
-            task_run.cancel(false);
-            System.out.println("canceling task_run");
+            task_run.cancel(true);
+            System.out.println("> canceling task_run");
         }
 
         service.shutdownNow();
 
-        System.out.println("unlocking SESSION LOOP LOCK");
+        System.out.println("> unlocking SESSION LOOP LOCK");
         session_loop_agent_invoke_lock.unlock();
     }
 

@@ -10,6 +10,7 @@ import edu.ozu.mapp.dataTypes.Constraint;
 import edu.ozu.mapp.dataTypes.CollisionCheckResult;
 import edu.ozu.mapp.system.DATA_REQUEST_PAYLOAD_WORLD_JOIN;
 import edu.ozu.mapp.system.DATA_REQUEST_PAYLOAD_WORLD_MOVE;
+import edu.ozu.mapp.system.SystemExit;
 import edu.ozu.mapp.system.WorldOverseer;
 import edu.ozu.mapp.utils.*;
 import org.jetbrains.annotations.NotNull;
@@ -191,7 +192,10 @@ public class AgentHandler {
         try {
             String[][] fov_data = WorldOverseer.getInstance().GetFoV(agent.AGENT_ID);
             result = getCollidingAgents(fov_data);
-        } catch (Exception ex) { ex.printStackTrace(); System.exit(1); }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            SystemExit.exit(500);
+        }
         switch (result.type) {
             case COLLISION:
                 // There is a collision in path! Resolve this first
@@ -456,7 +460,7 @@ public class AgentHandler {
             System.err.println(agent.AGENT_ID + " " + agent.POS + " -> " + agent.DEST);
             System.err.println(agent.constraints);
             exception.printStackTrace();
-            System.exit(500);
+            SystemExit.exit(500);
         }
 
         return action;
@@ -537,7 +541,7 @@ public class AgentHandler {
         List<String> rest = agent.calculatePath(end, agent.DEST);
         if (rest == null) {
             logger.error(agent.AGENT_ID + " | REST cannot be null!");
-            System.exit(1);
+            SystemExit.exit(500);
         }
 
         logger.debug(String.format("%s | CALCULATED PATH", agent.AGENT_ID));
@@ -609,7 +613,7 @@ public class AgentHandler {
         List<String> rest = agent.calculatePath(agent.POS, agent.DEST, constraints);
         if (rest == null) {
             logger.error(agent.AGENT_ID + " | REST cannot be null!");
-            System.exit(1);
+            SystemExit.exit(500);
         }
 
         // ensure that connection points match
@@ -654,7 +658,7 @@ public class AgentHandler {
     {
         if (agent.current_tokens + i < 0) {
             logger.error(agent.AGENT_ID + " | OH NO!!! AGENT CANNOT HAVE NEGATIVE TOKEN COUNT");
-            System.exit(1);
+            SystemExit.exit(500);
         }
         agent.current_tokens += i;
 
