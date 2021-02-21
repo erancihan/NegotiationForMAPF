@@ -1440,8 +1440,8 @@ public class ScenarioManager extends javax.swing.JFrame
     {
         if (cycle)
         {   // will cycle immediately
-            world.SCENARIO_MANAGER_HOOK_JOIN_UPDATE(agent_count -> {
-                if (agent_count == WorldState.JOINED) {
+            world.SCENARIO_MANAGER_HOOK_JOIN_UPDATE(state -> {
+                if (state == WorldState.JOINED) {
                     logger.info("Agent Joins complete");
 
                     world.Loop();
