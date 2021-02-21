@@ -190,7 +190,7 @@ public class TournamentRunner {
                 do {
                     idx++;
                     save_file_src = Paths.get(FileSystemView.getFileSystemView().getDefaultDirectory().getPath(), "MAPP", "logs", "WORLD-" + wid + "-" + idx).toFile();
-                } while (save_file_src.exists());
+                } while (new File(save_file_src + "-false").exists() || new File(save_file_src + "-true").exists() || save_file_src.exists());
 
                 String[] argv = new String[]{ String.valueOf(idx) };
 
