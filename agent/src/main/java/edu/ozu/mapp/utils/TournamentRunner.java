@@ -186,7 +186,7 @@ public class TournamentRunner {
                 ;
                 latch.await();
 
-                Thread.sleep(100);
+                Thread.sleep(1000);
 
                 System.out.println("> " + WorldOverseer.getInstance().string());
 
