@@ -177,14 +177,26 @@ public class TournamentRunner {
             File scenario = new File(iterator.next());
             System.out.println(scenario);
 
+            String wid = scenario.getName().replace("world-scenario-", "").replace(".json", "");
+
+
             int try_count = 1;
             for (int i = 0; i < try_count && try_count <= TOURNAMENT_RUNNER_MAX_NUMBER_OF_TRIES; i++)
             {   // BEGIN: FOR LOOP
                 AtomicBoolean should_repeat = new AtomicBoolean(false);
 
+                File save_file_src;
+                int idx = i;
+                do {
+                    idx++;
+                    save_file_src = Paths.get(FileSystemView.getFileSystemView().getDefaultDirectory().getPath(), "MAPP", "logs", "WORLD-" + wid + "-" + idx).toFile();
+                } while (save_file_src.exists());
+
+                String[] argv = new String[]{ String.valueOf(idx) };
+
                 CountDownLatch latch = new CountDownLatch(1);
                 ScenarioManager
-                    .run(new String[0])
+                    .run(argv)
                     .thenApply(manager -> {
                         manager.OnWindowClosed(latch::countDown);
                         manager.OnRunCrash(status -> {
@@ -203,14 +215,7 @@ public class TournamentRunner {
 
                 System.out.println("> " + WorldOverseer.getInstance().string());
 
-                String wid = scenario.getName().replace("world-scenario-", "").replace(".json", "");
-                File save_file_src = Paths.get(FileSystemView.getFileSystemView().getDefaultDirectory().getPath(), "MAPP", "logs", "WORLD-" + wid).toFile();
-                File save_file_dest;
-                int idx = i;
-                do {
-                    save_file_dest = new File(save_file_src.getParent(), save_file_src.getName() + "-" + idx + "-" + !should_repeat.get());
-                    idx++;
-                } while (save_file_dest.exists());
+                File save_file_dest = new File(save_file_src.getParent(), save_file_src.getName() + "-" + !should_repeat.get());
                 Files.move(save_file_src.toPath(), save_file_dest.toPath());
 
                 new FileWriter(tournament_run_results, true)

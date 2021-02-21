@@ -48,6 +48,7 @@ import java.util.stream.Collectors;
 public class ScenarioManager extends javax.swing.JFrame
 {
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ScenarioManager.class);
+    private String run_idx = "";
 
     private boolean is_headless;
     private ScenarioManager instance = null;
@@ -60,13 +61,28 @@ public class ScenarioManager extends javax.swing.JFrame
     private ScenarioManager()
     {
         // default has gui, there for not headless
-        this(false);
+        this(new String[0], false);
     }
 
     public ScenarioManager(boolean is_headless)
     {
+        this(new String[0], is_headless);
+    }
+
+    public ScenarioManager(String[] args)
+    {
+        this(args, false);
+    }
+
+    public ScenarioManager(String[] args, boolean is_headless)
+    {
         this.is_headless = is_headless;
         this.instance = this;
+
+        if (args.length > 0)
+        {
+            this.run_idx = args[0];
+        }
 
         if (is_headless) {
             logger.warn("HEADLESS DESIGN IS NOT FULLY IMPLEMENTED");
@@ -925,7 +941,7 @@ public class ScenarioManager extends javax.swing.JFrame
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(() -> {
-            ScenarioManager instance = new ScenarioManager();
+            ScenarioManager instance = new ScenarioManager(args);
             instance.setVisible(true);
 
             future.complete(instance);
@@ -1422,6 +1438,9 @@ public class ScenarioManager extends javax.swing.JFrame
             }
 
             Collections.addAll(agents_data, config.agents);
+            if (!run_idx.isEmpty()) {
+                world_data.world_id += "-" + run_idx;
+            }
 
             DisplayImportedData();
         } catch (IOException e) {
