@@ -673,6 +673,7 @@ public class WorldOverseer
         logger.debug("acquired agents_verify_lock");
         agents_verify_unlock_latch = new CountDownLatch(active_agent_c);
         STALE_NEGOTIATE_STATE_WAIT_COUNTER = 0;
+        STATE_SIMULATION_PROCESS_COUNTER = 0;
 
         CompletableFuture
             .runAsync(() -> {
@@ -1003,8 +1004,6 @@ public class WorldOverseer
                 {
                     STALE_NEGOTIATE_STATE_WAIT_COUNTER += 1;
                 }
-
-                break;
             case BROADCAST:
             case MOVE:
             default:
