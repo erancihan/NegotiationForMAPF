@@ -8,12 +8,15 @@ import edu.ozu.mapp.system.WorldOverseer;
 
 import javax.swing.filechooser.FileSystemView;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -40,13 +43,22 @@ public class TournamentRunner {
         }
     }
 
+    File tournament_run_results;
     private void run_tournament() throws IOException, InterruptedException
     {
 //        Path path = Paths.get(FileSystemView.getFileSystemView().getDefaultDirectory().getPath(), "MAPP");
-        Path path = Paths.get(System.getProperty("user.dir"), "artifacts", "configs");
+        Path path = Paths.get(System.getProperty("user.dir"), "artifacts", "configs", "experiment_1", "configs");
         ArrayList<String> scenarios = new Glob().glob(path, "world-scenario-*.json");
 
-        new TournamentRunner().run(scenarios);
+        tournament_run_results = Paths.get(path.toString(), "runs.txt").toFile();
+        //noinspection ResultOfMethodCallIgnored
+        tournament_run_results.getParentFile().mkdirs();
+        if (!tournament_run_results.exists()) {
+            //noinspection ResultOfMethodCallIgnored
+            tournament_run_results.createNewFile();
+        }
+
+        run(scenarios);
     }
 
     @SuppressWarnings("DuplicatedCode")
@@ -199,6 +211,17 @@ public class TournamentRunner {
                     idx++;
                 } while (save_file_dest.exists());
                 Files.move(save_file_src.toPath(), save_file_dest.toPath());
+
+                new FileWriter(tournament_run_results, true)
+                        .append(
+                            String.format(
+                                "%s;%s%s",
+                                new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date()),
+                                save_file_dest.getName(),
+                                System.lineSeparator()
+                            )
+                        )
+                        .close();
 
                 if (should_repeat.get())
                 {
