@@ -66,7 +66,7 @@ public class TournamentRunner {
     {
         Gson gson = new Gson();
 
-        Path path = Paths.get(System.getProperty("user.dir"), "artifacts", "configs", "8x8map_0obst", "20agents");
+        Path path = Paths.get(System.getProperty("user.dir"), "artifacts", "configs", "experiment_1", "configs_cbs");
         ArrayList<String> confs = new Glob().glob(path, "\\**\\*.json");
 
         String timestamp = String.valueOf(System.currentTimeMillis());
@@ -74,7 +74,8 @@ public class TournamentRunner {
         {
             Path __path = Paths.get(config_path);
 
-            String[] __idx = __path.getFileName().toString().split("\\.")[0].split("_");
+            String __data = __path.getFileName().toString().split("\\.")[0];
+            String[] __idx = __data.split("_");
             String idx = __idx[__idx.length-1];
 
             StringBuilder sb = new StringBuilder();
@@ -87,7 +88,7 @@ public class TournamentRunner {
             CBSConfig config = gson.fromJson(sb.toString(), CBSConfig.class);
 
             WorldConfig world_config = new WorldConfig();
-            world_config.world_id = timestamp + "-" + idx;
+            world_config.world_id = timestamp + "-" + __data;
             world_config.width = config.map.get("dimensions").get(0);
             world_config.height = config.map.get("dimensions").get(1);
             world_config.min_path_len = 1;
