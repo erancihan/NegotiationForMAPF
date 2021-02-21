@@ -127,6 +127,17 @@ public abstract class Agent {
         return calculatePath(start, dest, new ArrayList<>());
     }
 
+    public final List<String> calculatePath(Point start, Point dest, String Ox)
+    {
+        ArrayList<Constraint> constraints = new ArrayList<>();
+        Path _ox = new Path(Ox);
+        for (int i = 0; i < _ox.size(); i++) {
+            constraints.add(new Constraint(_ox.get(i), time + i));
+        }
+
+        return calculatePath(start, dest, constraints);
+    }
+
     public final List<String> calculatePath(Point start, Point dest, ArrayList<Constraint> constraints)
     {
         HashMap<String, ArrayList<String>> _constraints = process_constraints(constraints);
