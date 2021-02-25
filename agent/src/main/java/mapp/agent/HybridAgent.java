@@ -85,7 +85,7 @@ public class HybridAgent extends Agent
     public Action run_greedy(Contract contract)
     {
         // insist on current broadcast
-        Action insisting_action = new Action(this, ActionType.OFFER, GetNextBroadcast());
+        Action insisting_action = new Action(this, ActionType.OFFER, GetOwnBroadcastPath());
         if (insisting_action.validate()) return insisting_action;
 
         if (bid_space_iterator != null && bid_space_iterator.hasNext())
