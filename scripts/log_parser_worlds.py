@@ -153,14 +153,14 @@ class Agent(_Base):
     starting_point: str
     destination: str
     planned_initial_path: str
-    planned_initial_path_length: str
+    planned_initial_path_length: int
     taken_path: str
-    taken_path_length: str
-    negotiation_count: str
-    negotiations_won: str
-    negotiations_lost: str
-    token_count_initial: str
-    token_count_final: str
+    taken_path_length: int
+    negotiation_count: int
+    negotiations_won: int
+    negotiations_lost: int
+    token_count_initial: int
+    token_count_final: int
     negotiations: Dict[str, NegotiationSummary]
     amount_of_tokens_exchanged: int
     amount_of_tokens_given: int
@@ -176,14 +176,14 @@ class Agent(_Base):
         self.starting_point = None
         self.destination = None
         self.planned_initial_path = None
-        self.planned_initial_path_length = None
-        self.taken_path = None
-        self.taken_path_length = None
-        self.negotiation_count = None
-        self.negotiations_won = None
-        self.negotiations_lost = None
-        self.token_count_initial = None
-        self.token_count_final = None
+        self.planned_initial_path_length = 0
+        self.taken_path = ""
+        self.taken_path_length = 0
+        self.negotiation_count = 0
+        self.negotiations_won = 0
+        self.negotiations_lost = 0
+        self.token_count_initial = 0
+        self.token_count_final = 0
         self.amount_of_tokens_exchanged = 0
 
     def __str__(self, padd=0):
@@ -403,9 +403,6 @@ def run(scenarios_folder_path, force_reparse: bool = False):
 
         debug(' ┬', world_folder)
 
-        if world_folder.endswith('-false'):
-            continue
-
         data_dict = ExcelData()
 
         log_files = glob(join(world_folder, '*.log'))
@@ -437,7 +434,9 @@ def run(scenarios_folder_path, force_reparse: bool = False):
         wws_agents_c = 0
         wws_agents_h = ['id', 'name', 'starting point', 'destination', 'planned path', 'planned path len', 'taken path',
                         'taken path len', 'negotiation count', 'sum win', 'sum lose', 'initial token count',
-                        'final token count', '# of tokens received', '# of tokens given', 'token_diff', 'path diff', '#_of_times_bid_retained']
+                        'final token count', '# of tokens received', '# of tokens given', 'token_diff', 'path diff',
+                        'total_number_of_times_agent_made_retain_bid', 'number_of_times_agent_received_retain_bid', 'retain_bid_diff'
+                        ]
         for item in wws_agents_h:
             wws_agents.write(wws_agents_r, wws_agents_c, item)
             wws_agents_c += 1
@@ -466,16 +465,24 @@ def run(scenarios_folder_path, force_reparse: bool = False):
             wws_agents.write_number(wws_agents_r, 15, abs(int(wws_agent.amount_of_tokens_received) - int(wws_agent.amount_of_tokens_given)))
             wws_agents.write_number(wws_agents_r, 16, int(wws_agent.taken_path_length) - int(wws_agent.planned_initial_path_length))
 
-            num_of_times_bids_retained = 0
+            total_number_of_times_agent_made_retain_bid = 0
+            number_of_times_agent_received_retain_bid = 0
             if len(wws_agent.negotiations.keys()) > 1:
                 for _nk in wws_agent.negotiations.keys():
                     wws_agent.negotiations[_nk].process_actions()
                     _last_action = wws_agent.negotiations[_nk].actions[-1]
                     if _last_action.A == wws_agent.agent_id:
-                        num_of_times_bids_retained += int(_last_action.T_a)
+                        total_number_of_times_agent_made_retain_bid += int(_last_action.T_a)
+                        number_of_times_agent_received_retain_bid += int(_last_action.T_b)
                     else:
-                        num_of_times_bids_retained += int(_last_action.T_b)
-            wws_agents.write_number(wws_agents_r, 17, num_of_times_bids_retained)
+                        total_number_of_times_agent_made_retain_bid += int(_last_action.T_b)
+                        number_of_times_agent_received_retain_bid += int(_last_action.T_a)
+
+            retain_bid_diff = abs(total_number_of_times_agent_made_retain_bid - number_of_times_agent_received_retain_bid)
+
+            wws_agents.write_number(wws_agents_r, 17, total_number_of_times_agent_made_retain_bid)
+            wws_agents.write_number(wws_agents_r, 18, number_of_times_agent_received_retain_bid)
+            wws_agents.write_number(wws_agents_r, 19, retain_bid_diff)
 
             wws_agents_r += 1
         # END:WORLD.XLSX AGENT SHEET
@@ -513,7 +520,7 @@ def run(scenarios_folder_path, force_reparse: bool = False):
 
                 wws_negotiations.write(wws_negotiations_r, 4, "accepted" if wws_negotiation.paths[__agent_key]["ACCEPT"] is __agent_key else "")
                 wws_negotiations.write(wws_negotiations_r, 5, "AFTER")
-                for __i, __point in enumerate(wws_negotiation.paths[__agent_key]["AFTER"]):
+                for __i, __point in enumerate(wws_negotiation.paths[__agent_key].get("AFTER", [])):
                     wws_negotiations.write_string(wws_negotiations_r, 6 + __i, __point, __font_format)
                 wws_negotiations_r += 1
 
