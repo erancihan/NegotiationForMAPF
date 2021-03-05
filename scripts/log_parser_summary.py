@@ -34,10 +34,12 @@ def work_cbs_data(xlsx_path):
     max_path_diff = np.max(path_diff_col)
     std_path_diff = np.std(path_diff_col, ddof=1)
 
-    if "{}x{}_{}".format(x, y, agent_c) not in cbs_data:
-        cbs_data["{}x{}_{}".format(x, y, agent_c)] = {}
+    if "{}x{}_{}".format(x, y, agent_c) not in workbook_data:
+        workbook_data["{}x{}_{}".format(x, y, agent_c)] = {}
+    if config_id not in workbook_data["{}x{}_{}".format(x, y, agent_c)]:
+        workbook_data["{}x{}_{}".format(x, y, agent_c)][config_id] = {}
 
-    cbs_data["{}x{}_{}".format(x, y, agent_c)][config_id] = {
+    workbook_data["{}x{}_{}".format(x, y, agent_c)][config_id]['CBS'] = {
         "min_path_before": min_path_before,
         "avg_path_before": avg_path_before,
         "max_path_before": max_path_before,
@@ -70,7 +72,7 @@ def work_data(world_path):  # creates row data
 
     dims, agent_c, conf_id = conf.split('_')
 
-    agent_type = "Hybrid" if path[-2].split('_')[-1] == "Hybrid" else "Random"
+    agent_type = "Hybrid" if "Hybrid" in path[-2].split('_') else "Random"
     agent_fov = "FoV5" if "FoV" not in path[-2].split('_')[-1] else path[-2].split('_')[-1]
 
     min_path_before: int = None
@@ -97,6 +99,11 @@ def work_data(world_path):  # creates row data
     avg_token_exchange: float = None
     max_token_exchange: int = None
     std_token_exchange: float = None
+
+    min_retain_bid_diff: int = None
+    avg_retain_bid_diff: float = None
+    max_retain_bid_diff: int = None
+    std_retain_bid_diff: float = None
 
     final_token_max: int = None
     final_token_min: int = None
@@ -136,6 +143,12 @@ def work_data(world_path):  # creates row data
         max_token_exchange = np.max(token_exchange_col)
         std_token_exchange = np.std(token_exchange_col, ddof=1)
 
+        retain_bid_diff_col = wb_data['retain_bid_diff'].to_numpy(dtype=int)
+        min_retain_bid_diff = np.min(retain_bid_diff_col)
+        avg_retain_bid_diff = np.average(retain_bid_diff_col)
+        max_retain_bid_diff = np.max(retain_bid_diff_col)
+        std_retain_bid_diff = np.std(retain_bid_diff_col, ddof=1)
+
         planned_path_len: int
         taken_path_len: int
         for idx in range(wb_data.shape[0]):
@@ -173,6 +186,11 @@ def work_data(world_path):  # creates row data
         "max_num_nego": max_num_nego,
         "std_num_nego": std_num_nego,
 
+        "min_retain_bid_diff": min_retain_bid_diff,
+        "avg_retain_bid_diff": avg_retain_bid_diff,
+        "max_retain_bid_diff": max_retain_bid_diff,
+        "std_retain_bid_diff": std_retain_bid_diff,
+
         "min_token_exchange": min_token_exchange,
         "avg_token_exchange": avg_token_exchange,
         "max_token_exchange": max_token_exchange,
@@ -202,6 +220,8 @@ def run():
 
         agent_types = list(workbook_data[sheet_key][str(1)].keys())
         agent_types = sorted(agent_types)
+        agent_types.append('CBSH2')
+
         s_headers = [
             "min_path_before",
             "avg_path_before",
@@ -223,6 +243,11 @@ def run():
             "max_num_nego",
             "std_num_nego",
 
+            "min_retain_bid_diff",
+            "avg_retain_bid_diff",
+            "max_retain_bid_diff",
+            "std_retain_bid_diff",
+
             "min_token_exchange",
             "avg_token_exchange",
             "max_token_exchange",
@@ -232,22 +257,6 @@ def run():
             "final_token_min",
 
             "sum_of_num_of_tokens_received",
-        ]
-        cbs_headers = [
-            "min_path_before",
-            "avg_path_before",
-            "max_path_before",
-            "std_path_before",
-
-            "min_path_after",
-            "avg_path_after",
-            "max_path_after",
-            "std_path_after",
-
-            "min_path_diff",
-            "avg_path_diff",
-            "max_path_diff",
-            "std_path_diff",
         ]
 
         sheet_c = 0
@@ -264,9 +273,6 @@ def run():
             sheet_c += 1
         sheet.write(sheet_r, sheet_c, 'cbs_solved')
         sheet_c += 1
-        for cbs_header in cbs_headers:
-            sheet.write(sheet_r, sheet_c, cbs_header)
-            sheet_c += 1
         sheet.write(sheet_r, sheet_c, 'cbsh2_solved')
         sheet_c += 1
 
@@ -279,21 +285,31 @@ def run():
                 # BEGIN LOOP : AGENT ONE-LINER
                 sheet_c = 0  # move col cursor to start
 
-                sheet.write(sheet_r, sheet_c, str(config_id))
+                sheet.write_number(sheet_r, sheet_c, int(config_id))
                 sheet_c += 1
                 sheet.write(sheet_r, sheet_c, agent_type)
                 sheet_c += 1
-                sheet.write(sheet_r, sheet_c, workbook_data[sheet_key][str(config_id)][agent_type]["result"])
+
+                if agent_type == 'CBS':
+                    # config_id to index: config_id-1
+                    sheet.write(sheet_r, sheet_c, bool(cbs_results['cbs_solved'][config_id - 1]))
+                elif agent_type == 'CBSH2':
+                    # config_id to index: config_id-1
+                    sheet.write(sheet_r, sheet_c, bool(cbs_results['cbsh2_solved'][config_id - 1]))
+                    sheet.write(sheet_r, 26, bool(cbs_results['cbs_solved'][config_id - 1]))
+                    sheet.write(sheet_r, 27, bool(cbs_results['cbsh2_solved'][config_id - 1]))
+                    sheet_r += 1
+
+                    continue
+                else:
+                    sheet.write(sheet_r, sheet_c, workbook_data[sheet_key][str(config_id)][agent_type]["result"])
                 sheet_c += 1
                 for s_header in s_headers:
-                    sheet.write(sheet_r, sheet_c, workbook_data[sheet_key][str(config_id)][agent_type][s_header])
+                    sheet.write(sheet_r, sheet_c, workbook_data[sheet_key][str(config_id)][agent_type].get(s_header, ''))
                     sheet_c += 1
                 # config_id to index: config_id-1
                 sheet.write(sheet_r, sheet_c, bool(cbs_results['cbs_solved'][config_id - 1]))
                 sheet_c += 1
-                for cbs_header in cbs_headers:
-                    sheet.write(sheet_r, sheet_c, cbs_data[sheet_key][str(config_id)][cbs_header])
-                    sheet_c += 1
                 sheet.write(sheet_r, sheet_c, bool(cbs_results['cbsh2_solved'][config_id - 1]))
                 sheet_c += 1
 
