@@ -163,9 +163,13 @@ class Agent(_Base):
     token_count_final: str
     negotiations: Dict[str, NegotiationSummary]
     amount_of_tokens_exchanged: int
+    amount_of_tokens_given: int
+    amount_of_tokens_received: int
 
     def __init__(self):
         super().__init__()
+        self.amount_of_tokens_given = 0
+        self.amount_of_tokens_received = 0
         self.negotiations = {}
         self.agent_id = None
         self.agent_name = None
@@ -343,6 +347,10 @@ def parse_agent_negotiation_log(file_path: str, data_dict: ExcelData):
                 # absolute value of token balance diff is the amount of tokens
                 # exchanged for both parties of negotiation in this setup
                 data_dict.agents[agent_id].amount_of_tokens_exchanged += abs(tb_diff)
+
+                data_dict.agents[agent_id].amount_of_tokens_received += abs(tb_diff) if data['is_win'] == 'true' else 0
+                data_dict.agents[agent_id].amount_of_tokens_given += abs(tb_diff) if data['is_win'] == 'false' else 0
+
                 data_dict.negotiations[session_key].amount_of_tokens_exchanged = abs(tb_diff)
                 data_dict.negotiations[session_key].paths[agent_id]["AFTER"] = [__point.strip().replace('-', ',') for __point in str(data['path']).replace('[', '').replace(']', '').split(',')]
 
@@ -395,6 +403,9 @@ def run(scenarios_folder_path, force_reparse: bool = False):
 
         debug(' ┬', world_folder)
 
+        if world_folder.endswith('-false'):
+            continue
+
         data_dict = ExcelData()
 
         log_files = glob(join(world_folder, '*.log'))
@@ -426,7 +437,7 @@ def run(scenarios_folder_path, force_reparse: bool = False):
         wws_agents_c = 0
         wws_agents_h = ['id', 'name', 'starting point', 'destination', 'planned path', 'planned path len', 'taken path',
                         'taken path len', 'negotiation count', 'sum win', 'sum lose', 'initial token count',
-                        'final token count', 'amount of tokens exchanged']
+                        'final token count', '# of tokens received', '# of tokens given', 'token_diff', 'path diff', '#_of_times_bid_retained']
         for item in wws_agents_h:
             wws_agents.write(wws_agents_r, wws_agents_c, item)
             wws_agents_c += 1
@@ -449,7 +460,22 @@ def run(scenarios_folder_path, force_reparse: bool = False):
             wws_agents.write_number(wws_agents_r, 10, int(wws_agent.negotiations_lost))
             wws_agents.write_number(wws_agents_r, 11, int(wws_agent.token_count_initial))
             wws_agents.write_number(wws_agents_r, 12, int(wws_agent.token_count_final))
-            wws_agents.write_number(wws_agents_r, 13, int(wws_agent.amount_of_tokens_exchanged))
+            wws_agents.write_number(wws_agents_r, 13, int(wws_agent.amount_of_tokens_received))
+            wws_agents.write_number(wws_agents_r, 14, int(wws_agent.amount_of_tokens_given))
+
+            wws_agents.write_number(wws_agents_r, 15, abs(int(wws_agent.amount_of_tokens_received) - int(wws_agent.amount_of_tokens_given)))
+            wws_agents.write_number(wws_agents_r, 16, int(wws_agent.taken_path_length) - int(wws_agent.planned_initial_path_length))
+
+            num_of_times_bids_retained = 0
+            if len(wws_agent.negotiations.keys()) > 1:
+                for _nk in wws_agent.negotiations.keys():
+                    wws_agent.negotiations[_nk].process_actions()
+                    _last_action = wws_agent.negotiations[_nk].actions[-1]
+                    if _last_action.A == wws_agent.agent_id:
+                        num_of_times_bids_retained += int(_last_action.T_a)
+                    else:
+                        num_of_times_bids_retained += int(_last_action.T_b)
+            wws_agents.write_number(wws_agents_r, 17, num_of_times_bids_retained)
 
             wws_agents_r += 1
         # END:WORLD.XLSX AGENT SHEET
@@ -623,4 +649,13 @@ def run(scenarios_folder_path, force_reparse: bool = False):
 
 
 if __name__ == '__main__':
-    run("C:\\Users\\cihan\\Documents\\MAPP\\logs", True)
+    run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\8x8_15", True)
+    run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\8x8_15_Hybrid", True)
+    run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\8x8_20", True)
+    run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\8x8_20_Hybrid", True)
+    run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\16x16_20", True)
+    run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\16x16_20_Hybrid", True)
+    run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\16x16_40", True)
+    run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\16x16_40_FoV7", True)
+    run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\16x16_40_FoV9", True)
+    run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\16x16_40_Hybrid", True)
