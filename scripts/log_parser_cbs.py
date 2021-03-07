@@ -5,7 +5,7 @@ from pathlib import Path
 import xlsxwriter
 
 
-def run(folder_path):
+def run(folder_path, sheet_name):
     for result_file in Path(folder_path).rglob('*.json'):
         print(result_file)
         with open(result_file) as file:
@@ -46,7 +46,7 @@ def run(folder_path):
 
             workbook = xlsxwriter.Workbook(
                 os.path.join(os.path.dirname(result_file), os.path.basename(result_file).split('.')[0] + '.xlsx'))
-            sheet = workbook.add_worksheet('CBS Result')
+            sheet = workbook.add_worksheet(sheet_name)
 
             sheet_r = 0
             sheet.write(sheet_r, 0, "Agent ID")
@@ -74,4 +74,5 @@ def run(folder_path):
 
 
 if __name__ == '__main__':
-    run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\mapp_cbs")
+    run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\mapp_cbs", 'CBS Result')
+    run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\mapp_cbsh2", 'CBSH2 Result')

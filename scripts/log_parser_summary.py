@@ -11,10 +11,10 @@ workbook_data = {}
 
 
 # noinspection DuplicatedCode
-def work_cbs_data(xlsx_path):
+def work_cbs_data(xlsx_path, sheet_name):
     _, x, y, _, agent_c, _, config_id = str(os.path.basename(xlsx_path)).split('.')[0].split('-')
 
-    wb_data: DataFrame = pandas.read_excel(xlsx_path, sheet_name="CBS Result")
+    wb_data: DataFrame = pandas.read_excel(xlsx_path, sheet_name=sheet_name)
 
     planned_path_col = wb_data['planned path len'].to_numpy(dtype=int)
     min_path_before = np.min(planned_path_col)
@@ -39,7 +39,7 @@ def work_cbs_data(xlsx_path):
     if config_id not in workbook_data["{}x{}_{}".format(x, y, agent_c)]:
         workbook_data["{}x{}_{}".format(x, y, agent_c)][config_id] = {}
 
-    workbook_data["{}x{}_{}".format(x, y, agent_c)][config_id]['CBS'] = {
+    workbook_data["{}x{}_{}".format(x, y, agent_c)][config_id][sheet_name.replace('Result', '').strip()] = {
         "min_path_before": min_path_before,
         "avg_path_before": avg_path_before,
         "max_path_before": max_path_before,
@@ -204,14 +204,32 @@ def work_data(world_path):  # creates row data
 
 
 def run():
+    _file_idx = 0
     for world_xlsx in Path(folder_location).rglob('WORLD-*-true'):
+        _file_idx += 1
+        print(f"\r{_file_idx}", end='')
         work_data(world_xlsx)
+    print()
 
     for world_xlsx in Path(folder_location).rglob('WORLD-*-false'):
+        _file_idx += 1
+        print(f"\r{_file_idx}", end='')
         work_data(world_xlsx)
+    print()
 
+    _file_idx = 0
     for cbs_xlsx in Path(os.path.join(folder_location, "mapp_cbs")).rglob("*.xlsx"):
-        work_cbs_data(cbs_xlsx)
+        _file_idx += 1
+        print(f"\r{_file_idx}", end='')
+        work_cbs_data(cbs_xlsx, 'CBS Result')
+    print()
+
+    _file_idx = 0
+    for cbsh2_xlsx in Path(os.path.join(folder_location, "mapp_cbsh2")).rglob("*.xlsx"):
+        _file_idx += 1
+        print(f"\r{_file_idx}", end='')
+        work_cbs_data(cbsh2_xlsx, 'CBSH2 Result')
+    print()
 
     workbook = xlsxwriter.Workbook(os.path.join(folder_location, "RunResults.xlsx"))
     for sheet_key in ["8x8_15", "8x8_20", "16x16_20", "16x16_40"]:
@@ -220,7 +238,6 @@ def run():
 
         agent_types = list(workbook_data[sheet_key][str(1)].keys())
         agent_types = sorted(agent_types)
-        agent_types.append('CBSH2')
 
         s_headers = [
             "min_path_before",
@@ -296,11 +313,6 @@ def run():
                 elif agent_type == 'CBSH2':
                     # config_id to index: config_id-1
                     sheet.write(sheet_r, sheet_c, bool(cbs_results['cbsh2_solved'][config_id - 1]))
-                    sheet.write(sheet_r, 26, bool(cbs_results['cbs_solved'][config_id - 1]))
-                    sheet.write(sheet_r, 27, bool(cbs_results['cbsh2_solved'][config_id - 1]))
-                    sheet_r += 1
-
-                    continue
                 else:
                     sheet.write(sheet_r, sheet_c, workbook_data[sheet_key][str(config_id)][agent_type]["result"])
                 sheet_c += 1

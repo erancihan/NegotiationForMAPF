@@ -370,7 +370,7 @@ def parse_world_log(file_path: str, data_dict: ExcelData):
                 data_dict.agents[data['agent_id']].starting_point = data['start']
                 data_dict.agents[data['agent_id']].destination = data['dest']
                 data_dict.agents[data['agent_id']].planned_initial_path = data['path']
-                data_dict.agents[data['agent_id']].planned_initial_path_length = data['path_len']
+                data_dict.agents[data['agent_id']].planned_initial_path_length = int(data['path_len']) - 1
             if data['name'] == 'JOIN':
                 pass
             if data['name'] == 'BROADCAST':
@@ -386,7 +386,7 @@ def parse_world_log(file_path: str, data_dict: ExcelData):
                 pass
             if data['name'] == 'LEAVE':
                 data_dict.agents[data['agent_id']].taken_path = data['path']
-                data_dict.agents[data['agent_id']].taken_path_length = data['path_len']
+                data_dict.agents[data['agent_id']].taken_path_length = int(data['path_len']) - 1
                 data_dict.agents[data['agent_id']].negotiation_count = data['negoC']
                 data_dict.agents[data['agent_id']].negotiations_won = data['winC']
                 data_dict.agents[data['agent_id']].negotiations_lost = data['loseC']
@@ -408,10 +408,10 @@ def run(scenarios_folder_path, force_reparse: bool = False):
         log_files = glob(join(world_folder, '*.log'))
         for i, log_file in enumerate(log_files):
             file_name = basename(log_file)
-            if i < len(log_files) - 1:
-                debug(' ├', file_name)
-            else:
-                debug(' └', file_name)
+            # if i < len(log_files) - 1:
+            #     debug(' ├', file_name)
+            # else:
+            #     debug(' └', file_name)
 
             if 'AGENT-INFO-' in file_name:
                 parse_agent_info_log(log_file, data_dict)
@@ -443,7 +443,8 @@ def run(scenarios_folder_path, force_reparse: bool = False):
         wws_agents_r += 1
 
         wws_agent: Agent
-        for wws_agent_key in data_dict.agents:
+        wws_agent_keys = sorted(data_dict.agents.keys(), key=lambda x: int(x.split('_')[1][1:]))
+        for wws_agent_key in wws_agent_keys:
             wws_agent = data_dict.agents[wws_agent_key]
 
             wws_agents.write(wws_agents_r, 0, wws_agent.agent_id)
@@ -470,6 +471,8 @@ def run(scenarios_folder_path, force_reparse: bool = False):
             if len(wws_agent.negotiations.keys()) > 1:
                 for _nk in wws_agent.negotiations.keys():
                     wws_agent.negotiations[_nk].process_actions()
+                    if len(wws_agent.negotiations[_nk].actions) == 0:
+                        continue
                     _last_action = wws_agent.negotiations[_nk].actions[-1]
                     if _last_action.A == wws_agent.agent_id:
                         total_number_of_times_agent_made_retain_bid += int(_last_action.T_a)
@@ -518,7 +521,7 @@ def run(scenarios_folder_path, force_reparse: bool = False):
                     wws_negotiations.write_string(wws_negotiations_r, 6 + __i, __point, __font_format)
                 wws_negotiations_r += 1
 
-                wws_negotiations.write(wws_negotiations_r, 4, "accepted" if wws_negotiation.paths[__agent_key]["ACCEPT"] is __agent_key else "")
+                wws_negotiations.write(wws_negotiations_r, 4, "accepted" if wws_negotiation.paths[__agent_key].get("ACCEPT", "") is __agent_key else "")
                 wws_negotiations.write(wws_negotiations_r, 5, "AFTER")
                 for __i, __point in enumerate(wws_negotiation.paths[__agent_key].get("AFTER", [])):
                     wws_negotiations.write_string(wws_negotiations_r, 6 + __i, __point, __font_format)
@@ -545,7 +548,8 @@ def run(scenarios_folder_path, force_reparse: bool = False):
         wws_paths_r += 1
 
         wws_path_agent: Agent
-        for wws_path_agent_key in data_dict.agents:
+        wws_path_agent_keys = sorted(data_dict.agents.keys(), key=lambda x: int(x.split('_')[1][1:]))
+        for wws_path_agent_key in wws_path_agent_keys:
             wws_path_agent = data_dict.agents[wws_path_agent_key]
 
             wws_paths.write(wws_paths_r, 0, wws_path_agent.agent_id)
@@ -665,4 +669,6 @@ if __name__ == '__main__':
     run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\16x16_40", True)
     run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\16x16_40_FoV7", True)
     run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\16x16_40_FoV9", True)
-    run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\16x16_40_Hybrid", True)
+    run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\16x16_40_Hybrid_FoV5", True)
+    run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\16x16_40_Hybrid_FoV7", True)
+    run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\16x16_40_Hybrid_FoV9", True)
