@@ -25,9 +25,9 @@ public class WorldOverseer
     protected   String              WorldID;
     protected   int                 width;
     protected   int                 height;
-    private     int                 active_agent_c;
-    private     Globals.WorldState  curr_state;
-    private     Globals.WorldState  prev_state;
+    protected   int                 active_agent_c;
+    protected   Globals.WorldState  curr_state;
+    protected   Globals.WorldState  prev_state;
 
     private boolean IsLooping;
     private boolean join_update_hook_run_once;
@@ -56,12 +56,12 @@ public class WorldOverseer
     private long SIM_LOOP_DURATION;
     private int TIME;
 
-    private ConcurrentHashMap<String, String> FLAG_JOINS;
-    private ConcurrentHashMap<String, String> FLAG_COLLISION_CHECKS;
-    private ConcurrentHashMap<String, String> FLAG_NEGOTIATION_REGISTERED;
-    private ConcurrentHashMap<String, String> FLAG_NEGOTIATIONS_DONE;
-    private ConcurrentHashMap<String, String> FLAG_NEGOTIATIONS_VERIFIED;
-    private ConcurrentHashMap<String, String> FLAG_INACTIVE;
+    protected ConcurrentHashMap<String, String> FLAG_JOINS;
+    protected ConcurrentHashMap<String, String> FLAG_COLLISION_CHECKS;
+    protected ConcurrentHashMap<String, String> FLAG_NEGOTIATION_REGISTERED;
+    protected ConcurrentHashMap<String, String> FLAG_NEGOTIATIONS_DONE;
+    protected ConcurrentHashMap<String, String> FLAG_NEGOTIATIONS_VERIFIED;
+    protected ConcurrentHashMap<String, String> FLAG_INACTIVE;
 
     private Consumer<DATA_LOG_DISPLAY>  UI_LogDrawCallback;
     private Consumer<String>            UI_StateChangeCallback;
@@ -73,6 +73,8 @@ public class WorldOverseer
 
     private Consumer<WorldState> SCENARIO_MANAGER_HOOK_JOIN_UPDATE;
     private Runnable SCENARIO_MANAGER_HOOK_SIMULATION_FINISHED;
+
+    private LeaveActionHandler leaveActionHandler;
 
     private WorldOverseer()
     {
@@ -113,6 +115,8 @@ public class WorldOverseer
         FLAG_NEGOTIATIONS_DONE = new ConcurrentHashMap<>();
         FLAG_NEGOTIATIONS_VERIFIED = new ConcurrentHashMap<>();
         FLAG_INACTIVE         = new ConcurrentHashMap<>();
+
+        leaveActionHandler = new LeaveActionHandler(this);
 
         agents_verify_lock = new PseudoLock();
 
@@ -743,12 +747,7 @@ public class WorldOverseer
 
     public synchronized void Leave(AgentHandler agent)
     {
-        FLAG_COLLISION_CHECKS.remove(agent.GetAgentID());
-        FLAG_INACTIVE.put(agent.GetAgentID(), "");
-
-        passive_agents.put(agent.GetAgentID(), new String[]{ agent.GetCurrentLocation(), "inf" });
-
-        active_agent_c--;
+        this.leaveActionHandler.handle(agent);
     }
 
     private synchronized void update_broadcast_hook(String agent_name, String[] broadcast)
@@ -1009,9 +1008,12 @@ public class WorldOverseer
             default:
                 if (STATE_SIMULATION_PROCESS_COUNTER < 300) {
                     STATE_SIMULATION_PROCESS_COUNTER += 1;
+                    logger.warn("TIME OUT TICK " + STATE_SIMULATION_PROCESS_COUNTER);
+                    overseer_validator_invoke_lock.unlock();
                 } else {
                     STATE_SIMULATION_PROCESS_COUNTER = 0;
-
+                    logger.warn("TIME OUT");
+                    overseer_validator_invoke_lock.unlock();
                     SystemExit.exit(SystemExit.Status.TIMEOUT);
                 }
         }
