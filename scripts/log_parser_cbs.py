@@ -16,6 +16,9 @@ def run(folder_path, sheet_name):
                 taken_path: str = ""
                 taken_path_len: int = 0
 
+                if 'plan' not in result_data:
+                    result_data['plan'] = {}
+
                 if agent['name'] in result_data['plan']:
                     taken_path += "["
                     _t = 0
@@ -75,4 +78,4 @@ def run(folder_path, sheet_name):
 
 if __name__ == '__main__':
     run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\mapp_cbs", 'CBS Result')
-    run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\mapp_cbsh2", 'CBSH2 Result')
+    # run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\mapp_cbsh2", 'CBSH2 Result')

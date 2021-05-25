@@ -39,22 +39,42 @@ def work_cbs_data(xlsx_path, sheet_name):
     if config_id not in workbook_data["{}x{}_{}".format(x, y, agent_c)]:
         workbook_data["{}x{}_{}".format(x, y, agent_c)][config_id] = {}
 
-    workbook_data["{}x{}_{}".format(x, y, agent_c)][config_id][sheet_name.replace('Result', '').strip()] = {
-        "min_path_before": min_path_before,
-        "avg_path_before": avg_path_before,
-        "max_path_before": max_path_before,
-        "std_path_before": std_path_before,
+    _data = {
+        "result": False,
 
-        "min_path_after": min_path_after,
-        "avg_path_after": avg_path_after,
-        "max_path_after": max_path_after,
-        "std_path_after": std_path_after,
+        "min_path_before": 0,
+        "avg_path_before": 0,
+        "max_path_before": 0,
+        "std_path_before": 0,
 
-        "min_path_diff": min_path_diff,
-        "avg_path_diff": avg_path_diff,
-        "max_path_diff": max_path_diff,
-        "std_path_diff": std_path_diff,
+        "min_path_after": 0,
+        "avg_path_after": 0,
+        "max_path_after": 0,
+        "std_path_after": 0,
+
+        "min_path_diff": 0,
+        "avg_path_diff": 0,
+        "max_path_diff": 0,
+        "std_path_diff": 0,
     }
+    if "solved" in str(xlsx_path).split("\\"):
+        _data["result"] = True
+        _data["min_path_before"] = min_path_before
+        _data["avg_path_before"] = avg_path_before
+        _data["max_path_before"] = max_path_before
+        _data["std_path_before"] = std_path_before
+
+        _data["min_path_after"] = min_path_after
+        _data["avg_path_after"] = avg_path_after
+        _data["max_path_after"] = max_path_after
+        _data["std_path_after"] = std_path_after
+
+        _data["min_path_diff"] = min_path_diff
+        _data["avg_path_diff"] = avg_path_diff
+        _data["max_path_diff"] = max_path_diff
+        _data["std_path_diff"] = std_path_diff
+
+    workbook_data["{}x{}_{}".format(x, y, agent_c)][config_id][sheet_name.replace('Result', '').strip()] = _data
 
 
 # noinspection DuplicatedCode
@@ -66,11 +86,25 @@ def work_data(world_path):  # creates row data
         return
 
     path = str(world_path).split('\\')
-    _, timestamp, conf, run_idx, result = path[-1].split('-')
+    try:
+        __split = path[-1].split('-')
+        timestamp = ""
 
-    workbook_sheet_key = '_'.join(path[-2].split('_')[:2])
+        if len(__split) == 5:
+            _, timestamp, conf, _, result = path[-1].split('-')
+            dims, agent_c, conf_id = conf.split('_')
+            workbook_sheet_key = f"{dims}_{agent_c}"
+        if len(__split) == 6:
+            _, timestamp, conf, conf_id, _, result = path[-1].split('-')
+            dims, agent_c = conf.split('_')
+            workbook_sheet_key = f"{dims}_{agent_c}"
+        if timestamp == "":
+            exit(500)
+    except Exception:
+        print()
+        print(path[-1].split('-'))
 
-    dims, agent_c, conf_id = conf.split('_')
+        exit()
 
     agent_type = "Hybrid" if "Hybrid" in path[-2].split('_') else "Random"
     agent_fov = "FoV5" if "FoV" not in path[-2].split('_')[-1] else path[-2].split('_')[-1]
@@ -232,9 +266,11 @@ def run():
     print()
 
     workbook = xlsxwriter.Workbook(os.path.join(folder_location, "RunResults.xlsx"))
-    for sheet_key in ["8x8_15", "8x8_20", "16x16_20", "16x16_40"]:
+    for sheet_key in ["8x8_10", "8x8_15", "8x8_20", "8x8_25", "16x16_20", "16x16_40", "16x16_60", "16x16_80"]:
+        dim, agent_c = sheet_key.split("_")
+        a, b = dim.split('x')
+
         sheet = workbook.add_worksheet(sheet_key)
-        cbs_results = pandas.read_excel(os.path.join(folder_location, "cbsh2_and_cbs_results.xlsx"), sheet_name=sheet_key)
 
         agent_types = list(workbook_data[sheet_key][str(1)].keys())
         agent_types = sorted(agent_types)
@@ -308,21 +344,33 @@ def run():
                 sheet_c += 1
 
                 if agent_type == 'CBS':
-                    # config_id to index: config_id-1
-                    sheet.write(sheet_r, sheet_c, bool(cbs_results['cbs_solved'][config_id - 1]))
+                    _exists = os.path.exists(
+                        os.path.join(folder_location, 'mapp_cbs', 'solved', f"empty-{a}-{b}-random-{agent_c}-agents-{config_id}.json")
+                    )
+                    sheet.write(sheet_r, sheet_c, _exists)
                 elif agent_type == 'CBSH2':
-                    # config_id to index: config_id-1
-                    sheet.write(sheet_r, sheet_c, bool(cbs_results['cbsh2_solved'][config_id - 1]))
+                    _exists = os.path.exists(
+                        os.path.join(folder_location, 'mapp_cbsh2', 'solved', f"empty-{a}-{b}-random-{agent_c}-agents-{config_id}.json")
+                    )
+                    sheet.write(sheet_r, sheet_c, _exists)
                 else:
                     sheet.write(sheet_r, sheet_c, workbook_data[sheet_key][str(config_id)][agent_type]["result"])
                 sheet_c += 1
                 for s_header in s_headers:
                     sheet.write(sheet_r, sheet_c, workbook_data[sheet_key][str(config_id)][agent_type].get(s_header, ''))
                     sheet_c += 1
-                # config_id to index: config_id-1
-                sheet.write(sheet_r, sheet_c, bool(cbs_results['cbs_solved'][config_id - 1]))
+                # Has CBS Solved?
+                _exists = os.path.exists(
+                    os.path.join(folder_location, 'mapp_cbs', 'solved', f"empty-{a}-{b}-random-{agent_c}-agents-{config_id}.json")
+                )
+                sheet.write(sheet_r, sheet_c, _exists)
                 sheet_c += 1
-                sheet.write(sheet_r, sheet_c, bool(cbs_results['cbsh2_solved'][config_id - 1]))
+                # Has CBSH2 Solved
+                _exists = os.path.exists(
+                    os.path.join(folder_location, 'mapp_cbsh2', 'solved', f"empty-{a}-{b}-random-{agent_c}-agents-{config_id}.json")
+                )
+
+                sheet.write(sheet_r, sheet_c, _exists)
                 sheet_c += 1
 
                 sheet_r += 1

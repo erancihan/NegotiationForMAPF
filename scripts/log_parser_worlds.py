@@ -394,6 +394,7 @@ def parse_world_log(file_path: str, data_dict: ExcelData):
 
 
 def run(scenarios_folder_path, force_reparse: bool = False):
+    force_reparse = False
     for world_folder in glob(join(scenarios_folder_path, 'WORLD-*')):
         if not force_reparse and os.path.exists(join(world_folder, '.parsed')):
             continue
@@ -600,7 +601,7 @@ def run(scenarios_folder_path, force_reparse: bool = False):
                 # find opponent
                 opponent = copy.copy(data_dict.negotiations[nego_key].agent_ids)
                 opponent.remove(agent_key)
-                data_dict.agents[agent_key].negotiations[nego_key].opponent_id = opponent[0]
+                data_dict.agents[agent_key].negotiations[nego_key].opponent_id = opponent[0] if len(opponent) == 2 else ""
 
                 aws_nego_sum.write(aws_nego_sum_r, 0, aws_agent_nego_sum.timestamp)
                 aws_nego_sum.write(aws_nego_sum_r, 1, aws_agent_nego_sum.negotiation_id)
@@ -660,15 +661,38 @@ def run(scenarios_folder_path, force_reparse: bool = False):
 
 
 if __name__ == '__main__':
-    run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\8x8_15", True)
-    run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\8x8_15_Hybrid", True)
-    run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\8x8_20", True)
-    run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\8x8_20_Hybrid", True)
-    run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\16x16_20", True)
-    run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\16x16_20_Hybrid", True)
-    run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\16x16_40", True)
-    run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\16x16_40_FoV7", True)
-    run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\16x16_40_FoV9", True)
+    run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\8x8_10_Random_FoV5", True)
+    run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\8x8_10_Hybrid_FoV5", True)
+
+    run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\8x8_15_Random_FoV5", True)
+    run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\8x8_15_Hybrid_FoV5", True)
+
+    run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\8x8_20_Random_FoV5", True)
+    run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\8x8_20_Hybrid_FoV5", True)
+
+    run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\8x8_25_Random_FoV5", True)
+    run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\8x8_25_Hybrid_FoV5", True)
+
+    run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\16x16_20_Random_FoV5", True)
+    run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\16x16_20_Hybrid_FoV5", True)
+
+    run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\16x16_40_Random_FoV5", True)
     run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\16x16_40_Hybrid_FoV5", True)
+
+    run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\16x16_40_Random_FoV7", True)
     run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\16x16_40_Hybrid_FoV7", True)
+
+    run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\16x16_40_Random_FoV9", True)
     run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\16x16_40_Hybrid_FoV9", True)
+
+    run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\16x16_60_Random_FoV5", True)
+    run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\16x16_60_Hybrid_FoV5", True)
+
+    run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\16x16_60_Random_FoV7", True)
+    run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\16x16_60_Hybrid_FoV7", True)
+
+    run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\16x16_60_Random_FoV9", True)
+    run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\16x16_60_Hybrid_FoV9", True)
+
+    run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\16x16_80_Random_FoV5", True)
+    run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\16x16_80_Hybrid_FoV5", True)
