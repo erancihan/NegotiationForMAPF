@@ -1,5 +1,6 @@
 package edu.ozu.mapp.utils.path;
 
+import edu.ozu.mapp.system.MoveActionHandler;
 import edu.ozu.mapp.utils.Point;
 
 import java.util.*;
@@ -45,24 +46,10 @@ public class Node implements Comparable<Node>, Cloneable {
     public List<Node> getNeighbours(Point goal, HashMap<String, ArrayList<String>> constraints, int bound_l, int bound_r, int bound_t, int bound_b)
     {
         List<Node> nodes = new ArrayList<>();
-        for (int i = 0; i < 9; i++)
+        for (MoveActionHandler.MoveActionSpace action : MoveActionHandler.getActionSpace())
         {   // BEGIN:FOR | NEIGHBOURHOOD SEARCH
-            /*
-             * On a grid, iterates & calculates points.
-             *  it can be mapped respectively as following
-             *
-             * Dx := (i % 3) - 1
-             * Dy := (i / 3) - 1
-             *
-             * [ 0 , 1 , 2 ]          [ (-1,-1) , ( 0,-1) , ( 1,-1) ]
-             * [ 3 , 4 , 5 ]    ->    [ (-1, 0) , ( 0, 0) , ( 1, 0) ]
-             * [ 6 , 7 , 8 ]          [ (-1, 1) , ( 0, 1) , ( 1, 1) ]
-             */
-            // skip inter-cardinals & center
-            if (i % 2 == 0) continue;
-
-            int x = point.x + (i % 3) - 1;
-            int y = point.y + (i / 3) - 1;
+            int x = point.x + action.dx;
+            int y = point.y + action.dy;
 
             if (x < bound_l || bound_r <= x) continue;  // x : [bound_l, bound_r) | i.e. [0, 16) -> x : 0, 1, ... 15
             if (y < bound_t || bound_b <= y) continue;  // y : [bound_t, bound_b) | i.e. [0, 16) -> y : 0, 1, ... 15
@@ -101,11 +88,7 @@ public class Node implements Comparable<Node>, Cloneable {
                     (time + 1)
                 )
             );
-
         }   // END:FOR
-
-        // Add self for cyclic dep
-//        nodes.add(new Node(point, time + 1));
 
         return nodes;
     }
@@ -155,93 +138,4 @@ public class Node implements Comparable<Node>, Cloneable {
     {
         return path.stream().map(node -> node.point).collect(Collectors.toList());
     }
-
-/** ================================================================================================================ **/
-//<editor-folds desc="TESTS" defaultstate="collapsed">
-
-    public static void main(String[] args)
-    {
-        List<Node> nodes;
-        HashMap<String, ArrayList<String>> constraints;
-
-        Node n1 = new Node(new Point(4, 6), 2);
-
-
-        constraints = new HashMap<>();
-        nodes = n1.getNeighbours(constraints, 16, 16);
-        System.out.println(n1);
-        System.out.println(" : " + constraints);
-        System.out.println(" : " + nodes);
-        System.out.println();
-
-        constraints = new HashMap<>();
-        constraints.put("4-6", new ArrayList<String>(){{ add("2"); }});
-        nodes = n1.getNeighbours(constraints, 16, 16);
-        System.out.println(n1);
-        System.out.println(" : " + constraints);
-        System.out.println(" : " + nodes);
-        System.out.println();
-
-        constraints = new HashMap<>();
-        constraints.put("4-6", new ArrayList<String>(){{ add("3"); }});
-        nodes = n1.getNeighbours(constraints, 16, 16);
-        System.out.println(n1);
-        System.out.println(" : " + constraints);
-        System.out.println(" : " + nodes);
-        System.out.println();
-
-        constraints = new HashMap<>();
-        constraints.put("3-6", new ArrayList<String>(){{ add("2"); }});
-        nodes = n1.getNeighbours(constraints, 16, 16);
-        System.out.println(n1);
-        System.out.println(" : " + constraints);
-        System.out.println(" : " + nodes);
-        System.out.println();
-
-        constraints = new HashMap<>();
-        constraints.put("3-6", new ArrayList<String>(){{ add("3"); }});
-        nodes = n1.getNeighbours(constraints, 16, 16);
-        System.out.println(n1);
-        System.out.println(" : " + constraints);
-        System.out.println(" : " + nodes);
-        System.out.println();
-
-        constraints = new HashMap<>();
-        constraints.put("4-6", new ArrayList<String>(){{ add("2"); }});
-        constraints.put("3-6", new ArrayList<String>(){{ add("2"); }});
-        nodes = n1.getNeighbours(constraints, 16, 16);
-        System.out.println(n1);
-        System.out.println(" : " + constraints);
-        System.out.println(" : " + nodes);
-        System.out.println();
-
-        constraints = new HashMap<>();
-        constraints.put("4-6", new ArrayList<String>(){{ add("2"); }});
-        constraints.put("3-6", new ArrayList<String>(){{ add("3"); }});
-        nodes = n1.getNeighbours(constraints, 16, 16);
-        System.out.println(n1);
-        System.out.println(" : " + constraints);
-        System.out.println(" : " + nodes);
-        System.out.println();
-
-        constraints = new HashMap<>();
-        constraints.put("4-6", new ArrayList<String>(){{ add("3"); }});
-        constraints.put("3-6", new ArrayList<String>(){{ add("2"); }});
-        nodes = n1.getNeighbours(constraints, 16, 16);
-        System.out.println(n1);
-        System.out.println(" : " + constraints);
-        System.out.println(" : " + nodes);
-        System.out.println();
-
-        constraints = new HashMap<>();
-        constraints.put("4-6", new ArrayList<String>(){{ add("3"); }});
-        constraints.put("3-6", new ArrayList<String>(){{ add("3"); }});
-        nodes = n1.getNeighbours(constraints, 16, 16);
-        System.out.println(n1);
-        System.out.println(" : " + constraints);
-        System.out.println(" : " + nodes);
-        System.out.println();
-    }
-
-    //</editor-folds>
 }
