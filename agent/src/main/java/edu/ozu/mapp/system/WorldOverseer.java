@@ -46,8 +46,8 @@ public class WorldOverseer
     protected ConcurrentSkipListSet<String>       active_agents;
     protected ConcurrentHashMap<String, String[]> passive_agents;
 
-    private MovementHandler     movement_handler;
-    private NegotiationOverseer negotiation_overseer;
+    protected MovementHandler     movement_handler;
+    protected NegotiationOverseer negotiation_overseer;
 
     DATA_LOG_DISPLAY log_payload;
 
@@ -75,6 +75,7 @@ public class WorldOverseer
     private Runnable SCENARIO_MANAGER_HOOK_SIMULATION_FINISHED;
 
     private LeaveActionHandler leaveActionHandler;
+    private MoveActionHandler moveActionHandler;
 
     private WorldOverseer()
     {
@@ -117,6 +118,7 @@ public class WorldOverseer
         FLAG_INACTIVE         = new ConcurrentHashMap<>();
 
         leaveActionHandler = new LeaveActionHandler(this);
+        moveActionHandler = new MoveActionHandler(this);
 
         agents_verify_lock = new PseudoLock();
 
@@ -741,8 +743,7 @@ public class WorldOverseer
      * */
     public void Move(AgentHandler agent, DATA_REQUEST_PAYLOAD_WORLD_MOVE payload)
     {
-        // queue agent for movement
-        movement_handler.put(agent.GetAgentID(), agent, payload);
+        moveActionHandler.handle(agent, payload);
     }
 
     public synchronized void Leave(AgentHandler agent)
