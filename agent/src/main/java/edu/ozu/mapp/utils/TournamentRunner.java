@@ -24,7 +24,9 @@ import java.util.stream.Stream;
 
 public class TournamentRunner {
     public static boolean TOURNAMENT_RUNNER_RENAME_FILES_POST_RUN = true;
-    public static int TOURNAMENT_RUNNER_MAX_NUMBER_OF_TRIES = 2;
+    public static int TOURNAMENT_RUNNER_MAX_NUMBER_OF_TRIES = 1;
+
+    public File tournament_run_results;
 
     public static void main(String[] arg) {
         try {
@@ -43,11 +45,12 @@ public class TournamentRunner {
         }
     }
 
-    File tournament_run_results;
     private void run_tournament() throws IOException, InterruptedException
     {
+        Globals.FIELD_OF_VIEW_SIZE = 5;
+
 //        Path path = Paths.get(FileSystemView.getFileSystemView().getDefaultDirectory().getPath(), "MAPP");
-        Path path = Paths.get(System.getProperty("user.dir"), "artifacts", "configs", "experiment_1", "configs");
+        Path path = Paths.get(System.getProperty("user.dir"), "artifacts", "configs", "16x16_60-Hybrid_FoV5");
         ArrayList<String> scenarios = new Glob().glob(path, "world-scenario-*.json");
 
         tournament_run_results = Paths.get(path.toString(), "runs.txt").toFile();
@@ -66,7 +69,7 @@ public class TournamentRunner {
     {
         Gson gson = new Gson();
 
-        Path path = Paths.get(System.getProperty("user.dir"), "artifacts", "configs", "experiment_1", "configs_cbs");
+        Path path = Paths.get(System.getProperty("user.dir"), "artifacts", "configs", "8x8_25-cbs");
         ArrayList<String> confs = new Glob().glob(path, "\\**\\*.json");
 
         String timestamp = String.valueOf(System.currentTimeMillis());
@@ -75,7 +78,7 @@ public class TournamentRunner {
             Path __path = Paths.get(config_path);
 
             String __data = __path.getFileName().toString().split("\\.")[0];
-            String[] __idx = __data.split("_");
+            String[] __idx = __data.split("-");
             String idx = __idx[__idx.length-1];
 
             StringBuilder sb = new StringBuilder();
@@ -88,7 +91,7 @@ public class TournamentRunner {
             CBSConfig config = gson.fromJson(sb.toString(), CBSConfig.class);
 
             WorldConfig world_config = new WorldConfig();
-            world_config.world_id = timestamp + "-" + __data;
+            world_config.world_id = timestamp + "-" + "8x8_25-" + idx;
             world_config.width = config.map.get("dimensions").get(0);
             world_config.height = config.map.get("dimensions").get(1);
             world_config.min_path_len = 1;
@@ -98,7 +101,7 @@ public class TournamentRunner {
             world_config.initial_token_c = 10;
             world_config.number_of_expected_conflicts = 0;
             world_config.instantiation_configuration = new Object[][]{
-                    {"mapp.agent.RandomAgent", config.agents.size()},
+                    {"mapp.agent.HybridAgent", config.agents.size()},
             };
 
             ScenarioManager manager = new ScenarioManager(true);
@@ -218,16 +221,19 @@ public class TournamentRunner {
                 File save_file_dest = new File(save_file_src.getParent(), save_file_src.getName() + "-" + !should_repeat.get());
                 Files.move(save_file_src.toPath(), save_file_dest.toPath());
 
-                new FileWriter(tournament_run_results, true)
-                        .append(
-                            String.format(
-                                "%s;%s%s",
-                                new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date()),
-                                save_file_dest.getName(),
-                                System.lineSeparator()
+                if (tournament_run_results != null)
+                {
+                    new FileWriter(tournament_run_results, true)
+                            .append(
+                                    String.format(
+                                            "%s;%s%s",
+                                            new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date()),
+                                            save_file_dest.getName(),
+                                            System.lineSeparator()
+                                    )
                             )
-                        )
-                        .close();
+                            .close();
+                }
 
                 if (should_repeat.get())
                 {
