@@ -97,7 +97,6 @@ public class AStar {
     }
 
     //<editor-fold defaultstate="collapsed" desc="A-Star implementation">
-    @SuppressWarnings("DuplicatedCode")
     private List<String> run(Point start, Point goal, HashMap<String, ArrayList<String>> occupiedList, String Dimensions, int T)
     {
         if (start.equals(goal))
