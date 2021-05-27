@@ -93,10 +93,10 @@ public class LogDisplayPane extends javax.swing.JTextPane
             sb.append(String.format("%-15s POS: %5s TOKEN: %3s REMAINING_PATH_LEN: %S\n", agent_id, _data[0], _data[1], _data[2]));
         }
         sb.append("-------------\n");
-        for (Object[] item : data.world_log)
-        {
-            sb.append(String.format("%-23s %s\n", item[1].toString(), item[0].toString()));
-        }
+//        for (Object[] item : data.world_log)
+//        {
+//            sb.append(String.format("%-23s %s\n", item[1].toString(), item[0].toString()));
+//        }
 
         setText(sb.toString());
 
