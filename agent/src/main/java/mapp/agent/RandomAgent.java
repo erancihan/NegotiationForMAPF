@@ -48,14 +48,17 @@ public class RandomAgent extends Agent {
         {   // counter offer
             Bid next_bid = bid_space_iterator.next();
 
-            Action action = new Action(this, ActionType.OFFER, next_bid);
-
-            if (!action.validate())
-            {   // insisting
-                // if action is invalid, send accept
-                // it is possible to loop through though...
-                return new Action(this, ActionType.ACCEPT);
-            }
+            Action action;
+            do {
+                if (random.nextDouble() < 0.5)
+                {
+                    action = new Action(this, ActionType.OFFER, next_bid);
+                }
+                else
+                {
+                    action = new Action(this, ActionType.OFFER, GetOwnBroadcastPath());
+                }
+            } while (!action.validate());
 
             return action;
         }
