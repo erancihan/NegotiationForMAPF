@@ -6,6 +6,8 @@ import edu.ozu.mapp.agent.client.models.Contract;
 import edu.ozu.mapp.dataTypes.Constraint;
 import edu.ozu.mapp.keys.AgentKeys;
 import edu.ozu.mapp.keys.KeyHandler;
+import edu.ozu.mapp.system.Broadcast;
+import edu.ozu.mapp.system.FoV;
 import edu.ozu.mapp.system.NegotiationOverseer;
 import edu.ozu.mapp.system.WorldOverseer;
 import edu.ozu.mapp.utils.*;
@@ -66,11 +68,6 @@ public abstract class Agent {
 
     public ArrayList<Constraint> constraints;
 
-    public Agent(String agentName, String agentID, Point start, Point dest)
-    {
-        this(agentName, agentID, start, dest, Globals.INITIAL_TOKEN_BALANCE);
-    }
-
     public Agent(String agentName, String agentID, Point start, Point dest, int initial_tokens)
     {
         this.AGENT_NAME     = agentName;
@@ -89,6 +86,10 @@ public abstract class Agent {
         history = new History(AGENT_ID);
         // create and store agent keys
         keys = KeyHandler.getInstance().create(this);
+    }
+
+    public Agent(String agentName, String agentID, Point start, Point dest) {
+        this(agentName, agentID, start, dest, Globals.INITIAL_TOKEN_BALANCE);
     }
 
     public void init() { }
@@ -118,17 +119,16 @@ public abstract class Agent {
         history = new History(AGENT_ID);
     }
 
-    public List<String> calculatePath() {
-        return calculatePath(START, DEST);
-    }
-
-    public final List<String> calculatePath(Point start, Point dest)
+    public final List<String> calculatePath(Point start, Point dest, ArrayList<Constraint> constraints)
     {
-        return calculatePath(start, dest, new ArrayList<>());
+        HashMap<String, ArrayList<String>> _constraints = constraints2hashmap(genConstraints(constraints));
+
+        logger.debug(AGENT_ID + " | calculating A* {" + start + ", " + dest + ", " + _constraints + ", " + dimensions + ", " + time + "}");
+        return new AStar().calculate(start, dest, _constraints, dimensions, time);
     }
 
     public final List<String> calculatePath(Point start, Point dest, String Ox)
-    {
+    {   // convert Ox to constraints
         ArrayList<Constraint> constraints = new ArrayList<>();
         Path _ox = new Path(Ox);
         for (int i = 0; i < _ox.size(); i++) {
@@ -138,63 +138,72 @@ public abstract class Agent {
         return calculatePath(start, dest, constraints);
     }
 
-    public final List<String> calculatePath(Point start, Point dest, ArrayList<Constraint> constraints)
+    public final List<String> calculatePath(Point start, Point dest)
     {
-        HashMap<String, ArrayList<String>> _constraints = process_constraints(constraints);
-
-        logger.debug(AGENT_ID + " | calculating A* {" + start + ", " + dest + ", " + _constraints + ", " + dimensions + ", " + time + "}");
-        return new AStar().calculate(start, dest, _constraints, dimensions, time);
+        return calculatePath(start, dest, new ArrayList<>());
     }
 
-    private HashMap<String, ArrayList<String>> process_constraints(ArrayList<Constraint> constraints)
+    public List<String> calculatePath()
+    {
+        return calculatePath(START, DEST);
+    }
+
+    private ArrayList<Constraint> genConstraints()
+    {
+        return genConstraints(new ArrayList<>());
+    }
+
+    private ArrayList<Constraint> genConstraints(ArrayList<Constraint> constraints) {
+        HashSet<Constraint> constraintsSet = new HashSet<>();
+        constraintsSet.addAll(constraints);
+        constraintsSet.addAll(this.constraints);
+
+        constraintsSet.addAll(prepareConstraints(new ArrayList<>(constraintsSet)));
+
+        return new ArrayList<>(constraintsSet);
+    }
+
+    public ArrayList<Constraint> prepareConstraints(ArrayList<Constraint> systemConstraintSet) {
+        ArrayList<Constraint> constraints = new ArrayList<>(systemConstraintSet);
+
+        constraints.addAll(GetFoVasConstraint());
+
+        return constraints;
+    }
+
+    private HashMap<String, ArrayList<String>> constraints2hashmap(ArrayList<Constraint> constraints)
     {
         HashMap<String, ArrayList<String>> _map = new HashMap<>();
-        for (Constraint constraint : constraints) {
-            if (!_map.containsKey(constraint.location.key)) {
+
+        for (Constraint constraint : constraints)
+        {   // fill hash map
+            if (!_map.containsKey(constraint.location.key))
+            {   // init constraint if hash map doesn't have it
                 _map.put(constraint.location.key, new ArrayList<>());
             }
 
             String __t = constraint.at_t == -1 ? "inf" : String.valueOf(constraint.at_t);
-            if (!_map.get(constraint.location.key).contains(__t)) {
+            if (!_map.get(constraint.location.key).contains(__t))
+            {   // append time detail of constraint
                 _map.get(constraint.location.key).add(__t);
             }
         }
 
-        for (Constraint constraint : this.constraints) {
-            if (!_map.containsKey(constraint.location.key)) {
-                _map.put(constraint.location.key, new ArrayList<>());
-            }
+        return  _map;
+    }
 
-            String __t = constraint.at_t == -1 ? "inf" : String.valueOf(constraint.at_t);
-            if (!_map.get(constraint.location.key).contains(__t)) {
-                _map.get(constraint.location.key).add(__t);
+    public final ArrayList<Constraint> GetFoVasConstraint() {
+        ArrayList<Constraint> constraints = new ArrayList<>();
+
+        FoV fov = WorldOverseer.getInstance().GetFoV(this.AGENT_ID);
+        for (Broadcast broadcast : fov.broadcasts) {
+            if (broadcast.agent_name.equals(this.AGENT_NAME)) {
+                continue;
             }
+            constraints.addAll(broadcast.locations);
         }
 
-        String[][] fov = WorldOverseer.getInstance().GetFoV(this.AGENT_ID);
-        for (String[] fov_data : fov) {
-            Point point = new Point(fov_data[1], "-");
-            String loc_ = fov_data[2];
-
-            if (loc_.equals("inf")) {
-                _map.put(point.key, new ArrayList<>());
-                _map.get(point.key).add(loc_);
-            }
-            /*
-            else {
-                Path path = new Path(loc_);
-                for (int i = 0; i < path.size(); i++) {
-                    Point p = path.get(i);
-                    if (!constraints.containsKey(p.key)) {
-                        constraints.put(p.key, new ArrayList<>());
-                    }
-                    constraints.get(p.key).add(String.valueOf(time + i));
-                }
-            }
-            */
-        }
-
-        return _map;
+        return constraints;
     }
 
     public final List<Bid> GetBidSpace(Point From, Point To, int deadline)
@@ -203,7 +212,7 @@ public abstract class Agent {
                 From,
                 To,
                 deadline,
-                process_constraints(this.constraints),
+                constraints2hashmap(genConstraints()),
                 this.dimensions.isEmpty() ? "0x0" : this.dimensions,
                 time
         );
@@ -405,7 +414,7 @@ public abstract class Agent {
         handler_ref = handler;
     }
 
-    public final String[][] GetFieldOfView()
+    public final FoV GetFieldOfView()
     {
         return this.handler_ref.GetCurrentFoVData();
     }
