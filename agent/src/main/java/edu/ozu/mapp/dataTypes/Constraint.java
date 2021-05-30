@@ -47,7 +47,11 @@ public class Constraint
     public boolean equals(Object that)
     {
         if (that instanceof Constraint)
-            return (location.equals(((Constraint) that).location)) && (at_t == ((Constraint) that).at_t);
+            return
+                (agent_name.equals(((Constraint) that).agent_name)) &&
+                (location.equals(((Constraint) that).location)) &&
+                (at_t == ((Constraint) that).at_t)
+            ;
 
         return false;
     }
