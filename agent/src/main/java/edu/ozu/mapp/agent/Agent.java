@@ -119,6 +119,52 @@ public abstract class Agent {
         history = new History(AGENT_ID);
     }
 
+    public ArrayList<Constraint> prepareConstraints(ArrayList<Constraint> systemConstraintSet)
+    {
+        ArrayList<Constraint> constraints = new ArrayList<>(systemConstraintSet);
+
+        constraints.addAll(GetFoVasConstraint());
+
+        return constraints;
+    }
+
+    private ArrayList<Constraint> genConstraints(ArrayList<Constraint> constraints)
+    {
+        HashSet<Constraint> constraintsSet = new HashSet<>();
+        constraintsSet.addAll(constraints);
+        constraintsSet.addAll(this.constraints);
+
+        constraintsSet.addAll(prepareConstraints(new ArrayList<>(constraintsSet)));
+
+        return new ArrayList<>(constraintsSet);
+    }
+
+    private ArrayList<Constraint> genConstraints()
+    {
+        return genConstraints(new ArrayList<>());
+    }
+
+    private HashMap<String, ArrayList<String>> constraints2hashmap(ArrayList<Constraint> constraints)
+    {
+        HashMap<String, ArrayList<String>> _map = new HashMap<>();
+
+        for (Constraint constraint : constraints)
+        {   // fill hash map
+            if (!_map.containsKey(constraint.location.key))
+            {   // init constraint if hash map doesn't have it
+                _map.put(constraint.location.key, new ArrayList<>());
+            }
+
+            String __t = constraint.at_t == -1 ? "inf" : String.valueOf(constraint.at_t);
+            if (!_map.get(constraint.location.key).contains(__t))
+            {   // append time detail of constraint
+                _map.get(constraint.location.key).add(__t);
+            }
+        }
+
+        return  _map;
+    }
+
     public final List<String> calculatePath(Point start, Point dest, ArrayList<Constraint> constraints)
     {
         HashMap<String, ArrayList<String>> _constraints = constraints2hashmap(genConstraints(constraints));
@@ -146,64 +192,6 @@ public abstract class Agent {
     public List<String> calculatePath()
     {
         return calculatePath(START, DEST);
-    }
-
-    private ArrayList<Constraint> genConstraints()
-    {
-        return genConstraints(new ArrayList<>());
-    }
-
-    private ArrayList<Constraint> genConstraints(ArrayList<Constraint> constraints) {
-        HashSet<Constraint> constraintsSet = new HashSet<>();
-        constraintsSet.addAll(constraints);
-        constraintsSet.addAll(this.constraints);
-
-        constraintsSet.addAll(prepareConstraints(new ArrayList<>(constraintsSet)));
-
-        return new ArrayList<>(constraintsSet);
-    }
-
-    public ArrayList<Constraint> prepareConstraints(ArrayList<Constraint> systemConstraintSet) {
-        ArrayList<Constraint> constraints = new ArrayList<>(systemConstraintSet);
-
-        constraints.addAll(GetFoVasConstraint());
-
-        return constraints;
-    }
-
-    private HashMap<String, ArrayList<String>> constraints2hashmap(ArrayList<Constraint> constraints)
-    {
-        HashMap<String, ArrayList<String>> _map = new HashMap<>();
-
-        for (Constraint constraint : constraints)
-        {   // fill hash map
-            if (!_map.containsKey(constraint.location.key))
-            {   // init constraint if hash map doesn't have it
-                _map.put(constraint.location.key, new ArrayList<>());
-            }
-
-            String __t = constraint.at_t == -1 ? "inf" : String.valueOf(constraint.at_t);
-            if (!_map.get(constraint.location.key).contains(__t))
-            {   // append time detail of constraint
-                _map.get(constraint.location.key).add(__t);
-            }
-        }
-
-        return  _map;
-    }
-
-    public final ArrayList<Constraint> GetFoVasConstraint() {
-        ArrayList<Constraint> constraints = new ArrayList<>();
-
-        FoV fov = WorldOverseer.getInstance().GetFoV(this.AGENT_ID);
-        for (Broadcast broadcast : fov.broadcasts) {
-            if (broadcast.agent_name.equals(this.AGENT_NAME)) {
-                continue;
-            }
-            constraints.addAll(broadcast.locations);
-        }
-
-        return constraints;
     }
 
     public final List<Bid> GetBidSpace(Point From, Point To, int deadline)
@@ -295,6 +283,21 @@ public abstract class Agent {
 
         logger.debug("selecting DEST for exit point");
         return GetBidSpace(POS, DEST, Globals.FIELD_OF_VIEW_SIZE);
+    }
+
+    public final ArrayList<Constraint> GetFoVasConstraint()
+    {
+        ArrayList<Constraint> constraints = new ArrayList<>();
+
+        FoV fov = WorldOverseer.getInstance().GetFoV(this.AGENT_ID);
+        for (Broadcast broadcast : fov.broadcasts) {
+            if (broadcast.agent_name.equals(this.AGENT_NAME)) {
+                continue;
+            }
+            constraints.addAll(broadcast.locations);
+        }
+
+        return constraints;
     }
 
     //<editor-fold defaultstate="collapsed" desc="Get Broadcast">
