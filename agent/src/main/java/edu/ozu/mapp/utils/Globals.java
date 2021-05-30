@@ -1,5 +1,6 @@
 package edu.ozu.mapp.utils;
 
+import edu.ozu.mapp.system.FoVHandler;
 import edu.ozu.mapp.system.LeaveActionHandler;
 
 import java.util.Collections;
@@ -17,6 +18,7 @@ public class Globals
     public static long NEGOTIATION_DEADLINE_MS = Long.MAX_VALUE;
     public static int NEGOTIATION_DEADLINE_ROUND = Integer.MAX_VALUE;
     public static LeaveActionHandler.LeaveActionTYPE LEAVE_ACTION_BEHAVIOUR = LeaveActionHandler.LeaveActionTYPE.OBSTACLE;
+    public static final FoVHandler.FoVTYPE FIELD_OF_VIEW_TYPE = FoVHandler.FoVTYPE.SQUARE;
     public static int MOVE_ACTION_SPACE_SIZE = 4;
 
     public enum WorldState {
