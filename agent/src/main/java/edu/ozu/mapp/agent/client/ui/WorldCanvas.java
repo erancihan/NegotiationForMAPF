@@ -5,7 +5,9 @@
  */
 package edu.ozu.mapp.agent.client.ui;
 
+import edu.ozu.mapp.system.Broadcast;
 import edu.ozu.mapp.utils.JSONWorldWatch;
+import edu.ozu.mapp.utils.Point;
 
 import java.awt.*;
 
@@ -31,13 +33,12 @@ public class WorldCanvas extends Canvas {
         graphics.fillRect(offset, offset, (r * data.fov_size), (r * data.fov_size));
 
         edu.ozu.mapp.utils.Point xy_own = new edu.ozu.mapp.utils.Point(own_path[0], "-");
-        for (String[] agent_data : data.fov)
-        { // draw agents
-            String[] xy = agent_data[1].split(":");
-            String[] path = agent_data[2].replaceAll("([\\[\\]]*)", "").split(",");
+        for (Broadcast broadcast : data.fov.broadcasts)
+        {   // draw agents
+            Point xy = broadcast.locations.get(0).location;
 
-            int ox = (Integer.parseInt(xy[0]) - xy_own.x) + fov_center;
-            int oy = (Integer.parseInt(xy[1]) - xy_own.y) + fov_center;
+            int ox = (xy.x - xy_own.x) + fov_center;
+            int oy = (xy.y - xy_own.y) + fov_center;
 
             if (ox == fov_center && oy == fov_center)
                 graphics.setColor(new java.awt.Color(39, 145, 60));
@@ -46,20 +47,21 @@ public class WorldCanvas extends Canvas {
             graphics.fillOval((offset + (ox*r) + 5), (offset + (oy*r) + 5), (r - 10), (r - 10));
 
             // draw path
-            if (path.length == 1)
-            {// own path, replace path data
-                path = own_path;
+            if (broadcast.locations.size() == 1)
+            {   // own path, replace path data
+                // TODO: ... WHAT?!?!
+//                path = own_path;
             }
 
-            for (int i = 0; i + 1 < path.length; i++)
+            for (int i = 0; i + 1 < broadcast.locations.size(); i++)
             {// draw path
-                String[] from = path[i  ].split("-");
-                String[] dest = path[i+1].split("-");
+                Point from = broadcast.locations.get(i).location;
+                Point dest = broadcast.locations.get(i+1).location;
 
-                int f_x = (Integer.parseInt(from[0]) - xy_own.x) + fov_center;
-                int f_y = (Integer.parseInt(from[1]) - xy_own.y) + fov_center;
-                int d_x = (Integer.parseInt(dest[0]) - xy_own.x) + fov_center;
-                int d_y = (Integer.parseInt(dest[1]) - xy_own.y) + fov_center;
+                int f_x = (from.x - xy_own.x) + fov_center;
+                int f_y = (from.y - xy_own.y) + fov_center;
+                int d_x = (dest.x - xy_own.x) + fov_center;
+                int d_y = (dest.y - xy_own.y) + fov_center;
 
                 graphics.drawLine(
                         offset + (f_x * r) + r/2,
