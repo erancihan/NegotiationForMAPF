@@ -8,14 +8,12 @@ import edu.ozu.mapp.agent.client.helpers.FileLogger;
 import edu.ozu.mapp.agent.client.models.Contract;
 import edu.ozu.mapp.dataTypes.Constraint;
 import edu.ozu.mapp.dataTypes.CollisionCheckResult;
-import edu.ozu.mapp.system.DATA_REQUEST_PAYLOAD_WORLD_JOIN;
-import edu.ozu.mapp.system.DATA_REQUEST_PAYLOAD_WORLD_MOVE;
-import edu.ozu.mapp.system.SystemExit;
-import edu.ozu.mapp.system.WorldOverseer;
+import edu.ozu.mapp.system.*;
 import edu.ozu.mapp.utils.*;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.util.Assert;
 
+import java.time.Duration;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
@@ -52,7 +50,7 @@ public class AgentHandler {
     private final PseudoLock handle_state_run_once_at_a_time_lock;
     private final PseudoLock agent_handler_verify_negotiations_lock;
 
-    private String[][] fov;
+    private FoV fov;
 
     AgentHandler(Agent client) {
         Assert.notNull(client.START, "«START cannot be null»");
@@ -190,8 +188,8 @@ public class AgentHandler {
 
         CollisionCheckResult result = null;
         try {
-            String[][] fov_data = WorldOverseer.getInstance().GetFoV(agent.AGENT_ID);
-            result = getCollidingAgents(fov_data);
+            FoV fov = WorldOverseer.getInstance().GetFoV(agent.AGENT_ID);
+            result = getCollidingAgents(fov);
         } catch (Exception ex) {
             ex.printStackTrace();
             SystemExit.exit(500);
@@ -232,41 +230,47 @@ public class AgentHandler {
         }
     }
 
-    private CollisionCheckResult getCollidingAgents(String[][] data)
+    private CollisionCheckResult getCollidingAgents(FoV fov)
     {
-        Arrays.sort(data, Comparator.comparing(a -> a[0]));
-        List<String[]> broadcasts = Arrays.stream(data).collect(Collectors.toList());
+        List<Broadcast> broadcasts = fov.getBroadcastsSorted();
         Set<String> agent_ids = new HashSet<>();
         String[] own_path = agent.GetOwnBroadcastPath();
 
         ArrayList<CollisionCheckResult> conflicts = new ArrayList<>();
 
         agent_ids.add(agent.AGENT_ID); // add own data
-        for (String[] broadcast : broadcasts)
+        for (Broadcast broadcast : broadcasts)
         {
-            if (broadcast[0].equals(agent.AGENT_ID))
+            if (broadcast.agent_name.equals(agent.AGENT_ID))
             {   // own data
                 continue;
             }
 
-            if (broadcast[2].equals("inf"))
-            {   // OBSTACLE IN FoV
-                // always register obstacle
-                agent.constraints.add(new Constraint(new Point(broadcast[1], "-")));
+            boolean should_skip = false;
+            for (Constraint constraint : broadcast.locations)
+            {
+                if (constraint.at_t == Constraint.Duration.INF.value)
+                {   // OBSTACLE IN FoV
+                    // always register obstacle
+                    agent.constraints.add(constraint);
 
-                int idx = Arrays.asList(own_path).indexOf(broadcast[1]);
-                if (idx > 0)
-                {   // OBSTACLE IS IN WAY
-                    conflicts.add(new CollisionCheckResult(idx, CollisionCheckResult.Type.OBSTACLE));
+                    int idx = Arrays.asList(own_path).indexOf(constraint.location.key);
+                    if (idx > 0)
+                    {   // OBSTACLE IS IN WAY
+                        conflicts.add(new CollisionCheckResult(idx, CollisionCheckResult.Type.OBSTACLE));
+                    }
+
+                    should_skip = true;
+                    break;
                 }
-                continue;
             }
+            if (should_skip) continue;
 
-            String[] path = new Path(broadcast[2]).toStringArray();
+            String[] path = broadcast.getPathStringArray();
             ConflictInfo conflict_info = new ConflictCheck().check(own_path, path);
             if (conflict_info.hasConflict)
             {
-                agent_ids.add(broadcast[0]);
+                agent_ids.add(broadcast.agent_name);
                 String conflict_location = "";
                 // TODO
                 // since first Vertex Conflict or Swap Conflict found
@@ -277,7 +281,7 @@ public class AgentHandler {
                 else
                     conflict_location = own_path[conflict_info.index];
 
-                logger.info(agent.AGENT_ID + " | found " + conflict_info.type + " at " + conflict_location + " | " + Arrays.toString(broadcast));
+                logger.info(agent.AGENT_ID + " | found " + conflict_info.type + " at " + conflict_location + " | " + Arrays.toString(path));
 
                 CollisionCheckResult ret = new CollisionCheckResult(CollisionCheckResult.Type.COLLISION);
                 ret.agent_ids = agent_ids.toArray(new String[0]);
@@ -670,7 +674,7 @@ public class AgentHandler {
         return agent;
     }
 
-    public String[][] GetCurrentFoVData() {
+    public FoV GetCurrentFoVData() {
         return fov;
     }
 
