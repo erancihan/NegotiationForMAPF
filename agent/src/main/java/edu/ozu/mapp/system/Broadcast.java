@@ -21,4 +21,9 @@ public class Broadcast {
 
         return path;
     }
+
+    @Override
+    public String toString() {
+        return "[" + agent_name + ' ' + locations + ']';
+    }
 }
