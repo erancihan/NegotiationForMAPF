@@ -3,6 +3,7 @@ package edu.ozu.mapp.system;
 import edu.ozu.mapp.agent.client.AgentClient;
 import edu.ozu.mapp.agent.client.AgentHandler;
 import edu.ozu.mapp.agent.client.helpers.FileLogger;
+import edu.ozu.mapp.dataTypes.Constraint;
 import edu.ozu.mapp.dataTypes.WorldSnapshot;
 import edu.ozu.mapp.utils.*;
 import org.jetbrains.annotations.NotNull;
@@ -434,40 +435,54 @@ public class WorldOverseer
         return data;
     }
 
-    public String[][] GetFoV(String agent_name)
+    public FoV GetFoV(String agent_name)
     {
         // it will be null if agent hasn't joined yet
         if (agent_to_point.get(agent_name) == null)
-            return new String[0][3];
+            return new FoV();
 
         return GetAgentFoV(agent_name);
     }
 
-    private String[][] GetAgentFoV(String agent_name)
+    private FoV GetAgentFoV(String agent_name)
     {
-        ArrayList<String[]> agents = new ArrayList<>();
+        FoV fov = new FoV();
         Point loc = new Point(agent_to_point.get(agent_name), "-");
 
         for (int i = 0; i < Globals.FIELD_OF_VIEW_SIZE; i++) {
-            for (int j = 0; j < Globals.FIELD_OF_VIEW_SIZE; j++)
-            {
+            for (int j = 0; j < Globals.FIELD_OF_VIEW_SIZE; j++) {
                 int x = loc.x + (j - Globals.FIELD_OF_VIEW_SIZE / 2);
                 int y = loc.y + (i - Globals.FIELD_OF_VIEW_SIZE / 2);
 
-                if (x == loc.x && y == loc.y) continue;
+                if (x == loc.x && y == loc.y) {
+                    continue;
+                }
 
                 String agent_key = point_to_agent.getOrDefault(x + "-" + y, "");
-                if (!agent_key.isEmpty())
-                {
-                    if (passive_agents.containsKey(agent_key))
-                        agents.add(new String[]{agent_key, x + "-" + y, "inf"});
-                    else
-                        agents.add(new String[]{agent_key, x + "-" + y, Utils.toString(broadcasts.get(agent_key), ",")});
+                if (agent_key.isEmpty()) {
+                    continue;
+                }
+
+                Broadcast broadcast = new Broadcast();
+                broadcast.agent_name = agent_key;
+                if (passive_agents.containsKey(agent_key)) {
+                    if (passive_agents.get(agent_key)[1].equals("")) {
+                        continue;
+                    }
+
+                    broadcast.add(new Constraint(agent_key, new Point(x, y), passive_agents.get(agent_key)[1]));
+
+                    continue;
+                }
+
+                String[] agent_broadcast = this.broadcasts.get(agent_key);
+                for (int _t = 0; _t < agent_broadcast.length; _t++) {
+                    broadcast.add(new Constraint(agent_key, new Point(agent_broadcast[_t], "-"), _t + this.TIME));
                 }
             }
         }
 
-        return agents.toArray(new String[0][3]);
+        return fov;
     }
 
     public void Step()
