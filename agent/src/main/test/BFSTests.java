@@ -1,5 +1,5 @@
 import edu.ozu.mapp.utils.BFS;
-import edu.ozu.mapp.utils.Path;
+import edu.ozu.mapp.utils.path.Path;
 import edu.ozu.mapp.utils.Point;
 import org.junit.Test;
 

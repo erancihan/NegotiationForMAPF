@@ -1,7 +1,7 @@
 package edu.ozu.mapp.utils.bid;
 
 import edu.ozu.mapp.system.SystemExit;
-import edu.ozu.mapp.utils.Path;
+import edu.ozu.mapp.utils.path.Path;
 import edu.ozu.mapp.utils.PathCollection;
 import edu.ozu.mapp.utils.Point;
 import edu.ozu.mapp.utils.path.Node;

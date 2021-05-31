@@ -35,29 +35,7 @@ public class HelloAgent extends Agent
     public Action onMakeAction(Contract contract)
     {
 
-        String[][] fov = GetFieldOfView();
-//        System.out.println("fov ha1 > " + Arrays.deepToString(fov));
-
-        ArrayList<String[]> constraints = new ArrayList<>();
-        for (String[] broadcast_data : fov)
-        {
-            String[] broadcast = broadcast_data[2].replaceAll("([\\[\\]]*)", "").split(",");
-            for (int i = 0; i < broadcast.length; i++)
-            {
-                // if target is not the agent in negotiation
-                // opponent id can be extracted from negotiation state
-                // >> skipping for now
-                constraints.add(new String[]{broadcast[i], String.valueOf(i)});
-            }
-        }
-
-        List<String> path = new AStar().calculate(POS, DEST, constraints.toArray(new String[0][3]), this.dimensions, time);
-        String[] bid = new String[5];
-        for (int i = 0; i < bid.length; i++) {
-            bid[i] = path.get(i);
-        }
-
-        return new Action(this, ActionType.OFFER, bid);
+        return new Action(this, ActionType.ACCEPT);
     }
 
     @Override
