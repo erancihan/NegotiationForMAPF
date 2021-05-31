@@ -10,7 +10,7 @@ import edu.ozu.mapp.system.Colors;
 import edu.ozu.mapp.system.WorldOverseer;
 import edu.ozu.mapp.config.AgentConfig;
 import edu.ozu.mapp.config.WorldConfig;
-import edu.ozu.mapp.utils.Path;
+import edu.ozu.mapp.utils.path.Path;
 import edu.ozu.mapp.utils.Point;
 
 import java.awt.*;

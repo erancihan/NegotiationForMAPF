@@ -37,6 +37,8 @@ public class NegotiationOverseer
         sessions     = new ConcurrentHashMap<>();
 
         cumulative_negotiation_count = 0;
+
+        System.out.println(string());
     }
 
     public static NegotiationOverseer getInstance()
@@ -118,11 +120,11 @@ public class NegotiationOverseer
     public void AgentJoinSession(String session_hash, AgentHandler agent)
     {
         // get session members
-        String[] agents = sessions.get(session_hash).GetAgentNames();
+        String[] agents = sessions.get(session_hash).GetAgentIDs();
         if (!Arrays.asList(agents).contains(agent.GetAgentID()))
         {
             logger.error(agent.GetAgentID() + " does not belong to session " + session_hash + " | " + Arrays.toString(agents));
-            System.exit(1);
+            SystemExit.exit(500);
         }
 
         // are these ids present in session info
@@ -146,14 +148,14 @@ public class NegotiationOverseer
                 logger.warn(agent_id + " | for some reason I am not in session " + session_hash);
                 keys.add(session_hash);
                 session_keys.put(agent_id, keys);
-                System.exit(1);
+                SystemExit.exit(500);
             }
         }
 
         sessions.get(session_hash).RegisterAgentREF(agent);
 
         world_log_callback.accept(
-                String.format("%s joining %s | %s", agent.getAgentName(), session_hash.substring(0, 7), Arrays.toString(sessions.get(session_hash).GetAgentNames()))
+                String.format("%s joining %s | %s", agent.getAgentName(), session_hash.substring(0, 7), Arrays.toString(sessions.get(session_hash).GetAgentIDs()))
         );
     }
 
@@ -171,12 +173,14 @@ public class NegotiationOverseer
     {
         NegotiationSession session = sessions.get(session_id);
 
-        if (session.GetState().equals(NegotiationSession.NegotiationState.DONE))
-        {
+        if (
+            session.GetState().equals(NegotiationSession.NegotiationState.DONE) ||
+            session.GetState().equals(NegotiationSession.NegotiationState.JOIN)
+        ) {
             session.RegisterAgentLeaving(agent_name);
-            session_keys.get(agent_name).remove(session_id);
+            if (session_keys.containsKey(agent_name)) session_keys.get(agent_name).remove(session_id);
         }
-        if (session.GetActiveAgentNames().length == 0)
+        if (session.GetActiveAgentIDs().length == 0)
         {
 //            session.destroy();
             sessions.remove(session_id);
@@ -202,11 +206,11 @@ public class NegotiationOverseer
 
     public String[] GetSessionAgents(String session)
     {
-        return sessions.get(session).GetAgentNames();
+        return sessions.get(session).GetAgentIDs();
     }
 
     public String[] InvalidateSession(String session) {
-        String[] agent_names = sessions.get(session).GetAgentNames();
+        String[] agent_names = sessions.get(session).GetAgentIDs();
 
         sessions.get(session).invalidate();
         sessions.remove(session);
@@ -215,5 +219,16 @@ public class NegotiationOverseer
             session_keys.getOrDefault(key, new ArrayList<>()).remove(session);
 
         return agent_names;
+    }
+
+    public ConcurrentHashMap<String, NegotiationSession> ActiveSessions()
+    {
+        return sessions;
+    }
+
+    public String string() {
+        return this.getClass().getSimpleName() + "@" + Integer.toHexString(System.identityHashCode(this)) +
+                "\n sessions: " + sessions +
+                "\n session keys: " + session_keys;
     }
 }

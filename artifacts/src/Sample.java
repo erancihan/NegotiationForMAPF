@@ -5,6 +5,7 @@ import edu.ozu.mapp.utils.Glob;
 import edu.ozu.mapp.utils.TournamentRunner;
 
 import javax.swing.filechooser.FileSystemView;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -13,11 +14,15 @@ import java.util.ArrayList;
 public class Sample {
     public static void main(String[] args) {
         try {
+            ch.qos.logback.classic.Logger root = (ch.qos.logback.classic.Logger) org.slf4j.LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME);
+            root.setLevel(ch.qos.logback.classic.Level.INFO);
+
             System.out.println(FileSystemView.getFileSystemView().getDefaultDirectory().getPath());
             System.out.println(System.getProperty("user.dir"));
-//            ScenarioManager.run(args);
-            new Sample().gen_cases();
-//            new Sample().run_tournament();
+
+///            ScenarioManager.run(args);
+//            new Sample().gen_cases();
+            new Sample().run_tournament();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -59,11 +64,25 @@ public class Sample {
         }
     }
 
-    public void run_tournament() throws IOException {
-//        Path path = Paths.get(FileSystemView.getFileSystemView().getDefaultDirectory().getPath(), "MAPP");
-        Path path = Paths.get(System.getProperty("user.dir"), "artifacts", "configs");
-        ArrayList<String> scenarios = new Glob().glob(path, "*.json");
+    File tournament_run_results;
+    public void run_tournament() throws IOException, InterruptedException
+    {
+//        Globals.FIELD_OF_VIEW_SIZE = 5;
 
-        new TournamentRunner().run(scenarios);
+//        Path path = Paths.get(FileSystemView.getFileSystemView().getDefaultDirectory().getPath(), "MAPP");
+        Path path = Paths.get(System.getProperty("user.dir"), "artifacts", "configs", "16x16_60-Hybrid_FoV5");
+        ArrayList<String> scenarios = new Glob().glob(path, "world-scenario-*.json");
+
+        tournament_run_results = Paths.get(path.toString(), "runs.txt").toFile();
+        //noinspection ResultOfMethodCallIgnored
+        tournament_run_results.getParentFile().mkdirs();
+        if (!tournament_run_results.exists()) {
+            //noinspection ResultOfMethodCallIgnored
+            tournament_run_results.createNewFile();
+        }
+
+        TournamentRunner runner = new TournamentRunner();
+        runner.tournament_run_results = tournament_run_results;
+        runner.run(scenarios);
     }
 }

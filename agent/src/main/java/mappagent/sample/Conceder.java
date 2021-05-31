@@ -5,6 +5,7 @@ import edu.ozu.mapp.agent.MAPPAgent;
 import edu.ozu.mapp.agent.client.AgentClient;
 import edu.ozu.mapp.agent.client.models.Contract;
 import edu.ozu.mapp.utils.*;
+import edu.ozu.mapp.utils.path.Path;
 
 import java.util.ArrayList;
 import java.util.Iterator;

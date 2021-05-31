@@ -11,6 +11,8 @@ import java.util.concurrent.CountDownLatch;
 
 public class MovementHandler
 {
+    private static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(MovementHandler.class);
+
     private static MovementHandler instance;
 
     private ConcurrentHashMap<String, AgentHandler>                     move_queue;
@@ -27,6 +29,8 @@ public class MovementHandler
         payloads    = new ConcurrentHashMap<>();
 
         process_queue_lock = new PseudoLock();
+
+        System.out.println(string());
     }
 
     public static MovementHandler getInstance()
@@ -75,47 +79,62 @@ public class MovementHandler
 
         process_queue_unlock_latch = new CountDownLatch(move_queue.size());
 
-        try {
-            CompletableFuture
-                .runAsync(this::process_queue)
-                .exceptionally(ex -> { ex.printStackTrace(); return null; })
-                .whenCompleteAsync((entity, ex) -> {
-                    if (ex != null) ex.printStackTrace();
+        try
+        {
+            process_queue();
 
-                    runnable.run();
-                    try {
-                        process_queue_unlock_latch.await();
-                        process_queue_lock.unlock();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                })
-            ;
-        } catch (Exception exception) {
-            exception.printStackTrace();
+            process_queue_unlock_latch.await();
+
+            runnable.run();
             process_queue_lock.unlock();
+        }
+        catch (Exception ex)
+        {
+            ex.printStackTrace();
+            SystemExit.exit(500);
         }
     }
 
     private synchronized void process_queue()
     {
         System.out.println("MovementHandler | processing queue of size : " + move_queue.size());
+
+        for (String agent_id : move_queue.keySet())
+        {
+            DATA_REQUEST_PAYLOAD_WORLD_MOVE payload = payloads.get(agent_id);
+
+            if (world.point_to_agent.get(payload.CURRENT_LOCATION.key).equals(agent_id)) {
+                // location has not been cleared
+                world.point_to_agent.put(payload.CURRENT_LOCATION.key, "");
+            } else {
+                logger.error(
+                        "THIS SHOULD HAVE NEVER HAPPENED. " +
+                        world.point_to_agent.get(payload.CURRENT_LOCATION.key) +
+                        " AND " +
+                        agent_id +
+                        " HAVE THE SAME LOCATION KEYS"
+                );
+                SystemExit.exit(500);
+            }
+        }
+
         Iterator<String> iterator = move_queue.keySet().iterator();
         while (iterator.hasNext())
         {
             String agent_name = iterator.next();
-//            System.out.println(agent_name);
-
             DATA_REQUEST_PAYLOAD_WORLD_MOVE payload = payloads.get(agent_name);
 
-            // FREE CURRENT LOCATION FIRST
-            world.point_to_agent.remove(payload.CURRENT_LOCATION.key);
-            // UPDATE
-            world.agent_to_point.put(agent_name, payload.NEXT_LOCATION.key);
+            if (!world.point_to_agent.getOrDefault(payload.NEXT_LOCATION.key, "").isEmpty())
+            {   // ensure location is OPEN
+                logger.error(
+                    payload.NEXT_LOCATION.key + " WAS NOT OPEN FOR " + agent_name + ". OCCUPIED BY " +
+                    world.point_to_agent.get(payload.NEXT_LOCATION.key)
+                );
+                SystemExit.exit(500);
+            }
+            world.point_to_agent.put(payload.NEXT_LOCATION.key, agent_name);    // CLOSE
+            world.agent_to_point.put(agent_name, payload.NEXT_LOCATION.key);    // UPDATE
 
-            // todo handle this operation after all points are freed
-            world.point_to_agent.put(payload.NEXT_LOCATION.key, agent_name);
-//            System.out.println(agent_name + " " + Arrays.toString(payload.BROADCAST));
             world.broadcasts.put(agent_name, payload.BROADCAST);
 
             AgentHandler agent_ref = move_queue.get(agent_name);
@@ -132,5 +151,10 @@ public class MovementHandler
 
             iterator.remove();
         }
+    }
+
+    public String string() {
+        return this.getClass().getSimpleName() + "@" + Integer.toHexString(System.identityHashCode(this)) +
+                "\n queue: " + move_queue.toString();
     }
 }

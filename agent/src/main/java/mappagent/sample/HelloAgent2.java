@@ -4,6 +4,7 @@ import edu.ozu.mapp.agent.Agent;
 import edu.ozu.mapp.agent.MAPPAgent;
 import edu.ozu.mapp.agent.client.AgentClient;
 import edu.ozu.mapp.agent.client.models.Contract;
+import edu.ozu.mapp.system.FoV;
 import edu.ozu.mapp.system.WorldOverseer;
 import edu.ozu.mapp.utils.*;
 
@@ -34,31 +35,7 @@ public class HelloAgent2 extends Agent
     @Override
     public Action onMakeAction(Contract contract)
     {
-        if (count++ >= 2)
-            return new Action(this, ActionType.ACCEPT);
-
-        String[][] fov = WorldOverseer.getInstance().GetFoV(this.AGENT_ID);
-
-        ArrayList<String[]> constraints = new ArrayList<>();
-        for (String[] broadcast_data : fov)
-        {
-            String[] broadcast = broadcast_data[2].replaceAll("([\\[\\]]*)", "").split(",");
-            for (int i = 0; i < broadcast.length; i++)
-            {
-                // if target is not the agent in negotiation
-                // opponent id can be extracted from negotiation state
-                // >> skipping for now
-                constraints.add(new String[]{broadcast[i], String.valueOf(i)});
-            }
-        }
-
-        List<String> path = new AStar().calculate(POS, DEST, constraints.toArray(new String[0][3]), this.dimensions, this.time);
-        String[] bid = new String[5];
-        for (int i = 0; i < bid.length; i++) {
-            bid[i] = path.get(i);
-        }
-
-        return new Action(this, ActionType.OFFER, bid);
+        return new Action(this, ActionType.ACCEPT);
     }
 
     public static void main(String[] args)

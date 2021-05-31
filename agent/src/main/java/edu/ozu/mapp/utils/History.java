@@ -1,6 +1,7 @@
 package edu.ozu.mapp.utils;
 
 import edu.ozu.mapp.agent.client.models.Contract;
+import edu.ozu.mapp.system.SystemExit;
 
 import java.util.HashSet;
 import java.util.Iterator;
@@ -106,8 +107,12 @@ public class History
         {
             Contract next = iterator.next();
             if (next.x.replace("agent:", "").equals(id)) {
-                try { contract = next.clone(); }
-                catch (CloneNotSupportedException e) { e.printStackTrace(); System.exit(1); }
+                try {
+                    contract = next.clone();
+                } catch (CloneNotSupportedException e) {
+                    e.printStackTrace();
+                    SystemExit.exit(500);
+                }
             }
         }
 

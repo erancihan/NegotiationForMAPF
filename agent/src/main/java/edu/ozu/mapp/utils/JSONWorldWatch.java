@@ -1,6 +1,7 @@
 package edu.ozu.mapp.utils;
 
 import com.google.gson.annotations.SerializedName;
+import edu.ozu.mapp.system.FoV;
 
 import java.util.Arrays;
 
@@ -11,7 +12,7 @@ public class JSONWorldWatch {
     @SerializedName("time") public long time;
     public int world_state;
     public String position;
-    public String[][] fov;
+    public FoV fov;
     public int fov_size;
     public int time_tick;
     public float exec_time;
@@ -25,7 +26,7 @@ public class JSONWorldWatch {
                 ", time=" + time +
                 ", world_state=" + world_state +
                 ", position='" + position + '\'' +
-                ", fov=" + Arrays.deepToString(fov) +
+                ", fov=" + fov.toString() +
                 ", fov_size=" + fov_size +
                 ", time_tick=" + time_tick +
                 ", exec_time=" + exec_time +

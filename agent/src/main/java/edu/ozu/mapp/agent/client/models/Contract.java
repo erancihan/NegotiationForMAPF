@@ -123,7 +123,19 @@ public class Contract implements Cloneable {
     {
         if (offers.containsKey(agent.current_opponent))
         {
-            return Integer.parseInt(offers.get(agent.current_opponent));
+            // this should be bi-lateral
+            assert offers.keySet().size() == 2;
+
+            String opponent_key = null;
+            for (String key : offers.keySet())
+            {
+                if (key.equals(agent.AGENT_ID)) continue;
+                opponent_key = key;
+            }
+
+            assert opponent_key != null;
+
+            return Integer.parseInt(offers.get(opponent_key));
         }
         return -1;
     }

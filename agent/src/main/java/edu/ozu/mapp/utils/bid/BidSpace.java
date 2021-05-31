@@ -1,6 +1,7 @@
 package edu.ozu.mapp.utils.bid;
 
-import edu.ozu.mapp.utils.Path;
+import edu.ozu.mapp.system.SystemExit;
+import edu.ozu.mapp.utils.path.Path;
 import edu.ozu.mapp.utils.PathCollection;
 import edu.ozu.mapp.utils.Point;
 import edu.ozu.mapp.utils.path.Node;
@@ -10,8 +11,6 @@ import java.util.stream.Collectors;
 
 public class BidSpace
 {
-    @SuppressWarnings("FieldCanBeLocal")
-    private final boolean CAN_HOVER = false;
     @SuppressWarnings("FieldCanBeLocal")
     private final double INF = Double.MAX_VALUE;
 
@@ -70,13 +69,14 @@ public class BidSpace
             if (closed.contains(current)) continue;
             closed.add(current);
 
-            if (current.path.size() + 1 == this.depth) {
+            if (current.path.size() + 1 == this.depth || current.point.equals(goal))
+            {
                 current.linkTo(current);
                 cursor = current;
                 return;
             }
 
-            List<Node> neighbours = get_neighbours(current, current.time + 1);
+            List<Node> neighbours = current.getNeighbours(goal, constraints, width, height);
             for (Node neighbour : neighbours)
             {
                 if (closed.contains(neighbour)) continue;
@@ -97,39 +97,6 @@ public class BidSpace
                 }
             }
         }
-    }
-
-    private List<Node> get_neighbours(Node current, int time)
-    {
-        List<Node> nodes = new ArrayList<>();
-
-        for (int i = 0; i < 9; i++) {
-            if (i % 2 == 0) continue;
-
-            int x = (current.point.x + (i % 3) - 1);
-            int y = (current.point.y + (i / 3) - 1);
-
-            if ((x < 0 || x >= width) || (y < 0 || y >= height)) continue;
-
-            Point next = new Point(x, y);
-            if (constraints.containsKey(next.key))
-            {
-                if (
-                    constraints.get(next.key).contains(String.valueOf(time)) ||
-                    constraints.get(next.key).contains("inf")
-                )
-                    continue;
-            }
-            nodes.add(new Node(next, next.ManhattanDistTo(goal), time));
-        }
-
-        // add self for cyclic dep
-        if (CAN_HOVER)
-        {
-            nodes.add(new Node(current.point, time));
-        }
-
-        return nodes;
     }
 
     public Path peek()
@@ -153,6 +120,13 @@ public class BidSpace
         catch (EmptyStackException exception)
         {
             System.err.println("Stack is empty " + start.point + " -> " + goal + " w/ " + constraints + " @ t: " + time + " | invoke:" + invoke_count);
+        }
+        catch (NullPointerException exception)
+        {
+            System.err.println("nullptr " + start.point + " -> " + goal + " w/ " + constraints + " @ t: " + time + " | invoke:" + invoke_count);
+            System.err.println("cursor: " + cursor);
+            exception.printStackTrace();
+            SystemExit.exit(500);
         }
 
         return path;
@@ -178,6 +152,9 @@ public class BidSpace
         while (stack.size() < depth)
         {
             Node current = stack.peek();
+
+            if (current.point.equals(goal)) break;
+
             Node next = getNextNode(current);
             if (next == null) {
                 // exhausted neighbourhood of current
@@ -195,7 +172,7 @@ public class BidSpace
 
     private Node getNextNode(Node current)
     {
-        PriorityQueue<Node> neighbours = new PriorityQueue<>(get_neighbours(current, current.time + 1));
+        PriorityQueue<Node> neighbours = new PriorityQueue<>(current.getNeighbours(goal, constraints, width, height));
         while (!neighbours.isEmpty())
         {
             Node neighbour = neighbours.poll();
@@ -227,24 +204,33 @@ public class BidSpace
         System.out.println(set);
         System.out.println();
 
-        Point from = new Point(2, 2);
-        Point to   = new Point(4, 4);
-        BidSpace space = new BidSpace(from, to, 5, new HashMap<>(), "11x11", 3);
+        Point f1 = new Point(4, 6);
+        Point t1 = new Point(5, 6);
+        BidSpace bs1 = new BidSpace(f1, t1, 5, new HashMap<>(), "16x16", 10);
+
+        for (int i = 0; i < 50; i++) {
+            System.out.println("NEXT: " + bs1.next());
+        }
+
+        System.out.println();
+
+        Point f2 = new Point(2, 2);
+        Point t2 = new Point(4, 4);
+        BidSpace bs2 = new BidSpace(f2, t2, 5, new HashMap<>(), "11x11", 3);
 
         double max = Double.MIN_VALUE;
         double min = Double.MAX_VALUE;
-        for (int i = 0; i < 100; i++)
+        for (int i = 0; i < 5; i++)
         {
-            Path next = space.next();
+            Path next = bs2.next();
             System.out.println("NEXT:" + next);
 
-            double _max = next.size() + next.getLast().ManhattanDistTo(to);
-            double _min = next.size() + next.getLast().ManhattanDistTo(to);
+            double _max = next.size() + next.getLast().ManhattanDistTo(t2);
+            double _min = next.size() + next.getLast().ManhattanDistTo(t2);
 
             if (_max > max) max = _max;
             if (_min < min) min = _min;
         }
-
         System.out.println("MIN: "+ min);
         System.out.println("MAX: "+ max);
     }

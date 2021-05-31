@@ -7,11 +7,10 @@ package edu.ozu.mapp.agent.client.world;
 
 import edu.ozu.mapp.dataTypes.WorldSnapshot;
 import edu.ozu.mapp.system.Colors;
-import edu.ozu.mapp.utils.Path;
+import edu.ozu.mapp.utils.path.Path;
 import edu.ozu.mapp.utils.Point;
 
 import java.awt.*;
-import java.util.Arrays;
 import java.util.HashMap;
 
 /**

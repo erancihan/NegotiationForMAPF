@@ -11,6 +11,7 @@ import edu.ozu.mapp.system.WorldOverseer;
 import javax.swing.*;
 import javax.swing.text.Document;
 import java.awt.*;
+import java.util.Iterator;
 
 /**
  *
@@ -82,18 +83,20 @@ public class LogDisplayPane extends javax.swing.JTextPane
                 sb.append(String.format("%-11s : %s\n", key, data.world_data.get(key)));
             });
         sb.append("-------------\n");
-        data.agent_to_point
-            .keySet().stream().sorted()
-            .forEach(key -> {
-                String[] _data = world_overseer.GetAgentData(key);
 
-                sb.append(String.format("%-15s POS: %5s TOKEN: %3s REMAINING_PATH_LEN: %S\n", key, _data[0], _data[1], _data[2]));
-            });
-        sb.append("-------------\n");
-        for (Object[] item : data.world_log)
-        {
-            sb.append(String.format("%-23s %s\n", item[1].toString(), item[0].toString()));
+        Iterator<String> iterator = data.agent_to_point.keySet().iterator();
+        //noinspection WhileLoopReplaceableByForEach
+        while (iterator.hasNext()) {
+            String agent_id = iterator.next();
+            String[] _data = world_overseer.GetAgentData(agent_id);
+
+            sb.append(String.format("%-15s POS: %5s TOKEN: %3s REMAINING_PATH_LEN: %S\n", agent_id, _data[0], _data[1], _data[2]));
         }
+        sb.append("-------------\n");
+//        for (Object[] item : data.world_log)
+//        {
+//            sb.append(String.format("%-23s %s\n", item[1].toString(), item[0].toString()));
+//        }
 
         setText(sb.toString());
 

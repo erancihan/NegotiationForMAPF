@@ -69,6 +69,7 @@ public class LocationDataGenerator
                     AgentStartLocations.contains(start.key) ||
                     // there are agents within immediate close proximity for start | Premises Clear
                     !isPremisesClear(start.x, start.y)
+//                    || !isPollutionOK(start.x, start.y, true)
                 );
 
                 do {
@@ -78,6 +79,7 @@ public class LocationDataGenerator
                     AgentDestinations.contains(destination.key) ||
                     // there are agents within immediate close proximity for start | Premises Clear
                     !isPremisesClear(destination.x, destination.y)
+//                    || !isPollutionOK(destination.x, destination.y, false)
                 );
 
                 if (isPathLengthOk(start, destination))
@@ -224,6 +226,32 @@ public class LocationDataGenerator
                     return false;
                 }
             }
+        }
+
+        return true;
+    }
+
+    private boolean isPollutionOK(int _x, int _y, boolean is_start_loc)
+    {
+        int population = 1;
+        for (int i = 0; i < 9; i++)
+        {
+            if (i == 4) continue;
+
+            int x = _x + (i % 3) - 1;
+            int y = _y + (i / 3) - 1;
+
+            // only searches neighbours before adding
+            if (
+                is_start_loc
+                    ? AgentStartLocations.contains(x + "-" + y)
+                    : AgentDestinations.contains(x + "-" + y)
+            )
+            {
+                population += 1;
+            }
+
+            if (population == 3) return false;
         }
 
         return true;

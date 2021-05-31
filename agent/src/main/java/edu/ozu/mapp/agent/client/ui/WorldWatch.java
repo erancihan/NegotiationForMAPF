@@ -121,8 +121,8 @@ public class WorldWatch extends javax.swing.JPanel {
 //                "ReqTime  (ms): " + String.format("%8.4f",(data.time - prev_time)/1E6) + "\n" +
                 "-----------\n"+
                 "Field of View" +
-                Arrays.stream(data.fov)
-                    .map(key -> key[0].endsWith(client.getID()) ? "" : Utils.toString(key, " "))
+                data.fov.broadcasts.stream()
+                    .map(key -> key.agent_name.endsWith(client.getID()) ? "" : key.toString())
                     .collect(Collectors.joining("\n"))
                     .replaceAll("[\\[\\]]", "") +
                 "";
