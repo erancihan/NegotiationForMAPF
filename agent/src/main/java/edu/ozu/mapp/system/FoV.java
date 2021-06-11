@@ -8,6 +8,11 @@ import java.util.stream.Collectors;
 public class FoV {
     public ArrayList<Broadcast> broadcasts;
 
+    public FoV()
+    {
+        broadcasts = new ArrayList<>();
+    }
+
     public void add(Broadcast broadcast) {
         broadcasts.add(broadcast);
     }

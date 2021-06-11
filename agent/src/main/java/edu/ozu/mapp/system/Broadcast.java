@@ -8,6 +8,11 @@ public class Broadcast {
     public ArrayList<Constraint> locations;
     public String agent_name;
 
+    public Broadcast()
+    {
+        locations = new ArrayList<>();
+    }
+
     public void add(Constraint constraint) {
         locations.add(constraint);
     }
