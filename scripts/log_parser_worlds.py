@@ -661,6 +661,12 @@ def run(scenarios_folder_path, force_reparse: bool = False):
 
 
 if __name__ == '__main__':
+    run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\16x16_40_Hybrid_FoV7_Wait_C1", True)
+    run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\16x16_40_Hybrid_FoV7_Wait_C2", True)
+    run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\16x16_40_Hybrid_FoV7_Wait_PassThrough_C1", True)
+    run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\16x16_40_Hybrid_FoV7_Wait_PassThrough_C2", True)
+
+    exit()
     run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\8x8_10_Random_FoV5", True)
     run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\8x8_10_Hybrid_FoV5", True)
 

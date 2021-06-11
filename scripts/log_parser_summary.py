@@ -107,7 +107,7 @@ def work_data(world_path):  # creates row data
         exit()
 
     agent_type = "Hybrid" if "Hybrid" in path[-2].split('_') else "Random"
-    agent_fov = "FoV5" if "FoV" not in path[-2].split('_')[-1] else path[-2].split('_')[-1]
+    agent_fov = "FoV5" if "FoV" not in path[-2] else "_".join(path[-2].split('_')[3:])
 
     min_path_before: int = None
     avg_path_before: float = None
@@ -273,6 +273,7 @@ def run():
         sheet = workbook.add_worksheet(sheet_key)
 
         agent_types = list(workbook_data[sheet_key][str(1)].keys())
+        print(agent_types)
         agent_types = sorted(agent_types)
 
         s_headers = [
@@ -354,6 +355,8 @@ def run():
                     )
                     sheet.write(sheet_r, sheet_c, _exists)
                 else:
+                    if agent_type not in workbook_data[sheet_key][str(config_id)]:
+                        continue
                     sheet.write(sheet_r, sheet_c, workbook_data[sheet_key][str(config_id)][agent_type]["result"])
                 sheet_c += 1
                 for s_header in s_headers:
