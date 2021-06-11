@@ -10,7 +10,7 @@ public class FoVHandler {
         CIRCULAR
     }
 
-    private final WorldOverseer overseer;
+    private WorldOverseer overseer;
     private FoVTYPE foVBehaviour = Globals.FIELD_OF_VIEW_TYPE;
 
     public FoVHandler(WorldOverseer worldOverseer) {
@@ -44,7 +44,7 @@ public class FoVHandler {
                     }
 
                     broadcast.add(new Constraint(agent_key, new Point(x, y), this.overseer.passive_agents.get(agent_key)[1]));
-
+                    fov.broadcasts.add(broadcast);
                     continue;
                 }
 
@@ -52,6 +52,7 @@ public class FoVHandler {
                 for (int _t = 0; _t < agent_broadcast.length; _t++) {
                     broadcast.add(new Constraint(agent_key, new Point(agent_broadcast[_t], "-"), _t + this.overseer.TIME));
                 }
+                fov.broadcasts.add(broadcast);
             }
         }
 
