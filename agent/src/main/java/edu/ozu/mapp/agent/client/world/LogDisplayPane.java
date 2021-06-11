@@ -19,18 +19,16 @@ import java.util.Iterator;
  */
 public class LogDisplayPane extends javax.swing.JTextPane
 {
-    private final WorldOverseer world_overseer;
     private final int offset = 1;
     private final int font_size = 14;
     private JScrollPane scroll_pane;
+    public WorldOverseer world_overseer;
 
     /**
      * Creates new form LogDisplayPane
      */
     public LogDisplayPane()
     {
-        world_overseer = WorldOverseer.getInstance();
-
         initComponents();
 
         setFont(new java.awt.Font("Ubuntu Mono", Font.PLAIN, font_size)); // NOI18N
@@ -74,6 +72,7 @@ public class LogDisplayPane extends javax.swing.JTextPane
     private void write()
     {
         if (data == null) return;
+        if (world_overseer == null) return;
 
         StringBuilder sb = new StringBuilder();
 

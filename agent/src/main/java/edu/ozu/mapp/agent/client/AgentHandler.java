@@ -51,6 +51,7 @@ public class AgentHandler {
     private final PseudoLock agent_handler_verify_negotiations_lock;
 
     private FoV fov;
+    private WorldOverseer worldOverseerReference;
 
     AgentHandler(Agent client) {
         Assert.notNull(client.START, "«START cannot be null»");
@@ -188,7 +189,7 @@ public class AgentHandler {
 
         CollisionCheckResult result = null;
         try {
-            FoV fov = WorldOverseer.getInstance().GetFoV(agent.AGENT_ID);
+            FoV fov = worldOverseerReference.GetFoV(agent.AGENT_ID);
             result = getCollidingAgents(fov);
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -547,6 +548,7 @@ public class AgentHandler {
             logger.error(agent.AGENT_ID + " | REST cannot be null!");
             SystemExit.exit(500);
         }
+        assert rest != null;
 
         logger.debug(String.format("%s | CALCULATED PATH", agent.AGENT_ID));
         logger.debug(String.format("%s | %s", agent.AGENT_ID, Arrays.toString(rest.toArray())));
@@ -703,6 +705,11 @@ public class AgentHandler {
         }
 
         return true;
+    }
+
+    public void setWorldOverseerReference(WorldOverseer worldOverseerReference) {
+        this.worldOverseerReference = worldOverseerReference;
+//        this.agent.worldOverseerReference = worldOverseerReference;
     }
 
     /** ================================================================================================================ **/

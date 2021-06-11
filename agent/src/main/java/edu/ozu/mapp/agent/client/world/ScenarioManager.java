@@ -864,7 +864,7 @@ public class ScenarioManager extends javax.swing.JFrame
 
         if (world != null)
         {
-            world = world.Flush();
+//            world = world.Flush();
         }
     }//GEN-LAST:event_back_to_overview_btnActionPerformed
 
@@ -1191,7 +1191,7 @@ public class ScenarioManager extends javax.swing.JFrame
         text_pane_formatter.negotiation_info_pane = negotiation_info_pane;
 
 //        world = new World();
-        world = WorldOverseer.getInstance();
+        world = new WorldOverseer();
         world.SetOnLoopingStop(() -> generate_scenario_btn.setEnabled(true));
         world.SetLogDrawCallback((data) -> text_pane_formatter.format(data));
         world.SetCurrentStateChangeCallback((state) -> label_current_state.setText(state));
@@ -1294,15 +1294,19 @@ public class ScenarioManager extends javax.swing.JFrame
         min_path_length_label.setText(String.valueOf(min_path_len));
     }
 
+    /**
+     * SIMULATION START ENTRY POINT
+     *
+     * Everything starts, is initialized, from this function.
+     * */
     private void run_scenario()
     {
         generate_scenario_btn.setEnabled(false);
 
-        String worldID = "world:" + world_data.world_id + ":";
-
         // initialize world
         if (world == null) InitializeWorld();
         world.Create(world_data.world_id, world_data.width, world_data.height);
+        scenario_info_pane.world_overseer = world;
 
         HashMap<String, AgentClient> agent_refs = new HashMap<>();
         for (AgentConfig data : agents_data) {
@@ -1312,7 +1316,8 @@ public class ScenarioManager extends javax.swing.JFrame
                     agents_map
                         .get(data.agent_class_name)
                         .getDeclaredConstructor(String.class, String.class, Point.class, Point.class, int.class)
-                        .newInstance(data.agent_name, data.agent_name, new Point(data.start.get(), "-"), new Point(data.dest.get(), "-"), data.token_c)
+                        .newInstance(data.agent_name, data.agent_name, new Point(data.start.get(), "-"), new Point(data.dest.get(), "-"), data.token_c),
+                        world
                 );
                 client.Join(world);
                 agent_refs.put(data.agent_name, client);
@@ -1457,6 +1462,7 @@ public class ScenarioManager extends javax.swing.JFrame
 
     public ScenarioManager RunScenario(boolean cycle)
     {
+        // send run btn click action
         if (cycle)
         {   // will cycle immediately
             world.SCENARIO_MANAGER_HOOK_JOIN_UPDATE(state -> {
@@ -1467,17 +1473,14 @@ public class ScenarioManager extends javax.swing.JFrame
                 }
             });
             world.SCENARIO_MANAGER_HOOK_SIMULATION_FINISHED(() -> {
-                world.Flush();
+                world = null;
 
                 this.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
                 this.dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
             });
-            run_btnActionPerformed(null);   // send run btn click action
         }
-        else
-        {   // will not cycle
-            run_btnActionPerformed(null);   // send run btn click action
-        }
+
+        run_btnActionPerformed(null);   // send run btn click action
 
         return instance;
     }
@@ -1496,7 +1499,7 @@ public class ScenarioManager extends javax.swing.JFrame
 
     public void OnRunCrash(Consumer<Integer> runnable) {
         SystemExit.ExitHook = (status) -> {
-            world.Flush();
+            world = null;   // clear
 
             this.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
             this.dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));

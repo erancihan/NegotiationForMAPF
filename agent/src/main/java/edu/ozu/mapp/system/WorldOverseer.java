@@ -1,11 +1,15 @@
 package edu.ozu.mapp.system;
 
+import edu.ozu.mapp.agent.Agent;
 import edu.ozu.mapp.agent.client.AgentClient;
 import edu.ozu.mapp.agent.client.AgentHandler;
 import edu.ozu.mapp.agent.client.helpers.FileLogger;
-import edu.ozu.mapp.dataTypes.Constraint;
+import edu.ozu.mapp.agent.client.models.Contract;
 import edu.ozu.mapp.dataTypes.WorldSnapshot;
-import edu.ozu.mapp.utils.*;
+import edu.ozu.mapp.utils.Globals;
+import edu.ozu.mapp.utils.JSONWorldWatch;
+import edu.ozu.mapp.utils.Point;
+import edu.ozu.mapp.utils.PseudoLock;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -18,8 +22,6 @@ import java.util.function.Consumer;
 
 public class WorldOverseer
 {
-    private static WorldOverseer instance;
-
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(WorldOverseer.class);
     private FileLogger file_logger;
 
@@ -79,7 +81,7 @@ public class WorldOverseer
     private MoveActionHandler moveActionHandler;
     private FoVHandler foVHandler;
 
-    private WorldOverseer()
+    public WorldOverseer()
     {
         construct();
     }
@@ -97,8 +99,8 @@ public class WorldOverseer
         clients             = new ConcurrentHashMap<>();
         curr_state          = Globals.WorldState.JOIN;
         prev_state          = Globals.WorldState.NONE;
-        movement_handler    = MovementHandler.getInstance();
-        negotiation_overseer = NegotiationOverseer.getInstance();
+        movement_handler    = new MovementHandler();
+        negotiation_overseer = new NegotiationOverseer();
         negotiation_overseer.bank_update_hook = this::UpdateBankInfo;
         negotiation_overseer.world_log_callback = this::Log;
         negotiation_overseer.log_payload_hook = this::LogNegotiation;
@@ -128,42 +130,6 @@ public class WorldOverseer
         TIME = 0;
 
         System.out.println(string());
-    }
-
-    public static WorldOverseer getInstance()
-    {
-        if (instance == null)
-        {
-            synchronized (WorldOverseer.class)
-            {
-                if (instance == null)
-                {
-                    instance = new WorldOverseer();
-                }
-            }
-        }
-
-        return instance;
-    }
-
-    public WorldOverseer Flush()
-    {
-        System.out.println("Flushed INSTANCE : " + movement_handler + "     to : " + movement_handler.Flush());
-        System.out.println("Flushed INSTANCE : " + negotiation_overseer + " to : " + negotiation_overseer.Flush());
-
-        try {
-            System.out.println(" > main_sim_loop cancel");
-            main_sim_loop.cancel(true);
-            System.out.println(" > overseer_validator cancel");
-            overseer_validation_job.cancel(true);
-        } catch (Exception exception) {
-            exception.printStackTrace();
-        }
-
-        System.out.print  ("Flushed INSTANCE : " + instance + "       to : ");
-        instance = new WorldOverseer();
-
-        return instance;
     }
 
     public String string() {
@@ -267,6 +233,7 @@ public class WorldOverseer
         {   // there are no active agents left!
             IsLooping = false;
             main_sim_loop.cancel(false);
+            overseer_validation_job.cancel(true);
             SIM_LOOP_FINISH_TIME = System.nanoTime();
 
             if (UI_LoopStoppedHook != null) { UI_LoopStoppedHook.run(); }
@@ -336,7 +303,7 @@ public class WorldOverseer
             case NEGOTIATE:
                 if (FLAG_NEGOTIATIONS_VERIFIED.size() == active_agent_c)
                 {
-                    Log("- NEGOTIATIONS ARE VERIFIED", logger::info);
+                    Log("- NEGOTIATIONS ARE VERIFIED" + FLAG_NEGOTIATIONS_VERIFIED.size() + " ?= " + active_agent_c , logger::info);
 
                     FLAG_NEGOTIATIONS_VERIFIED.clear();
 
@@ -513,6 +480,9 @@ public class WorldOverseer
 
         IsLooping = true;
 
+        curr_state = Globals.WorldState.JOIN;
+        prev_state = Globals.WorldState.NONE;
+//        prev_state = Globals.WorldState.JOIN;
         if (curr_state == prev_state)
         {   // already run once, proceed to next step immediately
             Step();
@@ -851,6 +821,11 @@ public class WorldOverseer
         data[2] = String.valueOf(clients.get(agent_id).GetAgentRemainingPathLength());
 
         return data;
+    }
+
+    public Contract GetMyContract(Agent agent)
+    {
+        return negotiation_overseer.GetMyContract(agent);
     }
 
     public String[][] GetLocationConstraints() {

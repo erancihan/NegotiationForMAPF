@@ -8,7 +8,6 @@ import edu.ozu.mapp.keys.AgentKeys;
 import edu.ozu.mapp.keys.KeyHandler;
 import edu.ozu.mapp.system.Broadcast;
 import edu.ozu.mapp.system.FoV;
-import edu.ozu.mapp.system.NegotiationOverseer;
 import edu.ozu.mapp.system.WorldOverseer;
 import edu.ozu.mapp.utils.*;
 import edu.ozu.mapp.utils.bid.BidSpace;
@@ -47,6 +46,8 @@ public abstract class Agent {
 
     public int winC = 0;
     public int loseC = 0;
+
+    public WorldOverseer worldOverseerReference;
 
     /*
      * -1 | just started, nothing present
@@ -124,7 +125,8 @@ public abstract class Agent {
     {
         ArrayList<Constraint> constraints = new ArrayList<>(systemConstraintSet);
 
-        constraints.addAll(GetFoVasConstraint());
+        //todo resolve
+//        constraints.addAll(GetFoVasConstraint());
 
         return constraints;
     }
@@ -290,9 +292,10 @@ public abstract class Agent {
     {
         ArrayList<Constraint> constraints = new ArrayList<>();
 
-        FoV fov = WorldOverseer.getInstance().GetFoV(this.AGENT_ID);
+        FoV fov = worldOverseerReference.GetFoV(this.AGENT_ID);
         for (Broadcast broadcast : fov.broadcasts) {
             if (broadcast.agent_name.equals(this.AGENT_NAME)) {
+                // skip broadcast if it is own
                 continue;
             }
             constraints.addAll(broadcast.locations);
@@ -343,7 +346,7 @@ public abstract class Agent {
 
     public final Path GetOpponentCurrentlyBroadcastedPath()
     {
-        return new Path(WorldOverseer.getInstance().GetBroadcast(current_opponent));
+        return new Path(worldOverseerReference.GetBroadcast(current_opponent));
     }
 
     // TODO
@@ -409,7 +412,7 @@ public abstract class Agent {
 
     public final Contract GetContract()
     {
-        return NegotiationOverseer.getInstance().GetMyContract(this);
+        return worldOverseerReference.GetMyContract(this);
     }
 
     private AgentHandler handler_ref;

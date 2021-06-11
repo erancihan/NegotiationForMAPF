@@ -18,8 +18,6 @@ public class NegotiationOverseer
 {
     private static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(NegotiationOverseer.class);
 
-    private static NegotiationOverseer instance;
-
     protected BiConsumer<String, Integer> bank_update_hook;
     protected Consumer<String> world_log_callback;
     protected BiConsumer<String, String> log_payload_hook;
@@ -31,7 +29,7 @@ public class NegotiationOverseer
 
     private int cumulative_negotiation_count;
 
-    private NegotiationOverseer()
+    public NegotiationOverseer()
     {
         session_keys = new ConcurrentHashMap<>();
         sessions     = new ConcurrentHashMap<>();
@@ -39,29 +37,6 @@ public class NegotiationOverseer
         cumulative_negotiation_count = 0;
 
         System.out.println(string());
-    }
-
-    public static NegotiationOverseer getInstance()
-    {
-        if (instance == null)
-        {
-            synchronized (NegotiationOverseer.class)
-            {
-                if (instance == null)
-                {
-                    instance = new NegotiationOverseer();
-                }
-            }
-        }
-
-        return instance;
-    }
-
-    public NegotiationOverseer Flush()
-    {
-        instance = new NegotiationOverseer();
-
-        return instance;
     }
 
     public synchronized String RegisterCollisionNotification(String[] agent_ids)

@@ -13,8 +13,6 @@ public class MovementHandler
 {
     private static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(MovementHandler.class);
 
-    private static MovementHandler instance;
-
     private ConcurrentHashMap<String, AgentHandler>                     move_queue;
     private ConcurrentHashMap<String, DATA_REQUEST_PAYLOAD_WORLD_MOVE>  payloads;
 
@@ -23,7 +21,7 @@ public class MovementHandler
     private final PseudoLock process_queue_lock;
     private CountDownLatch process_queue_unlock_latch;
 
-    private MovementHandler()
+    public MovementHandler()
     {
         move_queue  = new ConcurrentHashMap<>();
         payloads    = new ConcurrentHashMap<>();
@@ -31,30 +29,6 @@ public class MovementHandler
         process_queue_lock = new PseudoLock();
 
         System.out.println(string());
-    }
-
-    public static MovementHandler getInstance()
-    {
-        if (instance == null)
-        {
-            //synchronized block to remove overhead
-            synchronized (MovementHandler.class)
-            {
-                if (instance == null)
-                {
-                    instance = new MovementHandler();
-                }
-            }
-        }
-
-        return instance;
-    }
-
-    public MovementHandler Flush()
-    {
-        instance = new MovementHandler();
-
-        return instance;
     }
 
     public void SetWorldReference(WorldOverseer world)

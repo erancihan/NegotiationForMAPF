@@ -20,20 +20,23 @@ public class AgentClient {
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(AgentClient.class);
     private AgentHandler handler;
 
-    public AgentClient(Agent agent)
+    public AgentClient(Agent agent, WorldOverseer overseer)
     {
-        this(new String[0], agent);
+        this(new String[0], agent, overseer);
         logger.debug("agent hash:" + agent.hashCode() + " client hash:" + this.hashCode());
     }
 
-    public AgentClient(String[] args, Agent agent)
+    public AgentClient(String[] args, Agent agent, WorldOverseer overseer)
     {
         Assert.notNull(agent, "agent cannot be null");
+
+        agent.worldOverseerReference = overseer;
 
         agent.init();
         agent.run();
 
         handler = new AgentHandler(agent);
+        handler.setWorldOverseerReference(overseer);
 
         if (!agent.isHeadless)
         {
@@ -98,6 +101,8 @@ public class AgentClient {
     public void Join(WorldOverseer world)
     {
         world.Register(this);
+//        this.handler.setWorldOverseerReference(world);  // this will fuck stuff up!
+        // agent should get world info during init
     }
 
     public void WORLD_HANDLER_JOIN_HOOK()
