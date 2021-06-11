@@ -27,7 +27,10 @@ public class LeaveActionHandler {
         switch (leaveBehaviour)
         {
             case PASS_THROUGH:
+                // mark agent passive w/ empty conflict time
                 this.overseer.passive_agents.put(agent.GetAgentID(), new String[]{ agent.GetCurrentLocation(), "" });
+                // detach agent from point to agent & agent to point
+                this.overseer.point_to_agent.put(agent.GetCurrentLocation(), "");
                 break;
             case OBSTACLE:
             default:
