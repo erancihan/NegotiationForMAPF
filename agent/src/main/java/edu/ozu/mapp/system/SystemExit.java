@@ -1,10 +1,11 @@
 package edu.ozu.mapp.system;
 
+import java.util.ArrayList;
 import java.util.function.Consumer;
 
 public class SystemExit
 {
-    public static Consumer<Integer> ExitHook = null;
+    public static ArrayList<Consumer<Integer>> ExitHooks = new ArrayList<>();
 
     public static boolean SHUTDOWN_ON_EXIT = true;
     public static int EXIT_CODE = 0;
@@ -24,11 +25,24 @@ public class SystemExit
 
     public static void exit(int status)
     {
-        if (ExitHook == null) {
-            // default behaviour
-            System.exit(status);
+        for (Consumer<Integer> hook : ExitHooks)
+        {
+            hook.accept(status);
         }
 
-        ExitHook.accept(status);
+        if (SHUTDOWN_ON_EXIT)
+        {
+            System.exit(status);
+        }
+    }
+
+    public static void hook(Consumer<Integer> runnable, int index)
+    {
+        ExitHooks.add(index, runnable);
+    }
+
+    public static void hook(Consumer<Integer> runnable)
+    {
+        ExitHooks.add(runnable);
     }
 }

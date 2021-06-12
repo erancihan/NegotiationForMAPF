@@ -1473,7 +1473,11 @@ public class ScenarioManager extends javax.swing.JFrame
                 }
             });
             world.SCENARIO_MANAGER_HOOK_SIMULATION_FINISHED(() -> {
-                world = null;
+                if (world != null)
+                {
+                    world.close();
+                    world = null;
+                }
 
                 this.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
                 this.dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
@@ -1497,15 +1501,23 @@ public class ScenarioManager extends javax.swing.JFrame
         ON_WINDOW_CLOSED = runnable;
     }
 
-    public void OnRunCrash(Consumer<Integer> runnable) {
-        SystemExit.ExitHook = (status) -> {
-            world = null;   // clear
+    public void BindRunCrashHook() {
+        SystemExit.hook(
+            (status) -> {
+                if (status == 0)
+                    return;
 
-            this.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-            this.dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
+                if (world != null)
+                {   // kill if it is not killed yet
+                    world.kill();   // kill running threads
+                    world = null;   // clear
+                }
 
-            runnable.accept(SystemExit.EXIT_CODE);
-        };
+                this.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+                this.dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
+            },
+            0
+        );
     }
 }
 

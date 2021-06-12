@@ -978,4 +978,14 @@ public class WorldOverseer
 
         overseer_validator_invoke_lock.unlock();
     }
+
+    public void close()
+    {   // safe close
+        service.shutdown();
+    }
+
+    public void kill()
+    {   // terminate all threads
+        service.shutdownNow();
+    }
 }
