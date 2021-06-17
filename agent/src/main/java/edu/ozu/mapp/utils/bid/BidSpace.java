@@ -1,10 +1,10 @@
 package edu.ozu.mapp.utils.bid;
 
 import edu.ozu.mapp.system.SystemExit;
-import edu.ozu.mapp.utils.path.Path;
 import edu.ozu.mapp.utils.PathCollection;
 import edu.ozu.mapp.utils.Point;
 import edu.ozu.mapp.utils.path.Node;
+import edu.ozu.mapp.utils.path.Path;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -50,6 +50,11 @@ public class BidSpace
         stack = new Stack<>();
 
         calculate();
+    }
+
+    public BidSpace(Point from, Point destination, HashMap<String, ArrayList<String>> constraints, String dimensions, int time)
+    {
+        this(from, destination, (int) from.ManhattanDistTo(destination), constraints, dimensions, time);
     }
 
     private void calculate()
@@ -114,7 +119,10 @@ public class BidSpace
         Path path = null;
         try
         {
-            path = __next();
+            if ((path = __next()) == null)
+            {
+                return null;
+            }
             invoke_count++;
         }
         catch (EmptyStackException exception)
@@ -147,19 +155,27 @@ public class BidSpace
         }
 
         // BEGIN : CALCULATE NEXT
-        stack.pop();
+        if (stack.isEmpty())
+        {   // if stack is empty, return null
+            return null;
+        }
+        stack.pop();    // pop top most
 
-        while (stack.size() < depth)
+        while (0 < stack.size() && stack.size() < depth)
         {
             Node current = stack.peek();
-
-            if (current.point.equals(goal)) break;
+            if (current.point.equals(goal))
+            {   // target found, return this
+                break;
+            }
 
             Node next = getNextNode(current);
-            if (next == null) {
-                // exhausted neighbourhood of current
+            if (next == null)
+            {   // exhausted neighbourhood of current
                 stack.pop();
-            } else {
+            }
+            else
+            {
                 stack.push(next);
             }
         }
@@ -191,49 +207,15 @@ public class BidSpace
         return null;
     }
 
-/** ================================================================================================================ **/
-//<editor-folds desc="TESTS" defaultstate="collapsed">
-
-    public static void main(String[] args)
+    public List<Path> all()
     {
-        HashSet<Node> set = new HashSet<>();
-        set.add(new Node(new Point(1, 2), 2));
-        set.add(new Node(new Point(1, 2), 3));
-        System.out.println(set);
-        set.add(new Node(new Point(1, 2), 2));
-        System.out.println(set);
-        System.out.println();
-
-        Point f1 = new Point(4, 6);
-        Point t1 = new Point(5, 6);
-        BidSpace bs1 = new BidSpace(f1, t1, 5, new HashMap<>(), "16x16", 10);
-
-        for (int i = 0; i < 50; i++) {
-            System.out.println("NEXT: " + bs1.next());
-        }
-
-        System.out.println();
-
-        Point f2 = new Point(2, 2);
-        Point t2 = new Point(4, 4);
-        BidSpace bs2 = new BidSpace(f2, t2, 5, new HashMap<>(), "11x11", 3);
-
-        double max = Double.MIN_VALUE;
-        double min = Double.MAX_VALUE;
-        for (int i = 0; i < 5; i++)
+        List<Path> paths = new ArrayList<>();
+        Path path = null;
+        while ((path = next()) != null)
         {
-            Path next = bs2.next();
-            System.out.println("NEXT:" + next);
-
-            double _max = next.size() + next.getLast().ManhattanDistTo(t2);
-            double _min = next.size() + next.getLast().ManhattanDistTo(t2);
-
-            if (_max > max) max = _max;
-            if (_min < min) min = _min;
+            paths.add(path);
         }
-        System.out.println("MIN: "+ min);
-        System.out.println("MAX: "+ max);
-    }
 
-//</editor-folds>
+        return paths;
+    }
 }
