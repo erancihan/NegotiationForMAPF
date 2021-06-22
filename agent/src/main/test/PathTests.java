@@ -1,3 +1,4 @@
+import edu.ozu.mapp.utils.Globals;
 import edu.ozu.mapp.utils.Point;
 import edu.ozu.mapp.utils.path.Path;
 import org.junit.Test;
@@ -7,6 +8,8 @@ import java.util.HashSet;
 public class PathTests extends IntegrationTestSuite {
     @Test
     public void test1() throws Exception {
+        Globals.MOVE_ACTION_SPACE_SIZE = 5;
+
         Path p1 = new Path("[0-1,0-2,0-3,0-4,0-4]");
         System.out.println(p1.string());
 
