@@ -1,6 +1,7 @@
 package edu.ozu.mapp.utils.bid;
 
 import edu.ozu.mapp.system.SystemExit;
+import edu.ozu.mapp.utils.AStar;
 import edu.ozu.mapp.utils.PathCollection;
 import edu.ozu.mapp.utils.Point;
 import edu.ozu.mapp.utils.path.Node;
@@ -11,6 +12,12 @@ import java.util.stream.Collectors;
 
 public class BidSpace
 {
+    public enum SearchStrategy
+    {
+        POP_LAST, NO_DEPTH_LIMIT;
+    }
+    private final SearchStrategy strategy;
+
     @SuppressWarnings("FieldCanBeLocal")
     private final double INF = Double.MAX_VALUE;
 
@@ -30,7 +37,15 @@ public class BidSpace
 
     private final HashMap<String, ArrayList<String>> constraints;
 
-    public BidSpace(Point from, Point destination, int depth, HashMap<String, ArrayList<String>> constraints, String dimensions, int time)
+    public BidSpace(
+        Point from,
+        Point destination,
+        int depth,
+        HashMap<String, ArrayList<String>> constraints,
+        String dimensions,
+        int time,
+        SearchStrategy strategy
+    )
     {
         start = new Node(from, from.ManhattanDistTo(destination), time);
 
@@ -42,22 +57,64 @@ public class BidSpace
         width  = (ds.length == 2 && !ds[0].isEmpty() && !ds[0].equals("0")) ? Integer.parseInt(ds[0]) : Integer.MAX_VALUE;
         height = (ds.length == 2 && !ds[1].isEmpty() && !ds[1].equals("0")) ? Integer.parseInt(ds[1]) : Integer.MAX_VALUE;
 
-        this.depth = depth;
+        this.strategy = strategy;
+        this.depth = strategy == SearchStrategy.NO_DEPTH_LIMIT ? Integer.MAX_VALUE : depth;
         this.time  = time;
 
         invoke_count = 0;
         explored   = new PathCollection();
         stack = new Stack<>();
-
-        calculate();
     }
 
-    public BidSpace(Point from, Point destination, HashMap<String, ArrayList<String>> constraints, String dimensions, int time)
+    public BidSpace(
+        Point from,
+        Point destination,
+        int depth,
+        HashMap<String, ArrayList<String>> constraints,
+        String dimensions,
+        int time
+    )
     {
-        this(from, destination, (int) from.ManhattanDistTo(destination), constraints, dimensions, time);
+        this(from, destination, depth, constraints, dimensions, time, SearchStrategy.POP_LAST);
     }
 
-    private void calculate()
+    public BidSpace(
+        Point from,
+        Point destination,
+        HashMap<String, ArrayList<String>> constraints,
+        String dimensions,
+        int time,
+        SearchStrategy strategy
+    )
+    {
+        this(from, destination, (int) from.ManhattanDistTo(destination) + 1, constraints, dimensions, time, strategy);
+    }
+
+    public BidSpace(
+            Point from,
+            Point destination,
+            HashMap<String, ArrayList<String>> constraints,
+            String dimensions,
+            int time
+    )
+    {
+        this(from, destination, constraints, dimensions, time, SearchStrategy.POP_LAST);
+    }
+
+    public void prepare()
+    {
+        switch (this.strategy)
+        {
+            case NO_DEPTH_LIMIT:
+                __calculate_no_depth_limit();
+                break;
+            case POP_LAST:
+            default:
+                __calculate_pop_last();
+        }
+    }
+
+    private void __calculate_pop_last()
     {
         HashMap<Node, Double> graph = new HashMap<>();
         PriorityQueue<Node> open = new PriorityQueue<>();
@@ -117,17 +174,22 @@ public class BidSpace
     public Path next()
     {
         Path path = null;
+        switch (this.strategy)
+        {
+            case NO_DEPTH_LIMIT:
+                path = __select_no_depth_limit();
+                break;
+            case POP_LAST:
+            default:
+                path = __select_pop_last();
+        }
+
         try
         {
-            if ((path = __next()) == null)
-            {
+            if (path == null) {
                 return null;
             }
             invoke_count++;
-        }
-        catch (EmptyStackException exception)
-        {
-            System.err.println("Stack is empty " + start.point + " -> " + goal + " w/ " + constraints + " @ t: " + time + " | invoke:" + invoke_count);
         }
         catch (NullPointerException exception)
         {
@@ -140,7 +202,7 @@ public class BidSpace
         return path;
     }
 
-    private Path __next() // pop
+    private Path __select_pop_last() // pop
     {
         if (explored.isEmpty())
         {   // hasn't returned anything yet
@@ -155,27 +217,21 @@ public class BidSpace
         }
 
         // BEGIN : CALCULATE NEXT
-        if (stack.isEmpty())
-        {   // if stack is empty, return null
-            return null;
+        if (stack.isEmpty()) {
+            return null;        // if stack is empty, return null
         }
         stack.pop();    // pop top most
 
-        while (0 < stack.size() && stack.size() < depth)
-        {
+        while (0 < stack.size() && stack.size() < depth) {
             Node current = stack.peek();
-            if (current.point.equals(goal))
-            {   // target found, return this
-                break;
+            if (current.point.equals(goal)) {
+                break;          // target found, return this
             }
 
             Node next = getNextNode(current);
-            if (next == null)
-            {   // exhausted neighbourhood of current
-                stack.pop();
-            }
-            else
-            {
+            if (next == null) {
+                stack.pop();    // exhausted neighbourhood of current
+            } else {
                 stack.push(next);
             }
         }
@@ -189,8 +245,7 @@ public class BidSpace
     private Node getNextNode(Node current)
     {
         PriorityQueue<Node> neighbours = new PriorityQueue<>(current.getNeighbours(goal, constraints, width, height));
-        while (!neighbours.isEmpty())
-        {
+        while (!neighbours.isEmpty()) {
             Node neighbour = neighbours.poll();
 
             Path next = new Path(new ArrayList<>(stack).stream().map(node -> node.point).collect(Collectors.toList()));
@@ -207,6 +262,73 @@ public class BidSpace
         return null;
     }
 
+    private PriorityQueue<Node> Q = null;
+    private void __calculate_no_depth_limit()
+    {
+        // set cursor to initial node
+        try {
+            this.cursor = start.clone();
+            this.cursor.dist = (int) cursor.point.ManhattanDistTo(this.goal) + 1;
+
+            this.Q = new PriorityQueue<>();
+            this.Q.add(this.cursor);
+        } catch (CloneNotSupportedException e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
+    }
+
+    private Path __select_no_depth_limit()
+    {
+        if (this.Q == null || this.Q.isEmpty()) return null;
+
+        Path next_path = null;
+        Node current;
+        do {
+            current = this.Q.remove();
+            int current_dist_to_goal = (int) current.point.ManhattanDistTo(this.goal) + 1;
+            // if current node path is not explored, explore
+            PriorityQueue<Node> neighbours = new PriorityQueue<>(current.getNeighbours(this.goal, this.constraints, this.width, this.height));
+            for (Node neighbour : neighbours)
+            {
+                neighbour.linkTo(current);
+
+                int neigh_dist_to_goal = (int) neighbour.point.ManhattanDistTo(this.goal) + 1;
+                if (neigh_dist_to_goal > current_dist_to_goal)
+                {   // going away from goal
+                    neighbour.dist = neighbour.path.size() + 1;
+                }
+                else
+                {   // approaching closer to goal
+                    neighbour.dist = neighbour.path.size() - 1;
+                }
+
+                if (this.explored.contains(neighbour.getPath()))
+                {   // skip if path is explored
+                    continue;
+                }
+
+                this.Q.add(neighbour);
+            }
+
+            // generate path from current to destination
+            List<String> str_path = new AStar().calculate(current.point, this.goal, this.constraints, this.width + "x" + this.height, this.time);
+            for (String point : str_path) {
+                current.getPath().add(new Point(point, "-"));
+            }
+
+            next_path = current.getPath();
+        } while (this.explored.contains(current.getPath()));
+        this.explored.add(current.getPath());
+
+        return next_path;
+    }
+
+    /**
+     * Does exhaustive search of the bid space until
+     * {@code next} returns null
+     *
+     * */
     public List<Path> all()
     {
         List<Path> paths = new ArrayList<>();
