@@ -3,11 +3,12 @@ package edu.ozu.mapp.utils.path;
 import edu.ozu.mapp.agent.client.helpers.ConflictCheck;
 import edu.ozu.mapp.agent.client.helpers.ConflictInfo;
 import edu.ozu.mapp.utils.Point;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class Path extends ArrayList<Point> implements Cloneable
+public class Path extends ArrayList<Point> implements Cloneable, Comparable<Path>
 {
     HashSet<String> entries;
 
@@ -91,5 +92,10 @@ public class Path extends ArrayList<Point> implements Cloneable
     @Override
     public int hashCode() {
         return Objects.hash(super.hashCode(), entries);
+    }
+
+    @Override
+    public int compareTo(@NotNull Path that) {
+        return Integer.compare(this.size(), that.size());
     }
 }
