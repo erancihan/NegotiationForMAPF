@@ -22,7 +22,7 @@ public class BidSpaceTests extends IntegrationTestSuite
         space.prepare();
 
         PriorityQueue<Path> paths = new PriorityQueue<>();
-        for (int i = 0; i < Globals.MAX_BID_SPACE_POLL_SIZE; i++) {
+        for (int i = 0; i < Globals.MAX_BID_SPACE_POOL_SIZE; i++) {
             Path next = space.next();
             if (next != null) { paths.add(next); }
         }
@@ -44,7 +44,7 @@ public class BidSpaceTests extends IntegrationTestSuite
         space.prepare();
 
         PriorityQueue<Path> paths = new PriorityQueue<>();
-        for (int i = 0; i < Globals.MAX_BID_SPACE_POLL_SIZE; i++) {
+        for (int i = 0; i < Globals.MAX_BID_SPACE_POOL_SIZE; i++) {
             Path next = space.next();
             if (next != null) { paths.add(next); }
         }
