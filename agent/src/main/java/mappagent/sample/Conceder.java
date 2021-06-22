@@ -126,6 +126,6 @@ public class Conceder extends Agent {
         Conceder agent = new Conceder(AgentName, AgentID, Start, Dest, 5);
         agent.isHeadless = IsHeadless;
 
-        new AgentClient(args, agent);
+//        new AgentClient(args, agent);
     }
 }

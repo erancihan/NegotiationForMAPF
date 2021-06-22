@@ -45,6 +45,6 @@ public class HelloAgent extends Agent
 
     public static void main(String[] args)
     {
-        new AgentClient(args, new HelloAgent());
+//        new AgentClient(args, new HelloAgent());
     }
 }

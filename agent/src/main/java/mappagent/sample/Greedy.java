@@ -54,7 +54,7 @@ public class Greedy extends Agent {
     @Override
     public Action onMakeAction(Contract contract)
     {
-        int current_tokens = Integer.parseInt(WorldOverseer.getInstance().GetAgentData(AGENT_ID)[1]);
+        int current_tokens = Integer.parseInt(worldOverseerReference.GetAgentData(AGENT_ID)[1]);
 
         // get opponent's bid
         Contract last_opponent_bid = history.GetLastOpponentBid(current_opponent);
@@ -112,6 +112,6 @@ public class Greedy extends Agent {
         Greedy agent = new Greedy(AgentName, AgentID, Start, Dest, 5);
         agent.isHeadless = IsHeadless;
 
-        new AgentClient(args, agent);
+//        new AgentClient(args, agent);
     }
 }
