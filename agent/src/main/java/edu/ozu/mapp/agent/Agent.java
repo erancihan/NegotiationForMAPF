@@ -212,7 +212,7 @@ public abstract class Agent {
         double max = Double.MIN_VALUE;
         double min = Double.MAX_VALUE;
         List<Path> paths = new ArrayList<>();
-        for (int i = 0; i < 100; i++)
+        for (int i = 0; i < Globals.MAX_BID_SPACE_POOL_SIZE; i++)
         {
             Path next = space.next();
             if (next == null) break;
