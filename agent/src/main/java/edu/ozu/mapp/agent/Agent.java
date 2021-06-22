@@ -216,6 +216,7 @@ public abstract class Agent {
         {
             Path next = space.next();
             if (next == null) break;
+            if (next.size() == 0) break;
 
             double _max = next.size() + next.getLast().ManhattanDistTo(To);
             double _min = next.size() + next.getLast().ManhattanDistTo(To);
@@ -295,8 +296,9 @@ public abstract class Agent {
 
         FoV fov = worldOverseerReference.GetFoV(this.AGENT_ID);
         for (Broadcast broadcast : fov.broadcasts) {
-            if (broadcast.agent_name.equals(this.AGENT_NAME)) {
+            if (broadcast.agent_name.equals(this.AGENT_ID)) {
                 // skip broadcast if it is own
+                System.out.println("> skip own");
                 continue;
             }
             constraints.addAll(broadcast.locations);
