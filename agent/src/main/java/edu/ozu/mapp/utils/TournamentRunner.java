@@ -4,7 +4,7 @@ import com.google.gson.Gson;
 import edu.ozu.mapp.agent.client.world.ScenarioManager;
 import edu.ozu.mapp.config.AgentConfig;
 import edu.ozu.mapp.config.WorldConfig;
-import edu.ozu.mapp.system.WorldOverseer;
+import edu.ozu.mapp.system.SystemExit;
 
 import javax.swing.filechooser.FileSystemView;
 import java.io.File;
@@ -27,23 +27,6 @@ public class TournamentRunner {
     public static int TOURNAMENT_RUNNER_MAX_NUMBER_OF_TRIES = 1;
 
     public File tournament_run_results;
-
-    public static void main(String[] arg) {
-        try {
-            ch.qos.logback.classic.Logger root = (ch.qos.logback.classic.Logger) org.slf4j.LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME);
-            root.setLevel(ch.qos.logback.classic.Level.INFO);
-
-            System.out.println(FileSystemView.getFileSystemView().getDefaultDirectory().getPath());
-            System.out.println(System.getProperty("user.dir"));
-
-//            new TournamentRunner().gen_cases();
-//            new TournamentRunner().fetch_cbs_conf();
-            new TournamentRunner().run_tournament();
-        } catch (Exception exception) {
-            exception.printStackTrace();
-            System.exit(1);
-        }
-    }
 
     private void run_tournament() throws IOException, InterruptedException
     {
@@ -172,11 +155,13 @@ public class TournamentRunner {
 
     public void run(ArrayList<String> scenarios) throws InterruptedException, IOException
     {   // BEGIN: FUNCTION
-        for (String path : scenarios) System.out.println("> " + path);
+        for (String path : scenarios) {
+            System.out.println("> " + path);
+        }
 
         Iterator<String> iterator = scenarios.iterator();
         while (iterator.hasNext())
-        {   // BEGIN: WHILE LOOP
+        {   // BEGIN: WHILE LOOP | while there are scenarios
             File scenario = new File(iterator.next());
             System.out.println(scenario);
 
@@ -185,7 +170,7 @@ public class TournamentRunner {
 
             int try_count = 1;
             for (int i = 0; i < try_count && try_count <= TOURNAMENT_RUNNER_MAX_NUMBER_OF_TRIES; i++)
-            {   // BEGIN: FOR LOOP
+            {   // BEGIN: FOR LOOP | number of retries
                 AtomicBoolean should_repeat = new AtomicBoolean(false);
 
                 File save_file_src;
@@ -198,25 +183,32 @@ public class TournamentRunner {
                 String[] argv = new String[]{ String.valueOf(idx) };
 
                 CountDownLatch latch = new CountDownLatch(1);
+
+                // set system exit handling on simulation/scenario fail
+                SystemExit.hook(status -> {
+                    if (status == 0)
+                        return;
+
+                    should_repeat.set(true);
+                    latch.countDown();
+                });
+
                 ScenarioManager
                     .run(argv)
                     .thenApply(manager -> {
                         manager.OnWindowClosed(latch::countDown);
-                        manager.OnRunCrash(status -> {
-                            should_repeat.set(true);
-
-                            latch.countDown();
-                        });
+                        manager.BindRunCrashHook();
 
                         return manager.SetScenario(scenario);
                     })
                     .thenApply(manager -> manager.RunScenario(true))
                 ;
+
+                // wait for simulation to terminate
                 latch.await();
 
-                Thread.sleep(1000);
-
-                System.out.println("> " + WorldOverseer.getInstance().string());
+                System.out.println(">> instance done");
+                Thread.sleep(10000);
 
                 File save_file_dest = new File(save_file_src.getParent(), save_file_src.getName() + "-" + !should_repeat.get());
                 Files.move(save_file_src.toPath(), save_file_dest.toPath());
@@ -224,15 +216,15 @@ public class TournamentRunner {
                 if (tournament_run_results != null)
                 {
                     new FileWriter(tournament_run_results, true)
-                            .append(
-                                    String.format(
-                                            "%s;%s%s",
-                                            new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date()),
-                                            save_file_dest.getName(),
-                                            System.lineSeparator()
-                                    )
+                        .append(
+                            String.format(
+                                "%s;%s%s",
+                                new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date()),
+                                save_file_dest.getName(),
+                                System.lineSeparator()
                             )
-                            .close();
+                        )
+                        .close();
                 }
 
                 if (should_repeat.get())
