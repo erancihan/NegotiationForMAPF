@@ -4,7 +4,7 @@
 
     <groupId>edu.ozu</groupId>
     <artifactId>mapp</artifactId>
-    <version>0.0.1</version>
+    <version>0.0.2</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -18,12 +18,12 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-core</artifactId>
-            <version>5.1.9.RELEASE</version>
+            <version>5.2.6.RELEASE</version>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
-            <version>5.1.9.RELEASE</version>
+            <version>5.2.6.RELEASE</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.tyrus</groupId>
@@ -68,7 +68,7 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>1.7.28</version>
+            <version>1.7.30</version>
         </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>
