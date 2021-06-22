@@ -207,6 +207,7 @@ public abstract class Agent {
                 this.dimensions.isEmpty() ? "0x0" : this.dimensions,
                 time
         );
+        space.prepare();
 
         double max = Double.MIN_VALUE;
         double min = Double.MAX_VALUE;
