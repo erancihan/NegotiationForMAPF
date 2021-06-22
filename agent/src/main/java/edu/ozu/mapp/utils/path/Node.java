@@ -8,10 +8,12 @@ import java.util.stream.Collectors;
 
 public class Node implements Comparable<Node>, Cloneable {
     public Point point;
-    public double dist;
+    public double dist = 0;
 
     public int time;
     public LinkedList<Node> path;
+
+    private Path pPath = null;
 
     public Node(Point point) {
         this.point = point;
@@ -31,6 +33,11 @@ public class Node implements Comparable<Node>, Cloneable {
     public Node(Point point, double dist, int time) {
         this(point, dist);
         this.time = time;
+    }
+
+    public List<Node> getNeighbours(int bound_r, int bound_b)
+    {
+        return getNeighbours(null, new HashMap<>(), bound_r, bound_b);
     }
 
     public List<Node> getNeighbours(HashMap<String, ArrayList<String>> constraints, int bound_r, int bound_b)
@@ -137,5 +144,15 @@ public class Node implements Comparable<Node>, Cloneable {
     public List<Point> Path2List()
     {
         return path.stream().map(node -> node.point).collect(Collectors.toList());
+    }
+
+    public Path getPath()
+    {
+        if (this.pPath == null)
+        {
+            this.pPath = new Path(this.path.stream().map(node -> node.point).collect(Collectors.toList()));
+        }
+
+        return this.pPath;
     }
 }
