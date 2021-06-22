@@ -9,17 +9,18 @@ import java.util.Map;
 
 public class Globals
 {
-    public static int BROADCAST_SIZE = 5;
-    public static final String SERVER = "localhost:3001";
-//    public static final String REDIS_HOST = "localhost";
-//    public static final int REDIS_PORT = 6379;
-    public static final int INITIAL_TOKEN_BALANCE = 5;
-    public static int FIELD_OF_VIEW_SIZE = 5;
-    public static long NEGOTIATION_DEADLINE_MS = Long.MAX_VALUE;
-    public static int NEGOTIATION_DEADLINE_ROUND = Integer.MAX_VALUE;
-    public static LeaveActionHandler.LeaveActionTYPE LEAVE_ACTION_BEHAVIOUR = LeaveActionHandler.LeaveActionTYPE.OBSTACLE;
+    public static       int     BROADCAST_SIZE          = 5;
+    public static final String  SERVER                  = "localhost:3001";
+    public static final String  REDIS_HOST              = "localhost";
+    public static final int     REDIS_PORT              = 6379;
+    public static final int     INITIAL_TOKEN_BALANCE   = 5;
+    public static       int     FIELD_OF_VIEW_SIZE      = 5;
+    public static       long    NEGOTIATION_DEADLINE_MS = Long.MAX_VALUE;
+    public static       int     NEGOTIATION_DEADLINE_ROUND = Integer.MAX_VALUE;
+    public static       LeaveActionHandler.LeaveActionTYPE LEAVE_ACTION_BEHAVIOUR = LeaveActionHandler.LeaveActionTYPE.OBSTACLE;
     public static final FoVHandler.FoVTYPE FIELD_OF_VIEW_TYPE = FoVHandler.FoVTYPE.SQUARE;
-    public static int MOVE_ACTION_SPACE_SIZE = 4;
+    public static       int     MOVE_ACTION_SPACE_SIZE  = 4;
+    public static       int     MAX_BID_SPACE_POLL_SIZE = 300;
 
     public enum WorldState {
         JOIN("JOIN", 0),
