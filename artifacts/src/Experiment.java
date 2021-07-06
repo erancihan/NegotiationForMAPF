@@ -10,12 +10,11 @@ import edu.ozu.mapp.utils.TournamentRunner;
 
 import javax.swing.filechooser.FileSystemView;
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 
-public class Sample {
+public class Experiment {
     public static void main(String[] args) {
         try {
             ch.qos.logback.classic.Logger root = (ch.qos.logback.classic.Logger) org.slf4j.LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME);
@@ -24,13 +23,29 @@ public class Sample {
             System.out.println(FileSystemView.getFileSystemView().getDefaultDirectory().getPath());
             System.out.println(System.getProperty("user.dir"));
 
-            Path path = Paths.get(System.getProperty("user.dir"), "artifacts", "configs", "16x16_40_Hybrid");
+            Path path = Paths.get(System.getProperty("user.dir"), "scenarios", "HybridAgent", "16x16_60");
+            // Path path = Paths.get(System.getProperty("user.dir"), "scenarios", "RandomAgent", "16x16_60");
             ArrayList<String> scenarios = new Glob().glob(path, "world-scenario-*.json");
 
-            Globals.FIELD_OF_VIEW_SIZE = 7;
-            Globals.LEAVE_ACTION_BEHAVIOUR = LeaveActionHandler.LeaveActionTYPE.OBSTACLE;
+// SET FIELD OF VIEW
+            Globals.FIELD_OF_VIEW_SIZE  = 7;     // d = 3 from current location to sides
+            Globals.BROADCAST_SIZE      = 7;     // 2d + 1
+
+// SET LEAVE ACTION BEHAVIOUR
+            Globals.LEAVE_ACTION_BEHAVIOUR = LeaveActionHandler.LeaveActionTYPE.OBSTACLE;       // obstacle on exit
+            // Globals.LEAVE_ACTION_BEHAVIOUR = LeaveActionHandler.LeaveActionTYPE.PASS_THROUGH; //    leave on exit
+
+// SET MOVE ACTION SPACE SIZE
+            Globals.MOVE_ACTION_SPACE_SIZE = 4; //   no wait action
+            // Globals.MOVE_ACTION_SPACE_SIZE = 5; // with wait action
+
+// SET BID SEARCH SPACE OVERRIDE
             Globals.BID_SEARCH_STRATEGY_OVERRIDE = edu.ozu.mapp.utils.bid.BidSpace.SearchStrategy.NO_DEPTH_LIMIT;
-            Globals.MOVE_ACTION_SPACE_SIZE = 5;
+
+            Globals.MAX_BID_SPACE_POOL_SIZE = 100;
+
+// TOURNAMENT CONFIG
+            TournamentRunner.TOURNAMENT_RUNNER_MAX_NUMBER_OF_TRIES = 2; // retry once
             SystemExit.SHUTDOWN_ON_EXIT = false;
 
             File tournament_run_results = Paths.get(path.toString(), "runs.txt").toFile();
@@ -75,13 +90,13 @@ public class Sample {
 
             world_config.world_id = System.currentTimeMillis() + "-" + i;
             manager
-                .GenerateScenario(world_config)
-                .thenAccept(agentConfigs -> {
-                    AgentConfig[] agent_config = agentConfigs.toArray(new AgentConfig[0]);
+                    .GenerateScenario(world_config)
+                    .thenAccept(agentConfigs -> {
+                        AgentConfig[] agent_config = agentConfigs.toArray(new AgentConfig[0]);
 
-                    manager.SaveScenario(agent_config, world_config);
-                })
-                .exceptionally(ex -> { ex.printStackTrace(); return null; })
+                        manager.SaveScenario(agent_config, world_config);
+                    })
+                    .exceptionally(ex -> { ex.printStackTrace(); return null; })
             ;
         }
     }
