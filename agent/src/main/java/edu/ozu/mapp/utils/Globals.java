@@ -2,6 +2,7 @@ package edu.ozu.mapp.utils;
 
 import edu.ozu.mapp.system.FoVHandler;
 import edu.ozu.mapp.system.LeaveActionHandler;
+import edu.ozu.mapp.utils.bid.BidSpace;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -20,7 +21,8 @@ public class Globals
     public static       LeaveActionHandler.LeaveActionTYPE LEAVE_ACTION_BEHAVIOUR = LeaveActionHandler.LeaveActionTYPE.OBSTACLE;
     public static final FoVHandler.FoVTYPE FIELD_OF_VIEW_TYPE = FoVHandler.FoVTYPE.SQUARE;
     public static       int     MOVE_ACTION_SPACE_SIZE  = 4;
-    public static       int MAX_BID_SPACE_POOL_SIZE = 300;
+    public static       int     MAX_BID_SPACE_POOL_SIZE = 300;
+    public static       BidSpace.SearchStrategy BID_SEARCH_STRATEGY_OVERRIDE = null;
 
     public enum WorldState {
         JOIN("JOIN", 0),

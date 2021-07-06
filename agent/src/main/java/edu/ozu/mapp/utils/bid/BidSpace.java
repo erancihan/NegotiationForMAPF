@@ -2,6 +2,7 @@ package edu.ozu.mapp.utils.bid;
 
 import edu.ozu.mapp.system.SystemExit;
 import edu.ozu.mapp.utils.AStar;
+import edu.ozu.mapp.utils.Globals;
 import edu.ozu.mapp.utils.PathCollection;
 import edu.ozu.mapp.utils.Point;
 import edu.ozu.mapp.utils.path.Node;
@@ -57,7 +58,7 @@ public class BidSpace
         width  = (ds.length == 2 && !ds[0].isEmpty() && !ds[0].equals("0")) ? Integer.parseInt(ds[0]) : Integer.MAX_VALUE;
         height = (ds.length == 2 && !ds[1].isEmpty() && !ds[1].equals("0")) ? Integer.parseInt(ds[1]) : Integer.MAX_VALUE;
 
-        this.strategy = strategy;
+        this.strategy = Globals.BID_SEARCH_STRATEGY_OVERRIDE == null ? strategy : Globals.BID_SEARCH_STRATEGY_OVERRIDE;
         this.depth = strategy == SearchStrategy.NO_DEPTH_LIMIT ? Integer.MAX_VALUE : depth;
         this.time  = time;
 
