@@ -314,6 +314,10 @@ public class BidSpace
 
             // generate path from current to destination
             List<String> str_path = new AStar().calculate(current.point, this.goal, this.constraints, this.width + "x" + this.height, this.time);
+            if (str_path == null)
+            {   // return null if cant gen path
+                return null;
+            }
             for (String point : str_path) {
                 current.getPath().add(new Point(point, "-"));
             }
