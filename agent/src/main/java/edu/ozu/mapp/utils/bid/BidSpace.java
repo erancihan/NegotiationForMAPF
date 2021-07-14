@@ -15,7 +15,9 @@ public class BidSpace
 {
     public enum SearchStrategy
     {
-        POP_LAST, NO_DEPTH_LIMIT;
+        POP_LAST,
+        NO_DEPTH_LIMIT, BFS
+        ;
     }
     private final SearchStrategy strategy;
 
@@ -106,6 +108,7 @@ public class BidSpace
     {
         switch (this.strategy)
         {
+            case BFS:
             case NO_DEPTH_LIMIT:
                 __calculate_no_depth_limit();
                 break;
@@ -177,6 +180,7 @@ public class BidSpace
         Path path = null;
         switch (this.strategy)
         {
+            case BFS:
             case NO_DEPTH_LIMIT:
                 path = __select_no_depth_limit();
                 break;
