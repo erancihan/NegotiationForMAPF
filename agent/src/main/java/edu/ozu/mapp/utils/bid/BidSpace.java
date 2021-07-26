@@ -16,7 +16,8 @@ public class BidSpace
     public enum SearchStrategy
     {
         POP_LAST,
-        NO_DEPTH_LIMIT, BFS
+        NO_DEPTH_LIMIT, BFS,
+        DFS
         ;
     }
     private final SearchStrategy strategy;
@@ -108,6 +109,9 @@ public class BidSpace
     {
         switch (this.strategy)
         {
+            case DFS:
+                __calculate_dfs();
+                break;
             case BFS:
             case NO_DEPTH_LIMIT:
                 __calculate_no_depth_limit();
@@ -116,6 +120,51 @@ public class BidSpace
             default:
                 __calculate_pop_last();
         }
+    }
+
+    public Path peek()
+    {
+        return new Path(cursor.path.stream().map(node -> node.point).collect(Collectors.toList()));
+    }
+
+    public Path current()
+    {
+        return peek();
+    }
+
+    public Path next()
+    {
+        Path path = null;
+        switch (this.strategy)
+        {
+            case DFS:
+                path = __select_dfs();
+                break;
+            case BFS:
+            case NO_DEPTH_LIMIT:
+                path = __select_no_depth_limit();
+                break;
+            case POP_LAST:
+            default:
+                path = __select_pop_last();
+        }
+
+        try
+        {
+            if (path == null) {
+                return null;
+            }
+            invoke_count++;
+        }
+        catch (NullPointerException exception)
+        {
+            System.err.println("nullptr " + start.point + " -> " + goal + " w/ " + constraints + " @ t: " + time + " | invoke:" + invoke_count);
+            System.err.println("cursor: " + cursor);
+            exception.printStackTrace();
+            SystemExit.exit(500);
+        }
+
+        return path;
     }
 
     private void __calculate_pop_last()
@@ -163,48 +212,6 @@ public class BidSpace
                 }
             }
         }
-    }
-
-    public Path peek()
-    {
-        return new Path(cursor.path.stream().map(node -> node.point).collect(Collectors.toList()));
-    }
-
-    public Path current()
-    {
-        return peek();
-    }
-
-    public Path next()
-    {
-        Path path = null;
-        switch (this.strategy)
-        {
-            case BFS:
-            case NO_DEPTH_LIMIT:
-                path = __select_no_depth_limit();
-                break;
-            case POP_LAST:
-            default:
-                path = __select_pop_last();
-        }
-
-        try
-        {
-            if (path == null) {
-                return null;
-            }
-            invoke_count++;
-        }
-        catch (NullPointerException exception)
-        {
-            System.err.println("nullptr " + start.point + " -> " + goal + " w/ " + constraints + " @ t: " + time + " | invoke:" + invoke_count);
-            System.err.println("cursor: " + cursor);
-            exception.printStackTrace();
-            SystemExit.exit(500);
-        }
-
-        return path;
     }
 
     private Path __select_pop_last() // pop
@@ -331,6 +338,18 @@ public class BidSpace
         this.explored.add(current.getPath());
 
         return next_path;
+    }
+
+    private void __calculate_dfs()
+    {
+
+    }
+
+    private Path __select_dfs()
+    {
+
+
+        return null;
     }
 
     /**
