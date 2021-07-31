@@ -15,6 +15,28 @@ public class NodeTests extends IntegrationTestSuite {
     }
 
     @Test
+    public void node_path_pop_tests() throws Exception
+    {
+        Node n1 = new Node(new Point(4, 6), 2);
+        n1.linkTo(n1);
+
+        System.out.println("n1 path: " + n1.path);
+        System.out.println(n1.path.pollLast());
+
+        Node n2 = new Node(new Point(4, 7), 3);
+        n2.linkTo(n1);
+        System.out.println("n2 path: " + n2.path);
+        System.out.println("n2 path: " + n2.getPath());
+
+        Node n3 = new Node(new Point(4, 8), 4);
+        n3.linkTo(n2);
+        System.out.println("n3 path: " + n3.path);
+        System.out.println(n3.path.pollLast());
+    }
+
+
+
+    @Test
     public void test1() throws Exception {
         HashMap<String, ArrayList<String>> constraints = new HashMap<>();
 

@@ -4,10 +4,7 @@ import edu.ozu.mapp.utils.bid.BidSpace;
 import edu.ozu.mapp.utils.path.Path;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.PriorityQueue;
+import java.util.*;
 
 public class BidSpaceTests extends IntegrationTestSuite
 {
