@@ -116,7 +116,7 @@ public class Node implements Comparable<Node>, Cloneable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(point, dist, time);
+        return String.format("%s-%f-%d-%s", point.key, dist, time, path).hashCode();
     }
 
     @Override
