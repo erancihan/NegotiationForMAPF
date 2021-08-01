@@ -57,17 +57,6 @@ public abstract class Agent {
     public int negotiation_result = -1;
     public String dimensions = "";
 
-    public Function<SearchInfo, Double> UtilityFunction =
-            (SearchInfo search) -> {
-                // how far is the last point to destination
-                double offset = 0;
-                if (DEST != null) {
-                    offset = search.Path.getLast().ManhattanDistTo(DEST) * 1E-5;
-                }
-
-                return (1 - ((search.PathSize - search.MinPathSize) / (search.MaxPathSize - search.MinPathSize)) - offset);
-            };
-
     public ArrayList<Constraint> constraints;
 
     public Agent(String agentName, String agentID, Point start, Point dest, int initial_tokens)
@@ -197,6 +186,18 @@ public abstract class Agent {
         return calculatePath(START, DEST);
     }
 
+    public double UtilityFunction(SearchInfo search)
+    {
+        // how far is the last point to destination
+        double offset = 0;
+        if (DEST != null) {
+            offset = search.Path.getLast().ManhattanDistTo(DEST) * 1E-5;
+        }
+
+        return (1 - ((search.PathSize - search.MinPathSize) / (search.MaxPathSize - search.MinPathSize)) - offset);
+    }
+
+
     public final List<Bid> GetBidSpace(Point From, Point To, int deadline)
     {
         BidSpace space = new BidSpace(
@@ -233,7 +234,7 @@ public abstract class Agent {
             bids.add(new Bid(
                     AGENT_ID,
                     path,
-                    UtilityFunction.apply(new SearchInfo(max, min, path))
+                    UtilityFunction(new SearchInfo(max, min, path))
             ));
         }
 
@@ -426,6 +427,7 @@ public abstract class Agent {
 
     public final FoV GetFieldOfView()
     {
-        return this.handler_ref.GetCurrentFoVData();
+//        return this.handler_ref.GetCurrentFoVData();
+        return this.worldOverseerReference.GetFoV(this.AGENT_NAME);
     }
 }
