@@ -1,3 +1,4 @@
+import edu.ozu.mapp.utils.Glob;
 import edu.ozu.mapp.utils.Globals;
 import edu.ozu.mapp.utils.Point;
 import edu.ozu.mapp.utils.bid.BidSpace;
@@ -11,6 +12,7 @@ public class BidSpaceTests extends IntegrationTestSuite
     @Test
     public void test_dfs_search() throws CloneNotSupportedException
     {
+        Globals.MAX_BID_SPACE_POOL_SIZE = 100;
         Globals.MOVE_ACTION_SPACE_SIZE = 4;
 
         Point f = new Point(2, 2);
@@ -19,16 +21,17 @@ public class BidSpaceTests extends IntegrationTestSuite
         BidSpace space = new BidSpace(f, t, new HashMap<>(), "11x11", 2, BidSpace.SearchStrategy.DFS);
         space.prepare();
 
-        for (int i = 0; i < 10; i++)
+        for (int i = 0; i < Globals.MAX_BID_SPACE_POOL_SIZE; i++)
         {
             Path next = space.next();
-            System.out.printf("%2d > %s%n", i, next);
+            System.out.printf("%3d / %3d > %s%n", i, Globals.MAX_BID_SPACE_POOL_SIZE, next);
         }
     }
 
     @Test
     public void test_get_no_depth_limit()
     {
+        Globals.MAX_BID_SPACE_POOL_SIZE = 100;
         Globals.MOVE_ACTION_SPACE_SIZE = 4;
 
         Point f2 = new Point(2, 2);
