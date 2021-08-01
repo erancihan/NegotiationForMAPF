@@ -323,7 +323,8 @@ public class BidSpace
                 this.Q.add(neighbour);
             }
 
-            // generate path from current to destination
+            // generate path from current node to destination
+            // todo: explain further
             List<String> str_path = new AStar().calculate(current.point, this.goal, this.constraints, this.width + "x" + this.height, this.time);
             if (str_path == null)
             {   // return null if cant gen path
@@ -340,16 +341,110 @@ public class BidSpace
         return next_path;
     }
 
+    private int           dfs_search_depth  = 0;
+    private HashSet<Node> dfs_discovered    = null;
     private void __calculate_dfs()
     {
+        this.dfs_search_depth   = (int) this.start.point.ManhattanDistTo(this.goal);
+        this.dfs_discovered     = new HashSet<>();
+    }
 
+    private Node __select_dfs_search()
+    {
+        // create local discovered edges set
+        // add previously traversed routes' edges as discovered
+        HashSet<Node> mDiscovered = new HashSet<>(this.dfs_discovered);
+        Stack<Node> S = new Stack<Node>();    // local stack
+
+        try
+        {
+            S.add(start.clone());
+        }
+        catch (CloneNotSupportedException e)
+        {
+            e.printStackTrace();
+            System.exit(365);
+        }
+
+        while (!S.isEmpty())
+        {
+            Node v = S.pop();       // get the top of the STACK
+            if (v == null) break;   // stack is empty, break
+
+            if (mDiscovered.contains(v)) continue;  // skip node if explored
+            mDiscovered.add(v); // mark node discovered
+
+            // path size limit has exceeded depth limit, pop & go back
+            if (v.path.size() + 1 > dfs_search_depth) continue;
+
+            // reached destination
+            if (v.point.equals(goal))
+            {
+                return v;
+            }
+
+            List<Node> ws = v.getNeighbours(goal, constraints, width, height);
+            for (Node w : ws)
+            {
+                // current edge has already been discovered
+                if (mDiscovered.contains(w)) continue;
+                w.linkTo(v);    // handle links
+
+                S.add(w);       // add node to stack
+            }
+        }
+
+        return null;
+    }
+
+    private Node __select_dfs_process()
+    {
+        Node result = __select_dfs_search();
+        if (result == null) { return null; }
+
+        if (result.path.size() >= 1)
+        {
+            this.dfs_discovered.add(result);
+        }
+
+        Node copy = null;
+        try
+        {
+            copy = result.clone(); // create a copy to work on
+            copy.linkTo(copy);          // tie end point of the stack
+        }
+        catch (CloneNotSupportedException e)
+        {
+            e.printStackTrace();
+            System.exit(418);
+        }
+
+        return copy;
     }
 
     private Path __select_dfs()
     {
+        Node result = null;
 
+        int __initial = dfs_search_depth;
+        for (int i = 0; i < 1; )
+        {
+            if (__initial + 3 <= dfs_search_depth)
+            {   // break if search depth has increased too much
+                break;
+            }
 
-        return null;
+            result = __select_dfs_process();
+            if (result == null)
+            {   // no results in current depth
+                // increase search depth
+                dfs_search_depth += 1;
+                continue;
+            }
+            i++;
+        }
+
+        return (result == null) ? null : result.getPath();
     }
 
     /**
