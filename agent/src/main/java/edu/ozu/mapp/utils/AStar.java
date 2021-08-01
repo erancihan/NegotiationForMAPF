@@ -108,11 +108,11 @@ public class AStar {
         int width  = (ds.length == 2 && !ds[0].isEmpty() && !ds[0].equals("0")) ? Integer.parseInt(ds[0]) : Integer.MAX_VALUE;
         int height = (ds.length == 2 && !ds[1].isEmpty() && !ds[1].equals("0")) ? Integer.parseInt(ds[1]) : Integer.MAX_VALUE;
 
-        PriorityQueue<Node> open = new PriorityQueue<>();
-        List<Node> closed = new ArrayList<>();
-        HashMap<Node, Double> graph = new HashMap<>();
+        PriorityQueue<Node>     open   = new PriorityQueue<>();
+        List<Node>              closed = new ArrayList<>();
+        HashMap<String, Double> graph  = new HashMap<>();
 
-        graph.put(new Node(start, start.ManhattanDistTo(goal), T), 0.0);
+        graph.put(start.key, 0.0);
         open.add( new Node(start, start.ManhattanDistTo(goal), T));
 
         while (!open.isEmpty())
@@ -136,11 +136,14 @@ public class AStar {
                 if (closed.contains(neighbour)) continue;
 
                 // d <- g[current] + COST(current, neighbour, g)
-                double d = graph.get(current) + Math.max(current.point.ManhattanDistTo(neighbour.point), 1);
-                if (d < graph.getOrDefault(neighbour, inf))
+                double d =
+                        graph.get(current.point.key) +
+                        Math.max(current.point.ManhattanDistTo(neighbour.point), 1) // cyclic dep support
+                        ;
+                if (d < graph.getOrDefault(neighbour.point.key, inf))
                 {
                     neighbour.dist = d + neighbour.point.ManhattanDistTo(goal);
-                    graph.put(neighbour, d);
+                    graph.put(neighbour.point.key, d);
 
                     neighbour.linkTo(current);
 
