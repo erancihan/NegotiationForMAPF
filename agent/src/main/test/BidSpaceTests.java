@@ -9,6 +9,24 @@ import java.util.*;
 public class BidSpaceTests extends IntegrationTestSuite
 {
     @Test
+    public void test_dfs_search() throws CloneNotSupportedException
+    {
+        Globals.MOVE_ACTION_SPACE_SIZE = 4;
+
+        Point f = new Point(2, 2);
+        Point t = new Point(4, 4);
+
+        BidSpace space = new BidSpace(f, t, new HashMap<>(), "11x11", 2, BidSpace.SearchStrategy.DFS);
+        space.prepare();
+
+        for (int i = 0; i < 10; i++)
+        {
+            Path next = space.next();
+            System.out.printf("%2d > %s%n", i, next);
+        }
+    }
+
+    @Test
     public void test_get_no_depth_limit()
     {
         Globals.MOVE_ACTION_SPACE_SIZE = 4;
