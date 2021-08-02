@@ -25,10 +25,32 @@
         </encoder>
     </appender>
 
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${HOMEPATH}/Documents/MAPP/out.log</file>
+        <append>true</append>
+        <!-- set immediateFlush to false for much higher logging throughput -->
+        <immediateFlush>true</immediateFlush>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <Pattern>
+                %d{YYYY-MM-DD HH:mm:ss.SSS} %-5level [%-33t] %logger{36} - %msg%n
+            </Pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+            <!-- rollover -->
+            <fileNamePattern>out.%i.log.zip</fileNamePattern>
+            <minIndex>0</minIndex>
+            <maxIndex>9</maxIndex>
+        </rollingPolicy>
+        <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+            <maxFileSize>10MB</maxFileSize>
+        </triggeringPolicy>
+    </appender>
+
     <!-- LOG everything at INFO level -->
     <root>
         <appender-ref ref="Console" />
         <appender-ref ref="ConsoleError" />
+        <appender-ref ref="FILE" />
     </root>
 
     <!-- LOG "com.baeldung*" at TRACE level -->
