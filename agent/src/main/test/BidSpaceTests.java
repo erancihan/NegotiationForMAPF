@@ -81,6 +81,7 @@ public class BidSpaceTests extends IntegrationTestSuite
         Point f2 = new Point(2, 2);
         Point t2 = new Point(4, 4);
         BidSpace space = new BidSpace(f2, t2, 5, new HashMap<>(), "11x11", 3);
+        space.prepare();
 
         List<Path> paths = space.all();
         System.out.println(paths.size());
