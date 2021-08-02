@@ -169,11 +169,11 @@ public class BidSpace
 
     private void __calculate_pop_last()
     {
-        HashMap<Node, Double> graph = new HashMap<>();
+        HashMap<String, Double> graph = new HashMap<>();
         PriorityQueue<Node> open = new PriorityQueue<>();
         List<Node> closed = new ArrayList<>();
 
-        graph.put(start, 0.0);
+        graph.put(start.point.key, 0.0);
         open.add(start);
 
         // explore neighbours
@@ -196,11 +196,14 @@ public class BidSpace
             {
                 if (closed.contains(neighbour)) continue;
 
-                double d = graph.get(current) + Math.max(current.point.ManhattanDistTo(neighbour.point), 1.0);
-                if (d < graph.getOrDefault(neighbour, INF))
+                double d =
+                        graph.get(current.point.key) +
+                        Math.max(current.point.ManhattanDistTo(neighbour.point), 1.0)
+                        ;
+                if (d < graph.getOrDefault(neighbour.point.key, INF))
                 {
                     neighbour.dist = d + neighbour.dist;
-                    graph.put(neighbour, d);
+                    graph.put(neighbour.point.key, d);
 
                     neighbour.linkTo(current);
 
