@@ -917,7 +917,7 @@ public class WorldOverseer
             case JOIN:
                 break;
             case NEGOTIATE:
-                if (STALE_NEGOTIATE_STATE_WAIT_COUNTER >= 10)
+                if (STALE_NEGOTIATE_STATE_WAIT_COUNTER >= Globals.STALE_NEGOTIATE_STATE_WAIT_COUNTER_LIMIT)
                 {
                     STALE_NEGOTIATE_STATE_WAIT_COUNTER = 0;
                     logger.warn("THREAD HAS BEEN STALE FOR 10 SECONDS");
@@ -964,7 +964,7 @@ public class WorldOverseer
             case BROADCAST:
             case MOVE:
             default:
-                if (STATE_SIMULATION_PROCESS_COUNTER < 300) {
+                if (STATE_SIMULATION_PROCESS_COUNTER < Globals.STATE_SIMULATION_PROCESS_COUNTER_LIMIT) {
                     STATE_SIMULATION_PROCESS_COUNTER += 1;
                     logger.warn("TIME OUT TICK " + STATE_SIMULATION_PROCESS_COUNTER);
                     overseer_validator_invoke_lock.unlock();

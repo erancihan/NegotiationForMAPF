@@ -23,6 +23,8 @@ public class Globals
     public static       int     MOVE_ACTION_SPACE_SIZE  = 4;
     public static       int     MAX_BID_SPACE_POOL_SIZE = 300;
     public static       BidSpace.SearchStrategy BID_SEARCH_STRATEGY_OVERRIDE = null;
+    public static       int     STALE_NEGOTIATE_STATE_WAIT_COUNTER_LIMIT     = 10;
+    public static       int     STATE_SIMULATION_PROCESS_COUNTER_LIMIT       = 300;
 
     public enum WorldState {
         JOIN("JOIN", 0),
