@@ -9,12 +9,12 @@ import java.util.Iterator;
 import java.util.List;
 
 @MAPPAgent
-public class HybridAgent extends Agent
+public class PathAwareAgent extends Agent
 {
     private List<Bid> bid_space;
     private Iterator<Bid> bid_space_iterator;
 
-    public HybridAgent(String agentName, String agentID, Point start, Point dest, int inital_tokens)
+    public PathAwareAgent(String agentName, String agentID, Point start, Point dest, int inital_tokens)
     {
         super(agentName, agentID, start, dest, inital_tokens);
     }
