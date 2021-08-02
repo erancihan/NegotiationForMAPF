@@ -5,6 +5,7 @@ import edu.ozu.mapp.agent.client.world.ScenarioManager;
 import edu.ozu.mapp.config.AgentConfig;
 import edu.ozu.mapp.config.WorldConfig;
 import edu.ozu.mapp.system.SystemExit;
+import uk.org.lidalia.sysoutslf4j.context.SysOutOverSLF4J;
 
 import javax.swing.filechooser.FileSystemView;
 import java.io.File;
@@ -27,6 +28,11 @@ public class TournamentRunner {
     public static int TOURNAMENT_RUNNER_MAX_NUMBER_OF_TRIES = 1;
 
     public File tournament_run_results;
+
+    public TournamentRunner()
+    {
+        SysOutOverSLF4J.sendSystemOutAndErrToSLF4J();
+    }
 
     private void run_tournament() throws IOException, InterruptedException
     {
