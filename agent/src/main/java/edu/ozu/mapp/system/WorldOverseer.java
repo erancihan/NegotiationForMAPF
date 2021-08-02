@@ -917,45 +917,58 @@ public class WorldOverseer
             case JOIN:
                 break;
             case NEGOTIATE:
-                if (STALE_NEGOTIATE_STATE_WAIT_COUNTER >= Globals.STALE_NEGOTIATE_STATE_WAIT_COUNTER_LIMIT)
+                if (STALE_NEGOTIATE_STATE_WAIT_COUNTER == Globals.STALE_NEGOTIATE_STATE_WAIT_COUNTER_LIMIT)
                 {
                     STALE_NEGOTIATE_STATE_WAIT_COUNTER = 0;
                     logger.warn("THREAD HAS BEEN STALE FOR 10 SECONDS");
 
-                    if (negotiation_overseer.ActiveCount() != 0) {
+                    if (negotiation_overseer.ActiveCount() != 0)
+                    {
                         logger.warn("> THERE ARE STILL ACTIVE NEGOTIATIONS");
 
                         // if there are active sessions...
                         // check if their agents have joined
                         logger.warn("> CHECKING IF SESSIONS ARE ACTIVE");
-                        negotiation_overseer.ActiveSessions().values()
-                            .forEach(session -> {
-                                // has session started??
-                                if (session.IsJoining())
-                                {   // session has not started...
-                                    // make agents leave and force validate
-                                    logger.warn("> SESSION " + session + " HAS NOT STARTED! TERMINATE");
-                                    for (String agent_id : session.GetAgentIDs())
-                                    {
-                                        negotiation_overseer.AgentLeaveSession(agent_id, session.GetSessionID());
-                                        clients.get(agent_id).VerifyNegotiations();
-                                    }
+                        negotiation_overseer.ActiveSessions().values().forEach(session ->
+                        {
+                            // has session started??
+                            if (session.IsJoining())
+                            {   // session has not started...
+                                // make agents leave and force validate
+                                logger.warn("> SESSION " + session + " HAS NOT STARTED! TERMINATE");
+                                SystemExit.exit(SystemExit.Status.ERROR_SESSION_TERMINATE);
+                                for (String agent_id : session.GetAgentIDs())
+                                {
+                                    negotiation_overseer.AgentLeaveSession(agent_id, session.GetSessionID());
+                                    clients.get(agent_id).VerifyNegotiations();
                                 }
-                            });
+                            }
+                        });
 
                         STALE_NEGOTIATE_STATE_WAIT_COUNTER = 0;
                         break;
                     }
 
-                    logger.warn("FORCE REVALIDATE ACTIVE NEGOTIATE STATE");
-                    logger.warn("INVALIDATE FLAG_NEGOTIATIONS_DONE");
-                    FLAG_NEGOTIATIONS_DONE.clear();
+                    CompletableFuture.runAsync(() ->
+                    {
+                        logger.warn("FORCE REVALIDATE ACTIVE NEGOTIATE STATE");
+                        logger.warn("INVALIDATE FLAG_NEGOTIATIONS_DONE");
+                        FLAG_NEGOTIATIONS_DONE.clear();
 
-                    logger.warn("INVOKE client::VerifyNegotiations");
-                    for (String agent_id : clients.keySet()) {
-                        AgentClient client = clients.get(agent_id);
-                        client.VerifyNegotiations();
-                    }
+                        logger.warn("INVOKE client::VerifyNegotiations");
+                        for (String agent_id : clients.keySet())
+                        {
+                            AgentClient client = clients.get(agent_id);
+                            client.VerifyNegotiations();
+                        }
+                    })
+                    .exceptionally(ex ->
+                    {
+                        logger.error(String.format("ERROR %s%n", ex.getMessage()));
+                        SystemExit.exit(SystemExit.Status.ERROR_VERIFY_NEGOTIATIONS);
+
+                        return null;
+                    });
                 }
                 else
                 {
@@ -964,11 +977,14 @@ public class WorldOverseer
             case BROADCAST:
             case MOVE:
             default:
-                if (STATE_SIMULATION_PROCESS_COUNTER < Globals.STATE_SIMULATION_PROCESS_COUNTER_LIMIT) {
+                if (STATE_SIMULATION_PROCESS_COUNTER < Globals.STATE_SIMULATION_PROCESS_COUNTER_LIMIT)
+                {
                     STATE_SIMULATION_PROCESS_COUNTER += 1;
-                    logger.warn("TIME OUT TICK " + STATE_SIMULATION_PROCESS_COUNTER);
+                    logger.warn("> TIME OUT TICK " + STATE_SIMULATION_PROCESS_COUNTER);
                     overseer_validator_invoke_lock.unlock();
-                } else {
+                }
+                else
+                {
                     STATE_SIMULATION_PROCESS_COUNTER = 0;
                     logger.warn("TIME OUT");
                     overseer_validator_invoke_lock.unlock();
