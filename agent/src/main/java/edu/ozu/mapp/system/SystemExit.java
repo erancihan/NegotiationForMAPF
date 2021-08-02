@@ -11,7 +11,11 @@ public class SystemExit
     public static int EXIT_CODE = 0;
 
     enum Status {
-        TIMEOUT(501), FATAL(500);
+        FATAL(500),
+        TIMEOUT(501),
+        ERROR_VERIFY_NEGOTIATIONS(502),
+        ERROR_SESSION_TERMINATE(503)
+        ;
 
         int value;
         Status(int status) {
