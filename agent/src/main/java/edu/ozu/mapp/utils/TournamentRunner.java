@@ -247,6 +247,5 @@ public class TournamentRunner {
         }   // END: WHILE LOOP
 
         System.out.println("> Simulation over");
-        System.exit(0);
     }   // END: FUNCTION
 }
