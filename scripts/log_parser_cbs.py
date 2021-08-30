@@ -5,6 +5,7 @@ from pathlib import Path
 import xlsxwriter
 
 
+# noinspection DuplicatedCode
 def run(folder_path, sheet_name):
     for result_file in Path(folder_path).rglob('*.json'):
         print(result_file)
