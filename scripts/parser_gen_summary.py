@@ -6,13 +6,169 @@ import pandas
 import xlsxwriter
 from pandas import DataFrame
 
-cbs_data = {}
 workbook_data = {}
+
+AGENT_TYPES_DICT = {
+    "8x8_10": [
+        'CBS',
+        'CBSH2',
+        'PathAware_OBSTACLE_FoV5',
+        'Random_OBSTACLE_FoV5'
+    ],
+    "8x8_15": [
+        'CBS',
+        'CBSH2',
+        'PathAware_OBSTACLE_FoV5',
+        'Random_OBSTACLE_FoV5'
+    ],
+    "8x8_20": [
+        'CBS',
+        'CBSH2',
+        'PathAware_OBSTACLE_FoV5',
+        'Random_OBSTACLE_FoV5'
+    ],
+    "8x8_25": [
+        'CBS',
+        'CBSH2',
+        'PathAware_OBSTACLE_FoV5',
+        'Random_OBSTACLE_FoV5'
+    ],
+    "16x16_20": [
+        'CBS',
+        'CBSH2',
+# EECBS
+        'EECBS-WAIT-S1',
+        'EECBS-NO_WAIT-S1',
+        'EECBS-WAIT-S1.2',
+        'EECBS-NO_WAIT-S1.2',
+
+        'PathAware_LEAVE_FoV7',
+# todo ...
+        'PathAware_OBSTACLE_FoV5',
+        'Random_OBSTACLE_FoV5'
+    ],
+    "16x16_40": [
+        'CBS',
+        'CBSH2',
+# EECBS
+        'EECBS-WAIT-S1',
+        'EECBS-NO_WAIT-S1',
+        'EECBS-WAIT-S1.2',
+        'EECBS-NO_WAIT-S1.2',
+
+        'PathAware_LEAVE_FoV7',
+# todo ...
+        'PathAware_OBSTACLE_FoV5',
+        'PathAware_OBSTACLE_FoV7',
+        'PathAware_OBSTACLE_FoV9',
+        'Random_OBSTACLE_FoV5',
+        'Random_OBSTACLE_FoV7',
+        'Random_OBSTACLE_FoV9'
+    ],
+    "16x16_60": [
+        'CBSH2',
+# EECBS
+        'EECBS-WAIT-S1',
+        'EECBS-NO_WAIT-S1',
+        'EECBS-WAIT-S1.2',
+        'EECBS-NO_WAIT-S1.2',
+
+        'PathAware_LEAVE_FoV7',
+# todo...
+        'PathAware_OBSTACLE_FoV5',
+        'PathAware_OBSTACLE_FoV7',
+        'PathAware_OBSTACLE_FoV9',
+        'Random_OBSTACLE_FoV5',
+        'Random_OBSTACLE_FoV7',
+        'Random_OBSTACLE_FoV9'
+    ],
+    "16x16_80": [
+        'CBSH2',
+# EECBS
+        'EECBS-WAIT-S1',
+        'EECBS-NO_WAIT-S1',
+        'EECBS-WAIT-S1.2',
+        'EECBS-NO_WAIT-S1.2',
+
+        'PathAware_OBSTACLE_FoV5',
+        'Random_OBSTACLE_FoV5'
+    ],
+}
+
+
+# noinspection DuplicatedCode
+def work_eecbs_data(xlsx_path, sheet_name):
+    # all the results that EECBS has are always resolved
+    # if they are not solved, there is no data
+    __basename = str(os.path.basename(xlsx_path)).replace('-paths', '')
+    __dirname  = str(os.path.dirname(xlsx_path)).split('\\')[-1]
+
+    __sheetname = 'EECBS'
+    if '-wW' in __dirname:
+        __sheetname += '-WAIT'
+    if '-noW' in __dirname:
+        __sheetname += '-NO_WAIT'
+
+    if '_1.2-' in __dirname:
+        __sheetname += '-S1.2'
+    if '_1-' in __dirname:
+        __sheetname += '-S1'
+
+    _, x, y, _, agent_c, _, config_id = str(__basename).split('.')[0].split('-')
+
+    wb_data: DataFrame = pandas.read_excel(xlsx_path, sheet_name=sheet_name)
+
+    planned_path_col = wb_data['planned path len'].to_numpy(dtype=int)
+    min_path_before = np.min(planned_path_col)
+    avg_path_before = np.average(planned_path_col)
+    max_path_before = np.max(planned_path_col)
+    std_path_before = np.std(planned_path_col, ddof=1)
+
+    taken_path_col = wb_data['taken path len'].to_numpy(dtype=int)
+    min_path_after = np.min(taken_path_col)
+    avg_path_after = np.average(taken_path_col)
+    max_path_after = np.max(taken_path_col)
+    std_path_after = np.std(taken_path_col, ddof=1)
+
+    path_diff_col = wb_data['path diff'].to_numpy(dtype=int)
+    min_path_diff = np.min(path_diff_col)
+    avg_path_diff = np.average(path_diff_col)
+    max_path_diff = np.max(path_diff_col)
+    std_path_diff = np.std(path_diff_col, ddof=1)
+
+    if "{}x{}_{}".format(x, y, agent_c) not in workbook_data:
+        workbook_data["{}x{}_{}".format(x, y, agent_c)] = {}
+    if config_id not in workbook_data["{}x{}_{}".format(x, y, agent_c)]:
+        workbook_data["{}x{}_{}".format(x, y, agent_c)][config_id] = {}
+
+    _data = {
+        "result": True,
+
+        "min_path_before": min_path_before,
+        "avg_path_before": avg_path_before,
+        "max_path_before": max_path_before,
+        "std_path_before": std_path_before,
+
+        "min_path_after": min_path_after,
+        "avg_path_after": avg_path_after,
+        "max_path_after": max_path_after,
+        "std_path_after": std_path_after,
+
+        "min_path_diff": min_path_diff,
+        "avg_path_diff": avg_path_diff,
+        "max_path_diff": max_path_diff,
+        "std_path_diff": std_path_diff,
+    }
+
+    workbook_data["{}x{}_{}".format(x, y, agent_c)][config_id][__sheetname] = _data
 
 
 # noinspection DuplicatedCode
 def work_cbs_data(xlsx_path, sheet_name):
-    _, x, y, _, agent_c, _, config_id = str(os.path.basename(xlsx_path)).split('.')[0].split('-')
+    __basename = str(os.path.basename(xlsx_path)).replace('-paths', '')
+    __is_solved = "solved" in str(xlsx_path).split("\\")
+
+    _, x, y, _, agent_c, _, config_id = str(__basename).split('.')[0].split('-')
 
     wb_data: DataFrame = pandas.read_excel(xlsx_path, sheet_name=sheet_name)
 
@@ -57,7 +213,7 @@ def work_cbs_data(xlsx_path, sheet_name):
         "max_path_diff": 0,
         "std_path_diff": 0,
     }
-    if "solved" in str(xlsx_path).split("\\"):
+    if __is_solved:
         _data["result"] = True
         _data["min_path_before"] = min_path_before
         _data["avg_path_before"] = avg_path_before
@@ -79,35 +235,18 @@ def work_cbs_data(xlsx_path, sheet_name):
 
 # noinspection DuplicatedCode
 def work_data(world_path):  # creates row data
-    base_dir = str(world_path).replace(folder_location, '').split('\\')[0]
-    if base_dir in ["completed_runs", "mapp_cbs"]:
+    path = str(world_path)
+    if "completed_runs" in path:
         return
-    if base_dir.startswith('__'):
+    if "mapp_cbs" in path:
         return
 
-    path = str(world_path).split('\\')
-    try:
-        __split = path[-1].split('-')
-        timestamp = ""
-
-        if len(__split) == 5:
-            _, timestamp, conf, _, result = path[-1].split('-')
-            dims, agent_c, conf_id = conf.split('_')
-            workbook_sheet_key = f"{dims}_{agent_c}"
-        if len(__split) == 6:
-            _, timestamp, conf, conf_id, _, result = path[-1].split('-')
-            dims, agent_c = conf.split('_')
-            workbook_sheet_key = f"{dims}_{agent_c}"
-        if timestamp == "":
-            exit(500)
-    except Exception:
-        print()
-        print(path[-1].split('-'))
-
-        exit()
-
-    agent_type = "Hybrid" if "Hybrid" in path[-2].split('_') else "Random"
-    agent_fov = "FoV5" if "FoV" not in path[-2] else "_".join(path[-2].split('_')[3:])
+    _, sys_conf, agent_type, world_conf, world_id = str(world_path).split("_", 1)[1].split("\\")
+    fov_type, act_type, leave_type = sys_conf.split("_")
+    _, timestamp, scenario_conf, try_count, result = world_id.split("-")
+    scenario_dims, scenario_agent_c, scenario_id = scenario_conf.split("_")
+    # print(path)
+    # print(fov_type, act_type, leave_type, agent_type, world_conf, timestamp, scenario_dims, scenario_agent_c, scenario_id, result)
 
     min_path_before: int = None
     avg_path_before: float = None
@@ -144,8 +283,8 @@ def work_data(world_path):  # creates row data
     sum_of_num_of_tokens_received: int = 0
 
     if result == "true":
-        wb_name = 'World-' + '-'.join(path[-1].split('-')[1:-1]) + '.xlsx'
-        wb_data: DataFrame = pandas.read_excel(os.path.join(world_path, wb_name), sheet_name="Agents")
+        wb_name = 'World-' + timestamp + '-' + scenario_conf + '-' + try_count + '.xlsx'
+        wb_data: DataFrame = pandas.read_excel(os.path.join(path, wb_name), sheet_name="Agents")
 
         planned_path_col = wb_data['planned path len'].to_numpy(dtype=int)
         min_path_before = np.min(planned_path_col)
@@ -193,75 +332,86 @@ def work_data(world_path):  # creates row data
 
             sum_of_num_of_tokens_received += int(wb_data['# of tokens received'][idx])
 
-    if workbook_sheet_key not in workbook_data:
-        workbook_data[workbook_sheet_key] = {}
-    if conf_id not in workbook_data[workbook_sheet_key]:
-        workbook_data[workbook_sheet_key][conf_id] = {}
+    if world_conf not in workbook_data:
+        workbook_data[world_conf] = {}
+    if scenario_id not in workbook_data[world_conf]:
+        workbook_data[world_conf][scenario_id] = {}
 
-    workbook_data[workbook_sheet_key][conf_id]["{}_{}".format(agent_type, agent_fov)] = {
-        "result": result == "true",
-        "min_path_before": min_path_before,
-        "avg_path_before": avg_path_before,
-        "max_path_before": max_path_before,
-        "std_path_before": std_path_before,
+    workbook_data[world_conf][scenario_id]["{}_{}_{}".format(agent_type, leave_type, fov_type)] = \
+        {
+            "result": result == "true",
+            "fov": fov_type,
 
-        "min_path_after": min_path_after,
-        "avg_path_after": avg_path_after,
-        "max_path_after": max_path_after,
-        "std_path_after": std_path_after,
+            "min_path_before": min_path_before,
+            "avg_path_before": avg_path_before,
+            "max_path_before": max_path_before,
+            "std_path_before": std_path_before,
 
-        "min_path_diff": min_path_diff,
-        "avg_path_diff": avg_path_diff,
-        "max_path_diff": max_path_diff,
-        "std_path_diff": std_path_diff,
+            "min_path_after": min_path_after,
+            "avg_path_after": avg_path_after,
+            "max_path_after": max_path_after,
+            "std_path_after": std_path_after,
 
-        "min_num_nego": min_num_nego,
-        "avg_num_nego": avg_num_nego,
-        "max_num_nego": max_num_nego,
-        "std_num_nego": std_num_nego,
+            "min_path_diff": min_path_diff,
+            "avg_path_diff": avg_path_diff,
+            "max_path_diff": max_path_diff,
+            "std_path_diff": std_path_diff,
 
-        "min_retain_bid_diff": min_retain_bid_diff,
-        "avg_retain_bid_diff": avg_retain_bid_diff,
-        "max_retain_bid_diff": max_retain_bid_diff,
-        "std_retain_bid_diff": std_retain_bid_diff,
+            "min_num_nego": min_num_nego,
+            "avg_num_nego": avg_num_nego,
+            "max_num_nego": max_num_nego,
+            "std_num_nego": std_num_nego,
 
-        "min_token_exchange": min_token_exchange,
-        "avg_token_exchange": avg_token_exchange,
-        "max_token_exchange": max_token_exchange,
-        "std_token_exchange": std_token_exchange,
+            "min_retain_bid_diff": min_retain_bid_diff,
+            "avg_retain_bid_diff": avg_retain_bid_diff,
+            "max_retain_bid_diff": max_retain_bid_diff,
+            "std_retain_bid_diff": std_retain_bid_diff,
 
-        "final_token_max": final_token_max,
-        "final_token_min": final_token_min,
+            "min_token_exchange": min_token_exchange,
+            "avg_token_exchange": avg_token_exchange,
+            "max_token_exchange": max_token_exchange,
+            "std_token_exchange": std_token_exchange,
 
-        "sum_of_num_of_tokens_received": sum_of_num_of_tokens_received,
-    }
+            "final_token_max": final_token_max,
+            "final_token_min": final_token_min,
+
+            "sum_of_num_of_tokens_received": sum_of_num_of_tokens_received,
+        }
 
 
-def run():
+def run(folder_location):
+
+    _file_idx = 0
+    for eecbs_xlsx in Path(os.path.join(folder_location, "mapp_eecbs")).rglob("*.xlsx"):
+        _file_idx += 1
+        print(f"\reecbs: {_file_idx}", end='')
+        work_eecbs_data(eecbs_xlsx, 'EECBS Result')
+    print()
+
     _file_idx = 0
     for world_xlsx in Path(folder_location).rglob('WORLD-*-true'):
         _file_idx += 1
-        print(f"\r{_file_idx}", end='')
+        print(f"\rtrue : {_file_idx}", end='')
         work_data(world_xlsx)
     print()
 
     for world_xlsx in Path(folder_location).rglob('WORLD-*-false'):
         _file_idx += 1
-        print(f"\r{_file_idx}", end='')
+        print(f"\rfalse: {_file_idx}", end='')
         work_data(world_xlsx)
     print()
 
     _file_idx = 0
     for cbs_xlsx in Path(os.path.join(folder_location, "mapp_cbs")).rglob("*.xlsx"):
         _file_idx += 1
-        print(f"\r{_file_idx}", end='')
+        print(f"\rcbs  : {_file_idx}", end='')
         work_cbs_data(cbs_xlsx, 'CBS Result')
     print()
 
     _file_idx = 0
     for cbsh2_xlsx in Path(os.path.join(folder_location, "mapp_cbsh2")).rglob("*.xlsx"):
         _file_idx += 1
-        print(f"\r{_file_idx}", end='')
+        print(f"\rcbsh2: {_file_idx}", end='')
         work_cbs_data(cbsh2_xlsx, 'CBSH2 Result')
     print()
 
@@ -271,10 +421,6 @@ def run():
         a, b = dim.split('x')
 
         sheet = workbook.add_worksheet(sheet_key)
-
-        agent_types = list(workbook_data[sheet_key][str(1)].keys())
-        print(agent_types)
-        agent_types = sorted(agent_types)
 
         s_headers = [
             "min_path_before",
@@ -332,36 +478,45 @@ def run():
 
         sheet_r += 1
 
-        config_id = 1
-        for _ in range(len(workbook_data[sheet_key])):
+        for __idx in range(len(workbook_data[sheet_key])):
+            config_id = __idx + 1
+
             # BEGIN LOOP : CONFIG
-            for agent_type in agent_types:
+            for agent_type in AGENT_TYPES_DICT[sheet_key]:
                 # BEGIN LOOP : AGENT ONE-LINER
                 sheet_c = 0  # move col cursor to start
 
-                sheet.write_number(sheet_r, sheet_c, int(config_id))
+                sheet.write_number(sheet_r, sheet_c, int(config_id))    # "Config ID"
                 sheet_c += 1
-                sheet.write(sheet_r, sheet_c, agent_type)
+                sheet.write(sheet_r, sheet_c, agent_type)               # "Agent Type"
                 sheet_c += 1
 
                 if agent_type == 'CBS':
-                    _exists = os.path.exists(
+                    __result = os.path.exists(
                         os.path.join(folder_location, 'mapp_cbs', 'solved', f"empty-{a}-{b}-random-{agent_c}-agents-{config_id}.json")
                     )
-                    sheet.write(sheet_r, sheet_c, _exists)
+                    sheet.write(sheet_r, sheet_c, __result)             # "solved"
                 elif agent_type == 'CBSH2':
-                    _exists = os.path.exists(
+                    __result = os.path.exists(
                         os.path.join(folder_location, 'mapp_cbsh2', 'solved', f"empty-{a}-{b}-random-{agent_c}-agents-{config_id}.json")
                     )
-                    sheet.write(sheet_r, sheet_c, _exists)
+                    sheet.write(sheet_r, sheet_c, __result)             # "solved"
                 else:
-                    if agent_type not in workbook_data[sheet_key][str(config_id)]:
-                        continue
-                    sheet.write(sheet_r, sheet_c, workbook_data[sheet_key][str(config_id)][agent_type]["result"])
+                    __result = False
+                    if agent_type in workbook_data[sheet_key][str(config_id)]:
+                        __result = workbook_data[sheet_key][str(config_id)][agent_type]["result"]
+
+                    sheet.write(sheet_r, sheet_c, __result)             # "solved"
                 sheet_c += 1
+
                 for s_header in s_headers:
-                    sheet.write(sheet_r, sheet_c, workbook_data[sheet_key][str(config_id)][agent_type].get(s_header, ''))
+                    __value = ""
+                    if agent_type in workbook_data[sheet_key][str(config_id)]:
+                        __value = workbook_data[sheet_key][str(config_id)][agent_type].get(s_header, '')
+
+                    sheet.write(sheet_r, sheet_c, __value)              # __header__
                     sheet_c += 1
+
                 # Has CBS Solved?
                 _exists = os.path.exists(
                     os.path.join(folder_location, 'mapp_cbs', 'solved', f"empty-{a}-{b}-random-{agent_c}-agents-{config_id}.json")
@@ -378,15 +533,10 @@ def run():
 
                 sheet_r += 1
                 # END LOOP : AGENT ONE-LINER
-            # go to next config
-            config_id += 1
             # END LOOP : CONFIG
 
     workbook.close()
 
 
-folder_location: str
-
 if __name__ == '__main__':
-    folder_location = "C:\\Users\\cihan\\Documents\\MAPP\\logs\\"
-    run()
+    run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\")
