@@ -1,453 +1,187 @@
 package edu.ozu.mapp.utils.bid;
 
 import edu.ozu.mapp.system.SystemExit;
-import edu.ozu.mapp.utils.AStar;
 import edu.ozu.mapp.utils.Globals;
-import edu.ozu.mapp.utils.PathCollection;
 import edu.ozu.mapp.utils.Point;
-import edu.ozu.mapp.utils.path.Node;
 import edu.ozu.mapp.utils.path.Path;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
+import org.springframework.core.type.filter.AnnotationTypeFilter;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class BidSpace
 {
     public enum SearchStrategy
     {
-        POP_LAST,
-        NO_DEPTH_LIMIT, BFS,
-        DFS
+        POP_LAST("edu.ozu.mapp.utils.bid.generators.PopLast"),
+
+        NO_DEPTH_LIMIT("edu.ozu.mapp.utils.bid.generators.BFS"),
+        BFS("edu.ozu.mapp.utils.bid.generators.BFS"),
+
+        DFS("edu.ozu.mapp.utils.bid.generators.DFS")
         ;
+
+        public String value;
+
+        SearchStrategy(String name)
+        {
+            this.value = name;
+        }
     }
-    private final SearchStrategy strategy;
 
-    @SuppressWarnings("FieldCanBeLocal")
-    private final double INF = Double.MAX_VALUE;
+    public static SearchStrategy searchStrategy             = SearchStrategy.POP_LAST;
+    public static String         searchStrategyClassName    = "";
 
-    private int width, height;
+    private BidSpaceGenerator   generator               = null;
+    private int                 invoke_count            = 0;
 
-    private int depth;
-    private int time;
+    public BidSpace() { }
 
-    private int invoke_count;
-    private final PathCollection explored;
-    private final Stack<Node> stack;
-
-    private Node cursor;
-
-    private Node start;
-    private Point goal;
-
-    private final HashMap<String, ArrayList<String>> constraints;
-
-    public BidSpace(
-        Point from,
-        Point destination,
-        int depth,
-        HashMap<String, ArrayList<String>> constraints,
-        String dimensions,
-        int time,
-        SearchStrategy strategy
-    )
+    public void init
+            (
+                    Point   from,
+                    Point   goal,
+                    int     deadline,
+                    HashMap<String, ArrayList<String>> constraints,
+                    int     width,
+                    int     height,
+                    int     time
+            )
     {
-        start = new Node(from, from.ManhattanDistTo(destination), time);
+        if (Globals.BID_SEARCH_STRATEGY_OVERRIDE != null)
+        {
+            searchStrategy = Globals.BID_SEARCH_STRATEGY_OVERRIDE;
+        }
+        assert searchStrategy != null;
+        searchStrategyClassName = searchStrategy.value;
 
-        goal  = destination;
+        loadGenerator(findGenerators());
 
-        this.constraints = constraints;
+        // pass params
+        generator.from          = from;
+        generator.goal          = goal;
+        generator.deadline      = deadline;
+        generator.constraints   = constraints;
+        generator.width         = width;
+        generator.height        = height;
+        generator.time          = time;
 
+        // no constructor, call init
+        generator.init();
+    }
+
+    public void init
+            (
+                    Point   from,
+                    Point   goal,
+                    int     deadline,
+                    HashMap<String, ArrayList<String>> constraints,
+                    String  dimensions,
+                    int time
+            )
+    {
         String[] ds = dimensions.split("x");
-        width  = (ds.length == 2 && !ds[0].isEmpty() && !ds[0].equals("0")) ? Integer.parseInt(ds[0]) : Integer.MAX_VALUE;
-        height = (ds.length == 2 && !ds[1].isEmpty() && !ds[1].equals("0")) ? Integer.parseInt(ds[1]) : Integer.MAX_VALUE;
 
-        this.strategy = Globals.BID_SEARCH_STRATEGY_OVERRIDE == null ? strategy : Globals.BID_SEARCH_STRATEGY_OVERRIDE;
-        this.depth = strategy == SearchStrategy.NO_DEPTH_LIMIT ? Integer.MAX_VALUE : depth;
-        this.time  = time;
-
-        invoke_count = 0;
-        explored   = new PathCollection();
-        stack = new Stack<>();
+        init
+                (
+                        from,
+                        goal,
+                        deadline,
+                        constraints,
+                        (ds.length == 2 && !ds[0].isEmpty() && !ds[0].equals("0")) ? Integer.parseInt(ds[0]) : Integer.MAX_VALUE,
+                        (ds.length == 2 && !ds[1].isEmpty() && !ds[1].equals("0")) ? Integer.parseInt(ds[1]) : Integer.MAX_VALUE,
+                        time
+                );
     }
 
-    public BidSpace(
-        Point from,
-        Point destination,
-        int depth,
-        HashMap<String, ArrayList<String>> constraints,
-        String dimensions,
-        int time
-    )
+    public void init
+            (
+                    Point   from,
+                    Point   goal,
+                    HashMap<String, ArrayList<String>> constraints,
+                    String  dimensions,
+                    int     time
+            )
     {
-        this(from, destination, depth, constraints, dimensions, time, SearchStrategy.POP_LAST);
+        init(from, goal, (int) (from.ManhattanDistTo(goal) + 1), constraints, dimensions, time);
     }
 
-    public BidSpace(
-        Point from,
-        Point destination,
-        HashMap<String, ArrayList<String>> constraints,
-        String dimensions,
-        int time,
-        SearchStrategy strategy
-    )
+    private HashMap<String, Class<? extends BidSpaceGenerator>> findGenerators()
     {
-        this(from, destination, (int) from.ManhattanDistTo(destination) + 1, constraints, dimensions, time, strategy);
+        String[] lookup = new String[]{"edu.ozu.mapp.utils.bid.generators", "mapp.bid.generators"};
+        HashMap<String, Class<? extends BidSpaceGenerator>> generators = new HashMap<>();
+
+        ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(true);
+        scanner.addIncludeFilter(new AnnotationTypeFilter(MAPPBidSpaceGenerator.class));
+
+        try
+        {
+            for (String basePackage : lookup)
+            {
+                for (BeanDefinition definition : scanner.findCandidateComponents(basePackage))
+                {
+                    generators
+                        .put(
+                            Objects.requireNonNull(definition.getBeanClassName()),
+                            (Class<? extends BidSpaceGenerator>) Class.forName(definition.getBeanClassName())
+                        );
+                }
+            }
+        }
+        catch (ClassNotFoundException ex)
+        {
+            ex.printStackTrace();
+            System.exit(1);
+        }
+
+        return generators;
     }
 
-    public BidSpace(
-            Point from,
-            Point destination,
-            HashMap<String, ArrayList<String>> constraints,
-            String dimensions,
-            int time
-    )
+    private void loadGenerator(HashMap<String, Class<? extends BidSpaceGenerator>> generators)
     {
-        this(from, destination, constraints, dimensions, time, SearchStrategy.POP_LAST);
+        assert searchStrategyClassName != null;
+        assert !searchStrategyClassName.isEmpty();
+
+        try
+        {
+            generator = generators.get(searchStrategyClassName).getDeclaredConstructor().newInstance();
+        }
+        catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException ex)
+        {
+            ex.printStackTrace();
+            System.exit(1);
+        }
+
+        assert generator != null;
     }
 
     public void prepare()
     {
-        switch (this.strategy)
-        {
-            case DFS:
-                __calculate_dfs();
-                break;
-            case BFS:
-            case NO_DEPTH_LIMIT:
-                __calculate_no_depth_limit();
-                break;
-            case POP_LAST:
-            default:
-                __calculate_pop_last();
-        }
-    }
-
-    public Path peek()
-    {
-        return new Path(cursor.path.stream().map(node -> node.point).collect(Collectors.toList()));
-    }
-
-    public Path current()
-    {
-        return peek();
+        generator.prepare();
     }
 
     public Path next()
     {
-        Path path = null;
-        switch (this.strategy)
-        {
-            case DFS:
-                path = __select_dfs();
-                break;
-            case BFS:
-            case NO_DEPTH_LIMIT:
-                path = __select_no_depth_limit();
-                break;
-            case POP_LAST:
-            default:
-                path = __select_pop_last();
-        }
+        Path path = generator.next();
 
         try
         {
-            if (path == null) {
+            if (path == null)
+            {
                 return null;
             }
             invoke_count++;
         }
         catch (NullPointerException exception)
         {
-            System.err.println("nullptr " + start.point + " -> " + goal + " w/ " + constraints + " @ t: " + time + " | invoke:" + invoke_count);
-            System.err.println("cursor: " + cursor);
+            System.err.println("nullptr " + generator.from + " -> " + generator.goal + " w/ " + generator.constraints + " @ t: " + generator.time + " | invoke:" + invoke_count);
             exception.printStackTrace();
             SystemExit.exit(500);
         }
 
         return path;
-    }
-
-    private void __calculate_pop_last()
-    {
-        HashMap<String, Double> graph = new HashMap<>();
-        PriorityQueue<Node> open = new PriorityQueue<>();
-        List<Node> closed = new ArrayList<>();
-
-        graph.put(start.point.key, 0.0);
-        open.add(start);
-
-        // explore neighbours
-        while (!open.isEmpty())
-        {
-            Node current = open.remove();
-
-            if (closed.contains(current)) continue;
-            closed.add(current);
-
-            if (current.path.size() + 1 == this.depth || current.point.equals(goal))
-            {
-                current.linkTo(current);
-                cursor = current;
-                return;
-            }
-
-            List<Node> neighbours = current.getNeighbours(goal, constraints, width, height);
-            for (Node neighbour : neighbours)
-            {
-                if (closed.contains(neighbour)) continue;
-
-                double d =
-                        graph.get(current.point.key) +
-                        Math.max(current.point.ManhattanDistTo(neighbour.point), 1.0)
-                        ;
-                if (d < graph.getOrDefault(neighbour.point.key, INF))
-                {
-                    neighbour.dist = d + neighbour.dist;
-                    graph.put(neighbour.point.key, d);
-
-                    neighbour.linkTo(current);
-
-                    try {
-                        open.add(neighbour.clone());
-                    } catch (CloneNotSupportedException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        }
-    }
-
-    private Path __select_pop_last() // pop
-    {
-        if (explored.isEmpty())
-        {   // hasn't returned anything yet
-            for (int i = 0; i < cursor.path.size(); i++) {
-                //noinspection UseBulkOperation
-                stack.add(cursor.path.get(i));
-            }
-            Path path = new Path(new ArrayList<>(stack).stream().map(node -> node.point).collect(Collectors.toList()));
-            explored.add(path);
-
-            return path;
-        }
-
-        // BEGIN : CALCULATE NEXT
-        if (stack.isEmpty()) {
-            return null;        // if stack is empty, return null
-        }
-        stack.pop();    // pop top most
-
-        while (0 < stack.size() && stack.size() < depth) {
-            Node current = stack.peek();
-            if (current.point.equals(goal)) {
-                break;          // target found, return this
-            }
-
-            Node next = getNextNode(current);
-            if (next == null) {
-                stack.pop();    // exhausted neighbourhood of current
-            } else {
-                stack.push(next);
-            }
-        }
-        // END
-
-        cursor.path = new LinkedList<>(stack);
-
-        return new Path(cursor.path.stream().map(node -> node.point).collect(Collectors.toList()));
-    }
-
-    private Node getNextNode(Node current)
-    {
-        PriorityQueue<Node> neighbours = new PriorityQueue<>(current.getNeighbours(goal, constraints, width, height));
-        while (!neighbours.isEmpty()) {
-            Node neighbour = neighbours.poll();
-
-            Path next = new Path(new ArrayList<>(stack).stream().map(node -> node.point).collect(Collectors.toList()));
-            next.add(neighbour.point);
-
-            if (explored.contains(next)) continue;
-
-            // unexplored, explore
-            explored.add(next);
-
-            return neighbour;
-        }
-
-        return null;
-    }
-
-    private PriorityQueue<Node> Q = null;
-    private void __calculate_no_depth_limit()
-    {
-        // set cursor to initial node
-        try {
-            this.cursor = start.clone();
-            this.cursor.dist = (int) cursor.point.ManhattanDistTo(this.goal) + 1;
-
-            this.Q = new PriorityQueue<>();
-            this.Q.add(this.cursor);
-        } catch (CloneNotSupportedException e) {
-            e.printStackTrace();
-            System.exit(1);
-        }
-    }
-
-    private Path __select_no_depth_limit()
-    {
-        if (this.Q == null || this.Q.isEmpty()) return null;
-
-        Path next_path = null;
-        Node current;
-        do {
-            current = this.Q.remove();
-            int current_dist_to_goal = (int) current.point.ManhattanDistTo(this.goal) + 1;
-            // if current node path is not explored, explore
-            PriorityQueue<Node> neighbours = new PriorityQueue<>(current.getNeighbours(this.goal, this.constraints, this.width, this.height));
-            for (Node neighbour : neighbours)
-            {
-                neighbour.linkTo(current);
-
-                int neigh_dist_to_goal = (int) neighbour.point.ManhattanDistTo(this.goal) + 1;
-                if (neigh_dist_to_goal > current_dist_to_goal)
-                {   // going away from goal
-                    neighbour.dist = neighbour.path.size() + 1;
-                }
-                else
-                {   // approaching closer to goal
-                    neighbour.dist = neighbour.path.size() - 1;
-                }
-
-                if (this.explored.contains(neighbour.getPath()))
-                {   // skip if path is explored
-                    continue;
-                }
-
-                this.Q.add(neighbour);
-            }
-
-            // generate path from current node to destination
-            // todo: explain further
-            List<String> str_path = new AStar().calculate(current.point, this.goal, this.constraints, this.width + "x" + this.height, this.time);
-            if (str_path == null)
-            {   // return null if cant gen path
-                return null;
-            }
-            for (String point : str_path) {
-                current.getPath().add(new Point(point, "-"));
-            }
-
-            next_path = current.getPath();
-        } while (this.explored.contains(current.getPath()));
-        this.explored.add(current.getPath());
-
-        return next_path;
-    }
-
-    private int           dfs_search_depth  = 0;
-    private HashSet<Node> dfs_discovered    = null;
-    private void __calculate_dfs()
-    {
-        this.dfs_search_depth   = (int) this.start.point.ManhattanDistTo(this.goal);
-        this.dfs_discovered     = new HashSet<>();
-    }
-
-    private Node __select_dfs_search()
-    {
-        // create local discovered edges set
-        // add previously traversed routes' edges as discovered
-        HashSet<Node> mDiscovered = new HashSet<>(this.dfs_discovered);
-        Stack<Node> S = new Stack<Node>();    // local stack
-
-        try
-        {
-            S.add(start.clone());
-        }
-        catch (CloneNotSupportedException e)
-        {
-            e.printStackTrace();
-            System.exit(365);
-        }
-
-        while (!S.isEmpty())
-        {
-            Node v = S.pop();       // get the top of the STACK
-            if (v == null) break;   // stack is empty, break
-
-            if (mDiscovered.contains(v)) continue;  // skip node if explored
-            mDiscovered.add(v); // mark node discovered
-
-            // path size limit has exceeded depth limit, pop & go back
-            if (v.path.size() + 1 > dfs_search_depth) continue;
-
-            // reached destination
-            if (v.point.equals(goal))
-            {
-                return v;
-            }
-
-            List<Node> ws = v.getNeighbours(goal, constraints, width, height);
-            for (Node w : ws)
-            {
-                // current edge has already been discovered
-                if (mDiscovered.contains(w)) continue;
-                w.linkTo(v);    // handle links
-
-                S.add(w);       // add node to stack
-            }
-        }
-
-        return null;
-    }
-
-    private Node __select_dfs_process()
-    {
-        Node result = __select_dfs_search();
-        if (result == null) { return null; }
-
-        if (result.path.size() >= 1)
-        {
-            this.dfs_discovered.add(result);
-        }
-
-        Node copy = null;
-        try
-        {
-            copy = result.clone(); // create a copy to work on
-            copy.linkTo(copy);          // tie end point of the stack
-        }
-        catch (CloneNotSupportedException e)
-        {
-            e.printStackTrace();
-            System.exit(418);
-        }
-
-        return copy;
-    }
-
-    private Path __select_dfs()
-    {
-        Node result = null;
-
-        int __initial = dfs_search_depth;
-        for (int i = 0; i < 1; )
-        {
-            if (__initial + 3 <= dfs_search_depth)
-            {   // break if search depth has increased too much
-                break;
-            }
-
-            result = __select_dfs_process();
-            if (result == null)
-            {   // no results in current depth
-                // increase search depth
-                dfs_search_depth += 1;
-                continue;
-            }
-            i++;
-        }
-
-        return (result == null) ? null : result.getPath();
     }
 
     /**
@@ -457,13 +191,20 @@ public class BidSpace
      * */
     public List<Path> all()
     {
-        List<Path> paths = new ArrayList<>();
-        Path path = null;
-        while ((path = next()) != null)
+        PriorityQueue<Path> paths = new PriorityQueue<>();
+
+        for (int i = 0; i < Globals.MAX_BID_SPACE_POOL_SIZE; i++)
         {
-            paths.add(path);
+            Path path = next();
+            if (path != null)
+            {
+                paths.add(path);
+            }
         }
 
-        return paths;
+        List<Path> resp = new ArrayList<>();
+        while (!paths.isEmpty()) resp.add(paths.poll());
+
+        return resp;
     }
 }
