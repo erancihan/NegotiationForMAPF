@@ -1,4 +1,3 @@
-import edu.ozu.mapp.utils.Glob;
 import edu.ozu.mapp.utils.Globals;
 import edu.ozu.mapp.utils.Point;
 import edu.ozu.mapp.utils.bid.BidSpace;
@@ -14,11 +13,13 @@ public class BidSpaceTests extends IntegrationTestSuite
     {
         Globals.MAX_BID_SPACE_POOL_SIZE = 100;
         Globals.MOVE_ACTION_SPACE_SIZE = 4;
+        Globals.BID_SEARCH_STRATEGY_OVERRIDE = BidSpace.SearchStrategy.DFS;
 
         Point f = new Point(2, 2);
         Point t = new Point(4, 4);
 
-        BidSpace space = new BidSpace(f, t, new HashMap<>(), "11x11", 2, BidSpace.SearchStrategy.DFS);
+        BidSpace space = new BidSpace();
+        space.init(f, t, new HashMap<>(), "11x11", 2);
         space.prepare();
 
         for (int i = 0; i < Globals.MAX_BID_SPACE_POOL_SIZE; i++)
@@ -33,10 +34,12 @@ public class BidSpaceTests extends IntegrationTestSuite
     {
         Globals.MAX_BID_SPACE_POOL_SIZE = 100;
         Globals.MOVE_ACTION_SPACE_SIZE = 4;
+        Globals.BID_SEARCH_STRATEGY_OVERRIDE = BidSpace.SearchStrategy.NO_DEPTH_LIMIT;
 
         Point f2 = new Point(2, 2);
         Point t2 = new Point(4, 4);
-        BidSpace space = new BidSpace(f2, t2, new HashMap<>(), "11x11", 3, BidSpace.SearchStrategy.NO_DEPTH_LIMIT);
+        BidSpace space = new BidSpace();
+        space.init(f2, t2, new HashMap<>(), "11x11", 3);
         space.prepare();
 
         PriorityQueue<Path> paths = new PriorityQueue<>();
@@ -55,10 +58,12 @@ public class BidSpaceTests extends IntegrationTestSuite
     public void test_get_no_depth_limit_with_wait()
     {
         Globals.MOVE_ACTION_SPACE_SIZE = 5;
+        Globals.BID_SEARCH_STRATEGY_OVERRIDE = BidSpace.SearchStrategy.NO_DEPTH_LIMIT;
 
         Point f2 = new Point(2, 2);
         Point t2 = new Point(4, 4);
-        BidSpace space = new BidSpace(f2, t2, new HashMap<>(), "11x11", 3, BidSpace.SearchStrategy.NO_DEPTH_LIMIT);
+        BidSpace space = new BidSpace();
+        space.init(f2, t2, new HashMap<>(), "11x11", 3);
         space.prepare();
 
         PriorityQueue<Path> paths = new PriorityQueue<>();
@@ -74,17 +79,21 @@ public class BidSpaceTests extends IntegrationTestSuite
     }
 
     @Test
-    public void test_get_all() throws Exception
+    public void test_get_all()
     {
         Globals.MOVE_ACTION_SPACE_SIZE = 4;
 
         Point f2 = new Point(2, 2);
         Point t2 = new Point(4, 4);
-        BidSpace space = new BidSpace(f2, t2, 5, new HashMap<>(), "11x11", 3);
+        BidSpace space = new BidSpace();
+        space.init(f2, t2, 5, new HashMap<>(), "11x11", 3);
         space.prepare();
 
         List<Path> paths = space.all();
-        System.out.println(paths.size());
+        for (int i = 0; i < paths.size(); i++)
+        {
+            System.out.printf("%3d / %3d > %s%n", i, Globals.MAX_BID_SPACE_POOL_SIZE, paths.get(i));
+        }
     }
 
     @Test
@@ -94,7 +103,8 @@ public class BidSpaceTests extends IntegrationTestSuite
 
         Point f2 = new Point(2, 2);
         Point t2 = new Point(4, 4);
-        BidSpace space = new BidSpace(f2, t2, 5, new HashMap<>(), "11x11", 3);
+        BidSpace space = new BidSpace();
+        space.init(f2, t2, 5, new HashMap<>(), "11x11", 3);
 
         List<Path> paths = new ArrayList<>();
         for (int i = 0; i < 5; i++)
@@ -120,7 +130,8 @@ public class BidSpaceTests extends IntegrationTestSuite
 
         Point f2 = new Point(2, 2);
         Point t2 = new Point(4, 4);
-        BidSpace space = new BidSpace(f2, t2, 5, new HashMap<>(), "11x11", 3);
+        BidSpace space = new BidSpace();
+        space.init(f2, t2, 5, new HashMap<>(), "11x11", 3);
 
         List<Path> received = new ArrayList<>();
         for (int i = 0; i < 6; i++)

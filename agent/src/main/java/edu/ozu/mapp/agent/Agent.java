@@ -200,7 +200,8 @@ public abstract class Agent {
 
     public final List<Bid> GetBidSpace(Point From, Point To, int deadline)
     {
-        BidSpace space = new BidSpace(
+        BidSpace space = new BidSpace();
+        space.init(
                 From,
                 To,
                 deadline,
