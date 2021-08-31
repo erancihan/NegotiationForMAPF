@@ -9,15 +9,10 @@ import copy
 
 DEBUG = True
 
-# TODO get opponent id
 
-
-if DEBUG:
-    def debug(*args):
+def debug(*args):
+    if DEBUG:
         print(*args)
-else:
-    def debug(*args):
-        pass
 
 
 class _Base:
@@ -280,7 +275,7 @@ def parse_agent_negotiation_log(file_path: str, data_dict: ExcelData):
 
             if data['name'] == 'PRE':
                 # update session id on every new PRE entry
-                session_id  = data['session_id']
+                session_id = data['session_id']
                 session_key = data['session_id'] + "_" + str(session_ids.get(session_id, 0))
                 session_ids[session_id] = session_ids.get(session_id, 0) + 1
 
@@ -295,7 +290,11 @@ def parse_agent_negotiation_log(file_path: str, data_dict: ExcelData):
                     data_dict.negotiations[session_key].conflict_location = data['conflict_location']
                 data_dict.negotiations[session_key].agent_ids.append(agent_id)
                 data_dict.negotiations[session_key].paths[agent_id] = {}
-                data_dict.negotiations[session_key].paths[agent_id]["BEFORE"] = [__point.strip().replace('-', ',') for __point in str(data['path']).replace('[', '').replace(']', '').split(',')]
+                data_dict.negotiations[session_key].paths[agent_id]["BEFORE"] = [__point.strip().replace('-', ',') for
+                                                                                 __point in
+                                                                                 str(data['path']).replace('[',
+                                                                                                           '').replace(
+                                                                                     ']', '').split(',')]
 
                 if session_key not in data_dict.agents[agent_id].negotiations:
                     data_dict.agents[agent_id].negotiations[session_key] = NegotiationSummary()
@@ -328,7 +327,8 @@ def parse_agent_negotiation_log(file_path: str, data_dict: ExcelData):
                 if session_key not in data_dict.agents[action.B].negotiations:
                     data_dict.agents[action.B].negotiations[session_key] = NegotiationSummary()
                 data_dict.agents[action.B].negotiations[session_key].actions.append(action)
-                data_dict.negotiations[session_key].paths[agent_id]["ACCEPT"] = agent_id if data['name'] == 'ACCEPT' else ""
+                data_dict.negotiations[session_key].paths[agent_id]["ACCEPT"] = agent_id if data[
+                                                                                                'name'] == 'ACCEPT' else ""
 
                 if data['name'] == 'ACCEPT':
                     data_dict.negotiations[session_key].contract = str(data['contract'])
@@ -352,7 +352,11 @@ def parse_agent_negotiation_log(file_path: str, data_dict: ExcelData):
                 data_dict.agents[agent_id].amount_of_tokens_given += abs(tb_diff) if data['is_win'] == 'false' else 0
 
                 data_dict.negotiations[session_key].amount_of_tokens_exchanged = abs(tb_diff)
-                data_dict.negotiations[session_key].paths[agent_id]["AFTER"] = [__point.strip().replace('-', ',') for __point in str(data['path']).replace('[', '').replace(']', '').split(',')]
+                data_dict.negotiations[session_key].paths[agent_id]["AFTER"] = [__point.strip().replace('-', ',') for
+                                                                                __point in
+                                                                                str(data['path']).replace('[',
+                                                                                                          '').replace(
+                                                                                    ']', '').split(',')]
 
 
 def parse_world_log(file_path: str, data_dict: ExcelData):
@@ -394,7 +398,7 @@ def parse_world_log(file_path: str, data_dict: ExcelData):
 
 
 def run(scenarios_folder_path, force_reparse: bool = False):
-    force_reparse = False
+    print(scenarios_folder_path)
     for world_folder in glob(join(scenarios_folder_path, 'WORLD-*')):
         if not force_reparse and os.path.exists(join(world_folder, '.parsed')):
             continue
@@ -427,7 +431,7 @@ def run(scenarios_folder_path, force_reparse: bool = False):
         # create world workbook
         # BEGIN:WORLD.XLSX
         wwb = xlsxwriter.Workbook(join(world_folder, "World-{}.xlsx".format(data_dict.world.id)))
-        __font_format = wwb.add_format({'font_name': 'Courier New', 'font_size': '10', 'align': 'center' })
+        __font_format = wwb.add_format({'font_name': 'Courier New', 'font_size': '10', 'align': 'center'})
 
         # BEGIN:WORLD.XLSX AGENT SHEET
         wws_agents = wwb.add_worksheet('Agents')
@@ -436,7 +440,8 @@ def run(scenarios_folder_path, force_reparse: bool = False):
         wws_agents_h = ['id', 'name', 'starting point', 'destination', 'planned path', 'planned path len', 'taken path',
                         'taken path len', 'negotiation count', 'sum win', 'sum lose', 'initial token count',
                         'final token count', '# of tokens received', '# of tokens given', 'token_diff', 'path diff',
-                        'total_number_of_times_agent_made_retain_bid', 'number_of_times_agent_received_retain_bid', 'retain_bid_diff'
+                        'total_number_of_times_agent_made_retain_bid', 'number_of_times_agent_received_retain_bid',
+                        'retain_bid_diff'
                         ]
         for item in wws_agents_h:
             wws_agents.write(wws_agents_r, wws_agents_c, item)
@@ -464,8 +469,10 @@ def run(scenarios_folder_path, force_reparse: bool = False):
             wws_agents.write_number(wws_agents_r, 13, int(wws_agent.amount_of_tokens_received))
             wws_agents.write_number(wws_agents_r, 14, int(wws_agent.amount_of_tokens_given))
 
-            wws_agents.write_number(wws_agents_r, 15, abs(int(wws_agent.amount_of_tokens_received) - int(wws_agent.amount_of_tokens_given)))
-            wws_agents.write_number(wws_agents_r, 16, int(wws_agent.taken_path_length) - int(wws_agent.planned_initial_path_length))
+            wws_agents.write_number(wws_agents_r, 15, abs(
+                int(wws_agent.amount_of_tokens_received) - int(wws_agent.amount_of_tokens_given)))
+            wws_agents.write_number(wws_agents_r, 16,
+                                    int(wws_agent.taken_path_length) - int(wws_agent.planned_initial_path_length))
 
             total_number_of_times_agent_made_retain_bid = 0
             number_of_times_agent_received_retain_bid = 0
@@ -482,7 +489,8 @@ def run(scenarios_folder_path, force_reparse: bool = False):
                         total_number_of_times_agent_made_retain_bid += int(_last_action.T_b)
                         number_of_times_agent_received_retain_bid += int(_last_action.T_a)
 
-            retain_bid_diff = abs(total_number_of_times_agent_made_retain_bid - number_of_times_agent_received_retain_bid)
+            retain_bid_diff = abs(
+                total_number_of_times_agent_made_retain_bid - number_of_times_agent_received_retain_bid)
 
             wws_agents.write_number(wws_agents_r, 17, total_number_of_times_agent_made_retain_bid)
             wws_agents.write_number(wws_agents_r, 18, number_of_times_agent_received_retain_bid)
@@ -496,7 +504,8 @@ def run(scenarios_folder_path, force_reparse: bool = False):
 
         wws_negotiations_r = 0
         wws_negotiations_c = 0
-        wws_negotiations_h = ['timestamp', 'negotiation_id', 'agents', 'conflict_location', 'time conflict found at', 'amount of tokens exchanged', 'path']
+        wws_negotiations_h = ['timestamp', 'negotiation_id', 'agents', 'conflict_location', 'time conflict found at',
+                              'amount of tokens exchanged', 'path']
         for item in wws_negotiations_h:
             wws_negotiations.write(wws_negotiations_r, wws_negotiations_c, item)
             wws_negotiations_c += 1
@@ -522,7 +531,9 @@ def run(scenarios_folder_path, force_reparse: bool = False):
                     wws_negotiations.write_string(wws_negotiations_r, 6 + __i, __point, __font_format)
                 wws_negotiations_r += 1
 
-                wws_negotiations.write(wws_negotiations_r, 4, "accepted" if wws_negotiation.paths[__agent_key].get("ACCEPT", "") is __agent_key else "")
+                wws_negotiations.write(wws_negotiations_r, 4,
+                                       "accepted" if wws_negotiation.paths[__agent_key].get("ACCEPT",
+                                                                                            "") is __agent_key else "")
                 wws_negotiations.write(wws_negotiations_r, 5, "AFTER")
                 for __i, __point in enumerate(wws_negotiation.paths[__agent_key].get("AFTER", [])):
                     wws_negotiations.write_string(wws_negotiations_r, 6 + __i, __point, __font_format)
@@ -555,7 +566,8 @@ def run(scenarios_folder_path, force_reparse: bool = False):
 
             wws_paths.write(wws_paths_r, 0, wws_path_agent.agent_id)
             wws_paths.write(wws_paths_r, 1, "INITIAL", __font_format)
-            for __j, __loc in enumerate(wws_path_agent.planned_initial_path.replace('[', '').replace(']', '').split(',')):
+            for __j, __loc in enumerate(
+                    wws_path_agent.planned_initial_path.replace('[', '').replace(']', '').split(',')):
                 wws_paths.write_string(wws_paths_r, 2 + __j, __loc.strip().replace('-', ','), __font_format)
             wws_paths_r += 1
 
@@ -601,7 +613,8 @@ def run(scenarios_folder_path, force_reparse: bool = False):
                 # find opponent
                 opponent = copy.copy(data_dict.negotiations[nego_key].agent_ids)
                 opponent.remove(agent_key)
-                data_dict.agents[agent_key].negotiations[nego_key].opponent_id = opponent[0] if len(opponent) == 2 else ""
+                data_dict.agents[agent_key].negotiations[nego_key].opponent_id = opponent[0] if len(
+                    opponent) == 2 else ""
 
                 aws_nego_sum.write(aws_nego_sum_r, 0, aws_agent_nego_sum.timestamp)
                 aws_nego_sum.write(aws_nego_sum_r, 1, aws_agent_nego_sum.negotiation_id)
@@ -614,7 +627,7 @@ def run(scenarios_folder_path, force_reparse: bool = False):
                 aws_nego_sum.write(aws_nego_sum_r, 8, aws_agent_nego_sum.conflict_location)
                 aws_nego_sum.write(aws_nego_sum_r, 9, len(aws_agent_nego_sum.actions))
                 aws_nego_sum.write(aws_nego_sum_r, 10, aws_agent_nego_sum.own_token_balance_diff)
-                aws_nego_sum.write(aws_nego_sum_r, 11, "1" if aws_agent_nego_sum.is_win == "true"  else "0")
+                aws_nego_sum.write(aws_nego_sum_r, 11, "1" if aws_agent_nego_sum.is_win == "true" else "0")
                 aws_nego_sum.write(aws_nego_sum_r, 12, "1" if aws_agent_nego_sum.is_win == "false" else "0")
 
                 aws_nego_sum_r += 1
@@ -623,7 +636,8 @@ def run(scenarios_folder_path, force_reparse: bool = False):
             # BEGIN AGENT NEGOTIATION ACTIONS
             aws_nego_act_r = 0
             aws_nego_act_c = 0
-            aws_nego_act_h = ['timestamp', 'negotiation_id', 'bidder', 'A', 'T_a', 'B', 'T_b', 'Ox', 'x', 'round', 'type']
+            aws_nego_act_h = ['timestamp', 'negotiation_id', 'bidder', 'A', 'T_a', 'B', 'T_b', 'Ox', 'x', 'round',
+                              'type']
             aws_nego_act = awb.add_worksheet('Negotiation Actions')
 
             for item in aws_nego_act_h:
@@ -661,44 +675,8 @@ def run(scenarios_folder_path, force_reparse: bool = False):
 
 
 if __name__ == '__main__':
-    run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\16x16_40_Hybrid_FoV7_Wait_C1", True)
-    run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\16x16_40_Hybrid_FoV7_Wait_C2", True)
-    run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\16x16_40_Hybrid_FoV7_Wait_PassThrough_C1", True)
-    run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\16x16_40_Hybrid_FoV7_Wait_PassThrough_C2", True)
+    import os
+    from pathlib import Path
 
-    exit()
-    run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\8x8_10_Random_FoV5", True)
-    run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\8x8_10_Hybrid_FoV5", True)
-
-    run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\8x8_15_Random_FoV5", True)
-    run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\8x8_15_Hybrid_FoV5", True)
-
-    run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\8x8_20_Random_FoV5", True)
-    run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\8x8_20_Hybrid_FoV5", True)
-
-    run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\8x8_25_Random_FoV5", True)
-    run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\8x8_25_Hybrid_FoV5", True)
-
-    run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\16x16_20_Random_FoV5", True)
-    run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\16x16_20_Hybrid_FoV5", True)
-
-    run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\16x16_40_Random_FoV5", True)
-    run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\16x16_40_Hybrid_FoV5", True)
-
-    run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\16x16_40_Random_FoV7", True)
-    run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\16x16_40_Hybrid_FoV7", True)
-
-    run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\16x16_40_Random_FoV9", True)
-    run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\16x16_40_Hybrid_FoV9", True)
-
-    run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\16x16_60_Random_FoV5", True)
-    run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\16x16_60_Hybrid_FoV5", True)
-
-    run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\16x16_60_Random_FoV7", True)
-    run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\16x16_60_Hybrid_FoV7", True)
-
-    run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\16x16_60_Random_FoV9", True)
-    run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\16x16_60_Hybrid_FoV9", True)
-
-    run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\16x16_80_Random_FoV5", True)
-    run("C:\\Users\\cihan\\Documents\\MAPP\\logs\\16x16_80_Hybrid_FoV5", True)
+    for file in Path("C:\\Users\\cihan\\Documents\\MAPP\\logs\\_\\").rglob("WORLD.log"):
+        run(str(os.path.dirname(os.path.dirname(file))), True)
