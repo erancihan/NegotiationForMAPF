@@ -33,7 +33,7 @@ public class Simulation {
                 Path path = Paths.get(
                         FileSystemView.getFileSystemView().getDefaultDirectory().getPath(), "MAPP",    // %HOME%/Documents/MAPP
                         "scenarios",
-                        "HeatMapAgent",
+                        "PathAwareAgent",
                         conf
                 );
                 ArrayList<String> scenarios = new Glob().glob(path, "world-scenario-*.json");
@@ -51,8 +51,8 @@ public class Simulation {
                 // Globals.MOVE_ACTION_SPACE_SIZE = 5; // with wait action
 
 // SET LEAVE ACTION BEHAVIOUR
-                Globals.LEAVE_ACTION_BEHAVIOUR = LeaveActionHandler.LeaveActionTYPE.OBSTACLE;       // obstacle on exit
-                // Globals.LEAVE_ACTION_BEHAVIOUR = LeaveActionHandler.LeaveActionTYPE.PASS_THROUGH; //    leave on exit
+//                Globals.LEAVE_ACTION_BEHAVIOUR = LeaveActionHandler.LeaveActionTYPE.OBSTACLE;      // obstacle on exit
+                 Globals.LEAVE_ACTION_BEHAVIOUR = LeaveActionHandler.LeaveActionTYPE.PASS_THROUGH; //    leave on exit
 
 // SET BID SEARCH SPACE OVERRIDE
                 Globals.BID_SEARCH_STRATEGY_OVERRIDE = BidSpace.SearchStrategy.POP_LAST;
