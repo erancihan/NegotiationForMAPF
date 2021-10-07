@@ -7,9 +7,7 @@ import edu.ozu.mapp.system.Broadcast;
 import edu.ozu.mapp.system.FoV;
 import edu.ozu.mapp.utils.*;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 @MAPPAgent
 public class HeatMapAgent extends Agent
@@ -28,44 +26,7 @@ public class HeatMapAgent extends Agent
     // bid space
     private List<Bid> bid_space = null;
     private Iterator<Bid> bid_space_iterator = null;
-
-    // heat map
-    private HashMap<String, Double> HeatMap = null;
-
-    @Override
-    public double UtilityFunction(SearchInfo search)
-    {
-        // ensure heat map
-        assert HeatMap != null;
-
-        // Offset bid by how far is the last point to destination.
-        // This should affect the utility the least.
-        // Multiply the value with 1E-5 to decrease it's offset effect
-        double offset = search.Path.getLast().ManhattanDistTo(DEST) * 1E-5;
-
-        // apply heat map weights
-        double weight = 0;
-        for (Point point : search.Path)
-        {   // sum the weights of cells on the map
-            weight += HeatMap.getOrDefault(point.key, 0.0);
-        }
-        // adjust the effect of the weights on the thousandths
-        //  0.001
-        weight = weight * 1E-3;
-
-        return
-        (
-            (
-                1
-                - ((search.PathSize - search.MinPathSize)
-                    /
-                    (search.MaxPathSize - search.MinPathSize)
-                )
-            )
-            - weight
-            - offset
-        );
-    }
+    private HashSet<Object> previous_bids = null;
 
     @Override
     public void PreNegotiation(State state)
@@ -74,19 +35,41 @@ public class HeatMapAgent extends Agent
         bound_r = worldOverseerReference.getWidth();
         bound_b = worldOverseerReference.getHeight();
 
-        // generate heat map
-        this.HeatMap = new HashMap<>();
         generate_heatmap();
 
         // get bid space
-        bid_space = GetCurrentBidSpace();
-        bid_space_iterator = bid_space.iterator();
+        List<Bid> current_bid_space = GetCurrentBidSpace();   // returns a sorted bid space
+
+        // get bids list
+        PriorityQueue<Bid> bids = new PriorityQueue<>(Comparator.comparingDouble(this::get_weight));
+        bids.addAll(current_bid_space);
+
+        bid_space = new ArrayList<>();
+        while (!bids.isEmpty()) { bid_space.add(bids.poll()); }
+
+        previous_bids = new HashSet<>();
+    }
+
+    private double get_weight(Bid bid)
+    {
+        double weight = 0;
+
+        for (Point point : bid.path)
+        {   // add weights from heat map
+            // each step taken is also +1 weight
+            weight += 1 + HEAT_MAP.getOrDefault(point.key, 0.0);
+        }
+
+        return weight;
     }
 
     int bound_l = 0;    int bound_r;
     int bound_t = 0;    int bound_b;
+    private HashMap<String, Double> HEAT_MAP = null;    // heat map
     private void generate_heatmap()
     {
+        this.HEAT_MAP = new HashMap<>();
+
         // fetch Field of View
         FoV fov = GetFieldOfView();
 
@@ -108,6 +91,10 @@ public class HeatMapAgent extends Agent
                 2,  3,  2,
                 1,  2,  1
             };
+            // todo dynamic heat map window definition & application based on
+            //   Field of View
+
+            // apply heat map
             for (int i = 0; i < 9; i++)
             {
                 int x = location.x + ((i % 3) - 1);
@@ -118,9 +105,9 @@ public class HeatMapAgent extends Agent
 
                 int w = ws[i];
                 // add weight to point increasingly
-                HeatMap.put(
+                HEAT_MAP.put(
                     String.format("%d-%d", x, y), // key
-                    HeatMap.getOrDefault(String.format("%d-%d", x, y), 0.0) + w // value
+                    HEAT_MAP.getOrDefault(String.format("%d-%d", x, y), 0.0) + w // value
                 );
             }
         }
