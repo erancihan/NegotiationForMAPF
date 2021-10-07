@@ -73,6 +73,17 @@ public class HeatMapAgent extends Agent
         // fetch Field of View
         FoV fov = GetFieldOfView();
 
+        int dims = Globals.FIELD_OF_VIEW_SIZE;
+        int[] heat_map_weights = new int[dims * dims];
+        for (int i = 0; i < dims; i++)
+        {   // rows
+            for (int j = 0; j < dims; j++)
+            {   // cols
+                heat_map_weights[((i * dims) + j)] =
+                        (dims - (Math.abs(i - (dims / 2)) + Math.abs(j - (dims / 2))));
+            }
+        }
+
         // fill heat map information
         for (Broadcast broadcast : fov.broadcasts)
         {
@@ -82,28 +93,18 @@ public class HeatMapAgent extends Agent
             // get current location of agents
             // index 0 of a broadcast is agents current location
             Point location = broadcast.locations.get(0).location;
-            // add weights to heat map
-            //| 1 | 2 | 1 |
-            //| 2 | 3 | 2 |
-            //| 1 | 2 | 1 |
-            int[] ws = new int[]{
-                1,  2,  1,
-                2,  3,  2,
-                1,  2,  1
-            };
-            // todo dynamic heat map window definition & application based on
-            //   Field of View
 
+            // dynamic heat map window definition & application based on
+            //   Field of View
             // apply heat map
-            for (int i = 0; i < 9; i++)
-            {
-                int x = location.x + ((i % 3) - 1);
-                int y = location.y + ((i / 3) - 1);
+            for (int i = 0; i < (dims * dims); i++) {
+                int x = location.x + ((i % dims) - (dims / 2));
+                int y = location.y + ((i / dims) - (dims / 2));
 
                 if (x < bound_l || bound_r <= x) continue;  // x : [bound_l, bound_r) | i.e. [0, 16) -> x : 0, 1, ... 15
                 if (y < bound_t || bound_b <= y) continue;  // y : [bound_t, bound_b) | i.e. [0, 16) -> y : 0, 1, ... 15
 
-                int w = ws[i];
+                int w = heat_map_weights[i];
                 // add weight to point increasingly
                 HEAT_MAP.put(
                     String.format("%d-%d", x, y), // key
