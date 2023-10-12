@@ -18,53 +18,55 @@ public class Simulation {
     @SuppressWarnings("DuplicatedCode")
     public static void main(String[] args)
     {
-        String[] confs = new String[]{"16x16_20", "16x16_60", "8x8_15", "8x8_20", "16x16_40", "16x16_80"};
+        System.out.println(System.getProperty("os.name"));
+        System.out.println(FileSystemView.getFileSystemView().getDefaultDirectory().getPath());
+        Path home = System.getProperty("os.name").toLowerCase().contains("win")
+                ? Paths.get(FileSystemView.getFileSystemView().getDefaultDirectory().getPath(), "MAPP") // %HOME%/Documents, MAPP
+                : Paths.get(FileSystemView.getFileSystemView().getDefaultDirectory().getPath(), "Documents", "MAPP"); // ~, Documents, MAPP
 
-        for (String conf : confs)
+        String[][] confs = new String[][]{
+//                {"PathAwareAgent", "16x16_60"}
+//                {"HeightMapAgent", "16x16_40"}
+                {"HeightMapAgentMEMOConstraint", "16x16_80", "9", "5", "leave"},
+                {"PathAwareAgentMEMOConstraint", "16x16_80", "9", "5", "leave"}
+        };
+
+        for (String[] conf : confs)
         {
             try
             {
                 ch.qos.logback.classic.Logger root = (ch.qos.logback.classic.Logger) org.slf4j.LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME);
                 root.setLevel(Level.INFO);
 
-                System.out.println(FileSystemView.getFileSystemView().getDefaultDirectory().getPath());
-                System.out.println(System.getProperty("user.dir"));
-
-                Path path = Paths.get(
-                        FileSystemView.getFileSystemView().getDefaultDirectory().getPath(), "MAPP",    // %HOME%/Documents/MAPP
-                        "scenarios",
-                        "PathAwareAgent",
-                        conf
-                );
+                Path path = Paths.get(String.valueOf(home), "scenarios", conf[0], conf[1]);
                 ArrayList<String> scenarios = new Glob().glob(path, "world-scenario-*.json");
 
 // SET FIELD OF VIEW
-                Globals.FIELD_OF_VIEW_SIZE = 5;     // d = 2 from current location to sides
-                Globals.BROADCAST_SIZE = 5;     // 2d + 1
-//            Globals.FIELD_OF_VIEW_SIZE  = 7;     // d = 3 from current location to sides
-//            Globals.BROADCAST_SIZE      = 7;     // 2d + 1
-//            Globals.FIELD_OF_VIEW_SIZE  = 9;     // d = 4 from current location to sides
-//            Globals.BROADCAST_SIZE      = 9;     // 2d + 1
+                Globals.FIELD_OF_VIEW_SIZE  = Integer.parseInt(conf[2]);
+                Globals.BROADCAST_SIZE      = Integer.parseInt(conf[2]);
 
 // SET MOVE ACTION SPACE SIZE
-                Globals.MOVE_ACTION_SPACE_SIZE = 4; //   no wait action
-                // Globals.MOVE_ACTION_SPACE_SIZE = 5; // with wait action
+                Globals.MOVE_ACTION_SPACE_SIZE = Integer.parseInt(conf[3]);
 
 // SET LEAVE ACTION BEHAVIOUR
-//                Globals.LEAVE_ACTION_BEHAVIOUR = LeaveActionHandler.LeaveActionTYPE.OBSTACLE;      // obstacle on exit
-                 Globals.LEAVE_ACTION_BEHAVIOUR = LeaveActionHandler.LeaveActionTYPE.PASS_THROUGH; //    leave on exit
+                Globals.LEAVE_ACTION_BEHAVIOUR = conf[4].equals("leave")
+                        ? LeaveActionHandler.LeaveActionTYPE.PASS_THROUGH
+                        : LeaveActionHandler.LeaveActionTYPE.OBSTACLE;
+
+// SET COMMITMENT SIZE OVERRIDE
+//                Globals.MAX_COMMITMENT_SIZE = 0;
 
 // SET BID SEARCH SPACE OVERRIDE
-                Globals.BID_SEARCH_STRATEGY_OVERRIDE = BidSpace.SearchStrategy.POP_LAST;
-//            Globals.MAX_BID_SPACE_POOL_SIZE = 100;
+                Globals.BID_SEARCH_STRATEGY_OVERRIDE = BidSpace.SearchStrategy.BFS;
 
 // SET WORLD TIMEOUT
-//            Globals.STALE_NEGOTIATE_STATE_WAIT_COUNTER_LIMIT = 300;
-//            Globals.STATE_SIMULATION_PROCESS_COUNTER_LIMIT   = 400;
+                Globals.STALE_NEGOTIATE_STATE_WAIT_COUNTER_LIMIT = 60;
+                Globals.STALE_SIMULATION_PROCESS_COUNTER_LIMIT = 120;
 
 // TOURNAMENT CONFIG
-                TournamentRunner.TOURNAMENT_RUNNER_MAX_NUMBER_OF_TRIES = 2; // retry once
+                TournamentRunner.TOURNAMENT_RUNNER_MAX_NUMBER_OF_TRIES = 100; // retry
                 SystemExit.SHUTDOWN_ON_EXIT = false;
+                Globals.LOG_BID_SPACE = true;
 
                 File tournament_run_results = Paths.get(path.toString(), "runs.txt").toFile();
                 //noinspection ResultOfMethodCallIgnored
@@ -77,6 +79,7 @@ public class Simulation {
 
                 TournamentRunner runner = new TournamentRunner();
                 runner.tournament_run_results = tournament_run_results;
+                runner.homedir = home;
                 runner.run(scenarios);
             }
             catch (Exception exception)

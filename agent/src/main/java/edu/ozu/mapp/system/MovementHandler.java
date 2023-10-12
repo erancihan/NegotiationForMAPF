@@ -113,15 +113,22 @@ public class MovementHandler
 
             AgentHandler agent_ref = move_queue.get(agent_name);
 
-            CompletableFuture.runAsync(() -> {
-                JSONAgent response = new JSONAgent();
-                response.agent_id = payload.AGENT_NAME;
-                response.agent_x = String.valueOf(payload.NEXT_LOCATION.x);
-                response.agent_y = String.valueOf(payload.NEXT_LOCATION.y);
+            CompletableFuture
+                    .runAsync(() -> {
+                        JSONAgent response = new JSONAgent();
+                        response.agent_id = payload.AGENT_NAME;
+                        response.agent_x = String.valueOf(payload.NEXT_LOCATION.x);
+                        response.agent_y = String.valueOf(payload.NEXT_LOCATION.y);
 
-                agent_ref.DoMove(response);
-                process_queue_unlock_latch.countDown();
-            });
+                        agent_ref.DoMove(response);
+                        process_queue_unlock_latch.countDown();
+                    })
+                    .exceptionally(ex -> {
+                        ex.printStackTrace();
+                        return null;
+                    })
+                    .join()
+            ;
 
             iterator.remove();
         }

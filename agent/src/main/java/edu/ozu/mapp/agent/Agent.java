@@ -4,10 +4,10 @@ import edu.ozu.mapp.agent.client.AgentHandler;
 import edu.ozu.mapp.agent.client.helpers.FileLogger;
 import edu.ozu.mapp.agent.client.models.Contract;
 import edu.ozu.mapp.dataTypes.Constraint;
-import edu.ozu.mapp.keys.AgentKeys;
-import edu.ozu.mapp.keys.KeyHandler;
+//import edu.ozu.mapp.keys.AgentKeys;
+//import edu.ozu.mapp.keys.KeyHandler;
 import edu.ozu.mapp.system.Broadcast;
-import edu.ozu.mapp.system.FoV;
+import edu.ozu.mapp.system.fov.FoV;
 import edu.ozu.mapp.system.WorldOverseer;
 import edu.ozu.mapp.utils.*;
 import edu.ozu.mapp.utils.bid.BidSpace;
@@ -15,14 +15,13 @@ import edu.ozu.mapp.utils.path.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.security.PublicKey;
+//import java.security.PublicKey;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public abstract class Agent {
-    public static final Logger logger = LoggerFactory.getLogger(Agent.class);
-    private FileLogger file_logger;
+    public static Logger logger = LoggerFactory.getLogger(Agent.class);
+    protected FileLogger file_logger;
 
     public String AGENT_NAME, AGENT_ID;
     public Point START, DEST;
@@ -41,7 +40,7 @@ public abstract class Agent {
     public int time = 0;
 
     public String WORLD_ID;
-    public AgentKeys keys;
+//    public AgentKeys keys;
     private HashMap<String, String> conflict_locations;
 
     public int winC = 0;
@@ -76,7 +75,7 @@ public abstract class Agent {
 
         history = new History(AGENT_ID);
         // create and store agent keys
-        keys = KeyHandler.getInstance().create(this);
+//        keys = KeyHandler.getInstance().create(this);
     }
 
     public Agent(String agentName, String agentID, Point start, Point dest) {
@@ -95,28 +94,21 @@ public abstract class Agent {
 
     public void OnAcceptLastBids(Contract contract) { }
 
-    public void PostNegotiation() { }
+    public void PostNegotiation(Contract contract) { }
 
     public void OnMove(JSONAgent response) { }
 
     public final void run()
     {
-        logger.info(AGENT_ID + " calculating path");
         path = calculatePath();
-        logger.info(AGENT_ID + " calculation done");
         this.initial_path = new ArrayList<>(path);
 
         POS = new Point(path.get(0).split("-"));
         history = new History(AGENT_ID);
     }
 
-    public ArrayList<Constraint> prepareConstraints(ArrayList<Constraint> systemConstraintSet)
+    public ArrayList<Constraint> prepareConstraints(ArrayList<Constraint> constraints)
     {
-        ArrayList<Constraint> constraints = new ArrayList<>(systemConstraintSet);
-
-        //todo resolve
-//        constraints.addAll(GetFoVasConstraint());
-
         return constraints;
     }
 
@@ -136,7 +128,7 @@ public abstract class Agent {
         return genConstraints(new ArrayList<>());
     }
 
-    private HashMap<String, ArrayList<String>> constraints2hashmap(ArrayList<Constraint> constraints)
+    public HashMap<String, ArrayList<String>> constraints2hashmap(ArrayList<Constraint> constraints)
     {
         HashMap<String, ArrayList<String>> _map = new HashMap<>();
 
@@ -161,7 +153,6 @@ public abstract class Agent {
     {
         HashMap<String, ArrayList<String>> _constraints = constraints2hashmap(genConstraints(constraints));
 
-        logger.debug(AGENT_ID + " | calculating A* {" + start + ", " + dest + ", " + _constraints + ", " + dimensions + ", " + time + "}");
         return new AStar().calculate(start, dest, _constraints, dimensions, time);
     }
 
@@ -197,9 +188,15 @@ public abstract class Agent {
         return (1 - ((search.PathSize - search.MinPathSize) / (search.MaxPathSize - search.MinPathSize)) - offset);
     }
 
+//    public final List<Bid> GetBidSpace(Point From, Point To, int deadline)
+//    {
+//        return GetBidSpace(From, To, deadline, "");
+//    }
 
-    public final List<Bid> GetBidSpace(Point From, Point To, int deadline)
+    public final List<Bid> GetBidSpace(Point From, Point To, int deadline, State state)
     {
+        String session_id = state.session_id;
+
         BidSpace space = new BidSpace();
         space.init(
                 From,
@@ -213,12 +210,17 @@ public abstract class Agent {
 
         double max = Double.MIN_VALUE;
         double min = Double.MAX_VALUE;
+
         List<Path> paths = new ArrayList<>();
-        for (int i = 0; i < Globals.MAX_BID_SPACE_POOL_SIZE; i++)
+        int poll_c = 0;
+        while (paths.size() < Globals.MAX_BID_SPACE_POOL_SIZE)
         {
             Path next = space.next();
+
             if (next == null) break;
             if (next.size() == 0) break;
+            if ((poll_c - paths.size()) == Globals.MAX_BID_SPACE_POLL_COUNT) break; // check extra poll count
+            poll_c++;
 
             double _max = next.size() + next.getLast().ManhattanDistTo(To);
             double _min = next.size() + next.getLast().ManhattanDistTo(To);
@@ -227,42 +229,56 @@ public abstract class Agent {
             if (_min < min) min = _min;
 
             paths.add(next);
+            if (Globals.LOG_BID_SPACE && this.file_logger != null) {
+                this.file_logger.LogBid(AGENT_ID, WORLD_ID, session_id, next);
+            }
+        }
+        if (Globals.LOG_BID_SPACE && this.file_logger != null) {
+            this.file_logger.LogBid(AGENT_ID, WORLD_ID, session_id, null);
         }
 
         PriorityQueue<Bid> bids = new PriorityQueue<>(Comparator.reverseOrder());
         for (Path path : paths)
         {
-            bids.add(new Bid(
-                    AGENT_ID,
-                    path,
-                    UtilityFunction(new SearchInfo(max, min, path))
-            ));
+            bids.add(new Bid(AGENT_ID, path, UtilityFunction(new SearchInfo(max, min, path))));
         }
 
         List<Bid> results = new ArrayList<>();
         while (!bids.isEmpty()) {
-            results.add(bids.poll());
+            Bid bid = bids.poll();
+            results.add(bid);
+            if (Globals.LOG_BID_SPACE && this.file_logger != null) {
+                this.file_logger.LogBidSorted(AGENT_ID, WORLD_ID, session_id, bid);
+            }
+        }
+        if (Globals.LOG_BID_SPACE && this.file_logger != null) {
+            this.file_logger.LogBidSorted(AGENT_ID, WORLD_ID, session_id, null);
         }
 
         return results;
     }
 
-    public final List<Bid> GetBidSpace(Point From, Point To)
-    {
-        return GetBidSpace(From, To, Globals.FIELD_OF_VIEW_SIZE);
-    }
+//    public final List<Bid> GetBidSpace(Point From, Point To)
+//    {
+//        return GetBidSpace(From, To, Globals.FIELD_OF_VIEW_SIZE);
+//    }
 
-    public final List<Bid> GetCurrentBidSpace(int minimum_path_size)
-    {
-        return GetBidSpace(POS, DEST, minimum_path_size);
-    }
+//    public final List<Bid> GetCurrentBidSpace(int minimum_path_size)
+//    {
+//        return GetBidSpace(POS, DEST, minimum_path_size);
+//    }
 
-    public final List<Bid> GetCurrentBidSpace(Point To)
-    {
-        return GetBidSpace(POS, To, Globals.FIELD_OF_VIEW_SIZE);
-    }
+//    public final List<Bid> GetCurrentBidSpace(Point To)
+//    {
+//        return GetBidSpace(POS, To, Globals.FIELD_OF_VIEW_SIZE);
+//    }
 
-    public final List<Bid> GetCurrentBidSpace()
+//    public final List<Bid> GetCurrentBidSpace()
+//    {
+//        return GetCurrentBidSpace("");
+//    }
+
+    public final List<Bid> GetCurrentBidSpace(State state)
     {
         // Set exit point of bid space search
         // as the last point of broadcast that is within FoV
@@ -285,11 +301,10 @@ public abstract class Agent {
 
         if (to != null && !to.equals(POS))
         {
-            return GetBidSpace(POS, to, Globals.FIELD_OF_VIEW_SIZE);
+            return GetBidSpace(POS, to, Globals.FIELD_OF_VIEW_SIZE, state);
         }
 
-        logger.debug("selecting DEST for exit point");
-        return GetBidSpace(POS, DEST, Globals.FIELD_OF_VIEW_SIZE);
+        return GetBidSpace(POS, DEST, Globals.FIELD_OF_VIEW_SIZE, state);
     }
 
     public final ArrayList<Constraint> GetFoVasConstraint()
@@ -370,20 +385,20 @@ public abstract class Agent {
         return history.get(AGENT_ID).stream().map(contract -> contract.Ox).collect(Collectors.toCollection(HashSet::new));
     }
 
-    public final String Encrypt(String text)
-    {
-        return KeyHandler.encrypt(text, keys.GetPublicKey());
-    }
-
-    public final String Decrypt(String text)
-    {
-        return KeyHandler.decrypt(text, keys.GetPrivateKey(this));
-    }
-
-    public final PublicKey GetPubKey()
-    {
-        return keys.GetPublicKey();
-    }
+//    public final String Encrypt(String text)
+//    {
+//        return KeyHandler.encrypt(text, keys.GetPublicKey());
+//    }
+//
+//    public final String Decrypt(String text)
+//    {
+//        return KeyHandler.decrypt(text, keys.GetPrivateKey(this));
+//    }
+//
+//    public final PublicKey GetPubKey()
+//    {
+//        return keys.GetPublicKey();
+//    }
 
     public final void setWORLD_ID(String WORLD_ID)
     {

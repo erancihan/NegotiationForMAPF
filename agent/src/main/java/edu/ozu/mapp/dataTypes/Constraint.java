@@ -59,6 +59,9 @@ public class Constraint
     @Override
     public String toString()
     {
-        return String.format("(%s, %s):%s", location.x, location.y, at_t);
+        return String.format(
+            "{\"x\":%s,\"y\":%s,\"t\":\"%s\",\"agent\":\"%s\"}",
+            location.x, location.y, at_t, agent_name
+        );
     }
 }

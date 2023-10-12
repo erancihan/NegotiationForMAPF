@@ -3,7 +3,6 @@ package edu.ozu.mapp.system;
 import edu.ozu.mapp.agent.client.AgentHandler;
 import edu.ozu.mapp.agent.client.models.Contract;
 import edu.ozu.mapp.utils.*;
-import org.glassfish.grizzly.utils.ArrayUtils;
 import org.springframework.util.Assert;
 
 import java.util.*;
@@ -47,7 +46,9 @@ public class NegotiationSession
     {
         this.agent_refs   = new ConcurrentHashMap<>();
         this.agent_ids = agent_ids.clone();
+
         this.service      = Executors.newScheduledThreadPool(2);
+
         this.active_agent_ids = new ConcurrentSkipListSet<>();
 
         this.bank_update_hook   = bank_update_hook;
@@ -73,7 +74,7 @@ public class NegotiationSession
 
         session_data.put("_session_id", session_hash);
 
-        this.contract     = Contract.Create(session_data);
+        this.contract     = new Contract(session_data);
         this.contract.apply(this);
 
         // initialize LOCKs
@@ -126,24 +127,28 @@ public class NegotiationSession
         if (!join_task_lock.tryLock()) return;
         join_task_unlock_latch = new CountDownLatch(agent_ids.length);
 
-        for (String agent_id : agent_ids)
-        {
-            CompletableFuture.runAsync(() -> {
-                assert active_agent_ids.contains(agent_id);
+        for (String agent_id : agent_ids) {
+            CompletableFuture
+                    .runAsync(() -> {
+                        assert active_agent_ids.contains(agent_id);
 
-                try {
-                    State state = new State();
-                    state.agents = agent_ids.clone();
-                    state.contract = contract.clone();
+                        try {
+                            State state = new State();
+                            state.agents = agent_ids.clone();
+                            state.contract = contract.clone();
 
-                    agent_refs.get(agent_id).PreNegotiation(session_hash, state);
+                            agent_refs.get(agent_id).PreNegotiation(session_hash, state);
 
-                    join_task_unlock_latch.countDown();
-                } catch (CloneNotSupportedException e) {
-                    e.printStackTrace();
-                }
-            })
-            .exceptionally(ex -> { ex.printStackTrace(); return null; })
+                            join_task_unlock_latch.countDown();
+                        } catch (CloneNotSupportedException e) {
+                            e.printStackTrace();
+                        }
+                    })
+                    .exceptionally(ex -> {
+                        ex.printStackTrace();
+                        return null;
+                    })
+                    .join()
             ;
         }
 
@@ -232,11 +237,14 @@ public class NegotiationSession
     {
 //        log_hook.accept(session_hash, String.format("%-23s %-7s %s", new java.sql.Timestamp(System.currentTimeMillis()), state, contract.print()));
         try {
-            for (String agent_id : agent_ids)
-            {
+            for (String agent_id : agent_ids) {
                 CompletableFuture
-                    .runAsync(() -> send_current_state_to_agent(agent_id))
-                    .exceptionally(ex -> { ex.printStackTrace(); return null; })
+                        .runAsync(() -> send_current_state_to_agent(agent_id))
+                        .exceptionally(ex -> {
+                            ex.printStackTrace();
+                            return null;
+                        })
+                        .join()
                 ;
             }
 
@@ -253,19 +261,30 @@ public class NegotiationSession
         Contract contract = this.contract.clone();
 
         log_hook.accept(session_hash, String.format("%-23s %-7s %s", new java.sql.Timestamp(System.currentTimeMillis()), state, contract.print()));
-        for (String agent_id : agent_ids)
-        {
+        for (String agent_id : agent_ids) {
             CompletableFuture
-                .runAsync(() -> {
-                    agent_refs.get(agent_id).AcceptLastBids(contract);
-                    agent_refs.get(agent_id).PostNegotiation(contract);
-                })
-                .exceptionally(ex -> { ex.printStackTrace(); return null; })
+                    .runAsync(() -> {
+                        agent_refs.get(agent_id).AcceptLastBids(contract);
+                        agent_refs.get(agent_id).PostNegotiation(contract);
+                    })
+                    .exceptionally(ex -> {
+                        ex.printStackTrace();
+                        return null;
+                    })
+                    .join()
             ;
         }
 
         // clean up
-        task_run.cancel(false);
+        if (task_run != null) {
+            task_run.cancel(false);
+        }
+        if (task_join_await != null) {
+            task_join_await.cancel(false);
+        }
+        if (service != null) {
+            service.shutdown();
+        }
     }
 
     private void send_current_state_to_agent(String agent_id)
@@ -284,16 +303,6 @@ public class NegotiationSession
     @org.jetbrains.annotations.NotNull
     private String process_turn_make_action() {
         AgentHandler agent = agent_refs.get(TURN);
-/*
-        if (
-                Round >= Globals.NEGOTIATION_DEADLINE_ROUND ||
-                (System.currentTimeMillis() - start_time) >= Globals.NEGOTIATION_DEADLINE_MS
-        )
-        {
-            // todo tell agents that negotiation is over
-            return "";
-        }
- */
 
         Action action = null;
         try {

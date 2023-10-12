@@ -93,4 +93,27 @@ public class AStarTests extends IntegrationTestSuite
 
         List<String> received = new AStar().calculate(new Point(9, 3), new Point(2, 3), constraints, "16x16", 2);
     }
+
+    @Test
+    public void test2()
+    {
+        Globals.MOVE_ACTION_SPACE_SIZE = 5;
+        HashMap<String, ArrayList<String>> constraints = new HashMap<>();
+
+        constraints.put("1-1", new ArrayList<String>() {{ add("0"); }});
+
+        constraints.put("1-0", new ArrayList<String>() {{ add("1"); }});
+        constraints.put("2-0", new ArrayList<String>() {{ add("2"); }});
+        constraints.put("0-1", new ArrayList<String>() {{ add("inf"); }});
+        constraints.put("2-1", new ArrayList<String>() {{ add("inf"); }});
+
+        List<String> received = new AStar()
+                .calculate(
+                        new Point(2, 0),
+                        new Point(0, 0),
+                        constraints,
+                        "3x2",
+                        0
+                );
+    }
 }

@@ -74,7 +74,7 @@ public class KeyHandler
 
     public static String encrypt(String text, Agent agent)
     {
-        return encrypt(text, agent.GetPubKey());
+        return ""; //encrypt(text, agent.GetPubKey());
     }
 
     public static String encrypt(String text, PublicKey key)

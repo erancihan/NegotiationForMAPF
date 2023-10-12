@@ -2,14 +2,8 @@ package mappagent.sample;
 
 import edu.ozu.mapp.agent.Agent;
 import edu.ozu.mapp.agent.MAPPAgent;
-import edu.ozu.mapp.agent.client.AgentClient;
 import edu.ozu.mapp.agent.client.models.Contract;
-import edu.ozu.mapp.system.FoV;
-import edu.ozu.mapp.system.WorldOverseer;
 import edu.ozu.mapp.utils.*;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @MAPPAgent
 public class HelloAgent2 extends Agent

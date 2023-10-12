@@ -3,8 +3,10 @@ package mapp.agent;
 import edu.ozu.mapp.agent.Agent;
 import edu.ozu.mapp.agent.MAPPAgent;
 import edu.ozu.mapp.agent.client.models.Contract;
+import edu.ozu.mapp.dataTypes.Constraint;
 import edu.ozu.mapp.utils.*;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -20,9 +22,16 @@ public class PathAwareAgent extends Agent
     }
 
     @Override
+    public ArrayList<Constraint> prepareConstraints(ArrayList<Constraint> constraints)
+    {
+        constraints.addAll(GetFoVasConstraint());
+        return super.prepareConstraints(constraints);
+    }
+
+    @Override
     public void PreNegotiation(State state)
     {
-        bid_space = GetCurrentBidSpace();
+        bid_space = GetCurrentBidSpace(state);
         bid_space_iterator = bid_space.iterator();
     }
 

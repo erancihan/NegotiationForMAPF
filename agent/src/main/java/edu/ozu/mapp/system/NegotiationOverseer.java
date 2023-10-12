@@ -27,7 +27,7 @@ public class NegotiationOverseer
     // { SESSION_HASH : [ NEGOTIATION_SESSION , ... ] }
     private ConcurrentHashMap<String, NegotiationSession> sessions;
 
-    private int cumulative_negotiation_count;
+    public int cumulative_negotiation_count;
 
     public NegotiationOverseer()
     {

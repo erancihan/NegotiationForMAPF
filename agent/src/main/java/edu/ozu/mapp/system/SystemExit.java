@@ -10,7 +10,7 @@ public class SystemExit
     public static boolean SHUTDOWN_ON_EXIT = true;
     public static int EXIT_CODE = 0;
 
-    enum Status {
+    public enum Status {
         FATAL(500),
         TIMEOUT(501),
         ERROR_VERIFY_NEGOTIATIONS(502),

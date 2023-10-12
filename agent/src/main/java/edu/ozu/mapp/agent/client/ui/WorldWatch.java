@@ -8,10 +8,8 @@ package edu.ozu.mapp.agent.client.ui;
 import edu.ozu.mapp.agent.client.AgentHandler;
 import edu.ozu.mapp.utils.Globals;
 import edu.ozu.mapp.utils.JSONWorldWatch;
-import edu.ozu.mapp.utils.Utils;
 
 import java.awt.*;
-import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
@@ -133,7 +131,7 @@ public class WorldWatch extends javax.swing.JPanel {
 
     public void draw(JSONWorldWatch data, String[] agent_position_data)
     {
-        CompletableFuture.runAsync(() -> write_to_panel(data));
+        CompletableFuture.runAsync(() -> write_to_panel(data)).join();
 
         canvas.setBackground(new Color(195, 224, 254));
         canvas.setData(data, agent_position_data);

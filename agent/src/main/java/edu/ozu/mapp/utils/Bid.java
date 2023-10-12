@@ -31,6 +31,18 @@ public class Bid implements Comparable<Bid>
         return agent_id.equals(o.agent_id) && path.equals(o.path);
     }
 
+    public String toJSON()
+    {
+        return String.format(
+                "{\"utility\":%.16f,\"props\":%s,\"path\":%s,\"agent_id\":\"%s\"}",
+                utility,
+                path.properties,
+                Arrays.toString(path.toStringArray()),
+                agent_id
+        );
+    }
+
+
     @Override
     public String toString()
     {

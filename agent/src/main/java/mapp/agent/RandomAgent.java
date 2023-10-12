@@ -25,7 +25,7 @@ public class RandomAgent extends Agent {
     @Override
     public void PreNegotiation(State state)
     {
-        bid_space_iterator = GetCurrentBidSpace().iterator();
+        bid_space_iterator = GetCurrentBidSpace(state).iterator();
     }
 
     @Override

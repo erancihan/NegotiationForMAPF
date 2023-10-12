@@ -29,6 +29,6 @@ public class Broadcast {
 
     @Override
     public String toString() {
-        return "[" + agent_name + ' ' + locations + ']';
+        return String.format("{\"agent\":\"%s\",\"locations\":%s}", agent_name, locations.toString());
     }
 }

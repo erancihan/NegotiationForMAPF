@@ -39,7 +39,7 @@ public class HelloAgent extends Agent
     }
 
     @Override
-    public void PostNegotiation() {
+    public void PostNegotiation(Contract contract) {
         logger.debug("history:" + history);
     }
 
