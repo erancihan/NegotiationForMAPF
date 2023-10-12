@@ -5,6 +5,7 @@ logs/*
 lib
 *.jar
 .vscode
+*.zip
 
 agent/.factorypath
 agent/.settings/*
