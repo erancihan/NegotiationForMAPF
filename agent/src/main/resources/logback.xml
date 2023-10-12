@@ -35,15 +35,13 @@
                 %d{YYYY-MM-DD HH:mm:ss.SSS} %-5level [%-33t] %logger{36} - %msg%n
             </Pattern>
         </encoder>
-        <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
             <!-- rollover -->
-            <fileNamePattern>out.%i.log.zip</fileNamePattern>
-            <minIndex>0</minIndex>
-            <maxIndex>9</maxIndex>
-        </rollingPolicy>
-        <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+            <fileNamePattern>
+                ${HOMEPATH}/Documents/MAPP/%d{yyyy-MM-dd}-%i-out.zip
+            </fileNamePattern>
             <maxFileSize>10MB</maxFileSize>
-        </triggeringPolicy>
+        </rollingPolicy>
     </appender>
 
     <!-- LOG everything at INFO level -->
