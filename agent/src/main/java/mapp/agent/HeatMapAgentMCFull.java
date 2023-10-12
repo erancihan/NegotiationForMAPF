@@ -13,11 +13,11 @@ import edu.ozu.mapp.utils.path.Path;
 import java.util.*;
 
 @MAPPAgent
-public class HeatMapAgent extends Agent
+public class HeatMapAgentMCFull extends Agent
 {
     private int CAP = 999;
 
-    public HeatMapAgent(String agent_name, String agent_id, Point start, Point dest, int initial_tokens)
+    public HeatMapAgentMCFull(String agent_name, String agent_id, Point start, Point dest, int initial_tokens)
     {
         super(agent_name, agent_id, start, dest, initial_tokens);
     }
@@ -35,13 +35,98 @@ public class HeatMapAgent extends Agent
     @Override
     public ArrayList<Constraint> prepareConstraints(ArrayList<Constraint> constraints)
     {
-        constraints.addAll(GetFoVasConstraint());
+//        constraints.addAll(GetFoVasConstraint());
         return super.prepareConstraints(constraints);
     }
+
+    @SuppressWarnings("DuplicatedCode")
+    @Override
+    public void OnMove(JSONAgent response) {
+        Iterator<Map.Entry<String, ArrayList<Constraint>>> iterator = memory.entrySet().iterator();
+        while (iterator.hasNext()) {
+            ArrayList<Constraint> constraints = iterator.next().getValue();
+
+            constraints.removeIf(constraint -> constraint.at_t < this.time);
+
+            if (constraints.size() == 0) {
+                iterator.remove();
+            }
+        }
+    }
+
+    @SuppressWarnings("DuplicatedCode")
+    @Override
+    public void PostNegotiation(Contract contract) {
+        // get contract and register promise
+
+        if (contract.x.equals(AGENT_ID)) {
+            // I won, nothing to do here
+            return;
+        }
+
+        // remember whom we promised, what we promised
+        // register entire Ox as promised as well
+
+        Point[] Ox = contract.GetOx();
+        ArrayList<Constraint> constraints = new ArrayList<>();
+
+        for (int i = 0; i < Ox.length && i < Globals.MAX_COMMITMENT_SIZE; i++) {
+            constraints.add(new Constraint(contract.x, Ox[i], this.time + i));
+        }
+
+        memory.put(contract.x, constraints);
+    }
+    private HashMap<String, ArrayList<Constraint>> memory = new HashMap<>();
 
     @Override
     public void PreNegotiation(State state)
     {
+        ArrayList<Constraint> constraints = new ArrayList<>();
+
+        // fetch Field of View
+        FoV fov = GetFieldOfView();
+        for (Broadcast broadcast : fov.broadcasts) {
+            // skip if own ID
+            if (broadcast.agent_name.equals(AGENT_ID)) {
+                continue;
+            }
+
+            ArrayList<Constraint> cs = memory.get(broadcast.agent_name);
+            if (cs == null) {
+                // skip if no memory of item
+                continue;
+            }
+
+            boolean should_constraint = true;
+            for (int i = 0; i < broadcast.locations.size(); i++) {
+                if (i >= cs.size()) {
+                    // memory is shorter than broadcast
+                    continue;   // OOB
+                }
+
+                Constraint _c_a = cs.get(i);
+                Constraint _c_b = broadcast.locations.get(i);
+
+                if (_c_b.equals(_c_a)) {
+                    continue;
+                }
+
+                // agent broadcast does not match agent's promise
+                //   Ox constraint memoization is invalid
+                should_constraint = false;
+                // forget the locations as well
+                memory.remove(broadcast.agent_name);
+            }
+
+            if (!should_constraint) {
+                continue;
+            }
+
+            // I promised this guy
+            constraints.addAll(cs);
+        }
+
+        HashMap<String, ArrayList<String>> constraintHashMap = constraints2hashmap(constraints);
         HashSet<String> participants = new HashSet<>(Arrays.asList(state.agents));
 
         // set bounds
@@ -51,9 +136,6 @@ public class HeatMapAgent extends Agent
         // BEGIN: HEATMAP/HEIGHTMAP GEN
         HEAT_MAPS = new ArrayList<>();
         OBSTACLES = new HashMap<>();
-
-        // fetch Field of View
-        FoV fov = GetFieldOfView();
 
         int dims = Globals.FIELD_OF_VIEW_SIZE;
 
@@ -69,7 +151,7 @@ public class HeatMapAgent extends Agent
 
                 heat_map_weights[index] =
                     (index == center)
-                        ? CAP       // Agent is here, don't go
+                        ? 1         // Agent is here
                         : Math.max( // Normalized height effect on location
                             0.0,
                             (
@@ -89,6 +171,9 @@ public class HeatMapAgent extends Agent
         // BEGIN : get obstacles
         for (Point obstacle : fov.obstacles)
         {
+            // `fov.obstacle` contains:
+            //  - agents that have reached their destinations, depending on LEAVE behaviour
+            //  - defined environment obstacles, if there are any
             OBSTACLES.put(obstacle.key, (double) CAP);
         }
         // END : get obstacles
@@ -113,6 +198,13 @@ public class HeatMapAgent extends Agent
                 HashMap<String, Double> heat_map = HEAT_MAPS.get(i);
 
                 // add location weights
+                // ---
+                // Agent that is at the center of the `heat_map_weights` will be considered
+                //   as obstacle if that value is CAP. In this configuration, CAP is `999`,
+                //   and since this configuration also aims to _not_ have agent's as definite
+                //   obstacle, `center` point of `heat_map_weights` evaluates to 1, as it is
+                //   the normalized value. TODO: TBD
+                // ---
                 for (int j = 0; j < heat_map_weights.length; j++)
                 {
                     int x = location.x + ((j % dims) - (dims / 2));
@@ -121,7 +213,9 @@ public class HeatMapAgent extends Agent
                     if (x < bound_l || bound_r <= x) continue;  // x : [bound_l, bound_r) | i.e. [0, 16) -> x : 0, 1, ... 15
                     if (y < bound_t || bound_b <= y) continue;  // y : [bound_t, bound_b) | i.e. [0, 16) -> y : 0, 1, ... 15
 
-                    double weight = heat_map_weights[j] + OBSTACLES.getOrDefault(String.format("%d-%d", x, y), 0.0);
+                    double weight =
+                            heat_map_weights[j] +
+                            OBSTACLES.getOrDefault(String.format("%d-%d", x, y), 0.0);
                     heat_map.put(
                             String.format("%d-%d", x, y), // key
                             heat_map.getOrDefault(String.format("%d-%d", x, y), 0.0) + weight // value
@@ -133,13 +227,11 @@ public class HeatMapAgent extends Agent
             // END : BROADCAST LOCATIONS ITER
         }
         // END
-//        System.out.println(this.AGENT_ID + ":" + HEAT_MAPS);
         // END : HEATMAP/HEIGHTMAP GEN
 
         // generate bid space
         BidSpace space = new BidSpace();
-//        space.setFileLogger(this.file_logger);
-        space.init(POS, DEST, Globals.FIELD_OF_VIEW_SIZE, new HashMap<>(), this.dimensions, time);
+        space.init(POS, DEST, Globals.FIELD_OF_VIEW_SIZE, constraintHashMap, this.dimensions, time);
         space.prepare();
 
         // generate default bid space ordering

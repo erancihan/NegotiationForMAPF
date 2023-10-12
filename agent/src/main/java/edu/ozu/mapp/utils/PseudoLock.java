@@ -21,4 +21,15 @@ public class PseudoLock
     public boolean unlock() {
         return lock.compareAndSet(Boolean.TRUE, Boolean.FALSE);
     }
+
+    public boolean isLocked() {
+        return lock.get();
+    }
+
+    @Override
+    public String toString() {
+        return "PseudoLock{" +
+                "lock=" + lock +
+                '}';
+    }
 }

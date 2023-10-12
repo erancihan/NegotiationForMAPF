@@ -38,7 +38,7 @@ public class Greedy extends Agent {
     public void PreNegotiation(State state)
     {
         // Get Current Bid Space
-        bid_space = GetCurrentBidSpace();
+        bid_space = GetCurrentBidSpace(state);
         bid_space_iterator = bid_space.iterator();
 //        System.out.println(Arrays.toString(bid_space.toArray(new Bid[0])));
 //        System.exit(1);

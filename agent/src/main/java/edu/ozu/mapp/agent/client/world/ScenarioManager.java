@@ -15,12 +15,15 @@ import edu.ozu.mapp.agent.client.helpers.ConflictInfo;
 import edu.ozu.mapp.config.AgentConfig;
 import edu.ozu.mapp.config.SessionConfig;
 import edu.ozu.mapp.config.WorldConfig;
+import edu.ozu.mapp.system.LeaveActionHandler;
 import edu.ozu.mapp.system.SystemExit;
 import edu.ozu.mapp.system.WorldOverseer;
 import edu.ozu.mapp.system.WorldState;
 import edu.ozu.mapp.utils.AStar;
+import edu.ozu.mapp.utils.Glob;
 import edu.ozu.mapp.utils.Globals;
 import edu.ozu.mapp.utils.Point;
+import edu.ozu.mapp.utils.bid.BidSpace;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
@@ -37,7 +40,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
@@ -76,26 +78,32 @@ public class ScenarioManager extends javax.swing.JFrame
 
     public ScenarioManager(String[] args, boolean is_headless)
     {
-        this.is_headless = is_headless;
         this.instance = this;
+
+        for (String arg : args) {
+            if (arg.equals("headless")) {
+                is_headless = true;
+            }
+        }
+        this.is_headless = is_headless;
 
         if (args.length > 0)
         {
             this.run_idx = args[0];
         }
 
+        try {
+            InputStream stream = ClassLoader.getSystemClassLoader().getResourceAsStream("fonts/Sauce Code Pro Nerd Font Complete Mono Windows Compatible.ttf");
+            Assert.isTrue(stream != null, "file stream is null!");
+            meslolgs = Font.createFont(Font.TRUETYPE_FONT, stream).deriveFont(12f);
+        } catch (FontFormatException | IOException e) {
+            logger.error("SOMETHING WENT WRONG WHILE SETTING FONTS");
+            e.printStackTrace();
+        }
+
         if (is_headless) {
             logger.warn("HEADLESS DESIGN IS NOT FULLY IMPLEMENTED");
         } else {
-            try {
-                InputStream stream = ClassLoader.getSystemClassLoader().getResourceAsStream("fonts/Sauce Code Pro Nerd Font Complete Mono Windows Compatible.ttf");
-                Assert.isTrue(stream != null, "file stream is null!");
-                meslolgs = Font.createFont(Font.TRUETYPE_FONT, stream).deriveFont(12f);
-            } catch (FontFormatException | IOException e) {
-                logger.error("SOMETHING WENT WRONG WHILE SETTING FONTS");
-                e.printStackTrace();
-            }
-
             initComponents();
         }
 
@@ -802,6 +810,7 @@ public class ScenarioManager extends javax.swing.JFrame
 
         // switch to first page
         ((CardLayout) cards_container.getLayout()).show(cards_container, "create");
+        System.out.println("> importing file...");
 
         // define folder path
         File mapp_folder = new File(java.nio.file.Paths.get(new JFileChooser().getFileSystemView().getDefaultDirectory().toString(), "MAPP").toString());
@@ -814,6 +823,8 @@ public class ScenarioManager extends javax.swing.JFrame
         if (return_val == JFileChooser.APPROVE_OPTION) {
             // open & import file
             File import_file = file_chooser.getSelectedFile();
+            System.out.println("> get selected file");
+            System.out.println(import_file.toString());
 
             SetScenario(import_file);
         }
@@ -1028,7 +1039,7 @@ public class ScenarioManager extends javax.swing.JFrame
         }
     }
 
-    private WorldOverseer world;
+    public WorldOverseer world;
     private WorldConfig world_data;
     private int agent_count = 0; // track number of agents there should be
     private int number_of_expected_conflicts = 0;
@@ -1084,7 +1095,9 @@ public class ScenarioManager extends javax.swing.JFrame
 
         config.validate();
 
-        if (config.agent_count == 0) return CompletableFuture.supplyAsync(() -> null);
+        if (config.agent_count == 0) {
+            return CompletableFuture.supplyAsync(() -> null);
+        }
 
         return GenerateScenario(config);
     }
@@ -1186,12 +1199,18 @@ public class ScenarioManager extends javax.swing.JFrame
     private TextPaneLogFormatter text_pane_formatter;
     private void InitializeWorld()
     {
+        System.out.println("aa");
+        world = new WorldOverseer();
+
+        System.out.println("bb");
+        if (is_headless) {
+            return;
+        }
+
         text_pane_formatter = new TextPaneLogFormatter();
         text_pane_formatter.scenario_info_pane = scenario_info_pane;
         text_pane_formatter.negotiation_info_pane = negotiation_info_pane;
 
-//        world = new World();
-        world = new WorldOverseer();
         world.SetOnLoopingStop(() -> generate_scenario_btn.setEnabled(true));
         world.SetLogDrawCallback((data) -> text_pane_formatter.format(data));
         world.SetCurrentStateChangeCallback((state) -> label_current_state.setText(state));
@@ -1202,6 +1221,8 @@ public class ScenarioManager extends javax.swing.JFrame
         scenario_canvas.SetWorldData(world_data);
         scenario_canvas.SetAgentsData(agents_data);
         scenario_canvas.Init();
+
+        System.out.println("cc");
     }
 
     private void ShowOverviewCard()
@@ -1275,11 +1296,11 @@ public class ScenarioManager extends javax.swing.JFrame
                 if (agent_paths.containsKey(b.id)) {
                     b_path = agent_paths.get(b.id);
                 } else {
-                    b_path = new AStar().calculate(b.start.toPoint(), b.dest.toPoint(), world_data.width+"x"+world_data.height).toArray(new String[0]);
+                    b_path = new AStar()
+                            .calculate(b.start.toPoint(), b.dest.toPoint(), world_data.width+"x"+world_data.height)
+                            .toArray(new String[0]);
                     agent_paths.put(b.id, b_path);
                 }
-
-                logger.debug(String.format("Processing %s and %s", i, j));
 
                 ConflictInfo info = new ConflictCheck().check(a_path, b_path);
                 if (info.hasConflict) conflict_counter++;
@@ -1301,12 +1322,18 @@ public class ScenarioManager extends javax.swing.JFrame
      * */
     private void run_scenario()
     {
-        generate_scenario_btn.setEnabled(false);
+        if (generate_scenario_btn != null) {
+            generate_scenario_btn.setEnabled(false);
+        }
 
         // initialize world
-        if (world == null) InitializeWorld();
+        if (world == null) {
+            InitializeWorld();
+        }
         world.Create(world_data.world_id, world_data.width, world_data.height);
-        scenario_info_pane.world_overseer = world;
+        if (scenario_info_pane != null) {
+            scenario_info_pane.world_overseer = world;
+        }
 
         HashMap<String, AgentClient> agent_refs = new HashMap<>();
         for (AgentConfig data : agents_data) {
@@ -1328,24 +1355,31 @@ public class ScenarioManager extends javax.swing.JFrame
             }
         }
         world.Run();
-        scenario_canvas.SetAgentRefs(agent_refs);
+        if (scenario_canvas != null) {
+            scenario_canvas.SetAgentRefs(agent_refs);
+        }
     }
 
     //<editor-fold defaultstate="collapsed" desc="Update Create Card info for Import">
     private void DisplayImportedData() {
+        System.out.println("a");
         width_input.setText(String.valueOf(world_data.width));
         height_input.setText(String.valueOf(world_data.height));
         min_path_length_input.setText(String.valueOf(world_data.min_path_len));
         max_path_length_input.setText(String.valueOf(world_data.max_path_len));
         min_dist_bw_agents.setText(String.valueOf(world_data.min_distance_between_agents));
         input_initial_token_count_per_agent.setText(String.valueOf(world_data.initial_token_c));
+        System.out.println("b");
 
         if (world == null) InitializeWorld();
+        System.out.println("c");
 
         HashMap<String, Integer> agent_counts = new HashMap<>();
         for (AgentConfig data : agents_data) {
             agent_counts.put(data.agent_class_name, agent_counts.getOrDefault(data.agent_class_name, 0) + 1);
-            if (world != null) world.Log(String.format("imported %s %s -> %s", data.agent_name, data.start, data.dest));
+            if (world != null) {
+                world.Log(String.format("imported %s %s -> %s", data.agent_name, data.start, data.dest));
+            }
         }
 
         AgentsTableModel model = (AgentsTableModel) agents_table.getModel();
@@ -1428,6 +1462,7 @@ public class ScenarioManager extends javax.swing.JFrame
             return instance;
         }
 
+        System.out.println(">> processing data");
         try {
             FileReader reader = new FileReader(scenario_file);
             Gson gson = new Gson();
@@ -1439,6 +1474,7 @@ public class ScenarioManager extends javax.swing.JFrame
             agents_data = new ArrayList<>();
 
             for (int i = 0; i < config.agents.length; i++) {
+                System.out.println(">> processing agent" + i);
                 config.agents[i].agent_name = config.agents[i].agent_name.replaceAll("-", "_");
             }
 
@@ -1447,10 +1483,13 @@ public class ScenarioManager extends javax.swing.JFrame
                 world_data.world_id += "-" + run_idx;
             }
 
-            DisplayImportedData();
+            if (!is_headless) {
+                DisplayImportedData();
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
+        System.out.println(">> process complete");
 
         return instance;
     }
@@ -1462,6 +1501,10 @@ public class ScenarioManager extends javax.swing.JFrame
 
     public ScenarioManager RunScenario(boolean cycle)
     {
+        if (world == null) {
+            InitializeWorld();
+        }
+
         // send run btn click action
         if (cycle)
         {   // will cycle immediately
@@ -1479,12 +1522,21 @@ public class ScenarioManager extends javax.swing.JFrame
                     world = null;
                 }
 
+                if (is_headless) {
+                    // no window listener attached, invoke on close
+                    OnClose();
+                }
+
                 this.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
                 this.dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
             });
         }
 
-        run_btnActionPerformed(null);   // send run btn click action
+        if (is_headless) {
+            run_scenario();
+        } else {
+            run_btnActionPerformed(null);   // send run btn click action
+        }
 
         return instance;
     }

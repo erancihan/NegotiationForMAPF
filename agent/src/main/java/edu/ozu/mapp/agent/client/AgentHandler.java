@@ -9,11 +9,11 @@ import edu.ozu.mapp.agent.client.models.Contract;
 import edu.ozu.mapp.dataTypes.Constraint;
 import edu.ozu.mapp.dataTypes.CollisionCheckResult;
 import edu.ozu.mapp.system.*;
+import edu.ozu.mapp.system.fov.FoV;
 import edu.ozu.mapp.utils.*;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.util.Assert;
 
-import java.time.Duration;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
@@ -92,8 +92,6 @@ public class AgentHandler {
 
         String[] response = WORLD_HANDLER_JOIN.apply(payload);
         WORLD_ID = response[0];
-
-        logger.info("joining " + WORLD_ID + " | serverless");
 
         agent.setWORLD_ID(WORLD_ID);
         agent.dimensions = response[1];
@@ -195,7 +193,7 @@ public class AgentHandler {
             ex.printStackTrace();
             SystemExit.exit(500);
         }
-        switch (result.type) {
+        switch (Objects.requireNonNull(result).type) {
             case COLLISION:
                 // There is a collision in path! Resolve this first
                 logger.debug(agent.AGENT_ID + " | notify negotiation > " + Arrays.toString(result.agent_ids));
@@ -269,19 +267,18 @@ public class AgentHandler {
 
             String[] path = broadcast.getPathStringArray();
             ConflictInfo conflict_info = new ConflictCheck().check(own_path, path);
-            if (conflict_info.hasConflict)
-            {
+            if (conflict_info.hasConflict) {
                 agent_ids.add(broadcast.agent_name);
                 String conflict_location = "";
                 // TODO
                 // since first Vertex Conflict or Swap Conflict found
                 // is immediately returned
                 // logging the conflict location here should pose no issue
-                if (conflict_info.type == ConflictCheck.ConflictType.SwapConflict)
+                if (conflict_info.type == ConflictCheck.ConflictType.SwapConflict) {
                     conflict_location = own_path[conflict_info.index] + " -> " + own_path[conflict_info.index + 1];
-                else
+                } else {
                     conflict_location = own_path[conflict_info.index];
-
+                }
                 logger.info(agent.AGENT_ID + " | found " + conflict_info.type + " at " + conflict_location + " | " + Arrays.toString(path));
 
                 CollisionCheckResult ret = new CollisionCheckResult(CollisionCheckResult.Type.COLLISION);
@@ -295,8 +292,9 @@ public class AgentHandler {
 
         Arrays.sort(conflicts.toArray(new CollisionCheckResult[0]), Comparator.comparing(a -> a.index));
         if (conflicts.size() > 0) {
-            conflict_location = conflicts.get(0).conflict_location;
-            return conflicts.get(0);
+            CollisionCheckResult ccr = conflicts.get(0);
+            conflict_location = ccr.conflict_location;
+            return ccr;
         } else {
             conflict_location = "";
             return new CollisionCheckResult();
@@ -435,6 +433,7 @@ public class AgentHandler {
 
     public void PreNegotiation(String session_id, State state)
     {
+        state.session_id = session_id;
         agent.history.setCurrentNegotiationID(session_id);
 
         // since this is a Bi-lateral negotiation, there should be only
@@ -590,8 +589,9 @@ public class AgentHandler {
         for (Point point : contract.GetOx())
         {
             Constraint constraint = new Constraint(point, agent.time + i);
-            if (!agent.constraints.contains(constraint))
+            if (!agent.constraints.contains(constraint)) {
                 agent.constraints.add(constraint);
+            }
             logger.debug(String.format("%s | ADDED CONSTRAINT %s:%s", agent.AGENT_ID, point, agent.time + i));
             i++;
         }
@@ -638,7 +638,7 @@ public class AgentHandler {
     public void PostNegotiation(Contract contract)
     {
         file_logger.AgentLogPostNegotiation(this, contract.sess_id, contract.x.equals(agent.AGENT_ID));
-        agent.PostNegotiation();
+        agent.PostNegotiation(contract);
 
         if (WORLD_OVERSEER_NEGOTIATED != null)
         {
@@ -646,8 +646,8 @@ public class AgentHandler {
         }
     }
 
-    public void VerifyNegotiations()
-    {
+    public void VerifyNegotiations() {
+        logger.debug(agent.AGENT_ID + "::verifying negotiations" + agent_handler_verify_negotiations_lock.toString());
         if (!agent_handler_verify_negotiations_lock.tryLock()) return;
 
         // verify path is conflict free at the moment

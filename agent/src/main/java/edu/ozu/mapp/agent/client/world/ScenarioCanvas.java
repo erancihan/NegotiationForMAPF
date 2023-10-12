@@ -201,17 +201,17 @@ public class ScenarioCanvas extends javax.swing.JPanel
     public void Init()
     {
         CompletableFuture
-            .runAsync(() -> {
-                try {
-                    do {
-                        TimeUnit.MILLISECONDS.sleep(100);
+                .runAsync(() -> {
+                    try {
+                        do {
+                            TimeUnit.MILLISECONDS.sleep(100);
 
-                        Update();
-                    } while (agents.size() != world.agent_count);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            })
+                            Update();
+                        } while (agents.size() != world.agent_count);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                })
         ;
     }
 

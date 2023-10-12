@@ -10,6 +10,7 @@ public class State {
     public String turn;
     public String[] agents;
     public Contract contract;
+    public String session_id;
 
     public State()
     {
@@ -32,5 +33,17 @@ public class State {
 
     public String getTurn() {
         return turn;
+    }
+
+    @Override
+    public String toString() {
+        return "State{" +
+                "time_tick=" + time_tick +
+                ", bids=" + Arrays.toString(bids) +
+                ", turn='" + turn + '\'' +
+                ", agents=" + Arrays.toString(agents) +
+                ", contract=" + contract +
+                ", session_id='" + session_id + '\'' +
+                '}';
     }
 }

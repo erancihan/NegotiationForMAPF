@@ -10,24 +10,28 @@ import java.util.stream.Collectors;
 
 public class Path extends ArrayList<Point> implements Cloneable, Comparable<Path>
 {
+    public HashMap<String, String> properties;
     HashSet<String> entries;
 
     public Path()
     {
         super();
         entries = new HashSet<>();
+        properties = new HashMap<>();
     }
 
     public Path(List<Point> asList)
     {
         super(asList);
         entries = new HashSet<>();
+        properties = new HashMap<>();
     }
 
     public Path(Path path)
     {
         super(path);
         entries = new HashSet<>(path.entries);
+        properties = new HashMap<>();
     }
 
     public Path(String str)

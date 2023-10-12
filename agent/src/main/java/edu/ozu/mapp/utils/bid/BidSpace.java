@@ -1,5 +1,6 @@
 package edu.ozu.mapp.utils.bid;
 
+import edu.ozu.mapp.agent.client.helpers.FileLogger;
 import edu.ozu.mapp.system.SystemExit;
 import edu.ozu.mapp.utils.Globals;
 import edu.ozu.mapp.utils.Point;
@@ -37,7 +38,13 @@ public class BidSpace
     private BidSpaceGenerator   generator               = null;
     private int                 invoke_count            = 0;
 
+    private FileLogger fileLogger = null;
+
     public BidSpace() { }
+
+    public void setFileLogger(FileLogger logger) {
+        this.fileLogger = logger;
+    }
 
     public void init
             (
@@ -180,6 +187,10 @@ public class BidSpace
             exception.printStackTrace();
             SystemExit.exit(500);
         }
+
+//        if (this.fileLogger != null && Globals.LOG_BID_SPACE) {
+//            fileLogger.LogBid();
+//        }
 
         return path;
     }

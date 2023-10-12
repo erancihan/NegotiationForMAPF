@@ -1,9 +1,11 @@
 package edu.ozu.mapp.utils;
 
 import com.google.gson.Gson;
+import edu.ozu.mapp.agent.client.helpers.FileLogger;
 import edu.ozu.mapp.agent.client.world.ScenarioManager;
 import edu.ozu.mapp.config.AgentConfig;
 import edu.ozu.mapp.config.WorldConfig;
+import edu.ozu.mapp.system.LeaveActionHandler;
 import edu.ozu.mapp.system.SystemExit;
 import uk.org.lidalia.sysoutslf4j.context.SysOutOverSLF4J;
 
@@ -12,13 +14,16 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.AccessDeniedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
@@ -28,10 +33,13 @@ public class TournamentRunner {
     public static int TOURNAMENT_RUNNER_MAX_NUMBER_OF_TRIES = 1;
 
     public File tournament_run_results;
+    public Path homedir;
 
     public TournamentRunner()
     {
         SysOutOverSLF4J.sendSystemOutAndErrToSLF4J();
+
+        homedir = Paths.get(FileSystemView.getFileSystemView().getDefaultDirectory().getPath(), "MAPP");
     }
 
     private void run_tournament() throws IOException, InterruptedException
@@ -161,63 +169,140 @@ public class TournamentRunner {
 
     public void run(ArrayList<String> scenarios) throws InterruptedException, IOException
     {   // BEGIN: FUNCTION
-        for (String path : scenarios) {
+        Collections.sort(scenarios);
+        for (String path : scenarios)
+        {
             System.out.println("> " + path);
         }
 
-        Iterator<String> iterator = scenarios.iterator();
-        while (iterator.hasNext())
+        Iterator<String> scenario_iterator = scenarios.iterator();
+        while (scenario_iterator.hasNext())
         {   // BEGIN: WHILE LOOP | while there are scenarios
-            File scenario = new File(iterator.next());
-            System.out.println(scenario);
+            File scenario = new File(scenario_iterator.next()); System.out.println(scenario);
 
             String wid = scenario.getName().replace("world-scenario-", "").replace(".json", "");
 
+            // BEGIN: check if it is on RUN CHECK file
+            Path scenario_data_file_path = Paths.get(
+                    scenario.getParent(),
+                    String.format(
+                            ".%s-fov%s-act%s-%s.txt",
+                            wid.split("-")[0],
+                            Globals.FIELD_OF_VIEW_SIZE,
+                            Globals.MOVE_ACTION_SPACE_SIZE,
+                            Globals.LEAVE_ACTION_BEHAVIOUR == LeaveActionHandler.LeaveActionTYPE.OBSTACLE
+                                    ? "OBSTACLE"
+                                    : "LEAVE"
+                    )
+            );
 
-            int try_count = 1;
-            for (int i = 0; i < try_count && try_count <= TOURNAMENT_RUNNER_MAX_NUMBER_OF_TRIES; i++)
+            //noinspection ResultOfMethodCallIgnored
+            new File(String.valueOf(scenario_data_file_path)).createNewFile();
+
+            System.out.printf("writing to %s%s", scenario_data_file_path, System.lineSeparator());
+
+            if (Files.lines(scenario_data_file_path).anyMatch(line -> line.trim().equals(scenario.getName()))) {
+                continue;
+            }
+            // END
+
+            String __logfolder_path = String.valueOf(Paths.get(
+                    String.valueOf(homedir),
+                    "logs",
+                    String.format(
+                            "FoV%s_ACT%s_%s",
+                            Globals.FIELD_OF_VIEW_SIZE,
+                            Globals.MOVE_ACTION_SPACE_SIZE,
+                            Globals.LEAVE_ACTION_BEHAVIOUR == LeaveActionHandler.LeaveActionTYPE.OBSTACLE ? "OBSTACLE" : "LEAVE"
+                    ),
+                    scenario_data_file_path.getParent().getParent().getFileName().toString(),
+                    scenario_data_file_path.getParent().getFileName().toString()
+                ));
+
+            //noinspection ResultOfMethodCallIgnored
+            new File(__logfolder_path).mkdirs();
+
+            FileLogger.LOG_FOLDER = __logfolder_path;
+
+            System.out.println("logging to folder: " + FileLogger.LOG_FOLDER);
+
+            for (int run_idx = 1; run_idx <= TOURNAMENT_RUNNER_MAX_NUMBER_OF_TRIES; run_idx++)
             {   // BEGIN: FOR LOOP | number of retries
-                AtomicBoolean should_repeat = new AtomicBoolean(false);
+                AtomicBoolean scenario_success = new AtomicBoolean(false);
 
-                File save_file_src;
-                int idx = i;
-                do {
-                    idx++;
-                    save_file_src = Paths.get(FileSystemView.getFileSystemView().getDefaultDirectory().getPath(), "MAPP", "logs", "WORLD-" + wid + "-" + idx).toFile();
-                } while (new File(save_file_src + "-false").exists() || new File(save_file_src + "-true").exists() || save_file_src.exists());
+                File save_file_src = Paths.get(__logfolder_path, "WORLD-" + wid + "-" + run_idx).toFile();
+                if (save_file_src.exists() || new File(save_file_src + "-true").exists() || new File(save_file_src + "-false").exists())
+                {
+                    continue;
+                }
+                //noinspection ResultOfMethodCallIgnored
+                save_file_src.setWritable(true);
 
-                String[] argv = new String[]{ String.valueOf(idx) };
+                String[] argv = new String[]{ String.valueOf(run_idx), "headless" };
 
                 CountDownLatch latch = new CountDownLatch(1);
 
                 // set system exit handling on simulation/scenario fail
                 SystemExit.hook(status -> {
-                    if (status == 0)
+                    if (status == 0) {
                         return;
-
-                    should_repeat.set(true);
+                    }
+                    scenario_success.set(false);
                     latch.countDown();
                 });
 
-                ScenarioManager
-                    .run(argv)
-                    .thenApply(manager -> {
-                        manager.OnWindowClosed(latch::countDown);
-                        manager.BindRunCrashHook();
+                CompletableFuture<ScenarioManager> future = ScenarioManager
+                        .run(argv)
+                        .thenApply(manager -> {
+                            manager.OnWindowClosed(() -> {
+                                scenario_success.set(true);
+                                latch.countDown();
 
-                        return manager.SetScenario(scenario);
-                    })
-                    .thenApply(manager -> manager.RunScenario(true))
+                                if (manager.world != null) {
+                                    manager.world.kill();
+                                }
+                            });
+                            manager.BindRunCrashHook();
+
+                            return manager.SetScenario(scenario);
+                        })
+                        .thenApply(manager -> manager.RunScenario(true))
+                        .exceptionally(throwable -> {
+                            throwable.printStackTrace();
+                            return null;
+                        })
                 ;
 
                 // wait for simulation to terminate
                 latch.await();
 
                 System.out.println(">> instance done");
-                Thread.sleep(10000);
 
-                File save_file_dest = new File(save_file_src.getParent(), save_file_src.getName() + "-" + !should_repeat.get());
-                Files.move(save_file_src.toPath(), save_file_dest.toPath());
+                future.join();
+                System.gc();
+
+                FileLogger __logger = FileLogger.getInstance();
+
+                while (!__logger.queue_isEmpty()) {
+                    System.out.println("write queue size::"+__logger.queue_len());
+                    Thread.sleep(10000);
+                    __logger.queue_work();
+                }
+
+                File save_file_dest = new File(save_file_src.getParent(), save_file_src.getName() + "-" + scenario_success.get());
+
+                int __rename_retries = 0;
+                do {
+                    try {
+                        Thread.sleep(1000);
+                        Files.move(save_file_src.toPath(), save_file_dest.toPath());    // rename
+
+                        __rename_retries += 10;
+                    } catch (AccessDeniedException exception) {
+                        exception.printStackTrace();
+                        __rename_retries += 1;
+                    }
+                } while (__rename_retries < 10);
 
                 if (tournament_run_results != null)
                 {
@@ -232,17 +317,14 @@ public class TournamentRunner {
                         )
                         .close();
                 }
-
-                if (should_repeat.get())
-                {
-                    try_count += 1;
-                }
             }   // END: FOR LOOP
 
             if (TOURNAMENT_RUNNER_RENAME_FILES_POST_RUN)
             {
-                File __new = new File(scenario.getParent(), "__" + scenario.getName());
-                Files.move(scenario.toPath(), __new.toPath());
+                new FileWriter(String.valueOf(scenario_data_file_path), true)
+                        .append(String.format("%s%s", scenario.getName(), System.lineSeparator()))
+                        .close()
+                ;
             }
         }   // END: WHILE LOOP
 

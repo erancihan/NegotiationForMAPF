@@ -11,7 +11,7 @@ import java.util.Objects;
 
 public class Contract implements Cloneable {
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(Contract.class);
-    private static final boolean HAS_ENCRYPTION = false;
+    private final boolean HAS_ENCRYPTION = false;
 
     public String Ox;
     public String x;
@@ -23,7 +23,7 @@ public class Contract implements Cloneable {
 
     private HashMap<String, String> offers;
 
-    private Contract(Map<String, String> sess)
+    public Contract(Map<String, String> sess)
     {
         Ox = sess.getOrDefault("Ox", "");
         x = sess.getOrDefault("x", "");
@@ -42,15 +42,6 @@ public class Contract implements Cloneable {
         offers.put(B, ETb);
     }
 
-    public static Contract Create(Map<String, String> sess)
-    {
-//        Assert.isTrue(!sess.get("x").isEmpty(), "<<Contract cannot be empty>>");
-//        if (sess == null || sess.getOrDefault("x", "").isEmpty())
-//            return null;
-
-        return new Contract(sess);
-    }
-
     public int GetTokenCountOf(Agent agent)
     {
         return Integer.parseInt(getTokenCountOf(agent));
@@ -61,7 +52,8 @@ public class Contract implements Cloneable {
 //        System.out.println(A + " " + B + " " + agent.AGENT_ID);
         if (offers.containsKey(agent.AGENT_ID))
         {
-            return HAS_ENCRYPTION ? agent.Decrypt(offers.get(agent.AGENT_ID)) : offers.get(agent.AGENT_ID);
+//            return HAS_ENCRYPTION ? agent.Decrypt(offers.get(agent.AGENT_ID)) : offers.get(agent.AGENT_ID);
+            return offers.get(agent.AGENT_ID);
         }
         System.err.println(agent.AGENT_ID + " : " + offers);
         return null;
@@ -79,17 +71,20 @@ public class Contract implements Cloneable {
                 x = agent.AGENT_ID;
                 offers.put(
                         agent.AGENT_ID,
-                        HAS_ENCRYPTION ? agent.Encrypt(String.valueOf(next)) : String.valueOf(next)
+//                        HAS_ENCRYPTION ? agent.Encrypt(String.valueOf(next)) : String.valueOf(next)
+                        String.valueOf(next)
                 );
             }
 
             if (A.equals(agent.AGENT_ID))
             {
-                ETa = HAS_ENCRYPTION ? agent.Encrypt(String.valueOf(next)) : String.valueOf(next);
+//                ETa = HAS_ENCRYPTION ? agent.Encrypt(String.valueOf(next)) : String.valueOf(next);
+                ETa = String.valueOf(next);
             }
             if (B.equals(agent.AGENT_ID))
             {
-                ETb = HAS_ENCRYPTION ? agent.Encrypt(String.valueOf(next)) : String.valueOf(next);
+//                ETb = HAS_ENCRYPTION ? agent.Encrypt(String.valueOf(next)) : String.valueOf(next);
+                ETb = String.valueOf(next);
             }
         }
 

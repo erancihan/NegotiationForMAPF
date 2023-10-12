@@ -1,9 +1,7 @@
 package edu.ozu.mapp.utils;
 
 import com.google.gson.annotations.SerializedName;
-import edu.ozu.mapp.system.FoV;
-
-import java.util.Arrays;
+import edu.ozu.mapp.system.fov.FoV;
 
 public class JSONWorldWatch {
     public String agent_id;

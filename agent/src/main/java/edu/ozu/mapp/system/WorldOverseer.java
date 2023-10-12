@@ -6,6 +6,8 @@ import edu.ozu.mapp.agent.client.AgentHandler;
 import edu.ozu.mapp.agent.client.helpers.FileLogger;
 import edu.ozu.mapp.agent.client.models.Contract;
 import edu.ozu.mapp.dataTypes.WorldSnapshot;
+import edu.ozu.mapp.system.fov.FoV;
+import edu.ozu.mapp.system.fov.FoVHandler;
 import edu.ozu.mapp.utils.Globals;
 import edu.ozu.mapp.utils.JSONWorldWatch;
 import edu.ozu.mapp.utils.Point;
@@ -42,15 +44,15 @@ public class WorldOverseer
      * K: Agent name
      * V: Agent's broadcasted path
      * */
-    protected ConcurrentHashMap<String, String[]> broadcasts;
-    protected ConcurrentHashMap<String, Integer>  bank_data;
-    protected ConcurrentHashMap<String, String>   agent_to_point;
-    protected ConcurrentHashMap<String, String>   point_to_agent;
-    protected ConcurrentSkipListSet<String>       active_agents;
-    protected ConcurrentHashMap<String, String[]> passive_agents;
+    public ConcurrentHashMap<String, String[]> broadcasts;
+    public ConcurrentHashMap<String, Integer>  bank_data;
+    public ConcurrentHashMap<String, String>   agent_to_point;
+    public ConcurrentHashMap<String, String>   point_to_agent;
+    public ConcurrentSkipListSet<String>       active_agents;
+    public ConcurrentHashMap<String, String[]> passive_agents;
 
     protected MovementHandler     movement_handler;
-    protected NegotiationOverseer negotiation_overseer;
+    public NegotiationOverseer negotiation_overseer;
 
     DATA_LOG_DISPLAY log_payload;
 
@@ -66,16 +68,16 @@ public class WorldOverseer
     protected ConcurrentHashMap<String, String> FLAG_NEGOTIATIONS_VERIFIED;
     protected ConcurrentHashMap<String, String> FLAG_INACTIVE;
 
-    private Consumer<DATA_LOG_DISPLAY>  UI_LogDrawCallback;
-    private Consumer<String>            UI_StateChangeCallback;
-    private Runnable                    UI_CanvasUpdateHook;
-    private Runnable                    UI_LoopStoppedHook;
-    private BiConsumer<String, WorldSnapshot> SNAPSHOT_HOOK;
+    private Consumer<DATA_LOG_DISPLAY>  UI_LogDrawCallback = (value) -> {};
+    private Consumer<String>            UI_StateChangeCallback = (value) -> {};
+    private Runnable                    UI_CanvasUpdateHook = () -> {};
+    private Runnable                    UI_LoopStoppedHook = () -> {};
+    private BiConsumer<String, WorldSnapshot> SNAPSHOT_HOOK = (val1, val2) -> {};
     private ScheduledFuture<?> main_sim_loop;
     private ScheduledFuture<?> overseer_validation_job;
 
-    private Consumer<WorldState> SCENARIO_MANAGER_HOOK_JOIN_UPDATE;
-    private Runnable SCENARIO_MANAGER_HOOK_SIMULATION_FINISHED;
+    private Consumer<WorldState> SCENARIO_MANAGER_HOOK_JOIN_UPDATE = (val) -> {};
+    private Runnable SCENARIO_MANAGER_HOOK_SIMULATION_FINISHED = () -> {};
 
     private LeaveActionHandler leaveActionHandler;
     private MoveActionHandler moveActionHandler;
@@ -126,6 +128,7 @@ public class WorldOverseer
         foVHandler = new FoVHandler(this);
 
         agents_verify_lock = new PseudoLock();
+        overseer_validator_invoke_lock = new PseudoLock();
 
         TIME = 0;
 
@@ -227,6 +230,7 @@ public class WorldOverseer
             return;
         }
 
+
         UI_StateChangeCallback.accept(curr_state.toString());
 
         if (active_agent_c == 0 && IsLooping)
@@ -303,7 +307,7 @@ public class WorldOverseer
             case NEGOTIATE:
                 if (FLAG_NEGOTIATIONS_VERIFIED.size() == active_agent_c)
                 {
-                    Log("- NEGOTIATIONS ARE VERIFIED" + FLAG_NEGOTIATIONS_VERIFIED.size() + " ?= " + active_agent_c , logger::info);
+                    Log("- NEGOTIATIONS ARE VERIFIED " + FLAG_NEGOTIATIONS_VERIFIED.size() + " ?= " + active_agent_c , logger::info);
 
                     FLAG_NEGOTIATIONS_VERIFIED.clear();
 
@@ -343,35 +347,37 @@ public class WorldOverseer
                     FLAG_NEGOTIATIONS_VERIFIED.clear();
 
                     movement_handler.ProcessQueue(() -> CompletableFuture
-                        .runAsync(() -> {
-                            Log("- MOVES ARE COMPLETE", logger::info);
+                            .runAsync(() -> {
+                                Log("- MOVES ARE COMPLETE", logger::info);
 
-                            prev_state = curr_state;
+                                prev_state = curr_state;
 
-                            // Reset data
-                            FLAG_COLLISION_CHECKS.clear();
-                            FLAG_NEGOTIATIONS_DONE.clear();
+                                // Reset data
+                                FLAG_COLLISION_CHECKS.clear();
+                                FLAG_NEGOTIATIONS_DONE.clear();
 
-                            TIME++;
-                            log_payload.LogAgentLocations(agent_to_point);
-                            log_payload.LogWorldTime(TIME);
-                            log_payload.LogAgentBankInfo(bank_data);
+                                TIME++;
+                                log_payload.LogAgentLocations(agent_to_point);
+                                log_payload.LogWorldTime(TIME);
+                                log_payload.LogAgentBankInfo(bank_data);
 
-                            if (IsLooping) { Step(); }
-                        })
-                        .whenComplete((entity, ex) -> {
-                            if (ex != null)
-                            {
-                                ex.printStackTrace();
-                                SystemExit.exit(500);
-                            }
+                                if (IsLooping) {
+                                    Step();
+                                }
+                            })
+                            .whenComplete((entity, ex) -> {
+                                if (ex != null) {
+                                    ex.printStackTrace();
+                                    SystemExit.exit(500);
+                                }
 
-                            SNAPSHOT_HOOK.accept(
-                                String.format("MOVE T:%s - %-23s", TIME, new java.sql.Timestamp(System.currentTimeMillis())),
-                                generate_snapshot()
-                            );
-                            ui_log_draw_callback_invoker(log_payload);
-                        })
+                                SNAPSHOT_HOOK.accept(
+                                        String.format("MOVE T:%s - %-23s", TIME, new java.sql.Timestamp(System.currentTimeMillis())),
+                                        generate_snapshot()
+                                );
+                                ui_log_draw_callback_invoker(log_payload);
+                            })
+                            .join()
                     );
                 }
 
@@ -439,7 +445,7 @@ public class WorldOverseer
 
                 break;
             case 1:
-                file_logger.WorldLogBroadcast(WorldID);
+                file_logger.WorldLogBroadcast(WorldID, TIME);
 
                 STALE_NEGOTIATE_STATE_WAIT_COUNTER = 0;
 
@@ -447,11 +453,11 @@ public class WorldOverseer
                 logger.debug("switching to NEGOTIATE");
                 curr_state = Globals.WorldState.NEGOTIATE;
 
-                file_logger.WorldLogNegotiate(WorldID, "BEGIN");
+                file_logger.WorldLogNegotiate(WorldID, "BEGIN", TIME);
 
                 break;
             case 2:
-                file_logger.WorldLogNegotiate(WorldID, "DONE");
+                file_logger.WorldLogNegotiate(WorldID, "DONE", TIME);
 
                 // NEGOTIATION state, switch to MOVE state
                 logger.debug("switching to MOVE");
@@ -459,7 +465,7 @@ public class WorldOverseer
 
                 break;
             case 3:
-                file_logger.WorldLogMove(WorldID);
+                file_logger.WorldLogMove(WorldID, TIME, negotiation_overseer.cumulative_negotiation_count);
 
                 // MOVE state, switch to COLLISION_CHECK | BROADCAST state
                 logger.debug("switching to BROADCAST");
@@ -468,7 +474,7 @@ public class WorldOverseer
             default:
         }
 
-        STATE_SIMULATION_PROCESS_COUNTER = 0;
+        STALE_SIMULATION_PROCESS_COUNTER = 0;
     }
 
     public void Loop()
@@ -483,10 +489,10 @@ public class WorldOverseer
         curr_state = Globals.WorldState.JOIN;
         prev_state = Globals.WorldState.NONE;
 //        prev_state = Globals.WorldState.JOIN;
-        if (curr_state == prev_state)
-        {   // already run once, proceed to next step immediately
-            Step();
-        }
+//        if (curr_state == prev_state)
+//        {   // already run once, proceed to next step immediately
+//            Step();
+//        }
     }
 
     public void Stop()
@@ -514,7 +520,6 @@ public class WorldOverseer
 
         clients.put(client.GetAgentName(), client);
 
-        logger.info(String.format("Agent %s has Registered", client.GetAgentName()));
         Log(String.format("Agent %s has Registered", client.GetAgentName()));
 
         client.WORLD_HANDLER_JOIN_HOOK();
@@ -554,15 +559,16 @@ public class WorldOverseer
      * */
     public synchronized String OnCollisionCheckDone(String agent_name, String[] agent_ids)
     {
-        if (FLAG_INACTIVE.containsKey(agent_name)) return "";
+        String inactive = FLAG_INACTIVE.get(agent_name);
+        if (inactive != null) {
+            return "";
+        }
 
         Arrays.sort(agent_ids);
 
-        if (
-            FLAG_COLLISION_CHECKS.containsKey(agent_name) &&
-            FLAG_COLLISION_CHECKS.get(agent_name).equals(Arrays.toString(agent_ids))
-        )
-        {   // Entry for agent_name already exists
+        String collisions = FLAG_COLLISION_CHECKS.get(agent_name);
+        if (collisions != null && collisions.equals(Arrays.toString(agent_ids))) {
+            // Entry for agent_name already exists
             return FLAG_NEGOTIATION_REGISTERED.get(agent_name);
         }
 
@@ -609,7 +615,6 @@ public class WorldOverseer
     public synchronized void Negotiated(String agent_name, String session_id)
     {
         FLAG_NEGOTIATIONS_DONE.put(agent_name, "");
-        logger.debug(agent_name + " | negotiation done | " + FLAG_NEGOTIATIONS_DONE.size() + " == " + active_agent_c);
         broadcasts.put(agent_name, clients.get(agent_name).GetBroadcastSTR());
         if (!session_id.isEmpty())
         {
@@ -619,61 +624,46 @@ public class WorldOverseer
 
     private synchronized void UpdateBankInfo(String agent_name, int new_balance)
     {
-        if (bank_data.containsKey(agent_name))
+        if (bank_data.containsKey(agent_name)) {
             bank_data.put(agent_name, new_balance);
+        }
+    }
+
+    private void __agent_verify_negotiations_logic() {
+        for (String agent_id : clients.keySet()) {
+            if (passive_agents.containsKey(agent_id)) {
+                continue;
+            }
+
+            try {
+                logger.debug(agent_id + " pre-::verify-negotiations");
+
+                clients.get(agent_id).VerifyNegotiations();
+
+                logger.debug(agent_id + " post::verify-negotiations | " + FLAG_NEGOTIATIONS_DONE.size() + " == " + active_agent_c);
+            } catch (Exception exception) {
+                logger.error(String.format("ERROR %s%n", exception.getMessage()));
+                SystemExit.exit(SystemExit.Status.ERROR_VERIFY_NEGOTIATIONS);
+            }
+        }
     }
 
     private PseudoLock agents_verify_lock;
-    private CountDownLatch agents_verify_unlock_latch;
     private synchronized void agents_verify_paths_after_negotiation()
     {
-        if (!agents_verify_lock.tryLock()) return;
+        if (!agents_verify_lock.tryLock()) {
+            return;
+        }
         logger.debug("acquired agents_verify_lock");
-        agents_verify_unlock_latch = new CountDownLatch(active_agent_c);
+
         STALE_NEGOTIATE_STATE_WAIT_COUNTER = 0;
-        STATE_SIMULATION_PROCESS_COUNTER = 0;
+        STALE_SIMULATION_PROCESS_COUNTER = 0;
 
-        CompletableFuture
-            .runAsync(() -> {
-                logger.debug("verifying agent paths after negotiations");
-                for (String agent_id : clients.keySet())
-                {
-                    AgentClient client = clients.get(agent_id);
+        logger.debug("verifying agent paths after negotiations");
+        __agent_verify_negotiations_logic();
 
-                    if (passive_agents.containsKey(agent_id)) continue;
-
-                    logger.debug(agent_id + " | verifying negotiations");
-
-                    CompletableFuture
-                        .runAsync(() -> {
-                            try
-                            {
-                                client.VerifyNegotiations();
-
-                                agents_verify_unlock_latch.countDown();
-                                logger.debug(agent_id + " | PAST@VerifyNegotiations | " + FLAG_NEGOTIATIONS_DONE.size() + " == " + active_agent_c);
-                            }
-                            catch (Exception exception)
-                            {
-                                exception.printStackTrace();
-                            }
-                        })
-                    ;
-                }
-            })
-            .whenComplete((entity, ex) -> {
-                if (ex != null) ex.printStackTrace();
-
-                try {
-                    agents_verify_unlock_latch.await();
-
-                    agents_verify_lock.unlock();
-                    logger.debug("unlock agents_verify_lock " + FLAG_NEGOTIATIONS_DONE.size() + " == " + active_agent_c);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            })
-        ;
+        agents_verify_lock.unlock();
+        logger.debug("unlock agents_verify_lock " + FLAG_NEGOTIATIONS_DONE.size() + " == " + active_agent_c);
     }
 
     private synchronized void verify_negotiations_callback(String agent_id, boolean is_ok)
@@ -864,8 +854,8 @@ public class WorldOverseer
     }
 
     private int STALE_NEGOTIATE_STATE_WAIT_COUNTER = 0;
-    private int STATE_SIMULATION_PROCESS_COUNTER = 0;
-    private PseudoLock overseer_validator_invoke_lock = new PseudoLock();
+    private int STALE_SIMULATION_PROCESS_COUNTER = 0;
+    private PseudoLock overseer_validator_invoke_lock;
     private void overseer_validator()
     {
         if (!overseer_validator_invoke_lock.tryLock()) return;
@@ -881,9 +871,6 @@ public class WorldOverseer
             if (client.IsActive())
             {   // client is active
                 FLAG_INACTIVE.remove(agent_id); // you dont belong in here
-
-                // todo
-                // are you in inactive?
             }
             else
             {   // client is inactive
@@ -917,29 +904,30 @@ public class WorldOverseer
             case JOIN:
                 break;
             case NEGOTIATE:
-                if (STALE_NEGOTIATE_STATE_WAIT_COUNTER == Globals.STALE_NEGOTIATE_STATE_WAIT_COUNTER_LIMIT)
+                if (STALE_NEGOTIATE_STATE_WAIT_COUNTER >= Globals.STALE_NEGOTIATE_STATE_WAIT_COUNTER_LIMIT)
                 {
+                    logger.warn("THREAD HAS BEEN STALE FOR : " + STALE_NEGOTIATE_STATE_WAIT_COUNTER + " SECONDS");
                     STALE_NEGOTIATE_STATE_WAIT_COUNTER = 0;
-                    logger.warn("THREAD HAS BEEN STALE FOR 10 SECONDS");
 
+                    logger.warn("ACTIVE NEGOTIATION COUNT  : " + negotiation_overseer.ActiveCount());
                     if (negotiation_overseer.ActiveCount() != 0)
                     {
                         logger.warn("> THERE ARE STILL ACTIVE NEGOTIATIONS");
 
                         // if there are active sessions...
                         // check if their agents have joined
-                        logger.warn("> CHECKING IF SESSIONS ARE ACTIVE");
                         negotiation_overseer.ActiveSessions().values().forEach(session ->
                         {
                             // has session started??
-                            if (session.IsJoining())
-                            {   // session has not started...
-                                // make agents leave and force validate
-                                logger.warn("> SESSION " + session + " HAS NOT STARTED! TERMINATE");
-                                SystemExit.exit(SystemExit.Status.ERROR_SESSION_TERMINATE);
-                                for (String agent_id : session.GetAgentIDs())
-                                {
-                                    negotiation_overseer.AgentLeaveSession(agent_id, session.GetSessionID());
+                            // log negotiation session
+                            logger.warn(
+                                    "> SESSION " + session.GetSessionID() +
+                                    " FOR " + Arrays.toString(session.GetAgentIDs()) +
+                                    " :: " + session.GetState()
+                            );
+                            if (session.IsJoining()) {
+                                // agents haven't joined for a while
+                                for (String agent_id : session.GetAgentIDs()) {
                                     clients.get(agent_id).VerifyNegotiations();
                                 }
                             }
@@ -949,43 +937,30 @@ public class WorldOverseer
                         break;
                     }
 
-                    CompletableFuture.runAsync(() ->
-                    {
-                        logger.warn("FORCE REVALIDATE ACTIVE NEGOTIATE STATE");
-                        logger.warn("INVALIDATE FLAG_NEGOTIATIONS_DONE");
-                        FLAG_NEGOTIATIONS_DONE.clear();
+                    logger.warn("FORCE REVALIDATE ACTIVE NEGOTIATE STATE --");
+                    logger.warn("INVALIDATE FLAG_NEGOTIATIONS_DONE");
+                    FLAG_NEGOTIATIONS_DONE.clear();
 
-                        logger.warn("INVOKE client::VerifyNegotiations");
-                        for (String agent_id : clients.keySet())
-                        {
-                            AgentClient client = clients.get(agent_id);
-                            client.VerifyNegotiations();
-                        }
-                    })
-                    .exceptionally(ex ->
-                    {
-                        logger.error(String.format("ERROR %s%n", ex.getMessage()));
-                        SystemExit.exit(SystemExit.Status.ERROR_VERIFY_NEGOTIATIONS);
-
-                        return null;
-                    });
+                    logger.warn("INVOKE client::VerifyNegotiations");
+                    __agent_verify_negotiations_logic();
                 }
                 else
                 {
                     STALE_NEGOTIATE_STATE_WAIT_COUNTER += 1;
                 }
+                break;
             case BROADCAST:
             case MOVE:
             default:
-                if (STATE_SIMULATION_PROCESS_COUNTER < Globals.STATE_SIMULATION_PROCESS_COUNTER_LIMIT)
+                if (STALE_SIMULATION_PROCESS_COUNTER < Globals.STALE_SIMULATION_PROCESS_COUNTER_LIMIT)
                 {
-                    STATE_SIMULATION_PROCESS_COUNTER += 1;
-                    logger.warn("> TIME OUT TICK " + STATE_SIMULATION_PROCESS_COUNTER);
+                    STALE_SIMULATION_PROCESS_COUNTER += 1;
+//                    logger.warn("> TIME OUT TICK " + STALE_SIMULATION_PROCESS_COUNTER);
                     overseer_validator_invoke_lock.unlock();
                 }
                 else
                 {
-                    STATE_SIMULATION_PROCESS_COUNTER = 0;
+                    STALE_SIMULATION_PROCESS_COUNTER = 0;
                     logger.warn("TIME OUT");
                     overseer_validator_invoke_lock.unlock();
                     SystemExit.exit(SystemExit.Status.TIMEOUT);
@@ -1002,7 +977,15 @@ public class WorldOverseer
 
     public void kill()
     {   // terminate all threads
-        service.shutdownNow();
+        if (main_sim_loop != null) {
+            main_sim_loop.cancel(false);
+        }
+        if (overseer_validation_job != null) {
+            overseer_validation_job.cancel(true);
+        }
+        if (service != null) {
+            service.shutdownNow();
+        }
     }
 
     public int getWidth() {
@@ -1011,5 +994,13 @@ public class WorldOverseer
 
     public int getHeight() {
         return height;
+    }
+
+    public int getTime() {
+        return this.TIME;
+    }
+
+    public String getWorldID() {
+        return this.WorldID;
     }
 }
